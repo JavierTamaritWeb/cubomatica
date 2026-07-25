@@ -230,11 +230,20 @@ CB.perfiles.activar = function (id) {
 };
 
 /* ── Ajustes visibles para el niño ──────────────────────────────────────── */
-CB.ajustesNino = function () {
+CB.ajustesNino = function (props) {
   var cont = document.getElementById('lista-ajustes');
   if (!cont) return;
   CB.ui.vaciar(cont);
   var perfil = CB.perfil;
+
+  /* Pulsar «Pausa» lleva aquí, y aquí ponía «Ajustes» en grande con la salida
+     al final de la lista. Un niño que pausa no ha venido a configurar nada:
+     ha venido a parar un momento, y necesita ver antes que nada cómo volver.
+     `desdePausa` ya se pasaba desde CB.partida.pausar() y no lo usaba nadie. */
+  var enPausa = !!(props && props.desdePausa) ||
+                !!(CB.partida.estado && CB.partida.estado.pausada);
+  var titulo = document.getElementById('ajustes-titulo');
+  if (titulo) titulo.textContent = enPausa ? 'En pausa' : 'Ajustes';
 
   function fila(etiqueta, valor, alPulsar) {
     var f = CB.ui.crear('div', 'ajuste');
@@ -291,9 +300,12 @@ CB.ajustesNino = function () {
     });
   }
 
+  /* PRIMERO, no al final de la lista: es lo que ha venido a hacer. */
   if (CB.partida.estado && CB.partida.estado.pausada) {
-    cont.appendChild(CB.ui.boton('Seguir cavando', 'btn-bloque--primario btn-bloque--medio',
-      function () { CB.partida.reanudar(); }));
+    cont.insertBefore(
+      CB.ui.boton('◀ Seguir cavando', 'btn-bloque--primario btn-bloque--medio',
+        function () { CB.partida.reanudar(); }),
+      cont.firstChild);
   }
 };
 
@@ -348,7 +360,7 @@ CB.pantallas.alEntrar['p-mapa'] = function () { CB.mapaDestrezas.pintarMundos();
 CB.pantallas.alEntrar['p-cantera'] = function () { CB.mapaDestrezas.pintar(); };
 CB.pantallas.alEntrar['p-casa'] = function () { CB.casa.pintar(); };
 CB.pantallas.alEntrar['p-glosario'] = function () { CB.casa.pintarGlosario(); };
-CB.pantallas.alEntrar['p-ajustes'] = function () { CB.ajustesNino(); };
+CB.pantallas.alEntrar['p-ajustes'] = function (props) { CB.ajustesNino(props); };
 CB.pantallas.alEntrar['p-perfiles'] = function () { CB.perfiles.pintar(); };
 CB.pantallas.alEntrar['p-adulto'] = function () { CB.adulto.abrir(); };
 CB.pantallas.alEntrar['p-creditos'] = function () { CB.creditos(); };

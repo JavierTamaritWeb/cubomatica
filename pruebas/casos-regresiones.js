@@ -433,6 +433,30 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(CB.calibracion.terminar.toString().indexOf('reloj') !== -1,
     'E23 · y se nombra lo que cambia: reloj, luces y gemas');
 
+  /* ── E24 · La pausa no aterriza en un menú de configuración ──────────────
+     «Pausa» llevaba a una pantalla titulada «Ajustes», con cinco opciones y la
+     vuelta al juego en el último sitio de la lista. Un niño que pausa no ha
+     venido a configurar nada: ha venido a parar un momento. El flag
+     `desdePausa` ya se pasaba desde CB.partida.pausar() y no lo usaba nadie. */
+  var estadoPrev24 = CB.partida.estado;
+  var tit = document.getElementById('ajustes-titulo');
+  var lista = document.getElementById('lista-ajustes');
+
+  CB.partida.estado = { pausada: true };
+  CB.ajustesNino({ desdePausa: true });
+  t.igual(tit ? tit.textContent : null, 'En pausa',
+    'E24 · al pausar, la pantalla se llama «En pausa», no «Ajustes»');
+  var primero = lista ? lista.querySelector('button') : null;
+  t.ok(!!primero && /Seguir cavando/.test(primero.textContent),
+    'E24 · y volver al juego es el PRIMER botón, no el último',
+    primero ? primero.textContent.trim() : 'no hay botones');
+
+  CB.partida.estado = null;
+  CB.ajustesNino({});
+  t.igual(tit ? tit.textContent : null, 'Ajustes',
+    'E24 · entrando por el menú normal sigue llamándose Ajustes');
+  CB.partida.estado = estadoPrev24;
+
   /* ── E1 · Ningún handler de pantalla navega a su propia pantalla ─────────
      El contrato es que un handler PINTA. El que navegaba desbordaba la pila y
      el catch de ir() lo convertía en «algo ha ido mal», de modo que el panel

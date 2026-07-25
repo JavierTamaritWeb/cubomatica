@@ -938,3 +938,38 @@ la costó.
 Dos frases, en los dos momentos en que importan: «Te queda otro intento» al
 primer fallo, y «Se ha apagado una luz. Te quedan N» cuando se apaga. Sin
 regañar y sin números negativos (§3.4).
+
+### E22, E23, E24 — auditoría jugando la partida entera
+
+Ronda hecha con el juego delante, recorriendo el camino real: portada → minero
+nuevo → calibración → mapa → cantera → expedición completa → fin → otra
+expedición → pausa. Tres hallazgos, los tres del mismo tipo: el juego hacía lo
+correcto y no lo contaba.
+
+**E22 — los mensajes se escribían en una pantalla oculta.** `CB.ui.mensaje()`
+iba siempre a `#item-mensaje`, que vive dentro de la pantalla de partida.
+Mientras se calibra esa pantalla está oculta, así que el «¡Muy bien!» de cada
+una de las cuatro preguntas se escribía donde nadie podía verlo: cuatro
+preguntas seguidas sin una sola reacción. Nodo propio `#cal-mensaje` y
+`CB.ui.nodoMensaje()` eligiendo según la pantalla, el mismo patrón que ya usaba
+`32-componentes.js` para `cal-respuesta` / `item-respuesta`.
+
+**E23 — la calibración terminaba en silencio.** Contestabas la cuarta pregunta y
+aparecías en el mapa. Nadie decía que aquello era la preparación ni que el juego
+empieza ahora. Una prueba que no anuncia que termina no se distingue de una
+partida que se ha roto — y así se describió: «empiezas con una demo y no avisa
+que es una demo».
+
+**E24 — la pausa aterrizaba en un menú de configuración.** «Pausa» llevaba a una
+pantalla titulada «Ajustes», con cinco opciones y la vuelta al juego en el
+último sitio de la lista. Un niño que pausa no ha venido a configurar nada. El
+flag `desdePausa` ya se pasaba desde `CB.partida.pausar()` y no lo usaba nadie:
+ahora el título dice «En pausa» y «◀ Seguir cavando» es el primer botón.
+
+**Verificado y correcto** en el mismo recorrido: entrar por mapa y cantera abre
+la expedición; contestar bien suma gemas; fallar dos veces lleva a la
+reparación, que exige tocar los tres pasos antes de habilitar «Lo pillo»; al
+confirmarla se apaga una luz de verdad y el HUD la pinta en gris; la expedición
+termina en «Fin de la expedición» con gemas, bono y lo dominado; «Otra
+expedición» encadena con gemas a 0 y las tres luces; la pausa para el reloj y
+«Seguir cavando» lo reanuda. Cero errores de consola en todo el recorrido.
