@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cubomática — comprobación del doble clic</title>
+<style>
+  body { font-family: Verdana, Geneva, sans-serif; margin: 0; padding: 24px;
+         background: #241C14; color: #FFF6E5; line-height: 1.5; }
+  h1 { font-size: 22px; margin: 0 0 4px 0; }
+  p.sub { margin: 0 0 20px 0; color: #D9C9A8; font-size: 14px; }
+  #veredicto { padding: 14px 18px; font-size: 18px; font-weight: bold;
+               background: #4A3A28; margin-bottom: 18px; }
+  #veredicto.bien { background: #14601C; }
+  #veredicto.mal  { background: #8C1500; }
+  .fila { display: flex; align-items: baseline; gap: 10px; padding: 5px 0;
+          border-bottom: 1px solid #3A2E20; font-size: 14px; }
+  .marca { width: 22px; font-weight: bold; font-size: 16px; }
+  .ok  { color: #7BC44A; }
+  .mal { color: #F58B52; }
+  .esp { color: #D9C9A8; }
+  .nota { color: #D9C9A8; font-size: 13px; }
+  h2 { font-size: 15px; margin: 22px 0 6px 0; color: #F5D45C; }
+  code { background: #3A2E20; padding: 1px 5px; }
+</style>
+</head>
+<body>
+
+<h1>Cubomática — ¿funciona con doble clic?</h1>
+<p class="sub">Esta página comprueba lo que solo se puede comprobar abriendo el juego
+como lo abre un niño: con doble clic, sin servidor. Tarda unos segundos.</p>
+
+<div id="veredicto">Comprobando…</div>
+<div id="salida"></div>
+
+<h2>Si algo sale en rojo</h2>
+<p class="nota">Ejecuta <code>servir.command</code> (macOS) o <code>servir.bat</code>
+(Windows) y abre el juego desde la dirección que aparece en la ventana. El juego
+funciona igual; lo único que cambia es cómo se abre.</p>
+
+<script>
+var PISTAS = ['tema-principal', 'mundo-pradera', 'mundo-bosque', 'mundo-rio',
+              'mundo-mina', 'jefe', 'calma', 'cantera', 'victoria'];
+var salida = document.getElementById('salida');
+var fallos = 0, pendientes = 0;
+
+function fila(texto, estado, detalle) {
+  var d = document.createElement('div');
+  d.className = 'fila';
+  var m = document.createElement('span');
+  m.className = 'marca ' + (estado === true ? 'ok' : estado === false ? 'mal' : 'esp');
+  m.textContent = estado === true ? '✔' : estado === false ? '✘' : '·';
+  var t = document.createElement('span');
+  t.textContent = texto + (detalle ? '  —  ' + detalle : '');
+  d.appendChild(m); d.appendChild(t);
+  salida.appendChild(d);
+  if (estado === false) fallos++;
+  return d;
+}
+
+function titulo(t) {
+  var h = document.createElement('h2');
+  h.textContent = t;
+  salida.appendChild(h);
+}
+
+/* ── 1. ¿Se está abriendo con doble clic? ─────────────────────────────── */
+titulo('Cómo se ha abierto esta página');
+var esFichero = location.protocol === 'file:';
+
+/* No cuenta como fallo. Abrir esta página por http no es un problema del
+   juego: es que la comprobación no está midiendo lo que vino a medir. Marcarlo
+   en rojo haría creer que algo va mal cuando lo único que pasa es que hay que
+   abrirla de otra manera. */
+fila('Abierta con doble clic (protocolo file://)', esFichero ? true : null,
+     esFichero ? '' : 'está abierta por «' + location.protocol +
+     '», así que lo de abajo NO dice si el doble clic funciona');
+
+function veredicto() {
+  if (pendientes > 0) return;
+  var v = document.getElementById('veredicto');
+  if (!esFichero) {
+    v.className = '';
+    v.textContent = 'ABRE ESTA PÁGINA CON DOBLE CLIC. Ahora mismo está abierta por ' +
+      location.protocol + ', y así no comprueba lo que tiene que comprobar. ' +
+      'Cierra la pestaña, busca el fichero comprobar-doble-clic.html en la carpeta ' +
+      'pruebas y haz doble clic sobre él.' +
+      (fallos ? '  (Además hay ' + fallos + ' problema(s) abajo.)' : '');
+    return;
+  }
+  if (fallos === 0) {
+    v.className = 'bien';
+    v.textContent = 'TODO BIEN — el juego funciona con doble clic en este navegador.';
+  } else {
+    v.className = 'mal';
+    v.textContent = 'HAY ' + fallos + ' PROBLEMA(S) — mira abajo cuál y lee la nota del final.';
+  }
+}
+
+/* ── 2. Guardado del progreso ─────────────────────────────────────────── */
+titulo('Guardar el progreso');
+var puedeGuardar = false;
+try {
+  localStorage.setItem('cubomatica.__prueba', '1');
+  puedeGuardar = localStorage.getItem('cubomatica.__prueba') === '1';
+  localStorage.removeItem('cubomatica.__prueba');
+} catch (e) { puedeGuardar = false; }
+fila('El navegador deja guardar el progreso', puedeGuardar,
+     puedeGuardar ? '' : 'sin esto el juego se puede jugar, pero no recuerda nada');
+
+/* ── 3. El dibujo ─────────────────────────────────────────────────────── */
+titulo('El dibujo (texturas y sprites)');
+var pintaBien = false;
+try {
+  var cv = document.createElement('canvas');
+  cv.width = 4; cv.height = 4;
+  var cx = cv.getContext('2d');
+  cx.fillStyle = '#5AA02C';
+  cx.fillRect(0, 0, 4, 4);
+  pintaBien = cv.toDataURL().indexOf('data:image/png') === 0;
+} catch (e) { pintaBien = false; }
+fila('Las texturas se pueden generar por código', pintaBien);
+
+/* ── 4. El sonido ─────────────────────────────────────────────────────── */
+titulo('Los efectos de sonido');
+var AC = (typeof AudioContext !== 'undefined') ? AudioContext
+       : (typeof webkitAudioContext !== 'undefined') ? webkitAudioContext : null;
+fila('El navegador puede sintetizar los efectos', !!AC);
+
+var vozOk = (typeof speechSynthesis !== 'undefined');
+fila('Hay lectura en voz alta', vozOk,
+     vozOk ? '' : 'el juego usará el resaltado palabra a palabra en su lugar');
+
+/* ── 5. LA MÚSICA: lo que de verdad venía a comprobarse ───────────────── */
+titulo('La música (9 pistas)');
+var filasPista = {};
+PISTAS.forEach(function (nombre) {
+  pendientes++;
+  filasPista[nombre] = fila(nombre + '.mp3', null, 'cargando…');
+  var a = document.createElement('audio');
+  a.preload = 'metadata';
+  var resuelto = false;
+  function acabar(ok, det) {
+    if (resuelto) return;
+    resuelto = true;
+    pendientes--;
+    var d = filasPista[nombre];
+    d.firstChild.className = 'marca ' + (ok ? 'ok' : 'mal');
+    d.firstChild.textContent = ok ? '✔' : '✘';
+    d.lastChild.textContent = nombre + '.mp3  —  ' + det;
+    if (!ok) fallos++;
+    veredicto();
+  }
+  a.addEventListener('loadedmetadata', function () {
+    acabar(true, Math.round(a.duration) + ' segundos, se lee bien');
+  });
+  a.addEventListener('error', function () {
+    acabar(false, 'NO se puede leer este fichero');
+  });
+  setTimeout(function () { acabar(false, 'no ha respondido en 15 segundos'); }, 15000);
+  a.src = '../audio/' + nombre + '.mp3';
+  a.load();
+});
+
+veredicto();
+</script>
+
+</body>
+</html>

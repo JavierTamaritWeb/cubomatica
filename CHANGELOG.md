@@ -10,6 +10,39 @@ La versión de referencia es `CB.VERSION` en `js/00-nucleo.js`. Este fichero y
 
 ---
 
+## [1.2.0] — 2026-07-25
+
+Tercera ronda: compatibilidad con Safari, Firefox e iPad.
+
+### Corregido
+
+- **En iPad la música no se podía silenciar.** En iOS, `HTMLMediaElement.volume`
+  es de solo lectura: asignarle un valor no hace nada. Como todo el reproductor
+  se apoyaba en esa propiedad, en un iPad —objetivo declarado del proyecto—
+  silenciar el juego no silenciaba la música, los tres niveles de volumen sonaban
+  igual, el fundido cruzado dejaba dos pistas a la vez a todo volumen y el
+  agachado durante la voz no funcionaba. Ahora se detecta el aparato y, cuando el
+  volumen está bloqueado, se usa parar y reanudar.
+
+### Añadido
+
+- **`pruebas/comprobar-doble-clic.html`**: se abre con doble clic y comprueba en
+  el sitio lo único que solo puede comprobarse ahí — que el navegador deja
+  guardar el progreso, que las texturas se generan y que las nueve pistas de
+  música se leen desde `file://`. Si se abre por `http`, lo dice en vez de dar un
+  veredicto falso.
+- **315 comprobaciones**, 0 fallos.
+
+### Revisado y correcto
+
+Ni una API por encima de la línea base declarada (Chrome/Edge 100+, Firefox 100+,
+Safari 15.4+): cero `?.`, cero `??`, cero campos privados, y en CSS ni `:has()`,
+ni `@container`, ni `color-mix`, ni unidades `dvh`. Ya estaban resueltos el
+prefijo `webkitAudioContext`, `-webkit-clip-path`, `touch-action: manipulation`,
+la regla de guarda `[hidden]` y el modo privado de Safari.
+
+---
+
 ## [1.1.0] — 2026-07-25
 
 Segunda ronda de auditoría: accesibilidad, pantallas pequeñas y datos.

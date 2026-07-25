@@ -1,5 +1,5 @@
 CUBOMATICA — Matematicas de 2.o de Primaria
-Version 1.1.0
+Version 1.2.0
 
 1. Haz doble clic en "index.html". Se abre en el navegador. No hay que instalar nada.
 2. No necesita internet. No pide datos. Todo se queda en este ordenador.
@@ -9,6 +9,9 @@ Version 1.1.0
 6. Si el reloj de 30 segundos agobia, en Ajustes pon el reloj en "Sin prisa"
    y desaparece del todo. No pasa nada por quedarse sin tiempo: no se pierde
    ninguna luz.
+
+Si algo no suena o no se guarda, abre con doble clic el fichero
+"pruebas/comprobar-doble-clic.html": dice en unos segundos que va mal.
 
 La carpeta ocupa unos 43 MB, casi todo musica. Cabe en cualquier memoria USB,
 pero no cabe en un correo.

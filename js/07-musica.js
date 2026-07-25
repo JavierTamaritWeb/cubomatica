@@ -183,11 +183,60 @@ CB.musica.factorBucle = function (el, p) {
   return f;
 };
 
+/* ── iOS NO DEJA FIJAR EL VOLUMEN ───────────────────────────────────────────
+   En iPhone y iPad, `HTMLMediaElement.volume` es de solo lectura: asignarle un
+   valor no hace nada y leerlo devuelve siempre 1. Está documentado por Apple y
+   el motivo es que el volumen lo manda el botón físico del aparato.
+
+   Todo este módulo se apoyaba en `el.volume`, así que en un iPad —que es
+   objetivo declarado del proyecto, el de 6.ª generación— pasaba esto:
+
+     · silenciar el juego NO silenciaba la música. Justo el fallo que el
+       comentario de CB.audio.silenciar() llama «el más visible posible».
+     · «Baja», «Media» y «Alta» sonaban exactamente igual: a tope.
+     · la normalización por pista no hacía nada, y el desnivel de 8 dB entre
+       pistas volvía entero.
+     · el fundido cruzado no fundía: durante 900 ms sonaban DOS pistas a la vez
+       a todo volumen.
+     · el agachado durante la voz tampoco funcionaba, de modo que un niño que
+       aún no lee con fluidez tenía que separar la voz de la música a tope.
+
+   Sin volumen, solo hay dos estados: sonando o parado. Es peor que un fundido,
+   pero es infinitamente mejor que lo anterior, y el «No» del ajuste vuelve a
+   silenciar de verdad. Se detecta una vez, escribiendo y releyendo.
+   ────────────────────────────────────────────────────────────────────────── */
+CB.musica.volumenAjustable = null;          // null = todavía no se sabe
+
+CB.musica.detectarVolumen = function (el) {
+  if (CB.musica.volumenAjustable !== null || !el) return CB.musica.volumenAjustable;
+  try {
+    el.volume = 0.123;
+    CB.musica.volumenAjustable = Math.abs(el.volume - 0.123) < 0.01;
+  } catch (e) {
+    CB.musica.volumenAjustable = false;
+  }
+  return CB.musica.volumenAjustable;
+};
+
 CB.musica.aplicarVolumenes = function () {
-  var i, c;
+  var i, c, debe;
   for (i = 0; i < 2; i++) {
     c = CB.musica.canales[i];
-    if (c.el) { try { c.el.volume = CB.musica.volumenDe(c); } catch (e) { } }
+    if (!c.el) continue;
+
+    if (CB.musica.volumenAjustable !== false) {
+      try { c.el.volume = CB.musica.volumenDe(c); } catch (e) { }
+      continue;
+    }
+
+    /* Aparato sin volumen ajustable. El fundido y el bucle se ignoran a
+       propósito: si se tuvieran en cuenta, la música se pararía y arrancaría en
+       cada vuelta del bucle, que suena mucho peor que una costura. */
+    debe = c.objetivo > 0 && CB.musica.volumenBase() > 0 && !CB.musica.agachada;
+    try {
+      if (!debe) { if (!c.el.paused) c.el.pause(); }
+      else if (c.el.paused && !document.hidden) { CB.musica.reproducir(c); }
+    } catch (e) { }
   }
 };
 
@@ -259,6 +308,7 @@ CB.musica.crearElemento = function (clave) {
   el.src = CB.musica.RAIZ + p.fichero;
   el.preload = 'auto';
   el.loop = false;                       // el bucle lo lleva CB.musica.tick
+  CB.musica.detectarVolumen(el);         // una sola vez en toda la sesión
   el.volume = 0;
   /* Un fichero que no se puede leer no puede dejar el juego sin música para
      siempre: se anota y se sigue. */

@@ -571,3 +571,49 @@ E1: una maqueta que se aleja del original deja de servir para comprobar nada.
   estructura —nombres accesibles, encabezados, región viva, orden de foco—, que
   es condición necesaria y no suficiente.
 - **Toque real en una tableta.** Todos los toques han sido sintéticos.
+
+### Tercera ronda (1.2.0) — compatibilidad
+
+**E10 — En iPad la música no se podía silenciar.** En iOS,
+`HTMLMediaElement.volume` es de SOLO LECTURA: asignarle un valor no hace nada y
+leerlo devuelve siempre 1. Está documentado por Apple —el volumen lo manda el
+botón físico— y todo `07-musica.js` se apoyaba en esa propiedad. En el iPad de
+6.ª generación, que es objetivo declarado del proyecto:
+
+- silenciar el juego **no silenciaba la música**, que es exactamente lo que el
+  comentario de `CB.audio.silenciar()` llama «el fallo más visible posible»;
+- «Baja», «Media» y «Alta» sonaban igual, a tope;
+- la normalización por pista no hacía nada y volvían los 8 dB de desnivel;
+- el fundido cruzado no fundía: 900 ms con **dos pistas a la vez** a todo volumen;
+- el agachado durante la voz tampoco funcionaba, justo en el aparato donde más
+  falta hace.
+
+Se detecta una vez, escribiendo `0.123` y releyendo. Cuando el volumen está
+bloqueado solo hay dos estados —sonando o parado— y se usa `pause()`. Es peor
+que un fundido y mucho mejor que lo anterior. El fundido del bucle se ignora a
+propósito en ese modo: parar y arrancar en cada vuelta sonaría peor que la
+costura que el fundido venía a tapar.
+
+**Nueva herramienta: `pruebas/comprobar-doble-clic.html`.** La laguna que yo no
+podía cerrar es `file://`, el modo principal de uso. Esta página se abre con
+doble clic y comprueba en el sitio lo que solo ahí se puede comprobar: que el
+navegador deja guardar el progreso, que las texturas se generan y que **las
+nueve pistas de música se leen**. Si se abre por `http` lo dice y no da un
+veredicto falso.
+
+#### Compatibilidad revisada contra la línea base declarada
+
+Chrome/Edge 100+, Firefox 100+, Safari 15.4+. No hay ni una API por encima:
+cero `?.`, cero `??`, cero campos privados, cero `structuredClone`, `.at()`,
+`replaceAll`, `Object.fromEntries` ni `Intl`. En CSS, ni `:has()`, ni
+`@container`, ni `color-mix`, ni unidades `dvh`. Lo más nuevo que se usa es
+`:focus-visible`, que entra justo en Safari 15.4, y lleva su respaldo con
+`:not(:focus-visible)`.
+
+También estaban ya bien resueltos: el prefijo `webkitAudioContext`, el
+`-webkit-clip-path` de los bulbos del reloj de arena, `touch-action:
+manipulation` para quitar el retardo de 300 ms del táctil, la regla de guarda
+`[hidden] { display: none !important; }` —sin ella, cualquier `display` de una
+clase anula el atributo `hidden` y las pantallas dejan de ocultarse— y el modo
+privado de Safari, donde `localStorage` lanza al escribir y `ls()` devuelve
+`null` para que entre el respaldo en memoria.

@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 1.1.0**
+**Versión 1.2.0**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.
@@ -115,7 +115,7 @@ css/                9 hojas de estilo (00-08)
 js/                 37 scripts: plataforma, generadores, motor, interfaz
 datos/              7 ficheros de contenido, incluido el currículo literal del RD
 audio/              9 pistas de música + CREDITOS.txt
-pruebas/            Suite propia. Abre pruebas/pruebas.html
+pruebas/            Suite propia (pruebas.html) y la comprobación del doble clic
 docs/               Documentación interna. NO se distribuye con el juego.
 servir.command      Plan B para macOS si el navegador restringe file://
 servir.bat          Plan B para Windows
@@ -130,6 +130,12 @@ entero. Cabe de sobra en cualquier memoria USB, pero **no cabe en un correo**: p
 repartirlo en un centro, usa un USB o una carpeta compartida.
 
 ## Pruebas
+
+**¿Funciona con doble clic en tu ordenador?** Abre
+**`pruebas/comprobar-doble-clic.html`** haciendo doble clic sobre el fichero. Comprueba
+en unos segundos que se puede guardar el progreso, que las texturas se generan y que
+las nueve pistas de música se leen. Es la única comprobación que hay que hacer así:
+todas las demás valen igual desde un servidor.
 
 Abre **`pruebas/pruebas.html`** con doble clic para la suite rápida. Los tests que
 necesitan leer ficheros del disco requieren servidor local: ejecuta `servir.command`

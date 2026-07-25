@@ -196,6 +196,75 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   CB.audio.silenciado = silPrevio;
   CB.musica.base = basePrevia;
 
+  /* ── Aparatos que NO dejan fijar el volumen (iPhone y iPad) ─────────────
+     En iOS, HTMLMediaElement.volume es de solo lectura. Todo el módulo se
+     apoyaba en él, así que en un iPad —objetivo declarado— silenciar el juego
+     NO silenciaba la música. Sin volumen solo hay dos estados, y hay que
+     comprobar que se llega a los dos. */
+  var ajustePrevio = CB.musica.volumenAjustable;
+  var basePrev2 = CB.musica.base;
+  var agachPrev = CB.musica.agachada;
+  var canalesPrev = CB.musica.canales;
+
+  function elementoDeIOS() {
+    var e = { paused: true, _v: 1, pausas: 0, arranques: 0 };
+    Object.defineProperty(e, 'volume', {
+      get: function () { return 1; },              // iOS: siempre 1
+      set: function () { }                          // iOS: no hace nada
+    });
+    e.pause = function () { e.paused = true; e.pausas++; };
+    e.play = function () { e.paused = false; e.arranques++; return { then: function () { } }; };
+    return e;
+  }
+
+  var elIOS = elementoDeIOS();
+  CB.musica.volumenAjustable = null;
+  t.ok(CB.musica.detectarVolumen(elIOS) === false,
+    'se detecta un aparato que ignora el volumen escribiendo y releyendo');
+
+  var elNormal = { volume: 0, paused: false, pause: function () { }, play: function () { } };
+  CB.musica.volumenAjustable = null;
+  t.ok(CB.musica.detectarVolumen(elNormal) === true,
+    'y un aparato normal se detecta como ajustable');
+
+  /* Con volumen bloqueado: silenciar tiene que PARAR, no bajar a cero */
+  CB.musica.volumenAjustable = false;
+  CB.musica.base = 0.4;
+  CB.musica.agachada = false;
+  var cIOS = { el: elementoDeIOS(), clave: 'temaPrincipal', f: 1, objetivo: 1 };
+  cIOS.el.paused = false;
+  CB.musica.canales = [cIOS, { el: null, clave: null, f: 0, objetivo: 0 }];
+
+  CB.audio.silenciado = true;
+  CB.musica.aplicarVolumenes();
+  t.ok(cIOS.el.paused === true,
+    'sin volumen ajustable, silenciar el aparato PARA la música en vez de bajarla a cero');
+
+  CB.audio.silenciado = false;
+  CB.musica.aplicarVolumenes();
+  t.ok(cIOS.el.paused === false, 'y al quitar el silencio vuelve a sonar');
+
+  CB.musica.agachada = true;
+  CB.musica.aplicarVolumenes();
+  t.ok(cIOS.el.paused === true,
+    'el agachado de la voz también para la música: sin volumen no hay medias tintas');
+  CB.musica.agachada = false;
+  CB.musica.aplicarVolumenes();
+  t.ok(cIOS.el.paused === false, 'y al callar la voz la música vuelve por donde iba');
+
+  /* El bucle NO debe parar y arrancar: eso sonaría mucho peor que la costura */
+  var arranquesAntes = cIOS.el.arranques, pausasAntes = cIOS.el.pausas;
+  cIOS.f = 0;                                    // como en el punto de bucle
+  CB.musica.aplicarVolumenes();
+  t.ok(cIOS.el.pausas === pausasAntes && cIOS.el.arranques === arranquesAntes,
+    'el fundido del bucle NO para la música en un aparato sin volumen');
+
+  CB.musica.canales = canalesPrev;
+  CB.musica.volumenAjustable = ajustePrevio;
+  CB.musica.base = basePrev2;
+  CB.musica.agachada = agachPrev;
+  CB.audio.silenciado = silPrevio;
+
   /* ── El agachado de la voz ──────────────────────────────────────────── */
   t.ok(CB.musica.AGACHADO > 0 && CB.musica.AGACHADO < 0.5,
     'la música se agacha por debajo de la mitad mientras habla la voz, pero no calla del todo');

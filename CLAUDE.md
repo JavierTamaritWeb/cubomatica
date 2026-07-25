@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Cubomática 1.1.0** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
+**Cubomática 1.2.0** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
 
 ## No build step, no dependencies, no network
 
