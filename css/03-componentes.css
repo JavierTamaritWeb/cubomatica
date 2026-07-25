@@ -521,3 +521,23 @@
 
 /* ── Región viva para lectores de pantalla ──────────────────────────────── */
 #region-viva { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Visible para un lector de pantalla, invisible para todo lo demás.
+
+   La pantalla de partida y la de calibración no tenían encabezado ninguno. Eso
+   rompía dos cosas a la vez: CB.pantallas.ir() busca el <h1> para llevarle el
+   foco al entrar, y al no encontrarlo dejaba el foco en <body>; y quien navega
+   por encabezados con un lector de pantalla no tenía forma de saber que había
+   cambiado de sitio. Poner un título VISIBLE encima del enunciado habría
+   robado espacio a lo único que importa en esa pantalla, así que va aquí.
+
+   No se usa display:none ni visibility:hidden: las dos lo esconden también del
+   lector, que es exactamente lo contrario de lo que se busca. */
+.solo-lectores {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -131,7 +131,7 @@ CB.mapaDestrezas.pintarMundos = function () {
     cinta.setAttribute('data-bioma', m.bioma);
     tarjeta.appendChild(cinta);
 
-    tarjeta.appendChild(CB.ui.crear('h3', null, m.nombre));
+    tarjeta.appendChild(CB.ui.crear('h2', null, m.nombre));   /* h2, no h3: el h1 es el de la pantalla y saltarse un nivel rompe la navegacion por encabezados */
 
     /* M4 lleva el distintivo INICIACIÓN con nota tocable que explica en lenguaje
        llano por qué la multiplicación es iniciación (§6.5). */

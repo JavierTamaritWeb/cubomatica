@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Cubomática 1.0.1** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
+**Cubomática 1.1.0** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
 
 ## No build step, no dependencies, no network
 
@@ -29,7 +29,7 @@ Tests run **in a browser** (they need DOM, canvas, `getComputedStyle` and font m
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **382 checks, 0 failures**.
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **308 checks, 0 failures** (deterministic — the same three runs give the same count).
 
 `pruebas/pruebas.html` loads the same 44 scripts with a `../` prefix plus mock `<section>`s. When you add a script to `index.html` you must add it here too, and when you add a DOM node that a module caches at runtime, add it to the mocks.
 

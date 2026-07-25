@@ -249,12 +249,11 @@ CB.bus = new CB.util.EventoSimple();
    versión repetido a mano en cuatro sitios está mal en tres de ellos en cuanto
    alguien se despista una vez.
 
-   Versionado semántico: 1.0.0 es la primera versión completa y jugable. La
-   segunda cifra sube cuando entra contenido nuevo (niveles, mundos, pistas);
-   la tercera, cuando solo se corrigen cosas. La primera sube el día que cambie
+   Versionado semántico: la segunda cifra sube cuando entra algo nuevo —contenido
+   o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.0.1';
+CB.VERSION = '1.1.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +

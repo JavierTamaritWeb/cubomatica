@@ -520,3 +520,54 @@ nombre ya está cogido.
   cambia a «Sin prisa».
 - **Ningún error** en las 17 pantallas ni en el panel del adulto entero, con sus
   17 interruptores, el CSV y el informe imprimible.
+
+### Segunda ronda (1.1.0) — accesibilidad, pantalla pequeña y datos
+
+**E6 — Se podía exportar el progreso pero no volver a meterlo.**
+`CB.almacen.validarImportado()` estaba escrito, con lista blanca de campos,
+mote de lista cerrada, color validado contra patrón y recorte de arrays, y
+tenía pruebas. No lo llamaba ningún botón. Mientras tanto, el README y el
+propio `CB.LEGAL.LIMITACION` dicen que la copia con «Exportar» es el remedio a
+que el progreso viva solo en un navegador. Ese remedio no funcionaba.
+Añadido «Restaurar copia (.json)» en la sección Datos del panel del adulto.
+
+**E7 — Tres pantallas sin encabezado.** Partida, calibración e informe. Rompía
+dos cosas a la vez: `CB.pantallas.ir()` busca el `<h1>` para llevarle el foco
+al entrar y lo dejaba en `<body>`, y la navegación por encabezados de un lector
+de pantalla no tenía dónde agarrarse. Se resuelven con un `<h1>` de clase
+`.solo-lectores`: visible para el lector, sin ocupar espacio donde el espacio
+es lo único que hay.
+
+**E8 — El mapa saltaba de h1 a h3** en las tarjetas de mundo.
+
+**E9 — La maqueta de pruebas no tenía encabezados**, así que comprobaba una
+estructura que no se parecía a la del juego. Es el mismo problema de fondo que
+E1: una maqueta que se aleja del original deja de servir para comprobar nada.
+
+#### Lo que se comprobó y estaba bien
+
+- Cero controles sin nombre accesible en las 17 pantallas.
+- Partida completa **solo con teclado**, incluida la rejilla del teclado
+  numérico con flechas y el avance hasta la micropausa.
+- A 760 × 463 no se sale ningún botón y todos miden 64 × 64 (por encima del
+  mínimo de la WCAG, por debajo de los 96 × 96 que aspira el plan: en pantallas
+  pequeñas el objetivo propio no se alcanza, y conviene saberlo).
+- Por debajo de 420 px de alto salta el aviso de girar el dispositivo, que tapa
+  la pantalla y evita que se juegue en un espacio donde no cabe el teclado.
+- Ida y vuelta de exportar/restaurar **idéntica** tras un `localStorage.clear()`.
+- Importación hostil neutralizada: HTML en el mote, inyección CSS en el color,
+  `../../etc/passwd` en el id y un array de 50.000 entradas recortado a 800.
+- La suite es **determinista**: 308 comprobaciones en tres ejecuciones seguidas,
+  con el mismo reparto por bloque.
+
+#### Lo que sigue SIN comprobar, y hay que decirlo
+
+- **`file://`**. Es el modo principal de uso —el del doble clic— y la
+  herramienta de navegador de esta sesión se niega a abrir URLs `file://`. Todo
+  se ha probado por `http://localhost`. La música se carga con elementos
+  `<audio>` y rutas relativas, que es justo lo que podría comportarse distinto.
+- **Firefox y Safari.** Todo se ha probado solo en Chrome.
+- **Un lector de pantalla de verdad** (VoiceOver, NVDA). Se ha comprobado la
+  estructura —nombres accesibles, encabezados, región viva, orden de foco—, que
+  es condición necesaria y no suficiente.
+- **Toque real en una tableta.** Todos los toques han sido sintéticos.

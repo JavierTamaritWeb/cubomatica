@@ -335,7 +335,25 @@ CB.adulto.pintar = function () {
     CB.adulto.descargar(CB.almacen.exportar(perfil),
       'cubomatica-' + perfil.mote.replace(/\s+/g, '-') + '.json', 'application/json');
   }));
+
+  /* RESTAURAR. Faltaba, y su ausencia dejaba sin efecto la única respuesta que
+     el proyecto da a su propia limitación estructural: el README dice «haz una
+     copia con Exportar al terminar cada trimestre», y esa copia no se podía
+     volver a meter. Exportar sin importar es un botón que promete algo que no
+     cumple. CB.almacen.validarImportado() ya existía, estaba probado y no lo
+     llamaba nadie.
+
+     El fichero lo elige la persona adulta en su propio disco: no hay red, no
+     hay servidor y no se lee nada que no se haya señalado a mano. */
+  fila.appendChild(CB.ui.boton('Restaurar copia (.json)', 'btn-adulto', function () {
+    CB.adulto.restaurar(caja7);
+  }));
   caja7.appendChild(fila);
+
+  var aviso = CB.ui.crear('p', 'texto-menor');
+  aviso.id = 'adulto-aviso-datos';
+  aviso.setAttribute('role', 'status');
+  caja7.appendChild(aviso);
 
   var borrar = CB.ui.boton('Borrar este perfil', 'btn-adulto btn-adulto--peligro', function () {
     CB.adulto.confirmarBorrado(perfil, caja7);
@@ -595,6 +613,70 @@ CB.adulto.descargar = function (texto, nombre, tipo) {
 };
 
 /* Borrar exige escribir la palabra BORRAR (§15.8). */
+/* Restaurar un perfil desde un .json exportado.
+
+   Todo lo que entra pasa por CB.almacen.validarImportado(), que es la ÚNICA
+   superficie de ataque del proyecto: recorta a los campos permitidos, obliga a
+   que el mote salga de la lista cerrada de 120, valida el color contra un
+   patrón y acota el tamaño de los arrays. Aquí no se salta ni un paso. */
+CB.adulto.restaurar = function (cont) {
+  var aviso = document.getElementById('adulto-aviso-datos');
+  function decir(t) {
+    if (aviso) aviso.textContent = t;
+    CB.a11y.anunciar(t);
+  }
+
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.style.display = 'none';
+
+  input.addEventListener('change', function () {
+    var f = input.files && input.files[0];
+    if (!f) return;
+    if (f.size > 2 * 1024 * 1024) {
+      decir('Ese fichero es demasiado grande para ser una copia de Cubomática.');
+      return;
+    }
+    var lector = new FileReader();
+    lector.onerror = function () { decir('No se ha podido leer el fichero.'); };
+    lector.onload = function () {
+      var crudo;
+      try {
+        crudo = JSON.parse(String(lector.result));
+      } catch (e) {
+        decir('Ese fichero no es una copia de Cubomática: no se entiende su contenido.');
+        return;
+      }
+      var v = CB.almacen.validarImportado(crudo, CB.datos.MOTES);
+      if (!v.ok) {
+        decir(v.motivo === 'version'
+          ? 'Esa copia viene de una versión más nueva del juego. Actualiza Cubomática antes de restaurarla.'
+          : 'Ese fichero no tiene la forma de una copia de Cubomática.');
+        return;
+      }
+
+      var p = v.perfil;
+      var idx = CB.almacen.indice();
+      var existe = idx.some(function (e) { return e.id === p.id; });
+      /* Si ya hay un perfil con ese id, se restaura ENCIMA: es lo que espera
+         quien recupera su propia copia. Si es nuevo, se añade al índice. */
+      CB.almacen.guardarPerfil(p);
+      if (!existe) {
+        idx.push({ id: p.id, mote: p.mote, avatar: p.avatar });
+        CB.almacen.guardarIndice(idx);
+      }
+      CB.almacen.fijarUltimoPerfil(p.id);
+      decir('Copia restaurada: ' + p.mote + (existe ? ' (se ha sustituido el perfil que había)' : '') + '.');
+      CB.perfiles.activar(p.id);
+    };
+    lector.readAsText(f);
+  });
+
+  if (cont) cont.appendChild(input);
+  input.click();
+};
+
 CB.adulto.confirmarBorrado = function (perfil, cont) {
   var caja = CB.ui.crear('div', 'adulto-aviso');
   caja.appendChild(CB.ui.crear('p', null,

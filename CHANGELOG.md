@@ -10,6 +10,45 @@ La versión de referencia es `CB.VERSION` en `js/00-nucleo.js`. Este fichero y
 
 ---
 
+## [1.1.0] — 2026-07-25
+
+Segunda ronda de auditoría: accesibilidad, pantallas pequeñas y datos.
+
+### Añadido
+
+- **Restaurar copia (.json)** en el panel del adulto. `validarImportado()`
+  existía, estaba probado y **no lo llamaba nadie**: se podía sacar una copia
+  del progreso y no se podía volver a meter, que es justo lo que el README
+  recomienda hacer cada trimestre. Exportar sin importar es un botón que promete
+  algo que no cumple.
+- Encabezado en **partida, calibración e informe**, que no tenían ninguno. Sin
+  `<h1>`, `CB.pantallas.ir()` no encontraba dónde llevar el foco y lo dejaba en
+  `<body>`, y quien navega por encabezados con un lector de pantalla no sabía
+  que había cambiado de sitio. Van con una clase que los muestra al lector y no
+  ocupa espacio en pantalla.
+
+### Corregido
+
+- Las tarjetas de mundo del mapa saltaban de `<h1>` a `<h3>`, rompiendo la
+  navegación por encabezados.
+- La maqueta de `pruebas/pruebas.html` no tenía encabezados: comprobaba una
+  estructura que no se parecía a la del juego.
+
+### Verificado y correcto
+
+- **Cero controles sin nombre accesible** en las 17 pantallas.
+- **Partida completa solo con teclado**: flechas por la rejilla, dígitos, OK y
+  avance hasta la micropausa, sin tocar el ratón.
+- **Viewport pequeño**: a 760 × 463 no se sale ningún botón y todos miden
+  64 × 64. Por debajo de 420 px de alto salta el aviso de girar el dispositivo.
+- **Ida y vuelta de exportar/restaurar idéntica** tras borrar el navegador
+  entero.
+- **Importación hostil neutralizada**: HTML en el mote, inyección CSS en el
+  color, `../../etc/passwd` en el identificador y un array de 50.000 entradas.
+- **308 comprobaciones, 0 fallos, deterministas.**
+
+---
+
 ## [1.0.1] — 2026-07-25
 
 Auditoría de errores. Cinco defectos, todos convivían con la suite en verde.

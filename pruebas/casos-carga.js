@@ -89,6 +89,35 @@ CB.pruebas.suite('Carga: contrato de 44 scripts y 17 pantallas', function () {
 
   if (pantallaPrevia) { try { CB.pantallas.ir(pantallaPrevia); } catch (e4) { } }
 
+  /* ── Cada pantalla tiene UN encabezado y la jerarquía no salta niveles ──
+     CB.pantallas.ir() busca el <h1> para llevarle el foco al entrar. Partida,
+     calibración e informe no tenían ninguno: el foco se quedaba en <body> y
+     quien navega por encabezados con un lector de pantalla no se enteraba de
+     haber cambiado de sitio. Los tres llevan ahora un h1 .solo-lectores. */
+  var malEncabezado = [];
+  CB.pantallas.IDS.forEach(function (id) {
+    var sec = document.getElementById(id);
+    if (!sec) return;
+    var h1 = sec.querySelectorAll('h1');
+    if (h1.length !== 1) malEncabezado.push(id + ': ' + h1.length + ' h1');
+  });
+  t.ok(malEncabezado.length === 0,
+    'las 17 pantallas declaran exactamente un <h1> en su maqueta',
+    malEncabezado.join(', '));
+
+  /* ── Exportar SIN importar es un botón que promete y no cumple ──────────
+     CB.almacen.validarImportado() existía, estaba probado y no lo llamaba
+     nadie: se podía sacar una copia del progreso y no se podía volver a meter,
+     que es justo lo que el README recomienda hacer cada trimestre. */
+  t.ok(typeof CB.adulto.restaurar === 'function',
+    'existe la restauración de una copia, no solo la exportación');
+
+  var ida = CB.almacen.exportar(CB.pruebas.perfilNuevo());
+  var vuelta = CB.almacen.validarImportado(JSON.parse(ida), CB.datos.MOTES);
+  t.ok(vuelta.ok && vuelta.perfil && vuelta.perfil.id,
+    'lo que exporta el juego lo acepta su propio validador de importación',
+    vuelta.ok ? '' : vuelta.motivo);
+
   /* ── Los globales del proyecto son EXACTAMENTE estos ────────────────────
      Sin módulos ni empaquetador, toda `function nombre()` en el ámbito de
      fichero acaba en window. Hoy son doce, con nombres tan genéricos como
