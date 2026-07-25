@@ -254,7 +254,7 @@ CB.bus = new CB.util.EventoSimple();
    la tercera, cuando solo se corrigen cosas. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.0.0';
+CB.VERSION = '1.0.1';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +

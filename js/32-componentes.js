@@ -61,8 +61,24 @@ CB.componentes.montar = function (contenedor, bloqueoMs, alDesbloquear) {
   }, ms);
 };
 
-/* Toque prematuro: «toc» de madera y desplazamiento de 2 px. */
+/* Toque prematuro: «toc» de madera y desplazamiento de 2 px.
+
+   SE REGISTRA UNA SOLA VEZ POR CONTENEDOR. Esto no es una precaución teórica:
+   `contenedor()` devuelve #item-respuesta, que es un nodo PERMANENTE del
+   index.html —se vacía y se rellena en cada ítem, pero no se sustituye—, y
+   conectarToc() se llama desde los siete componentes de respuesta, es decir una
+   vez por ítem. Sin este cerrojo, en el ítem 12 había once oyentes sobre el
+   mismo elemento y un solo toque prematuro reproducía el «toc» ONCE VECES
+   simultáneas: un chasquido cada vez más fuerte que además empeoraba cuanto más
+   jugaba el niño. Medido en navegador, no deducido.
+
+   Se marca con un atributo y no con una propiedad JS porque el atributo se ve
+   en el inspector, y el día que alguien dude de si esto sigue vivo lo comprueba
+   mirando, sin leer este comentario. */
 CB.componentes.conectarToc = function (contenedor) {
+  if (!contenedor || contenedor.getAttribute('data-toc') === 'si') return;
+  contenedor.setAttribute('data-toc', 'si');
+
   contenedor.addEventListener('pointerdown', function (ev) {
     if (!CB.partida || !CB.partida.bloqueado) return;
     var b = ev.target;

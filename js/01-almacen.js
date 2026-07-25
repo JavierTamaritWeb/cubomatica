@@ -315,8 +315,39 @@ CB.almacen.recortarFechasFuturas = function (perfil) {
 };
 
 /* ── Leer y guardar perfil ──────────────────────────────────────────────── */
+/* ¿Hay algo escrito en esa clave, aunque no se pueda leer? Distinguir «no hay
+   perfil» de «hay un perfil y está roto» es lo único que separa un mensaje útil
+   de un botón que no hace nada. */
+CB.almacen.existeCrudo = function (clave) {
+  var s = ls();
+  if (s) {
+    try { if (s.getItem(clave) != null) return true; } catch (e) { }
+  }
+  return CB.almacen.memoria[clave] != null;
+};
+
 CB.almacen.leerPerfil = function (id) {
-  var p = CB.almacen.leerCrudo(CB.almacen.claveDePerfil(id));
+  var clave = CB.almacen.claveDePerfil(id);
+  var p = CB.almacen.leerCrudo(clave);
+
+  /* PERFIL ILEGIBLE. leerCrudo() se traga el fallo de JSON.parse y devuelve
+     null, igual que cuando el perfil no existe. Para el índice o los ajustes
+     eso está bien: se cae a los valores por defecto y no pasa nada. Para un
+     perfil es lo contrario de lo que hay que hacer, porque quien lo llama
+     —CB.perfiles.activar()— hace «if (!p) return;» y se va sin decir nada.
+
+     El resultado era que pulsar JUGAR sobre un perfil dañado no hacía NADA:
+     ni mensaje, ni error, ni pantalla nueva. Un niño toca el botón, no pasa
+     nada, lo toca otra vez, sigue sin pasar nada. Y el adulto no tiene forma
+     de enterarse de que hay progreso guardado que ya no se puede leer.
+
+     Con el centinela de error, activar() sí tiene algo que contar. */
+  if (!p && CB.almacen.existeCrudo(clave)) {
+    return { error: 'perfil-ilegible',
+             mensaje: 'Los datos de este minero están dañados y no se pueden ' +
+                      'leer. Puedes crear un minero nuevo; el progreso anterior ' +
+                      'no se puede recuperar.' };
+  }
   if (!p) return null;
   /* Perfil más nuevo que el juego: mejor no cargar que corromper. */
   if (p.version > CB.almacen.VERSION_ESQUEMA) {

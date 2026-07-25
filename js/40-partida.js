@@ -416,6 +416,16 @@ CB.partida.tiempoAgotado = function () {
     CB.ui.mensaje('Vamos con más calma.', 'animo');
     CB.a11y.anunciar('Vamos con más calma.');
   }
+  /* INALCANZABLE EN LA PRÁCTICA, y está bien que lo sea. A los 3 tiempos
+     agotados seguidos, r.cambiaModo pone la partida en «Sin prisa», y ese modo
+     apaga el cronómetro del todo: a partir de ahí no puede volver a agotarse el
+     tiempo, así que timeoutsPartida se queda clavado en 3 y nunca llega a los 6
+     que pide TIMEOUTS_FIN.
+
+     No se quita porque CB.vidas.timeout() es una función pura y su contrato es
+     suyo; pero conviene saber que la protección REAL contra un niño que se
+     queda sin tiempo una y otra vez es el cambio de modo de arriba, no esto.
+     Quitarle el reloj es mejor intervención que terminarle la sesión. */
   if (r.finAmable) { CB.partida.finalizar('pausa'); return; }
 
   CB.ui.mensaje(CB.mensajes.animo({

@@ -415,3 +415,108 @@ así que un comentario que decía «cero `border-radius`» suspendía la auditor
 Ahora se despiezan los comentarios de CSS antes de grepear, y hay una prueba
 negativa que confirma que las tres reglas de estilo siguen cazando infracciones
 de verdad.
+
+---
+
+## Auditoría de errores (1.0.0)
+
+Cinco defectos encontrados y corregidos, más un riesgo latente acotado. Todos
+salieron de ejecutar el juego, no de leerlo: los cinco convivían con 295
+comprobaciones en verde y la auditoría de entrega en verde.
+
+### E1 — La llave del panel del adulto mandaba a la pantalla de error
+
+**El más grave.** `CB.pantallas.alEntrar['p-adulto']` llamaba a
+`CB.adulto.abrir()`, y `abrir()` empezaba llamando a `CB.pantallas.ir('p-adulto')`.
+Es decir: `ir()` invocaba al handler y el handler volvía a invocar a `ir()`.
+Recursión infinita, desbordamiento de pila, y el `catch` de `ir()` lo convertía
+en «algo ha ido mal».
+
+Consecuencia real: **el panel del adulto nunca fue accesible.** Con él quedaban
+fuera de alcance los ajustes, el informe imprimible, la exportación del progreso
+y los interruptores de las tablas del 6 al 9, los céntimos y la doble llevada.
+
+Arreglado en dos capas: `abrir()` ya no navega —los otros siete handlers solo
+pintan, que es el contrato—, y `ir()` lleva un cerrojo de reentrada para que
+esta clase de fallo no pueda volver a ocurrir en silencio en otra pantalla.
+
+**Por qué no lo cazó nadie:** no había una sola prueba que ENTRARA en una
+pantalla. `casos-carga.js` comprobaba que las 17 `<section>` existieran, que es
+comprobar la maqueta. Ahora entra en las 16 navegables y exige que ninguna falle.
+
+### E2 — El «toc» del toque prematuro se multiplicaba por ítem
+
+`CB.componentes.conectarToc()` registra un oyente sobre `#item-respuesta`, que es
+un nodo **permanente** del `index.html`, y se llama desde los siete componentes
+de respuesta, es decir **una vez por ítem**. En el ítem 12 había once oyentes, y
+un solo toque prematuro reproducía el efecto «toc» **once veces simultáneas**.
+
+Medido en navegador, no deducido: `11 oyentes → 11 reproducciones por toque`.
+Cuanto más jugaba el niño, más fuerte el chasquido. Arreglado con un cerrojo por
+contenedor, marcado con un atributo visible en el inspector.
+
+### E3 — Un perfil dañado hacía que el botón JUGAR no hiciera nada
+
+`CB.almacen.leerCrudo()` se traga el fallo de `JSON.parse` y devuelve `null`,
+exactamente igual que cuando el perfil **no existe**. Y `CB.perfiles.activar()`
+hace `if (!p) return;`.
+
+Resultado: con un perfil corrupto, pulsar JUGAR sobre su tarjeta **no hacía
+absolutamente nada**. Ni mensaje, ni error, ni pantalla nueva. Un niño toca el
+botón, no pasa nada, lo vuelve a tocar, sigue sin pasar nada. Y el adulto no
+tenía forma de enterarse de que había progreso guardado ya ilegible.
+
+Arreglado distinguiendo las dos situaciones (`CB.almacen.existeCrudo`) y
+devolviendo el centinela `{error: 'perfil-ilegible'}` que `activar()` ya sabía
+tratar. El aviso sale **en la lista de perfiles**, no en la pantalla de error:
+allí hay algo que hacer —elegir otro minero o crear uno— y en la de error no.
+
+### E4 — El «fin amable» a los 6 tiempos agotados es inalcanzable
+
+`casos-motor.js` validaba en verde, bajo el rótulo `SALVAGUARDA`, que a los 6
+tiempos agotados el juego ofrece un fin amable. La función pura lo hace. **El
+juego no puede llegar ahí**: a los 3 tiempos seguidos, `cambiaModo` pone la
+partida en «Sin prisa», que apaga el cronómetro, y desde ese momento no puede
+volver a agotarse el tiempo. El contador se queda clavado en 3.
+
+No se cambia el comportamiento, porque el comportamiento es el bueno: quitarle
+el reloj a un niño que va agobiado es mejor intervención que terminarle la
+sesión. Lo que se corrige es la **mentira del test**, que hacía creer que hay dos
+protecciones cuando hay una. Un test en verde sobre una rama que el juego no
+puede ejecutar es justo el fraude que `casos-curriculo.js` dice no querer.
+
+### E5 — La auditoría de estilo grepeaba el CSS con los comentarios dentro
+
+Ya corregido durante la implementación del reloj, pero se anota aquí porque es
+del mismo tipo: un comentario que decía «cero `border-radius`» suspendía la
+auditoría. Hay ahora una prueba negativa que confirma que las tres reglas de
+estilo siguen cazando infracciones de verdad.
+
+### R1 — Riesgo latente: doce globales con nombres genéricos
+
+Sin módulos ni empaquetador, toda `function nombre()` en el ámbito de fichero
+acaba en `window`. Hoy hay doce: `ls`, `tramo`, `comparacion`, `serie`,
+`itemSuma`, `itemResta`, `itemMult`, `tabla`, `cuantos`, `itemVocab`, `digitos`
+y `desdeDigitos`. **No chocan por suerte, no por diseño.** El día que el script
+45 declare otra `function tabla()`, la segunda pisa a la primera en silencio y
+la multiplicación deja de funcionar sin un solo error en consola.
+
+No se refactoriza a IIFE recién publicada la 1.0.0: envolver ocho ficheros que
+empiezan con `var CB = CB || {};` es exactamente el cambio que rompe todo por un
+descuido. Se acota con una lista cerrada en `casos-carga.js`, de modo que añadir
+un global obliga a escribirlo allí, que es el momento exacto de mirar si el
+nombre ya está cogido.
+
+### Lo que se comprobó y estaba bien
+
+- **Cero fugas de temporizadores** en 3 partidas de 25 ítems (13 → 9 → 5 vivos,
+  nodos DOM estables en ~620).
+- **Cuota de disco llena**: guarda en memoria, marca `sinDisco`, la partida
+  continúa y el panel del adulto lo dice.
+- **Perfil con forma imposible** (`destrezas` como cadena, `historial` como
+  número): el saneador lo arregla sin lanzar.
+- **Los 4 jefes**, ganados y perdidos, incluido el tope de 20 turnos.
+- **Camino del tiempo agotado** completo: las luces no bajan y a los 3 seguidos
+  cambia a «Sin prisa».
+- **Ningún error** en las 17 pantallas ni en el panel del adulto entero, con sus
+  17 interruptores, el CSV y el informe imprimible.

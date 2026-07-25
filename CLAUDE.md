@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Cubomática 1.0.0** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
+**Cubomática 1.0.1** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
 
 ## No build step, no dependencies, no network
 
@@ -29,7 +29,7 @@ Tests run **in a browser** (they need DOM, canvas, `getComputedStyle` and font m
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **294 checks, 0 failures**.
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **382 checks, 0 failures**.
 
 `pruebas/pruebas.html` loads the same 44 scripts with a `../` prefix plus mock `<section>`s. When you add a script to `index.html` you must add it here too, and when you add a DOM node that a module caches at runtime, add it to the mocks.
 
@@ -41,6 +41,8 @@ Tests run **in a browser** (they need DOM, canvas, `getComputedStyle` and font m
 - no `Math.random` — all randomness goes through the injected seeded RNG (`CB.util.mulberry32`), so a game is reproducible from its seed
 - no `toISOString` anywhere in the project (it returns the previous day after 22:00 in Spain) — use `CB.util.hoyISO()`
 - storage key literals (`'cubomatica.'`) exist **only** in `js/01-almacen.js`
+
+Note the flip side: with no modules, every top-level `function name()` lands on `window`. There are twelve, with names as generic as `tabla` and `serie`; `casos-carga.js` pins the exact list so a colliding thirteenth fails a test instead of silently shadowing.
 
 `auditar.sh` greps for these after stripping comments (`pruebas/sin-comentarios.py` for JS, an inline `perl` for CSS). The comment stripping exists because a comment documenting a prohibition used to trip the grep for it — if you add a check, strip comments first.
 
@@ -55,6 +57,8 @@ Tests run **in a browser** (they need DOM, canvas, `getComputedStyle` and font m
 | `js/30`–`js/99` | UI, screens, game loop | DOM lives here |
 
 `js/99-arranque.js` holds the project's **only** `DOMContentLoaded`, and it returns early when `#btn-jugar` is absent — that is what stops the test page from booting a game.
+
+**`alEntrar` handlers paint; they must never navigate.** A handler that calls `CB.pantallas.ir()` on its own screen recurses until the stack blows, and `ir()`'s `catch` turns that into the generic error screen rather than a stack trace. This shipped in 1.0.0 and made the adult panel unreachable. `ir()` now carries a re-entrancy latch, and `casos-carga.js` enters all 16 navigable screens on every run.
 
 ## Contracts that tests enforce
 

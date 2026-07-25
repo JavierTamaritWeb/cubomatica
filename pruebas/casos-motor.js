@@ -29,7 +29,23 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   for (k = 0; k < 10; k++) r = CB.vidas.timeout(est);
   t.igual(est.luces, 3, 'REGLA 1 · diez tiempos agotados NO apagan ninguna luz');
   t.ok(r.finAmable && r.motivoFin === 'pausa',
-       'SALVAGUARDA · a los 6 tiempos agotados se ofrece fin amable con motivoFin «pausa»');
+       'la función pura ofrece fin amable a los 6 tiempos agotados');
+
+  /* PERO ESO NO PASA NUNCA EN UNA PARTIDA, y decirlo importa: este test estaba
+     escrito como «SALVAGUARDA», dando a entender que el juego tiene DOS
+     protecciones para un niño que se queda sin tiempo una y otra vez. Tiene
+     una. A los 3 tiempos seguidos, cambiaModo pone la partida en «Sin prisa»,
+     que apaga el cronómetro; desde ahí no puede volver a agotarse el tiempo y
+     el contador se queda clavado en 3, muy por debajo de los 6.
+
+     Un test en verde sobre una rama que el juego no puede ejecutar es
+     exactamente el fraude que casos-curriculo.js dice no querer. Se deja la
+     comprobación de la función pura, y se añade la de la verdad de integración. */
+  t.ok(CB.vidas.TIMEOUTS_CAMBIA_MODO < CB.vidas.TIMEOUTS_FIN,
+       'el cambio de modo llega ANTES que el fin amable, y por eso lo hace inalcanzable',
+       CB.vidas.TIMEOUTS_CAMBIA_MODO + ' < ' + CB.vidas.TIMEOUTS_FIN);
+  t.igual(CB.partida.msDeItem('sinPrisa'), 0,
+       'y «Sin prisa» apaga el reloj: por eso, tras el cambio de modo, ya no puede haber más tiempos agotados');
 
   var est2 = CB.vidas.nuevoEstado(0);
   var c3 = null;

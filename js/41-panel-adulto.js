@@ -24,8 +24,21 @@ CB.adulto.FRASES_PUERTA = [
   { frase: 'Una vagoneta cruza el túnel cargada', n: 2 }
 ];
 
+/* PINTA el panel; NO navega hasta él.
+
+   Esta función es el handler de CB.pantallas.alEntrar['p-adulto'], y llamaba
+   como primera línea a CB.pantallas.ir('p-adulto'). Es decir: ir() invocaba al
+   handler, y el handler volvía a llamar a ir(). Recursión infinita, desbordamiento
+   de pila, y el catch de ir() mandaba al usuario a la pantalla de error.
+
+   Efecto real: pulsar la llave de la portada NUNCA abría el panel del adulto.
+   Se iba a «algo ha ido mal». Con ello quedaban fuera de alcance los ajustes,
+   el informe imprimible, la exportación del progreso y los interruptores de las
+   tablas del 6 al 9 y de los céntimos.
+
+   Los otros siete handlers de alEntrar solo pintan, que es el contrato. Este era
+   el único que navegaba. */
 CB.adulto.abrir = function () {
-  CB.pantallas.ir('p-adulto');
   var puerta = document.getElementById('adulto-puerta');
   var contenido = document.getElementById('adulto-contenido');
 

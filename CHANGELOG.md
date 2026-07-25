@@ -10,6 +10,40 @@ La versión de referencia es `CB.VERSION` en `js/00-nucleo.js`. Este fichero y
 
 ---
 
+## [1.0.1] — 2026-07-25
+
+Auditoría de errores. Cinco defectos, todos convivían con la suite en verde.
+
+### Corregido
+
+- **El botón de la llave abría la pantalla de error en vez del panel del
+  adulto.** El handler de entrada a `p-adulto` navegaba a su propia pantalla y
+  desbordaba la pila. El panel —ajustes, informe imprimible, exportación y los
+  interruptores de tablas del 6 al 9, céntimos y doble llevada— **nunca había
+  sido accesible**. `CB.pantallas.ir()` lleva ahora un cerrojo de reentrada para
+  que la misma clase de fallo no pueda repetirse en otra pantalla.
+- **El efecto de toque prematuro se multiplicaba.** El oyente se registraba una
+  vez por ítem sobre un nodo permanente: en el ítem 12 sonaba once veces a la
+  vez, y a más juego, más fuerte.
+- **Un perfil dañado dejaba el botón JUGAR inerte y mudo.** Leer un perfil
+  ilegible devolvía lo mismo que leer un perfil inexistente. Ahora se distinguen
+  y el aviso sale en la lista de perfiles, donde el adulto puede hacer algo.
+- **El «fin amable» a los 6 tiempos agotados era inalcanzable** y una prueba lo
+  daba por bueno bajo el rótulo `SALVAGUARDA`. El comportamiento real es
+  correcto —a los 3 tiempos se quita el reloj— pero ahora la prueba lo dice.
+- **La auditoría de estilo grepeaba el CSS con los comentarios dentro**, así que
+  un comentario que documentaba una prohibición la hacía saltar.
+
+### Añadido
+
+- Se entra de verdad en las 16 pantallas navegables en cada ejecución de la
+  suite. Antes solo se comprobaba que las `<section>` existieran.
+- Lista cerrada de los doce auxiliares globales del proyecto: sin módulos, un
+  nombre repetido en un fichero nuevo pisaría al anterior en silencio.
+- **382 comprobaciones** (antes 295), 0 fallos.
+
+---
+
 ## [1.0.0] — 2026-07-25
 
 Primera versión completa y jugable. Se abre con doble clic sobre `index.html`,
@@ -80,7 +114,7 @@ sin instalación, sin servidor, sin red y sin datos personales.
 
 ### Verificación
 
-- **294 comprobaciones automáticas** en `pruebas/pruebas.html`, incluidos los
+- **295 comprobaciones automáticas** en `pruebas/pruebas.html`, incluidos los
   30 casos exactos de la fórmula de puntuación y las 8 comprobaciones
   curriculares CU1-CU8.
 - **`pruebas/auditar.sh`**, la auditoría que bloquea la entrega: frontera de

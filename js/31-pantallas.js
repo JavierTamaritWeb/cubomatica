@@ -19,6 +19,7 @@ CB.pantallas.SIN_SALIR = ['p-portada', 'p-error'];
 
 CB.pantallas.pila = [];
 CB.pantallas.actual = null;
+CB.pantallas._entrando = null;      // cerrojo de reentrada, ver CB.pantallas.ir
 
 /* Handlers que un módulo puede registrar para reaccionar al entrar en su
    pantalla: CB.pantallas.alEntrar['p-mapa'] = function (props) {...} */
@@ -46,8 +47,25 @@ CB.pantallas.ir = function (id, props) {
   }
   CB.pantallas.actual = id;
 
-  if (CB.pantallas.alEntrar[id]) {
-    try { CB.pantallas.alEntrar[id](props || {}); } catch (e) { CB.pantallas.fallo(e); }
+  /* CERROJO DE REENTRADA. Un handler de alEntrar que navegue a su propia
+     pantalla se llama a sí mismo sin fin: ir() invoca al handler, el handler
+     invoca a ir(), y así hasta desbordar la pila. Pasó de verdad con
+     CB.adulto.abrir(), y el síntoma no fue un error en consola sino la pantalla
+     de «algo ha ido mal», porque el catch de aquí abajo se traga la recursión y
+     la convierte en un fallo genérico.
+
+     El contrato es que un handler PINTA, no navega. Esto lo hace cumplir: la
+     segunda entrada a la misma pantalla, dentro de la primera, no se ejecuta. */
+  if (CB.pantallas.alEntrar[id] && CB.pantallas._entrando !== id) {
+    var previo = CB.pantallas._entrando;
+    CB.pantallas._entrando = id;
+    try {
+      CB.pantallas.alEntrar[id](props || {});
+    } catch (e) {
+      CB.pantallas.fallo(e);
+    } finally {
+      CB.pantallas._entrando = previo;
+    }
   }
 
   /* El foco viaja al encabezado de la pantalla nueva: sin esto, un usuario de

@@ -172,8 +172,23 @@ CB.perfiles.activar = function (id) {
   var p = CB.almacen.leerPerfil(id);
   if (!p) return;
   if (p.error) {
+    /* Se queda EN LA LISTA DE PERFILES, no se va a la pantalla de error. Aquí
+       hay algo que hacer —elegir otro minero o crear uno nuevo— y allí no hay
+       nada: «algo ha ido mal» con un botón de volver al mapa es un callejón.
+       El aviso va en la propia lista, encima de las tarjetas. */
     CB.a11y.anunciar(p.mensaje);
-    CB.pantallas.fallo({ message: p.mensaje });
+    CB.pantallas.ir('p-perfiles');
+    var lista = document.getElementById('lista-perfiles');
+    if (lista && lista.parentNode) {
+      var aviso = document.getElementById('aviso-perfil-roto');
+      if (!aviso) {
+        aviso = CB.ui.crear('p', 'texto-menor');
+        aviso.id = 'aviso-perfil-roto';
+        aviso.setAttribute('role', 'alert');
+        lista.parentNode.insertBefore(aviso, lista);
+      }
+      aviso.textContent = p.mensaje;
+    }
     return;
   }
   CB.perfil = p;
