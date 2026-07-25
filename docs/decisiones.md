@@ -708,3 +708,104 @@ escribir la palabra. Los dos «fallos» eran errores de quien auditaba. Se anota
 porque el patrón se repite —de trece hallazgos, varios intentos fueron míos— y
 porque la conclusión práctica es la contraria de la que parece: cuando algo
 parece roto, lo primero que hay que dudar es del arnés de prueba.
+
+---
+
+## Sexta ronda — la que se hizo mirando la pantalla
+
+Las cinco rondas anteriores leyeron el DOM, la lógica, los contratos, los
+contrastes y la accesibilidad. Ninguna **miró** el juego. Los cuatro fallos de
+esta ronda salieron de una captura de pantalla enviada por quien lo estaba
+usando, no de ejecutar nada.
+
+Conviene decirlo sin adornos porque cambia dónde hay que buscar la próxima vez:
+las cinco rondas terminaron en verde y con la conclusión de que el rendimiento
+por ronda ya no compensaba. Era verdad **para el método que estaba usando**. El
+método tenía un punto ciego del tamaño de una pantalla entera.
+
+### E14 — el botón «Leer» de la calibración no hacía nada
+
+`CB.partida.accionLeer()` empieza con `if (!e || !e.itemActual) return;`. La
+calibración no crea `CB.partida.estado` a propósito —sin cronómetro, sin luces y
+sin puntuación, para que las cuatro preguntas de colocación no parezcan un
+examen— así que el botón salía por ese `return` y no ocurría nada.
+
+Es el botón de «vuélvemelo a leer», en la primera pantalla que ve un niño al
+pulsar JUGAR, en el momento en que menos sabe qué se espera de él. Ahora esa
+rama lee `CB.calibracion.consignaActual`, sin tocar ningún cronómetro porque
+allí no hay ninguno.
+
+### E15 — el botón de silencio no reflejaba el silencio
+
+Hay un botón de sonido por barra (calibración y partida) y el silencio es uno
+solo, del aparato. El manejador actualizaba **el botón pulsado** y nada más, con
+tres consecuencias: el otro botón se quedaba mintiendo, el ajuste guardado se
+restauraba al arrancar sin que ningún icono se enterara (silencio real con icono
+de altavoz encendido) y `aria-pressed` no existía hasta el primer clic, de modo
+que un lector de pantalla no podía decir si estaba pulsado.
+
+`CB.partida.sincronizarSonido()` los pone de acuerdo a todos, y se llama también
+al arrancar, que es donde estaba el caso feo.
+
+### E16 — un dibujo de 26 px no dice qué hace un botón
+
+«Leer en voz alta» era 🔊 y «Silenciar» es 🔈: dos altavoces casi idénticos en
+la misma barra. La comprobación de nombres accesibles pasaba —los `aria-label`
+sí eran distintos— pero un niño de 7 años no lee `aria-label`.
+
+El primer arreglo fue cambiar 🔊 por 🗣, y la respuesta de quien lo probó fue
+literal: «este botón es muy confuso, no sé para qué sirve». Tenía razón, y el
+segundo intento es la decisión que queda: **icono y palabra**, `🔊 Leer`,
+`💡 Pista`, `⏸ Pausa`, `🔈 Sonido`. Cambiar de emoji solo cambia de qué se
+duda; la palabra es lo que quita la duda. «Leer» y «Pista» están dentro de lo
+que lee un niño de 2.º, y el `aria-label` conserva la frase larga.
+
+Queda como regla: en este proyecto **ningún control se explica solo con un
+dibujo**, y `casos-regresiones.js` lo comprueba.
+
+### E17 — la calibración era la única zona de juego sin paisaje
+
+`<div class="zona-juego">` a secas, sin `bioma` y sin `.cielo`: fondo
+transparente, o sea un rectángulo marrón liso, inmediatamente después de una
+portada con cielo, nubes y hierba. La partida sí declaraba las dos cosas. Es la
+primera impresión del juego y era la peor pantalla de todas.
+
+### Dos fallos en las propias pruebas
+
+**Dos comprobaciones de música dependían del foco de la ventana.**
+`aplicarVolumenes()` no reanuda la música si `document.hidden`, que es la
+conducta correcta —no se arranca sonido en una pestaña de fondo—, pero las
+pruebas leían la visibilidad del navegador real. Daban rojo sobre código bueno
+en cuanto alguien lanzaba la suite y se iba a mirar otra cosa. Ahora la
+visibilidad se fija a mano y se comprueban las dos ramas a propósito.
+
+**`CB.pruebas.ejecutar()` no tenía cerrojo.** Las suites se encadenan con
+`setTimeout`, así que una segunda llamada no cancela la primera: las dos cadenas
+escriben en el mismo `#salida` y suman en el mismo contador. Se llegaron a ver
+23 cajas para 15 suites y 541 comprobaciones donde hay 340. Lo caro no es el
+número: es que durante un rato la conclusión fue **«la suite no es
+determinista»**, y eso habría mandado a alguien a buscar un fallo que no existe.
+Basta con pulsar dos veces «Suite rápida» para reproducirlo.
+
+Relacionado, y anotado en `CLAUDE.md`: la suite hay que ejecutarla **con la
+pestaña delante**. Chrome estrangula los `setTimeout` en segundo plano y una
+ejecución de 10 s se va más allá de 80 s o se para en seco. El sufijo
+`· NNNN ms` solo se añade al terminar la última suite: un resumen sin él sigue
+en marcha, por muy verde que se vea.
+
+### La causa única
+
+Las tres primeras (E14, E15, E16) tienen una sola explicación: **la barra de
+herramientas no existía en la maqueta de `pruebas.html`**. No se puede probar lo
+que no está. Ya está, con su paisaje, en las dos pantallas que la llevan, y por
+eso el arreglo de fondo de esta ronda no es ninguno de los cuatro parches sino
+la maqueta.
+
+### Lo que sigue sin poder hacerse desde aquí
+
+Sin cambios respecto a la ronda anterior, salvo uno que ya no está: **mirar**.
+Esta ronda demuestra que una captura de pantalla enviada por quien juega vale
+más que una ronda entera de auditoría automática. Siguen fuera de alcance
+Firefox, Safari, un lector de pantalla real, el táctil de verdad, `file://` con
+doble clic (`pruebas/comprobar-doble-clic.html`), y F0.5 y F10, que necesitan
+niños.

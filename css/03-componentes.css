@@ -106,6 +106,20 @@
 }
 .btn-bloque--ancho { width: 100%; max-width: 320px; }
 
+/* Botón de barra con icono ARRIBA y palabra DEBAJO. Un icono suelto de 26 px no
+   dice qué hace el botón: «leer en voz alta» y «silenciar» eran dos altavoces
+   indistinguibles, y sustituir un emoji por otro solo cambia de qué se duda.
+   Se mantiene el lado mínimo de 64 px del resto de botones táctiles. */
+.btn-bloque--rotulado {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  width: auto; min-width: var(--lado-icono); height: var(--lado-icono);
+  padding: 0 var(--e2);
+  font-family: var(--fuente-lectura); font-size: 12px; line-height: 1;
+}
+.btn-bloque--rotulado .ico    { font-size: 24px; line-height: 1; }
+.btn-bloque--rotulado .rotulo { font-size: 12px; line-height: 1; white-space: nowrap; }
+
 /* Sacudida corta de 2 px al tocar antes de tiempo («toc» de madera, §3.5) */
 @keyframes toc-madera {
   0%   { transform: translateX(0); }

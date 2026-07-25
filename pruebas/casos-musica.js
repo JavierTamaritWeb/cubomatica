@@ -227,6 +227,25 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.ok(CB.musica.detectarVolumen(elNormal) === true,
     'y un aparato normal se detecta como ajustable');
 
+  /* ── La visibilidad de la pestaña se FIJA a mano ─────────────────────────
+     aplicarVolumenes() solo reanuda si `!document.hidden`: no se arranca música
+     en una pestaña de fondo, y eso está bien. Pero estas comprobaciones lo
+     leían del navegador de verdad, así que daban rojo sobre código correcto en
+     cuanto la ventana perdía el foco — que es justo lo que pasa cuando alguien
+     lanza la suite y se va a mirar otra cosa. Una prueba cuyo resultado depende
+     del foco es peor que no tenerla. */
+  var descHidden = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
+  function fijarVisible(v) {
+    Object.defineProperty(document, 'hidden', {
+      configurable: true, get: function () { return !v; }
+    });
+  }
+  function soltarVisibilidad() {
+    delete document.hidden;
+    if (!descHidden) return;
+  }
+  fijarVisible(true);
+
   /* Con volumen bloqueado: silenciar tiene que PARAR, no bajar a cero */
   CB.musica.volumenAjustable = false;
   CB.musica.base = 0.4;
@@ -258,6 +277,22 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   CB.musica.aplicarVolumenes();
   t.ok(cIOS.el.pausas === pausasAntes && cIOS.el.arranques === arranquesAntes,
     'el fundido del bucle NO para la música en un aparato sin volumen');
+
+  /* Y la otra cara, que es la que antes se colaba disfrazada de fallo: con la
+     pestaña de fondo NO se arranca música. Ahora se comprueba a propósito. */
+  cIOS.f = 1;
+  cIOS.el.pause();
+  fijarVisible(false);
+  var arranquesFondo = cIOS.el.arranques;
+  CB.musica.aplicarVolumenes();
+  t.ok(cIOS.el.paused === true && cIOS.el.arranques === arranquesFondo,
+    'con la pestaña en segundo plano la música NO se arranca sola');
+
+  fijarVisible(true);
+  CB.musica.aplicarVolumenes();
+  t.ok(cIOS.el.paused === false, 'y al volver a primer plano sí se reanuda');
+
+  soltarVisibilidad();
 
   CB.musica.canales = canalesPrev;
   CB.musica.volumenAjustable = ajustePrevio;

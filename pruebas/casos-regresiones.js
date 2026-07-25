@@ -5,8 +5,8 @@
    simple: un fallo corregido sin prueba vuelve. Este fichero existe para que
    nadie tenga que acordarse.
 
-   Los trece fallos y dónde vive el guardián de cada uno. Los que no están en
-   este fichero es porque su sitio natural es otro; la lista sigue siendo la
+   Los diecisiete fallos y dónde vive el guardián de cada uno. Los que no están
+   en este fichero es porque su sitio natural es otro; la lista sigue siendo la
    única de la que fiarse.
 
      E1  El panel del adulto mandaba a la pantalla de error         casos-carga.js
@@ -23,6 +23,16 @@
      E11 Machacar OK registraba una respuesta por pulsación         AQUÍ
      E12 Pasar el objeto de destreza creaba una destreza basura     AQUÍ
      E13 Ctrl+P desde cualquier pantalla imprimía un folio en blanco AQUÍ
+     E14 El altavoz de la calibración no hacía nada                 AQUÍ
+     E15 El botón de silencio no reflejaba el silencio              AQUÍ
+     E16 «Leer» y «Silenciar» se dibujaban casi iguales             AQUÍ
+     E17 La calibración era la única zona de juego sin paisaje      AQUÍ
+
+   E14-E17 salieron de MIRAR UNA CAPTURA, no de ejecutar pruebas, y es la
+   lección más cara de todas: cinco rondas de auditoría comprobaron el DOM, la
+   lógica, los contrastes y los contratos, y ninguna MIRÓ la pantalla. La barra
+   de herramientas ni siquiera existía en la maqueta de pruebas.html. Ahora sí
+   está, con su paisaje, en las dos pantallas que la llevan.
 
    El detalle de cada uno, con lo que rompía y por qué, está en
    docs/decisiones.md.
@@ -174,6 +184,127 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(sinConceder.length === 0,
     'los 3 conceden una luz de verdad cuando quedan menos del tope',
     sinConceder.join(', '));
+
+  /* ── E14 · Ningún botón de la barra es decorativo ────────────────────────
+     El altavoz de «leer» de la pantalla de CALIBRACIÓN no hacía nada. La
+     calibración no crea CB.partida.estado (a propósito: sin cronómetro, sin
+     luces, sin puntuación, para que no parezca un test), y accionLeer() salía
+     por su primer `return`. Es la primera pantalla de la vida del niño y ese
+     botón es justo el que sirve para volver a oír la pregunta.
+
+     Se comprueba con el estado a null, que es como está siempre allí. */
+  var estadoPrev14 = CB.partida.estado;
+  var pantallaPrev14 = CB.pantallas.actual;
+  var vozPrev = CB.voz.leerOGuiar;
+  var leido = null;
+
+  CB.partida.estado = null;
+  CB.pantallas.actual = 'p-calibracion';
+  CB.calibracion.consignaActual = '¿Cuánto es 2 + 3?';
+  CB.voz.leerOGuiar = function (texto) { leido = texto; };
+  CB.partida.accionLeer();
+  t.igual(leido, '¿Cuánto es 2 + 3?',
+    'E14 · el altavoz de la calibración lee la consigna aunque no haya partida');
+
+  /* Y en una pantalla sin consigna ni partida no revienta ni lee basura. */
+  leido = null;
+  CB.calibracion.consignaActual = null;
+  CB.pantallas.actual = 'p-mapa';
+  var revento = false;
+  try { CB.partida.accionLeer(); } catch (err14) { revento = true; }
+  t.ok(!revento && leido === null,
+    'E14 · y fuera de la calibración sin partida no lee nada ni falla');
+
+  CB.voz.leerOGuiar = vozPrev;
+  CB.pantallas.actual = pantallaPrev14;
+  CB.partida.estado = estadoPrev14;
+
+  /* ── E15 · El botón de silencio no miente, y los dos dicen lo mismo ──────
+     Hay un botón de sonido por barra (calibración y partida) y el silencio es
+     uno solo, del aparato. Se actualizaba SOLO el botón pulsado: el otro se
+     quedaba mintiendo, y el ajuste guardado se restauraba al arrancar sin que
+     ningún icono se enterara — silencio real con icono de altavoz encendido.
+     Además `aria-pressed` no existía hasta el primer clic. */
+  var silPrev = CB.audio.silenciado;
+  var botonesSon = document.querySelectorAll('[data-accion="sonido"]');
+  t.ok(botonesSon.length >= 2,
+    'E15 · la maqueta trae las barras de herramientas (sin ellas nadie las prueba)',
+    botonesSon.length + ' botones de sonido');
+
+  function iconoDe(b) { var i = b.querySelector('.ico'); return (i || b).textContent.trim(); }
+
+  CB.audio.silenciado = true;
+  CB.partida.sincronizarSonido();
+  var mienten = [];
+  [].forEach.call(botonesSon, function (b, n) {
+    if (iconoDe(b) !== '🔇' || b.getAttribute('aria-pressed') !== 'true') mienten.push(n);
+  });
+  t.ok(mienten.length === 0,
+    'E15 · con el sonido apagado TODOS los botones lo muestran y lo anuncian',
+    'mienten: ' + mienten.join(', '));
+
+  CB.audio.silenciado = false;
+  CB.partida.sincronizarSonido();
+  var mienten2 = [];
+  [].forEach.call(botonesSon, function (b, n) {
+    if (iconoDe(b) !== '🔈' || b.getAttribute('aria-pressed') !== 'false') mienten2.push(n);
+  });
+  t.ok(mienten2.length === 0,
+    'E15 · y al volver a encenderlo, todos vuelven', 'mienten: ' + mienten2.join(', '));
+
+  /* Y el rótulo sobrevive: sincronizarSonido() escribía sobre el botón entero
+     y se llevaba por delante la palabra «Sonido». */
+  var sinRotulo = [];
+  [].forEach.call(botonesSon, function (b, n) {
+    var r = b.querySelector('.rotulo');
+    if (!r || !r.textContent.trim()) sinRotulo.push(n);
+  });
+  t.ok(sinRotulo.length === 0,
+    'E15 · y el rótulo del botón sigue ahí después de sincronizar', sinRotulo.join(', '));
+  CB.audio.silenciado = silPrev;
+  CB.partida.sincronizarSonido();
+
+  /* ── E16 · Ningún botón de la barra se explica solo con un dibujo ────────
+     «Leer en voz alta» era 🔊 y «Silenciar» es 🔈: dos altavoces casi idénticos
+     en la misma barra. El aria-label los distinguía —por eso la comprobación de
+     nombres accesibles pasaba— pero un niño de 7 años no lee aria-labels.
+
+     El primer intento fue cambiar 🔊 por 🗣, y la respuesta de quien lo probó
+     fue «este botón es muy confuso, no sé para qué sirve». Tenía razón: cambiar
+     de emoji solo cambia de qué se duda. Lo que quita la duda es la PALABRA. */
+  var barras = document.querySelectorAll('.barra-herramientas');
+  var mudos = [], repetidos = [];
+  [].forEach.call(barras, function (barra, n) {
+    var vistos = {};
+    [].forEach.call(barra.querySelectorAll('button'), function (b) {
+      var visible = b.textContent.replace(/\s+/g, ' ').trim();
+      var palabra = /[a-zA-ZáéíóúñÁÉÍÓÚÑ]/.test(visible);
+      if (!palabra) mudos.push('barra ' + n + ': «' + visible + '»');
+      if (vistos[visible]) repetidos.push('barra ' + n + ': «' + visible + '»');
+      vistos[visible] = true;
+    });
+  });
+  t.ok(mudos.length === 0,
+    'E16 · todo botón de la barra lleva una palabra, no solo un dibujo',
+    mudos.join(' · '));
+  t.ok(repetidos.length === 0,
+    'E16 · y ninguna barra repite la misma etiqueta visible', repetidos.join(' · '));
+
+  /* ── E17 · Toda zona de juego lleva paisaje ──────────────────────────────
+     La pantalla de calibración declaraba `<div class="zona-juego">` a secas: sin
+     bioma y sin cielo. Fondo transparente, o sea un rectángulo marrón liso —
+     y es la PRIMERA pantalla que ve un niño al pulsar JUGAR, justo después de
+     una portada con cielo, nubes y hierba. Ninguna prueba lo vio porque todas
+     miraban el DOM y la lógica; esto solo se ve mirando. */
+  var sinPaisaje = [];
+  [].forEach.call(document.querySelectorAll('.zona-juego'), function (z) {
+    var sec = z.closest ? z.closest('.pantalla') : null;
+    var id = sec ? sec.id : '(suelta)';
+    if (z.className.indexOf('bioma') === -1) sinPaisaje.push(id + ': sin bioma');
+    if (!z.querySelector('.cielo')) sinPaisaje.push(id + ': sin cielo');
+  });
+  t.ok(sinPaisaje.length === 0,
+    'E17 · toda .zona-juego declara bioma y cielo', sinPaisaje.join(' · '));
 
   /* ── E1 · Ningún handler de pantalla navega a su propia pantalla ─────────
      El contrato es que un handler PINTA. El que navegaba desbordaba la pila y

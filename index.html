@@ -63,7 +63,12 @@
 <!-- ══ 3. CALIBRACIÓN ══════════════════════════════════════════════════════ -->
 <section id="p-calibracion" class="pantalla" hidden>
   <h1 class="solo-lectores">Vamos a empezar</h1>
-  <div class="zona-juego">
+  <!-- Mismo decorado que la partida. Sin `bioma` ni `.cielo` esta zona quedaba
+       con fondo transparente: la primera pantalla que ve un niño al pulsar
+       JUGAR era la única del juego sin paisaje, un rectángulo marrón liso justo
+       después de una portada con cielo, nubes y hierba. -->
+  <div class="zona-juego bioma bioma--pradera">
+    <div class="cielo cielo--0" aria-hidden="true"></div>
     <div class="zona-superior">
       <div id="cal-enunciado" class="panel-bloque enunciado"></div>
       <div class="escena-criaturas">
@@ -76,10 +81,10 @@
   </div>
   <div class="barra-herramientas">
     <div class="grupo">
-      <button class="btn-bloque btn-bloque--icono" data-accion="leer" aria-label="Leer en voz alta">🔊</button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="leer" aria-label="Leer en voz alta"><span class="ico" aria-hidden="true">🔊</span><span class="rotulo">Leer</span></button>
     </div>
     <div class="grupo">
-      <button class="btn-bloque btn-bloque--icono" data-accion="sonido" aria-label="Sonido">🔈</button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="ico" aria-hidden="true">🔈</span><span class="rotulo">Sonido</span></button>
       <button class="btn-bloque" data-salir>◀ Salir</button>
     </div>
   </div>
@@ -158,12 +163,18 @@
 
   <div class="barra-herramientas">
     <div class="grupo">
-      <button class="btn-bloque btn-bloque--icono" data-accion="leer"  aria-label="Leer en voz alta">🔊</button>
-      <button class="btn-bloque btn-bloque--icono" data-accion="pista" aria-label="Pista">💡</button>
+      <!-- Icono Y PALABRA. Con el icono solo, «leer en voz alta» y «silenciar»
+           eran dos altavoces casi idénticos; cambiar uno por otro emoji no
+           arregla nada, porque el problema es que un dibujo de 26 px no dice
+           qué hace un botón. La palabra sí, y «Leer» o «Pista» están dentro de
+           lo que lee un niño de 2.º. El aria-label sigue llevando la frase
+           larga para quien use lector de pantalla. -->
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="leer"  aria-label="Leer en voz alta"><span class="ico" aria-hidden="true">🔊</span><span class="rotulo">Leer</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="pista" aria-label="Pista"><span class="ico" aria-hidden="true">💡</span><span class="rotulo">Pista</span></button>
     </div>
     <div class="grupo">
-      <button class="btn-bloque btn-bloque--icono" data-accion="pausa"  aria-label="Pausa">⏸</button>
-      <button class="btn-bloque btn-bloque--icono" data-accion="sonido" aria-label="Sonido">🔈</button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="pausa"  aria-label="Pausa"><span class="ico" aria-hidden="true">⏸</span><span class="rotulo">Pausa</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="ico" aria-hidden="true">🔈</span><span class="rotulo">Sonido</span></button>
       <button class="btn-bloque" data-accion="salir-partida">◀ Salir</button>
     </div>
   </div>

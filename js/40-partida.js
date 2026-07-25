@@ -1053,7 +1053,23 @@ CB.partida.nombreDestreza = function (slug) {
 /* ── Acciones de la barra de herramientas ───────────────────────────────── */
 CB.partida.accionLeer = function () {
   var e = CB.partida.estado;
-  if (!e || !e.itemActual) return;
+
+  /* La calibración NO crea estado de partida (no tiene cronómetro, ni luces, ni
+     puntuación: no debe parecer un test). Sin esta rama, el altavoz de esa
+     pantalla salía por el `return` de abajo y no hacía absolutamente nada —
+     justo en la primera pantalla de la vida del niño, donde más falta hace
+     poder volver a oír la pregunta. Aquí no se toca el cronómetro porque en la
+     calibración no hay ninguno que parar ni que reanudar. */
+  if (!e || !e.itemActual) {
+    if (CB.pantallas.actual === 'p-calibracion' &&
+        CB.calibracion && CB.calibracion.consignaActual) {
+      CB.voz.leerOGuiar(CB.calibracion.consignaActual, CB.ui.resaltarPalabra, function () {
+        CB.ui.resaltarLinea(-1);
+      });
+    }
+    return;
+  }
+
   var texto = e.itemActual.enunciado || e.itemActual.consigna || '';
   /* Pulsar el altavoz salta el bloqueo de 800 ms: el niño ya ha invertido
      tiempo en el ítem, no está respondiendo al tuntún (§3.5). */
@@ -1075,6 +1091,26 @@ CB.partida.accionPista = function () {
   CB.audio.sfx('rocarr');
 };
 
+/* ── El botón de silencio dice la verdad, y lo dicen los DOS ────────────────
+   Hay un botón de sonido por pantalla con barra (calibración y partida) y el
+   silencio es uno solo, del aparato. Actualizando únicamente el botón pulsado
+   pasaban tres cosas: el otro se quedaba mintiendo, el ajuste guardado se
+   restauraba al arrancar sin que el icono se enterara (silencio real con icono
+   de altavoz encendido), y `aria-pressed` no existía hasta el primer clic, de
+   modo que un lector de pantalla no podía decir si estaba pulsado. */
+CB.partida.sincronizarSonido = function () {
+  var s = !!CB.audio.silenciado;
+  var bs = document.querySelectorAll('[data-accion="sonido"]');
+  var i, ico;
+  for (i = 0; i < bs.length; i++) {
+    /* Solo el icono: el rótulo «Sonido» se queda, y escribir sobre el botón
+       entero se lo llevaría por delante. */
+    ico = bs[i].querySelector('.ico') || bs[i];
+    ico.textContent = s ? '🔇' : '🔈';
+    bs[i].setAttribute('aria-pressed', s ? 'true' : 'false');
+  }
+};
+
 CB.partida.conectarBarra = function () {
   document.addEventListener('click', function (ev) {
     var b = ev.target;
@@ -1087,8 +1123,7 @@ CB.partida.conectarBarra = function () {
     if (a === 'pausa') CB.partida.pausar();
     if (a === 'sonido') {
       var s = CB.audio.silenciar(!CB.audio.silenciado);
-      b.setAttribute('aria-pressed', s ? 'true' : 'false');
-      b.textContent = s ? '🔇' : '🔈';
+      CB.partida.sincronizarSonido();
       var aj = CB.almacen.ajustesDispositivo();
       aj.silencio = s;
       CB.almacen.guardarAjustesDispositivo(aj);

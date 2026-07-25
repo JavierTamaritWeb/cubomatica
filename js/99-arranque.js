@@ -51,6 +51,9 @@ CB.calibracion.servir = function () {
   if (i >= CB.calibracion.ITEMS.length) { CB.calibracion.terminar(); return; }
 
   var it = CB.calibracion.ITEMS[i];
+  /* Lo lee el botón del altavoz de esta pantalla: aquí no hay estado de partida
+     de donde sacar el enunciado. */
+  CB.calibracion.consignaActual = it.consigna;
   var enun = document.getElementById('cal-enunciado');
   CB.ui.vaciar(enun);
   enun.appendChild(CB.ui.crear('p', it.teclado ? 'operacion' : 'enunciado', it.consigna));
@@ -351,6 +354,9 @@ CB.arranque = function () {
   CB.pantallas.conectar();
   CB.a11y.conectarTeclado();
   CB.partida.conectarBarra();
+  /* El silencio guardado ya está aplicado (CB.audio.silenciado, arriba); esto
+     hace que los iconos lo cuenten en vez de mostrar siempre el altavoz. */
+  CB.partida.sincronizarSonido();
 
   /* Perfil activo */
   var ultimo = CB.almacen.ultimoPerfil();

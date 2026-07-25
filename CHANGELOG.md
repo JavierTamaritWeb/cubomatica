@@ -10,6 +10,55 @@ La versión de referencia es `CB.VERSION` en `js/00-nucleo.js`. Este fichero y
 
 ---
 
+## [1.5.0] — 2026-07-25
+
+Sexta ronda: **la primera que se hizo mirando la pantalla en vez de leyendo el
+DOM**. Las cinco anteriores comprobaron lógica, contratos, contrastes y
+accesibilidad, y ninguna vio nada de lo que hay aquí abajo. Salió todo de una
+captura de pantalla enviada por quien lo estaba usando.
+
+### Corregido
+
+- **El botón «Leer» de la calibración no hacía nada.** `accionLeer()` sale por
+  su primer `return` si no hay `CB.partida.estado`, y la calibración no crea
+  ninguno a propósito (sin reloj, sin luces, sin puntuación, para que no parezca
+  un examen). Era el botón de «vuélvemelo a leer» en la primera pantalla de la
+  vida del niño, y estaba muerto. (E14)
+- **El botón de silencio no reflejaba el silencio.** Se actualizaba solo el
+  botón pulsado, de los dos que hay; el ajuste guardado se restauraba al
+  arrancar sin que ningún icono se enterara —silencio real con icono de altavoz
+  encendido— y `aria-pressed` no existía hasta el primer clic. (E15)
+- **Los botones de la barra no se entendían.** «Leer en voz alta» y «Silenciar»
+  eran dos altavoces casi idénticos. Ahora todos llevan **icono y palabra**
+  (`🔊 Leer`, `💡 Pista`, `⏸ Pausa`, `🔈 Sonido`): un dibujo de 26 px no dice
+  qué hace un botón, y cambiar de emoji solo cambia de qué se duda. (E16)
+- **La calibración era la única zona de juego sin paisaje.** `<div
+  class="zona-juego">` a secas, sin bioma ni cielo: un rectángulo marrón liso
+  justo después de una portada con nubes y hierba. (E17)
+
+### Corregido en las pruebas
+
+- **Dos comprobaciones de música dependían de que la ventana tuviera el foco.**
+  `aplicarVolumenes()` no reanuda si `document.hidden`, que es lo correcto, pero
+  las pruebas lo leían del navegador real: daban rojo sobre código bueno en
+  cuanto alguien miraba a otro sitio. Ahora la visibilidad se fija a mano y se
+  comprueban **las dos** ramas.
+- **`CB.pruebas.ejecutar()` no tenía cerrojo.** Las suites se encadenan con
+  `setTimeout`, así que una segunda llamada no cancelaba la primera: las dos
+  cadenas escribían en el mismo sitio y sumaban en el mismo contador. Se veían
+  23 cajas para 15 suites y 541 comprobaciones donde hay 340 — y parecía que la
+  suite no era determinista, que es la conclusión más cara posible. Basta con
+  pulsar dos veces «Suite rápida».
+- **La barra de herramientas no existía en `pruebas.html`.** Esa es la causa
+  única de que cinco rondas no vieran E14, E15 ni E16: no se puede probar lo que
+  no está en la maqueta. Ya está, con su paisaje, en las dos pantallas que la
+  llevan.
+
+### Contratos
+
+- Base de comprobaciones: **329 → 340**, determinista, 0 fallos.
+- Guardianes nuevos en `pruebas/casos-regresiones.js`: E14, E15, E16, E17.
+
 ## [1.4.0] — 2026-07-25
 
 Quinta ronda: logros, borrado de perfil e impresión.

@@ -62,7 +62,22 @@ CB.pruebas.render = function () {
     (CB.pruebas.saltados ? ', ' + CB.pruebas.saltados + ' saltadas' : '');
 };
 
+/* Cerrojo de ejecución. Las suites se encadenan con setTimeout, así que una
+   segunda llamada mientras la primera sigue viva NO la cancela: las dos cadenas
+   escriben en el mismo #salida y suman en el mismo contador. El resultado son
+   más cajas de suite que suites y un total inflado —23 cajas para 15 suites,
+   541 comprobaciones donde había 450— y encima parece que la suite no es
+   determinista, que es la conclusión más cara posible.
+
+   Pasa con solo pulsar dos veces «Suite rápida», y en una pestaña de segundo
+   plano (donde Chrome estrangula los setTimeout y una ejecución tarda 80 s en
+   vez de 9) es lo normal, no lo raro. */
+CB.pruebas.ejecutando = false;
+
 CB.pruebas.ejecutar = function (largo) {
+  if (CB.pruebas.ejecutando) return false;
+  CB.pruebas.ejecutando = true;
+
   CB.pruebas.modoLargo = !!largo;
   CB.pruebas.total = 0;
   CB.pruebas.fallos = 0;
@@ -76,6 +91,7 @@ CB.pruebas.ejecutar = function (largo) {
 
   function siguiente() {
     if (i >= CB.pruebas.suites.length) {
+      CB.pruebas.ejecutando = false;
       CB.pruebas.render();
       var r = document.getElementById('resumen');
       r.textContent += '  ·  ' + Math.round(CB.util.ahora() - t0) + ' ms';
@@ -91,6 +107,8 @@ CB.pruebas.ejecutar = function (largo) {
     salida.appendChild(caja);
     CB.pruebas._actual = caja;
 
+    /* El catch mantiene viva la cadena, así que el cerrojo se suelta siempre en
+       el `if` de arriba: una suite que revienta no lo deja echado. */
     try {
       s.fn();
     } catch (e) {

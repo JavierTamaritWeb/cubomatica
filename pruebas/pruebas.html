@@ -59,7 +59,13 @@
   <section id="p-perfiles" class="pantalla" hidden><h1>¿Quién juega?</h1><div id="lista-perfiles"></div>
     <button id="btn-nuevo-perfil"></button></section>
   <section id="p-calibracion" class="pantalla" hidden><h1>Vamos a empezar</h1><div id="cal-enunciado"></div>
-    <div id="cal-respuesta"></div></section>
+    <div class="zona-juego bioma bioma--pradera"><div class="cielo"></div></div>
+    <div id="cal-respuesta"></div>
+    <div class="barra-herramientas">
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="leer" aria-label="Leer en voz alta"><span class="ico" aria-hidden="true">🔊</span><span class="rotulo">Leer</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="ico" aria-hidden="true">🔈</span><span class="rotulo">Sonido</span></button>
+      <button class="btn-bloque" data-salir>◀ Salir</button>
+    </div></section>
   <section id="p-mapa" class="pantalla" hidden><h1>La Cantera</h1><p id="mapa-saludo"></p>
     <div id="rejilla-mundos"></div></section>
   <section id="p-cantera" class="pantalla" hidden><h1>Mis vetas</h1><p id="cantera-pista"></p>
@@ -73,12 +79,19 @@
       <span class="ra-bulbo ra-bulbo--bajo"><i id="ra-baja" class="ra-arena"></i></span>
     </div><span id="hud-segundos">30</span></div>
     <span id="hud-gemas"></span>
-    <div class="zona-juego" id="zona-juego"><div class="cielo"></div>
+    <div class="zona-juego bioma bioma--pradera" id="zona-juego"><div class="cielo"></div>
       <div id="item-enunciado"></div><div id="item-mensaje" hidden></div>
       <div id="cri-cubi"></div><div id="cri-rocarr" hidden></div>
       <div id="cri-gluglu" hidden></div><div id="cri-chispa" hidden></div>
       <div id="item-bono" hidden></div><div id="item-respuesta"></div>
       <div id="aviso-prisa" hidden>Hurry up!</div></div>
+    <div class="barra-herramientas">
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="leer"  aria-label="Leer en voz alta"><span class="ico" aria-hidden="true">🔊</span><span class="rotulo">Leer</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="pista" aria-label="Pista"><span class="ico" aria-hidden="true">💡</span><span class="rotulo">Pista</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="pausa"  aria-label="Pausa"><span class="ico" aria-hidden="true">⏸</span><span class="rotulo">Pausa</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="ico" aria-hidden="true">🔈</span><span class="rotulo">Sonido</span></button>
+      <button class="btn-bloque" data-accion="salir-partida">◀ Salir</button>
+    </div>
   </section>
   <section id="p-reparacion" class="pantalla" hidden><h1>Vamos a verlo</h1><div id="rep-lienzo"></div>
     <div id="rep-pasos"></div><button id="btn-lo-pillo"></button><p id="rep-ayuda"></p></section>
