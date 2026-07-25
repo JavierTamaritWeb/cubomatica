@@ -29,7 +29,7 @@ Tests run **in a browser** (they need DOM, canvas, `getComputedStyle` and font m
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **340 checks, 0 failures** (deterministic).
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **347 checks, 0 failures** (deterministic).
 - **Run it in a foreground tab.** Chrome throttles `setTimeout` in a background tab, and the suites are chained with `setTimeout(…, 0)`: backgrounded, a 10 s run stretches past 80 s or stalls outright. A partial `resumen` is easy to mistake for a finished one — the `· NNNN ms` suffix is only appended when the last suite ends, so a summary without it is still running.
 
 **Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all twelve found so far and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.

@@ -240,3 +240,20 @@
   display: flex; flex-direction: column; align-items: center;
   gap: var(--e3); width: 100%; margin: 0 auto; max-width: 720px;
 }
+
+/* Cabecera de la calibración. Su h1 era `solo-lectores` y la pantalla se
+   quedaba sin explicar: cuatro preguntas sueltas, sin reloj, que parecían una
+   partida averiada. */
+.cabecera-calibracion {
+  flex: 0 0 auto;
+  padding: var(--e2) var(--e3);
+  text-align: center;
+  background: var(--bg-texto-oscuro);
+  color: var(--texto-claro);
+}
+.cabecera-calibracion h1 { margin: 0; font-size: var(--tam-titulo); }
+.cabecera-calibracion p  {
+  margin: var(--e1) auto 0 auto;
+  max-width: none;
+  color: var(--texto-sec-claro);
+}

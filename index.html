@@ -62,7 +62,14 @@
 
 <!-- ══ 3. CALIBRACIÓN ══════════════════════════════════════════════════════ -->
 <section id="p-calibracion" class="pantalla" hidden>
-  <h1 class="solo-lectores">Vamos a empezar</h1>
+  <!-- El h1 era `solo-lectores`, o sea invisible: quien pulsaba JUGAR se
+       encontraba cuatro preguntas sueltas, sin título, sin saber cuántas eran y
+       sin reloj, y concluía —con toda la razón— que la cuenta atrás estaba
+       rota. Aquí NO hay reloj a propósito, y eso hay que decirlo. -->
+  <div class="cabecera-calibracion">
+    <h1>Vamos a empezar</h1>
+    <p id="cal-paso" class="texto-menor"></p>
+  </div>
   <!-- Mismo decorado que la partida. Sin `bioma` ni `.cielo` esta zona quedaba
        con fondo transparente: la primera pantalla que ve un niño al pulsar
        JUGAR era la única del juego sin paisaje, un rectángulo marrón liso justo

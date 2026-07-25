@@ -835,3 +835,60 @@ sitio donde mirar.
 El guardián E14 de `casos-regresiones.js` se conserva y cambia de significado:
 ya no protege un botón, protege que la lectura funcione también donde no hay
 partida —la calibración—, que era el fallo real de origen.
+
+### P4 — que se pueda ver bien con Live Server
+
+Pedido en firme: «haz que se pueda ver perfectamente en Live Server». El
+diagnóstico previo era correcto pero la conclusión no: no bastaba con decir «usa
+otro servidor». Live Server recarga la pestaña entera cada vez que cambia un
+fichero que vigila, y jugando eso mata la partida a media pregunta. Con la
+cuenta atrás de 30 s y el aviso a los 10, una recarga a destiempo hace creer que
+esas dos cosas están rotas. Reproducido a propósito: partida a 29 s con 7 gemas,
+`touch` a un `.js`, y de vuelta a la pantalla de perfiles con el reloj en 30.
+
+Se ataca por dos lados, y el segundo importa mucho más que el primero.
+
+**1. Configuración.** `.vscode/settings.json` con `liveServer.settings.ignoreFiles`
+para `docs`, `pruebas`, `audio`, `*.md`, `*.txt` y los guiones. El CSS no hace
+falta ignorarlo: Live Server lo inyecta en caliente sin recargar, que es justo
+lo que se quiere.
+
+**2. Que la recarga deje de doler, venga de donde venga.** Esto es lo que vale.
+`pagehide` ya guardaba la partida —también cuando la recarga la provoca otro— y
+`reanudarGuardada()` ya existía, probada y enganchada al botón JUGAR. Lo único
+que faltaba era la vuelta automática: se aterrizaba en la portada y había que
+pulsar JUGAR, de modo que una recarga parecía un reinicio espontáneo.
+
+Ahora, si al arrancar hay una partida guardada hace menos de un minuto, se
+reanuda sola. La ventana es corta a propósito: en un minuto lo único que cabe es
+una recarga. Pasado ese minuto se aterriza en la portada y JUGAR sigue
+ofreciendo reanudar durante 24 h, que es la conducta de siempre; sin el límite,
+un niño que abre el juego por la mañana se encontraría metido de golpe en la
+expedición de ayer sin haber tocado nada.
+
+Hizo falta un campo nuevo: `partidaEnCurso.guardadaTs`. `iniciadaTs` dice cuándo
+EMPEZÓ la partida, no cuándo se guardó, y con una partida de diez minutos la
+distinción es justo la que importa. La decisión vive en `CB.arranque.esRecarga()`,
+extraída a función precisamente para poder probarla (E18).
+
+Esto no es una concesión a una herramienta de desarrollo: un F5 sin querer, un
+iPad reciclando la pestaña o un navegador que se cierra solo producen exactamente
+lo mismo, y hasta ahora costaban la partida.
+
+### E19 — la calibración no decía lo que era
+
+Encontrado tirando del hilo de «hago doble clic en index.html y no funciona la
+cuenta atrás ni el Hurry up». `file://` es un origen distinto de
+`http://localhost`, así que allí no hay perfiles: se empieza de cero, y empezar
+de cero significa CALIBRACIÓN, que no tiene reloj a propósito.
+
+Pero el fallo real no es ese, es que la pantalla no lo explicaba. Su `<h1>` era
+`solo-lectores`, o sea invisible: cuatro preguntas sueltas, sin título, sin saber
+cuántas eran y sin reloj. Cualquiera deduce que la cuenta atrás está rota, y esa
+es la deducción correcta a partir de lo que se ve.
+
+Ahora la pantalla lleva título visible y una línea que dice dónde está y por qué
+no hay reloj: «Pregunta N de 4 · Sin reloj y sin puntos: solo para saber por
+dónde empezar». El reloj sigue sin aparecer en la calibración, y esa parte de la
+decisión no cambia: ponerle cronómetro a la prueba de colocación falsearía la
+medida y asustaría al niño en su primer minuto de juego.

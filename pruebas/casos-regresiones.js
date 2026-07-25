@@ -312,6 +312,42 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(sinPaisaje.length === 0,
     'E17 · toda .zona-juego declara bioma y cielo', sinPaisaje.join(' · '));
 
+  /* ── E18 · Una recarga no se lleva la partida por delante ────────────────
+     `pagehide` ya guardaba la partida, también cuando la recarga la provoca
+     otro: Live Server al guardar un fichero, un F5 sin querer, iOS reciclando
+     la pestaña. Lo que faltaba era la VUELTA: se aterrizaba en la portada y
+     había que pulsar JUGAR, de modo que una recarga a media pregunta parecía un
+     reinicio espontáneo. Jugando con Live Server delante pasa cada vez que
+     alguien guarda un fichero, y hace creer que el reloj no funciona. */
+  var perfilRec = CB.almacen.perfilNuevo('p-rec', 'Topo Cavador', 0, CB.util.hoyISO(), null);
+  var ahora = Date.now();
+
+  t.ok(!CB.arranque.esRecarga(perfilRec, ahora),
+    'E18 · sin partida guardada no se reanuda nada');
+
+  perfilRec.partidaEnCurso = { iniciadaTs: ahora - 900000, guardadaTs: ahora - 2000 };
+  t.ok(CB.arranque.esRecarga(perfilRec, ahora),
+    'E18 · una partida guardada hace 2 s es una recarga, y se reanuda sola');
+
+  perfilRec.partidaEnCurso.guardadaTs = ahora - 3600000;
+  t.ok(!CB.arranque.esRecarga(perfilRec, ahora),
+    'E18 · una de hace una hora NO se reanuda sola: eso es volver, no recargar');
+
+  /* Y la marca la escribe guardarEnCurso(), que es de donde sale todo. */
+  t.ok(CB.partida.guardarEnCurso.toString().indexOf('guardadaTs') !== -1,
+    'E18 · guardarEnCurso() sella cuándo se guardó, no solo cuándo empezó');
+
+  /* ── E19 · La calibración explica lo que es ──────────────────────────────
+     Su <h1> era `solo-lectores`, o sea invisible. Quien pulsaba JUGAR se
+     encontraba cuatro preguntas sueltas, sin título, sin saber cuántas eran y
+     sin reloj, y deducía que la cuenta atrás estaba rota. Aquí no hay reloj a
+     propósito —no debe parecer un examen— pero eso hay que decirlo. */
+  var h1Cal = document.querySelector('#p-calibracion h1');
+  t.ok(!!h1Cal && h1Cal.className.indexOf('solo-lectores') === -1,
+    'E19 · el título de la calibración es visible, no solo para lectores de pantalla');
+  t.ok(!!document.getElementById('cal-paso'),
+    'E19 · y existe el sitio donde decir por qué pregunta va y que no hay reloj');
+
   /* ── E1 · Ningún handler de pantalla navega a su propia pantalla ─────────
      El contrato es que un handler PINTA. El que navegaba desbordaba la pila y
      el catch de ir() lo convertía en «algo ha ido mal», de modo que el panel

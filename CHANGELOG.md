@@ -36,6 +36,21 @@ captura de pantalla enviada por quien lo estaba usando.
   class="zona-juego">` a secas, sin bioma ni cielo: un rectángulo marrón liso
   justo después de una portada con nubes y hierba. (E17)
 
+### Añadido
+
+- **`.vscode/settings.json`** con la configuración de Live Server para este
+  proyecto: ignora los cambios que no tienen por qué interrumpir a quien juega
+  (`docs`, `pruebas`, `audio`, `*.md`) y deja que el CSS se inyecte en caliente
+  sin recargar.
+- **Una recarga ya no se lleva la partida.** `pagehide` ya la guardaba; faltaba
+  la vuelta. Si al arrancar hay una partida guardada hace menos de un minuto
+  —lo único que cabe ahí es una recarga— se reanuda sola. Pasado ese minuto se
+  aterriza en la portada y JUGAR sigue ofreciendo reanudar durante 24 h. (E18)
+- **La calibración explica lo que es.** Su `<h1>` era `solo-lectores`, o sea
+  invisible: cuatro preguntas sueltas, sin título, sin saber cuántas eran y sin
+  reloj. Ahora lleva título visible y «Pregunta N de 4 · Sin reloj y sin puntos:
+  solo para saber por dónde empezar». (E19)
+
 ### Retirado
 
 - **El botón «Leer en voz alta» de la barra**, a petición expresa. Estaba en la
@@ -63,8 +78,8 @@ captura de pantalla enviada por quien lo estaba usando.
 
 ### Contratos
 
-- Base de comprobaciones: **329 → 340**, determinista, 0 fallos.
-- Guardianes nuevos en `pruebas/casos-regresiones.js`: E14, E15, E16, E17.
+- Base de comprobaciones: **329 → 347**, determinista, 0 fallos.
+- Guardianes nuevos en `pruebas/casos-regresiones.js`: E14 a E19.
 
 ## [1.4.0] — 2026-07-25
 

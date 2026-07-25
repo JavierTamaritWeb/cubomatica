@@ -54,6 +54,15 @@ CB.calibracion.servir = function () {
   /* Lo lee el botón del altavoz de esta pantalla: aquí no hay estado de partida
      de donde sacar el enunciado. */
   CB.calibracion.consignaActual = it.consigna;
+
+  /* Decir dónde está y por qué no hay reloj. Sin esto son cuatro preguntas
+     sueltas que parecen una partida a la que le falta el cronómetro. */
+  var paso = document.getElementById('cal-paso');
+  if (paso) {
+    paso.textContent = 'Pregunta ' + (i + 1) + ' de ' + CB.calibracion.ITEMS.length +
+      ' · Sin reloj y sin puntos: solo para saber por dónde empezar.';
+  }
+
   var enun = document.getElementById('cal-enunciado');
   CB.ui.vaciar(enun);
   enun.appendChild(CB.ui.crear('p', it.teclado ? 'operacion' : 'enunciado', it.consigna));
@@ -445,12 +454,42 @@ CB.arranque = function () {
     }
   });
 
-  /* Pantalla inicial */
-  if (!CB.perfil) CB.pantallas.ir(idx.length ? 'p-perfiles' : 'p-perfiles');
+  /* ── Volver de una recarga sin perder la partida ──────────────────────────
+     `pagehide` guarda la partida en curso, también cuando la recarga la provoca
+     otro (Live Server al guardar un fichero, un F5 sin querer, iOS reciclando
+     la pestaña). Lo que faltaba era la vuelta: se aterrizaba en la portada y
+     había que pulsar JUGAR, con lo que una recarga a media pregunta parecía que
+     el juego se había reiniciado solo.
+
+     La ventana es corta A PROPÓSITO. Con un minuto, lo único que cabe es una
+     recarga: nadie cierra el juego y vuelve a abrirlo en menos de eso. Pasado
+     ese minuto se aterriza en la portada como siempre y JUGAR sigue ofreciendo
+     reanudar durante 24 h, que es la conducta de toda la vida. Sin el límite,
+     un niño que abre el juego por la mañana se encontraría metido de golpe en
+     la expedición de ayer sin haber tocado nada. */
+  if (!CB.perfil) CB.pantallas.ir('p-perfiles');
+  else if (CB.arranque.esRecarga(CB.perfil, Date.now()) &&
+           CB.partida.hayPartidaGuardada(CB.perfil)) {
+    CB.pantallas.ir('p-portada');           // deja la portada debajo, para «Salir»
+    CB.partida.reanudarGuardada(CB.perfil);
+  }
   else CB.pantallas.ir('p-portada');
 
   CB.arranqueMs = Math.round(CB.util.ahora() - t0);
   return CB.arranqueMs;
+};
+
+/* Ventana corta A PROPÓSITO: en un minuto lo único que cabe es una recarga.
+   Pasado ese minuto se aterriza en la portada y JUGAR sigue ofreciendo reanudar
+   durante 24 h, que es la conducta de siempre. Sin el límite, un niño que abre
+   el juego por la mañana se encontraría metido de golpe en la expedición de
+   ayer sin haber tocado nada. */
+CB.arranque.MS_RECARGA = 60000;
+
+CB.arranque.esRecarga = function (perfil, ahoraMs) {
+  var g = perfil && perfil.partidaEnCurso;
+  if (!g || g.guardadaTs == null) return false;
+  return (ahoraMs - g.guardadaTs) < CB.arranque.MS_RECARGA;
 };
 
 document.addEventListener('DOMContentLoaded', function () {

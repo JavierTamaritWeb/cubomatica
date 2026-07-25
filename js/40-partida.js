@@ -865,7 +865,11 @@ CB.partida.guardarEnCurso = function () {
   var e = CB.partida.estado, perfil = CB.perfil;
   if (!e || !perfil) return;
   perfil.partidaEnCurso = {
-    iniciadaTs: e.inicioTs, mundo: e.mundo.id, modo: e.modo,
+    iniciadaTs: e.inicioTs,
+    /* Cuándo se GUARDÓ, que no es cuándo empezó. El arranque lo usa para
+       distinguir una recarga (hace segundos) de volver al día siguiente. */
+    guardadaTs: Date.now(),
+    mundo: e.mundo.id, modo: e.modo,
     guion: e.guion.slice(), indice: e.indice,
     luces: e.luces.luces, puntos: e.puntos, gemas: e.gemas,
     semillaPartida: e.semilla, itemsServidos: Object.keys(e.servidosSet)
