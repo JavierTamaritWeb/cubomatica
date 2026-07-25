@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Cubomática: juego de matemáticas para 2.º de Primaria. Sumas, restas, tablas y problemas.">
+<title>Cubomática — las Matemáticas son muy divertidas</title>
+
+<link rel="stylesheet" href="css/00-fuentes.css">
+<link rel="stylesheet" href="css/01-variables.css">
+<link rel="stylesheet" href="css/02-base.css">
+<link rel="stylesheet" href="css/03-componentes.css">
+<link rel="stylesheet" href="css/04-pantallas.css">
+<link rel="stylesheet" href="css/05-animaciones.css">
+<link rel="stylesheet" href="css/06-biomas.css">
+<link rel="stylesheet" href="css/07-adulto.css">
+<link rel="stylesheet" href="css/08-imprimir.css">
+</head>
+<body>
+
+<div id="aviso-gira"><p>Gira el dispositivo</p></div>
+<div id="region-viva" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ══ 1. PORTADA ══════════════════════════════════════════════════════════ -->
+<section id="p-portada" class="pantalla" hidden>
+  <div class="cielo cielo--0" aria-hidden="true"></div>
+  <div class="nube" aria-hidden="true" style="top:12%"></div>
+  <div class="nube" aria-hidden="true" style="top:26%"></div>
+  <div class="nube" aria-hidden="true" style="top:6%"></div>
+
+  <div class="esquina-llave">
+    <button class="btn-bloque btn-bloque--icono" data-ir="p-adulto"
+            aria-label="Panel de personas adultas">🔑</button>
+  </div>
+
+  <div class="pila-centro">
+    <h1 class="titulo-juego">CUBOMÁTICA</h1>
+    <p class="lema">«las Matemáticas son muy divertidas»</p>
+    <button id="btn-jugar" class="btn-bloque btn-bloque--primario btn-bloque--grande">JUGAR</button>
+    <button id="btn-tranquila" class="btn-bloque btn-bloque--medio">CANTERA TRANQUILA</button>
+    <div class="fila fila--centro">
+      <button class="btn-bloque" data-ir="p-perfiles">¿Quién juega?</button>
+      <button class="btn-bloque" data-ir="p-ajustes">Ajustes</button>
+      <button class="btn-bloque" data-ir="p-creditos">Créditos</button>
+    </div>
+  </div>
+  <div class="suelo-hierba" aria-hidden="true"></div>
+</section>
+
+<!-- ══ 2. PERFILES ═════════════════════════════════════════════════════════ -->
+<section id="p-perfiles" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <h1>¿Quién juega?</h1>
+    <div id="lista-perfiles" class="lista-perfiles"></div>
+    <button id="btn-nuevo-perfil" class="btn-bloque btn-bloque--primario btn-bloque--medio">
+      Nuevo minero
+    </button>
+    <button class="btn-bloque" data-salir>◀ Salir</button>
+  </div>
+</section>
+
+<!-- ══ 3. CALIBRACIÓN ══════════════════════════════════════════════════════ -->
+<section id="p-calibracion" class="pantalla" hidden>
+  <div class="zona-juego">
+    <div class="zona-superior">
+      <div id="cal-enunciado" class="panel-bloque enunciado"></div>
+      <div class="escena-criaturas">
+        <div class="criatura flota" data-quien="cubi" aria-hidden="true">🧍</div>
+      </div>
+    </div>
+    <div class="zona-inferior">
+      <div id="cal-respuesta"></div>
+    </div>
+  </div>
+  <div class="barra-herramientas">
+    <div class="grupo">
+      <button class="btn-bloque btn-bloque--icono" data-accion="leer" aria-label="Leer en voz alta">🔊</button>
+    </div>
+    <div class="grupo">
+      <button class="btn-bloque btn-bloque--icono" data-accion="sonido" aria-label="Sonido">🔈</button>
+      <button class="btn-bloque" data-salir>◀ Salir</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 4. MAPA DE MUNDOS ═══════════════════════════════════════════════════ -->
+<section id="p-mapa" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <h1>La Cantera</h1>
+    <p id="mapa-saludo" class="texto-menor"></p>
+    <div id="rejilla-mundos" class="rejilla-mundos"></div>
+    <div class="fila fila--centro">
+      <button class="btn-bloque" data-ir="p-cantera">Mis vetas</button>
+      <button class="btn-bloque" data-ir="p-casa">Mi álbum</button>
+      <button class="btn-bloque" data-ir="p-glosario">Diccionario</button>
+    </div>
+    <button class="btn-bloque" data-salir>◀ Salir</button>
+  </div>
+</section>
+
+<!-- ══ 5. CANTERA (Mapa de Destrezas) ══════════════════════════════════════ -->
+<section id="p-cantera" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <h1>Mis vetas</h1>
+    <p id="cantera-pista" class="texto-menor">Lo siguiente que puedes cavar</p>
+    <div id="rejilla-vetas" class="rejilla-vetas"></div>
+    <button id="btn-toda-cantera" class="btn-bloque">Ver toda la cantera</button>
+    <div id="leyenda-vetas" class="texto-menor"></div>
+    <button class="btn-bloque" data-salir>◀ Salir</button>
+  </div>
+</section>
+
+<!-- ══ 6. PARTIDA ══════════════════════════════════════════════════════════ -->
+<section id="p-partida" class="pantalla" hidden>
+  <div class="hud">
+    <div id="hud-luces" class="luces" role="img" aria-label="Luces del casco"></div>
+
+    <!-- Cuenta atrás de 30 s. El reloj de arena es decoración (aria-hidden): la
+         información va en la cifra, que es texto de verdad. -->
+    <div id="hud-reloj" class="reloj" hidden>
+      <div class="reloj-arena" aria-hidden="true">
+        <span class="ra-tapa ra-tapa--alta"></span>
+        <span class="ra-bulbo ra-bulbo--alto"><i id="ra-alta" class="ra-arena"></i></span>
+        <span class="ra-chorro"></span>
+        <span class="ra-bulbo ra-bulbo--bajo"><i id="ra-baja" class="ra-arena"></i></span>
+        <span class="ra-tapa ra-tapa--baja"></span>
+      </div>
+      <span id="hud-segundos" class="reloj-cifra">30</span>
+    </div>
+
+    <div class="gemas"><span class="gema-icono" aria-hidden="true"></span><span id="hud-gemas">0</span></div>
+  </div>
+
+  <div class="zona-juego bioma bioma--pradera" id="zona-juego">
+    <div class="cielo cielo--0" aria-hidden="true"></div>
+    <div class="zona-superior">
+      <div id="item-enunciado" class="panel-bloque"></div>
+      <div id="item-mensaje" class="mensaje-resultado" hidden></div>
+      <div class="escena-criaturas">
+        <div id="cri-cubi"   class="criatura" data-quien="cubi"   aria-hidden="true">🧍</div>
+        <div id="cri-rocarr" class="criatura" data-quien="rocarr" aria-hidden="true" hidden>🪨</div>
+        <div id="cri-gluglu" class="criatura" data-quien="gluglu" aria-hidden="true" hidden>💧</div>
+        <div id="cri-chispa" class="criatura" data-quien="chispa" aria-hidden="true" hidden>✨</div>
+      </div>
+    </div>
+    <div class="zona-inferior">
+      <div id="item-bono" class="hilera-bono" hidden></div>
+      <div id="item-respuesta"></div>
+    </div>
+
+    <!-- «Hurry up!» sube desde abajo cuando quedan 10 s. aria-hidden porque el
+         aviso ya se ha dicho por la región viva, en español y una sola vez. -->
+    <div id="aviso-prisa" class="aviso-prisa" aria-hidden="true" hidden>Hurry up!</div>
+  </div>
+
+  <div class="barra-herramientas">
+    <div class="grupo">
+      <button class="btn-bloque btn-bloque--icono" data-accion="leer"  aria-label="Leer en voz alta">🔊</button>
+      <button class="btn-bloque btn-bloque--icono" data-accion="pista" aria-label="Pista">💡</button>
+    </div>
+    <div class="grupo">
+      <button class="btn-bloque btn-bloque--icono" data-accion="pausa"  aria-label="Pausa">⏸</button>
+      <button class="btn-bloque btn-bloque--icono" data-accion="sonido" aria-label="Sonido">🔈</button>
+      <button class="btn-bloque" data-accion="salir-partida">◀ Salir</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 7. REPARACIÓN ═══════════════════════════════════════════════════════ -->
+<section id="p-reparacion" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <h1>Vamos a verlo</h1>
+    <div class="escena-criaturas">
+      <div class="criatura asiente" data-quien="rocarr" aria-hidden="true">🪨</div>
+    </div>
+    <div id="rep-lienzo" class="lienzo-explicador panel-bloque"></div>
+    <div id="rep-pasos" class="pasos-reparacion"></div>
+    <button id="btn-lo-pillo" class="btn-bloque btn-bloque--primario btn-bloque--medio" disabled>
+      ¡Lo pillo!
+    </button>
+    <p id="rep-ayuda" class="texto-menor">Toca los tres pasos para verlo entero.</p>
+  </div>
+</section>
+
+<!-- ══ 8. DESCANSO ═════════════════════════════════════════════════════════ -->
+<section id="p-descanso" class="pantalla" hidden>
+  <div class="contenido">
+    <h1 id="descanso-titulo">¡Descanso!</h1>
+    <div id="descanso-tablero" class="tablero-descanso"></div>
+    <button id="btn-seguir" class="btn-bloque btn-bloque--primario btn-bloque--medio">Seguir cavando</button>
+  </div>
+</section>
+
+<!-- ══ 9. JEFE ═════════════════════════════════════════════════════════════ -->
+<section id="p-jefe" class="pantalla" hidden>
+  <div class="contenido">
+    <h1 id="jefe-nombre">Jefe</h1>
+    <div class="escena-criaturas">
+      <div id="jefe-criatura" class="criatura flota" aria-hidden="true">🌳</div>
+    </div>
+    <div id="jefe-armadura" class="armadura-jefe" role="img" aria-label="Bloques del jefe"></div>
+    <div id="jefe-enunciado" class="panel-bloque enunciado"></div>
+    <div id="jefe-opciones" class="opciones-jefe"></div>
+    <p id="jefe-aviso" class="texto-menor">Aquí no se apagan luces. Aquí solo se cavan bloques.</p>
+    <button class="btn-bloque" data-salir>◀ Salir</button>
+  </div>
+</section>
+
+<!-- ══ 10. FIN DE LA EXPEDICIÓN ════════════════════════════════════════════ -->
+<section id="p-fin" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <h1 id="fin-titulo">Fin de la expedición</h1>
+    <p id="fin-subtitulo" class="texto-lectura"></p>
+
+    <div class="panel-bloque">
+      <h2>Lo que has dominado hoy</h2>
+      <div id="fin-dominado"></div>
+    </div>
+
+    <div class="panel-bloque">
+      <p class="gemas"><span class="gema-icono" aria-hidden="true"></span>
+        <span id="fin-gemas">0</span> gemas</p>
+      <p id="fin-bono" class="texto-menor"></p>
+    </div>
+
+    <div id="fin-animo" class="panel-bloque" hidden>
+      <h2>¿Cómo te has sentido hoy?</h2>
+      <div class="caras-animo">
+        <button class="cara-animo" data-animo="2" aria-label="Contento">☺</button>
+        <button class="cara-animo" data-animo="1" aria-label="Normal">·</button>
+        <button class="cara-animo" data-animo="0" aria-label="Me ha costado">☹</button>
+      </div>
+      <p class="texto-menor">Esto lo guarda el juego para elegir tus retos de mañana. Nadie te pone nota.</p>
+    </div>
+
+    <div class="fila fila--centro">
+      <button id="btn-tranquila-fin" class="btn-bloque btn-bloque--medio" hidden>CANTERA TRANQUILA</button>
+      <button id="btn-otra" class="btn-bloque btn-bloque--primario btn-bloque--medio">OTRA EXPEDICIÓN</button>
+      <button class="btn-bloque btn-bloque--medio" data-salir>SALIR</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 11. CASA / ÁLBUM ════════════════════════════════════════════════════ -->
+<section id="p-casa" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <h1>Mi álbum</h1>
+    <p id="casa-resumen" class="texto-menor"></p>
+    <div id="rejilla-cromos" class="rejilla-cromos"></div>
+    <button class="btn-bloque" data-salir>◀ Salir</button>
+  </div>
+</section>
+
+<!-- ══ 12. DICCIONARIO DE BLOQUES ══════════════════════════════════════════ -->
+<section id="p-glosario" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <h1>Diccionario de Bloques</h1>
+    <p id="glosario-resumen" class="texto-menor"></p>
+    <div id="lista-glosario" class="lista-glosario"></div>
+    <button class="btn-bloque" data-salir>◀ Salir</button>
+  </div>
+</section>
+
+<!-- ══ 13. AJUSTES ═════════════════════════════════════════════════════════ -->
+<section id="p-ajustes" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <h1>Ajustes</h1>
+    <div id="lista-ajustes" class="lista-ajustes"></div>
+    <button class="btn-bloque" data-salir>◀ Salir</button>
+  </div>
+</section>
+
+<!-- ══ 14. PANEL DE PERSONAS ADULTAS ═══════════════════════════════════════ -->
+<section id="p-adulto" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <div id="adulto-puerta" class="puerta-parental">
+      <h1>Personas adultas</h1>
+      <p id="adulto-pregunta"></p>
+      <input id="adulto-respuesta" type="text" inputmode="numeric" autocomplete="off"
+             aria-label="Respuesta de la puerta parental">
+      <button id="adulto-entrar" class="btn-adulto">Entrar</button>
+      <p id="adulto-error" class="texto-menor" hidden>No es correcto. Prueba otra vez.</p>
+      <button class="btn-bloque" data-salir>◀ Salir</button>
+    </div>
+    <div id="adulto-contenido" hidden></div>
+  </div>
+</section>
+
+<!-- ══ 15. INFORME (imprimible) ════════════════════════════════════════════ -->
+<section id="p-informe" class="pantalla pantalla--scroll imprimible" hidden>
+  <div id="informe-cuerpo" class="contenido"></div>
+  <div class="fila fila--centro no-imprimir">
+    <button id="btn-imprimir" class="btn-adulto">Imprimir</button>
+    <button class="btn-bloque" data-salir>◀ Salir</button>
+  </div>
+</section>
+
+<!-- ══ 16. CRÉDITOS ════════════════════════════════════════════════════════ -->
+<section id="p-creditos" class="pantalla pantalla--scroll" hidden>
+  <div class="contenido">
+    <h1>Créditos</h1>
+    <div class="panel-bloque">
+      <h2>Cubomática</h2>
+      <p class="texto-menor">Juego educativo de matemáticas para 2.º de Educación Primaria.</p>
+      <p class="texto-menor">Todo el arte y todos los efectos de sonido están generados
+        por código. Cero ficheros de imagen, cero peticiones de red. La música sí son
+        ficheros, y es de otras personas: están abajo.</p>
+    </div>
+    <div class="panel-bloque" id="creditos-musica"></div>
+    <div class="panel-bloque" id="creditos-legal"></div>
+    <div class="panel-bloque" id="creditos-curriculo"></div>
+    <button class="btn-bloque" data-salir>◀ Salir</button>
+  </div>
+</section>
+
+<!-- ══ 17. ERROR ═══════════════════════════════════════════════════════════ -->
+<section id="p-error" class="pantalla" hidden>
+  <div class="pila-centro">
+    <h1>Se ha soltado un bloque</h1>
+    <p class="texto-lectura">Volvemos al mapa. Tu progreso está guardado.</p>
+    <button id="btn-error-mapa" class="btn-bloque btn-bloque--primario btn-bloque--medio">Volver</button>
+    <p id="error-detalle" class="texto-menor"></p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     LOS 44 SCRIPTS EN SU ORDEN EXACTO (contrato de PLAN §14.2, verificado por
+     pruebas/casos-carga.js). Los datos van PRIMERO porque 25-mensajes.js y
+     14-gen-problemas.js los leen en tiempo de definición.
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<!--  1-7   datos  -->
+<script src="datos/curriculo-rd157.js"></script>
+<script src="datos/nombres.js"></script>
+<script src="datos/objetos.js"></script>
+<script src="datos/vocabulario.js"></script>
+<script src="datos/mensajes.js"></script>
+<script src="datos/motes.js"></script>
+<script src="datos/recomendaciones.js"></script>
+
+<!--  8-15  plataforma  -->
+<script src="js/00-nucleo.js"></script>
+<script src="js/01-almacen.js"></script>
+<script src="js/02-texturas.js"></script>
+<script src="js/03-sprites.js"></script>
+<script src="js/04-audio.js"></script>
+<script src="js/05-voz.js"></script>
+<script src="js/06-a11y.js"></script>
+<script src="js/07-musica.js"></script>
+
+<!-- 16-24  generadores y catálogo  -->
+<script src="js/10-gen-numeracion.js"></script>
+<script src="js/11-gen-sumas.js"></script>
+<script src="js/12-gen-restas.js"></script>
+<script src="js/13-gen-multiplicacion.js"></script>
+<script src="js/14-gen-problemas.js"></script>
+<script src="js/15-gen-dinero.js"></script>
+<script src="js/16-gen-vocabulario.js"></script>
+<script src="js/17-catalogo.js"></script>
+<script src="js/18-distractores.js"></script>
+
+<!-- 25-35  motor puro  -->
+<script src="js/20-puntuacion.js"></script>
+<script src="js/21-antiazar.js"></script>
+<script src="js/22-vidas.js"></script>
+<script src="js/23-adaptativo.js"></script>
+<script src="js/24-logros.js"></script>
+<script src="js/25-mensajes.js"></script>
+<script src="js/26-reparacion.js"></script>
+<script src="js/27-repaso.js"></script>
+<script src="js/28-memoria.js"></script>
+<script src="js/29-grafo.js"></script>
+<script src="js/2A-escalera.js"></script>
+
+<!-- 36-44  interfaz  -->
+<script src="js/30-ui.js"></script>
+<script src="js/31-pantallas.js"></script>
+<script src="js/32-componentes.js"></script>
+<script src="js/40-partida.js"></script>
+<script src="js/41-panel-adulto.js"></script>
+<script src="js/42-jefes.js"></script>
+<script src="js/43-mapa-destrezas.js"></script>
+<script src="js/44-casa.js"></script>
+<script src="js/99-arranque.js"></script>
+
+</body>
+</html>

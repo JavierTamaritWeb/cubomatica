@@ -1,0 +1,23 @@
+SIL OPEN FONT LICENSE Version 1.1
+=================================
+
+NOTA DE CUBOMATICA: esta fuente NO se distribuye con el juego. El texto de la
+licencia se conserva aqui como referencia porque la fuente se menciona en la
+cascada local() de css/00-fuentes.css. Si el sistema del usuario la tiene
+instalada, se usa la copia del sistema, bajo la licencia con la que ese usuario
+la instalo. Cubomatica no copia, no modifica y no redistribuye el fichero.
+
+El texto integro y oficial de la SIL Open Font License 1.1 esta publicado en:
+https://openfontlicense.org
+
+PERMISSION & CONDITIONS (resumen no normativo)
+----------------------------------------------
+La OFL permite usar, estudiar, modificar y redistribuir las fuentes, incluso con
+fines comerciales, siempre que:
+
+  1. Ni las fuentes ni sus versiones modificadas se vendan por si solas.
+  2. Los ficheros distribuidos incluyan este aviso de copyright y esta licencia.
+  3. Ninguna version modificada use los Reserved Font Names sin permiso.
+  4. Las versiones modificadas se distribuyan bajo esta misma licencia.
+
+Las fuentes se proporcionan "TAL CUAL", sin garantia de ningun tipo.

@@ -1,0 +1,164 @@
+/* ============================================================================
+   recomendaciones.js — Los 24 códigos de error → frase llana → actividad de aula
+   ----------------------------------------------------------------------------
+   CU8 (PLAN §6.3) comprueba que este fichero y CB.ERRORES tienen EXACTAMENTE el
+   mismo conjunto de claves, y que ninguna entrada tiene la frase o la actividad
+   vacías. Si alguien añade un código en 18-distractores.js y se olvida de la
+   recomendación, la suite se pone en rojo.
+
+   La frase va dirigida a una persona adulta sin formación matemática. Nada de
+   «error de transferencia en el algoritmo aditivo»: «se olvida de llevar».
+   La actividad es SIEMPRE manipulativa y de 10 minutos, porque el remedio de un
+   error de procedimiento no está en más pantalla.
+   ========================================================================== */
+
+var CB = CB || {};
+CB.datos = CB.datos || {};
+
+CB.datos.RECOMENDACIONES = {
+
+  /* ── Sumas ───────────────────────────────────────────────────────────── */
+  'E-S-LLEV-OLV': {
+    frase: 'Suma bien las columnas pero se olvida de llevar la decena.',
+    actividad: 'Con 20 palillos y gomas: que sume 8 + 5 juntando palillos y que ATE un ' +
+               'manojo de 10 en cuanto lo consiga. El manojo atado es la llevada. Repetidlo ' +
+               'con 7 + 6 y 9 + 4 antes de volver a escribir nada en papel.'
+  },
+  'E-S-LLEV-ESCR': {
+    frase: 'Escribe en la casilla el resultado entero de la columna, en vez de dejar ' +
+           'solo las unidades y llevar el resto.',
+    actividad: 'Cajita de las unidades: dibujad dos cajas, una para unidades y otra para ' +
+               'decenas, y decid en voz alta «en la caja de las unidades solo cabe hasta 9». ' +
+               'Que reparta 13 fichas entre las dos cajas él mismo.'
+  },
+  'E-S-LLEV-DOBLE': {
+    frase: 'Lleva la decena, pero luego la vuelve a sumar otra vez.',
+    actividad: 'Que escriba la llevada arriba con lápiz y la TACHE en cuanto la use. ' +
+               'Ver la marca tachada le da la señal de que esa decena ya está gastada.'
+  },
+  'E-S-COL': {
+    frase: 'Descoloca las columnas: suma una decena con una unidad.',
+    actividad: 'Papel cuadriculado, una cifra por cuadro. Diez minutos copiando cinco ' +
+               'sumas en la cuadrícula SIN resolverlas: el objetivo del día es solo colocar.'
+  },
+
+  /* ── Restas ──────────────────────────────────────────────────────────── */
+  'E-R-INV': {
+    frase: 'Cuando el número de arriba es menor, resta al revés: quita el pequeño del ' +
+           'grande dentro de la columna. Es el error de resta más común de 2.º.',
+    actividad: 'Con 3 monedas de 1 € en la mano, pedidle 8 €. Que diga en voz alta ' +
+               '«no puedo, necesito cambio». Cambiad un billete de 10 por 10 monedas y ' +
+               'que lo vuelva a intentar. La palabra clave es CAMBIO, no «al revés».'
+  },
+  'E-R-PREST-OLV': {
+    frase: 'Pide prestada la decena, pero se olvida de quitarle 1 a la columna de al lado.',
+    actividad: 'Regletas o palillos: que DESATE físicamente el manojo de 10 y compruebe ' +
+               'que ahora hay un manojo menos. Contad juntos los manojos antes y después.'
+  },
+  'E-R-PREST-DOBLE': {
+    frase: 'Al pedir prestado, resta dos veces de la columna de al lado.',
+    actividad: 'Que tache la decena prestada mientras lo dice en alto: «me llevo una, ' +
+               'ya está gastada». Cinco restas con llevada, tachando siempre.'
+  },
+  'E-R-CERO': {
+    frase: 'Se atasca cuando hay un cero en el número de arriba y hay que pedir prestado ' +
+           'a través de él.',
+    actividad: 'Esto es contenido de 3.º: el juego no se lo va a volver a proponer. Si ' +
+               'aun así queréis trabajarlo, usad monedas: 1 billete de 100 se cambia por ' +
+               '10 de 10, y uno de esos por 10 monedas de 1.'
+  },
+  'E-R-SUMA': {
+    frase: 'Suma cuando había que restar. Suele ser lectura rápida del signo.',
+    actividad: 'Tarjetas con + y − boca abajo. Saca una, y que diga en voz alta si el ' +
+               'resultado va a ser MAYOR o MENOR que el número de partida, antes de operar.'
+  },
+
+  /* ── Numeración ──────────────────────────────────────────────────────── */
+  'E-N-POS': {
+    frase: 'Confunde el valor de las cifras según su lugar: lee 34 donde pone 43.',
+    actividad: 'Tabla de valor posicional en una hoja, con dos columnas: D y U. Dictadle ' +
+               'seis números y que coloque una ficha en cada columna antes de escribirlos.'
+  },
+  'E-N-CERO': {
+    frase: 'Se salta el cero de en medio: escribe 37 donde pone 307.',
+    actividad: 'Con tres cajas (C, D, U) y garbanzos: pedidle 307 y que vea que la caja ' +
+               'de las decenas se queda VACÍA, y que el cero es justo lo que dice eso.'
+  },
+  'E-N-SERIE': {
+    frase: 'Se pierde en las series: se salta un paso o cambia el salto a mitad de camino.',
+    actividad: 'Contad juntos de 2 en 2 y de 5 en 5 dando palmadas, subiendo y BAJANDO. ' +
+               'Bajar es lo que casi nunca se practica y es donde aparece el fallo.'
+  },
+  'E-N-APROX': {
+    frase: 'Aproxima a la decena equivocada, casi siempre hacia abajo.',
+    actividad: 'Recta numérica dibujada de 0 a 100 en una tira de papel. Marcad el número ' +
+               'y preguntadle a qué decena está MÁS CERCA. Es una pregunta de distancia, no de cálculo.'
+  },
+  'E-N-ORDEN': {
+    frase: 'Ordena los números al revés, o se lía cuando le piden «de mayor a menor».',
+    actividad: 'Cartas del 1 al 20 boca arriba en la mesa. Que las ordene primero de menor ' +
+               'a mayor y luego al revés, diciendo en alto en qué sentido va.'
+  },
+
+  /* ── Multiplicación ──────────────────────────────────────────────────── */
+  'E-M-SUMA': {
+    frase: 'Suma los dos factores en vez de multiplicar: para 3 × 4 responde 7.',
+    actividad: 'Hueveras o cajas de 4: que ponga 3 huevos en cada una de las 4 y cuente. ' +
+               'Multiplicar es «cuántos hay en total si repito ese grupo».'
+  },
+  'E-M-VECINO': {
+    frase: 'Da el resultado de al lado en la tabla: para 5 × 6 responde 35.',
+    actividad: 'Cantad la tabla del 5 completa, subiendo, y luego preguntadle solo el ' +
+               'que falla. Suele ser recuperación de memoria, no falta de comprensión.'
+  },
+  'E-M-CERO': {
+    frase: 'Se atasca con el 0 y con el 1: para 4 × 0 responde 4.',
+    actividad: 'Cuatro platos vacíos sobre la mesa: «hay cuatro platos con cero galletas ' +
+               'cada uno, ¿cuántas galletas hay?». Que lo diga mirando los platos.'
+  },
+
+  /* ── Problemas ───────────────────────────────────────────────────────── */
+  'E-P-PALCLAVE': {
+    frase: 'Se guía por la palabra suelta y no por lo que cuenta el problema: ve «más» y ' +
+           'suma, aunque el problema pidiera restar.',
+    actividad: 'Leedle el problema y que lo DIBUJE con dos barras, una por cada personaje, ' +
+               'antes de escribir ninguna cuenta. La barra enseña quién tiene más sin ' +
+               'depender de la palabra.'
+  },
+  'E-P-TODOSDATOS': {
+    frase: 'Usa todos los números que aparecen, incluido el que no hacía falta.',
+    actividad: 'Subrayad juntos SOLO los datos que sirven, y tachad el que sobra, antes de ' +
+               'operar. Preguntadle: «¿este número para qué te sirve?».'
+  },
+  'E-P-CALCULO': {
+    frase: 'Entiende el problema y elige bien la operación: falla solo al calcular. Esto ' +
+           'NO es un problema de comprensión lectora.',
+    actividad: 'No trabajéis el problema: trabajad la cuenta suelta. Cinco minutos de la ' +
+               'operación concreta que falla, sin enunciado, es lo que hace falta.'
+  },
+
+  /* ── Dinero ──────────────────────────────────────────────────────────── */
+  'E-E-VALOR': {
+    frase: 'Cuenta las piezas en vez de su valor: tres monedas de 2 € le parecen 3 €.',
+    actividad: 'Monedas de verdad sobre la mesa. Que haga montones por valor y cuente ' +
+               '«de dos en dos» los de 2 €. Comparad un montón de tres monedas de 1 € con ' +
+               'otro de dos monedas de 2 €.'
+  },
+  'E-E-CAMBIO': {
+    frase: 'Al calcular el cambio suma en vez de restar.',
+    actividad: 'Jugad a la tienda de verdad, con monedas. Que sea él quien cobre y ' +
+               'devuelva el cambio contando hacia arriba desde el precio.'
+  },
+
+  /* ── Vocabulario ─────────────────────────────────────────────────────── */
+  'E-V-TERMINO': {
+    frase: 'Confunde dos términos del vocabulario matemático.',
+    actividad: 'Tarjetas con la palabra por una cara y un dibujo por la otra. Cinco minutos ' +
+               'de emparejar. El vocabulario se aprende por uso, no por definición.'
+  },
+  'E-V-SINONIMO': {
+    frase: 'Reconoce la palabra suelta pero no la reconoce dentro de una frase.',
+    actividad: 'Que sea él quien INVENTE un problema usando la palabra. Inventar el ' +
+               'problema exige entender la palabra mucho más que resolverlo.'
+  }
+};

@@ -1,0 +1,124 @@
+/* ============================================================================
+   28-memoria.js — Curva de olvido y los 6 estados de una veta
+   ----------------------------------------------------------------------------
+   FUNCIÓN PURA.
+
+   LA RAZÓN PARA VOLVER MAÑANA ES HONESTA (PLAN §13.4): una veta se ha cubierto
+   de musgo y repasarla cuesta dos minutos. Eso SUSTITUYE a la racha que se
+   pierde, que es un patrón oscuro prohibido por el código de diseño apropiado a
+   la edad. La diferencia no es cosmética: el musgo informa de un hecho real
+   sobre la memoria del niño; la racha perdida solo fabrica miedo a no volver.
+   ========================================================================== */
+
+var CB = CB || {};
+CB.memoria = CB.memoria || {};
+
+CB.memoria.ESTADOS = ['bloqueado', 'nuevo', 'aprendiendo', 'afianzada', 'dominada', 'oxidada'];
+
+CB.memoria.ETIQUETA = {
+  bloqueado:   'aún cerrada',
+  nuevo:       'sin empezar',
+  aprendiendo: 'en marcha',
+  afianzada:   'afianzada',
+  dominada:    'dominada',
+  oxidada:     'con musgo'
+};
+
+CB.memoria.ICONO = {
+  bloqueado: '🔒', nuevo: '·', aprendiendo: '◔',
+  afianzada: '◆', dominada: '💎', oxidada: '🌿'
+};
+
+/* R = 2^(-d/S). Blindado contra fechas imposibles y relojes mal puestos. */
+CB.memoria.recuperabilidad = function (estado, hoyISO) {
+  if (!estado || !estado.ultimoRepasoISO) return 1;
+  var d = Math.max(0, CB.util.diasEntre(estado.ultimoRepasoISO, hoyISO));
+  if (!isFinite(d)) d = 0;
+  var S = Math.max(1, estado.estabilidadDias || 1);
+  var r = Math.pow(2, -d / S);
+  return isFinite(r) ? CB.util.clamp(r, 0, 1) : 1;
+};
+
+/* La estabilidad crece con el acierto y se desploma con el fallo. */
+CB.memoria.actualizarEstabilidad = function (estado, acierto) {
+  var S = Math.max(1, estado.estabilidadDias || 1);
+  if (acierto) {
+    S = Math.min(180, S * 1.9 + 0.5);
+  } else {
+    S = Math.max(1, S * 0.4);
+  }
+  estado.estabilidadDias = Math.round(S * 10) / 10;
+  return estado.estabilidadDias;
+};
+
+CB.memoria.clasificar = function (estado, hoyISO, bloqueado) {
+  if (bloqueado) return 'bloqueado';
+  if (!estado || !estado.n) return 'nuevo';
+
+  var p1 = (estado.aciertosPrimerIntento || 0) / estado.n;
+  var R = CB.memoria.recuperabilidad(estado, hoyISO);
+  var eraSolida = (estado.estado === 'afianzada' || estado.estado === 'dominada');
+
+  /* Oxidada: era sólida y se ha olvidado. Es el único estado que MIRA ATRÁS. */
+  if (eraSolida && R < 0.6) return 'oxidada';
+
+  /* Dominada, criterio endurecido (§17.2 métrica 5): no basta con acertar
+     mucho; hace falta volumen, precisión a primer intento y persistencia en el
+     tiempo. Sin las tres condiciones, «dominada» es una palabra vacía que el
+     informe le enseña a una familia. */
+  if (estado.n >= 12 && p1 >= 0.90 && (estado.estabilidadDias || 1) >= 6 && R >= 0.8) {
+    return 'dominada';
+  }
+  if (p1 >= 0.75) return 'afianzada';
+  return 'aprendiendo';
+};
+
+/* Recalcula y persiste el estado de todas las destrezas del perfil. */
+CB.memoria.reclasificarTodo = function (perfil, hoyISO) {
+  if (!perfil || !perfil.destrezas) return;
+  var k;
+  for (k in perfil.destrezas) {
+    if (!Object.prototype.hasOwnProperty.call(perfil.destrezas, k)) continue;
+    perfil.destrezas[k].estado = CB.memoria.clasificar(perfil.destrezas[k], hoyISO, false);
+  }
+};
+
+/* Destrezas vencidas hoy, ordenadas por recuperabilidad ascendente: primero las
+   que más se han olvidado. */
+CB.memoria.vencidosHoy = function (perfil, hoyISO) {
+  if (!perfil || !perfil.destrezas) return [];
+  var lista = [], k, d, R;
+  for (k in perfil.destrezas) {
+    if (!Object.prototype.hasOwnProperty.call(perfil.destrezas, k)) continue;
+    d = perfil.destrezas[k];
+    if (!d.n) continue;
+    R = CB.memoria.recuperabilidad(d, hoyISO);
+    if (R < 0.7) lista.push({ destreza: k, R: R });
+  }
+  lista.sort(function (a, b) { return a.R - b.R; });
+  return lista.map(function (x) { return x.destreza; });
+};
+
+/* Marca un repaso hecho hoy. */
+CB.memoria.repasado = function (estado, acierto, hoyISO) {
+  CB.memoria.actualizarEstabilidad(estado, acierto);
+  estado.ultimoRepasoISO = hoyISO;
+  estado.proximoRepasoISO = CB.util.sumarDias(
+    hoyISO, Math.max(1, Math.round(estado.estabilidadDias || 1))
+  );
+  return estado;
+};
+
+/* ¿Hay alguna veta que se acabe de restaurar? Alimenta el logro «Veta
+   restaurada», que concede luz. Solo cuenta si han pasado ≥48 h desde el último
+   repaso: sin esa condición, el logro se farmearía repasando en bucle. */
+CB.memoria.vetaRestaurada = function (estadoAntes, estadoDespues, hoyISO) {
+  if (!estadoAntes || estadoAntes !== 'oxidada') return false;
+  if (estadoDespues !== 'afianzada' && estadoDespues !== 'dominada') return false;
+  return true;
+};
+
+CB.memoria.hanPasado48h = function (estado, hoyISO) {
+  if (!estado || !estado.ultimoRepasoISO) return true;
+  return CB.util.diasEntre(estado.ultimoRepasoISO, hoyISO) >= 2;
+};

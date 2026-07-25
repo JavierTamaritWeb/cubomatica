@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cubomática — suite de pruebas</title>
+<link rel="stylesheet" href="../css/00-fuentes.css">
+<link rel="stylesheet" href="../css/01-variables.css">
+<link rel="stylesheet" href="../css/02-base.css">
+<link rel="stylesheet" href="../css/03-componentes.css">
+<link rel="stylesheet" href="../css/04-pantallas.css">
+<link rel="stylesheet" href="../css/05-animaciones.css">
+<link rel="stylesheet" href="../css/06-biomas.css">
+<link rel="stylesheet" href="../css/07-adulto.css">
+<style>
+  body { font-family: var(--fuente-lectura); padding: 24px; letter-spacing: normal; }
+  h1 { font-family: var(--fuente-lectura); font-size: 24px; }
+  .suite { margin: 16px 0; padding: 12px; background: #FFFFFF; color: #241C14;
+           box-shadow: inset 3px 3px 0 0 #8C8C8C; }
+  .suite h2 { font-size: 18px; margin: 0 0 8px 0; font-family: var(--fuente-lectura); }
+  .caso { font-size: 13px; padding: 2px 0; font-family: ui-monospace, monospace; }
+  .ok   { color: #14601C; }
+  .mal  { color: #8C1500; font-weight: bold; }
+  .saltado { color: #6E6E6E; }
+  #resumen { position: sticky; top: 0; padding: 12px; font-size: 18px; font-weight: bold;
+             background: #241C14; color: #FFF6E5; z-index: 10; }
+  #resumen.verde { background: #14601C; }
+  #resumen.rojo  { background: #8C1500; }
+  .barra-carga { margin: 8px 0; }
+  button { font-size: 15px; padding: 8px 14px; margin-right: 8px;
+           background: #D9B98C; color: #241C14; border: 0; cursor: pointer; }
+  #region-viva { position: absolute; width: 1px; height: 1px; overflow: hidden; }
+</style>
+</head>
+<body>
+
+<h1>Cubomática — suite de pruebas</h1>
+<div id="resumen">Preparando…</div>
+<div class="barra-carga"><i id="progreso" style="width:0%"></i></div>
+<p>
+  <button id="btn-rapida">Suite rápida</button>
+  <button id="btn-larga">Suite larga (exhaustiva)</button>
+  <button id="btn-limpiar">Limpiar</button>
+</p>
+<p class="texto-menor" style="color:#4A3A28">
+  La suite completa requiere servidor local: <code>servir.command</code> →
+  <code>http://localhost:8000/pruebas/pruebas.html</code>. Con doble clic se ejecuta
+  todo salvo lo que necesita leer ficheros del disco. La auditoría que bloquea la
+  entrega es <code>pruebas/auditar.sh</code>.
+</p>
+
+<div id="salida"></div>
+<div id="region-viva" role="status" aria-live="polite"></div>
+
+<!-- Las 17 secciones, ocultas: casos-carga.js comprueba que existen todas y
+     30-ui.js necesita algunos nodos para pintar sin reventar. -->
+<div hidden>
+  <section id="p-portada" class="pantalla" hidden></section>
+  <section id="p-perfiles" class="pantalla" hidden><div id="lista-perfiles"></div>
+    <button id="btn-nuevo-perfil"></button></section>
+  <section id="p-calibracion" class="pantalla" hidden><div id="cal-enunciado"></div>
+    <div id="cal-respuesta"></div></section>
+  <section id="p-mapa" class="pantalla" hidden><p id="mapa-saludo"></p>
+    <div id="rejilla-mundos"></div></section>
+  <section id="p-cantera" class="pantalla" hidden><p id="cantera-pista"></p>
+    <div id="rejilla-vetas"></div><button id="btn-toda-cantera"></button>
+    <div id="leyenda-vetas"></div></section>
+  <section id="p-partida" class="pantalla" hidden>
+    <div id="hud-luces"></div>
+    <div id="hud-reloj" hidden><div class="reloj-arena">
+      <span class="ra-bulbo ra-bulbo--alto"><i id="ra-alta" class="ra-arena"></i></span>
+      <span class="ra-chorro"></span>
+      <span class="ra-bulbo ra-bulbo--bajo"><i id="ra-baja" class="ra-arena"></i></span>
+    </div><span id="hud-segundos">30</span></div>
+    <span id="hud-gemas"></span>
+    <div class="zona-juego" id="zona-juego"><div class="cielo"></div>
+      <div id="item-enunciado"></div><div id="item-mensaje" hidden></div>
+      <div id="cri-cubi"></div><div id="cri-rocarr" hidden></div>
+      <div id="cri-gluglu" hidden></div><div id="cri-chispa" hidden></div>
+      <div id="item-bono" hidden></div><div id="item-respuesta"></div>
+      <div id="aviso-prisa" hidden>Hurry up!</div></div>
+  </section>
+  <section id="p-reparacion" class="pantalla" hidden><div id="rep-lienzo"></div>
+    <div id="rep-pasos"></div><button id="btn-lo-pillo"></button><p id="rep-ayuda"></p></section>
+  <section id="p-descanso" class="pantalla" hidden><h1 id="descanso-titulo"></h1>
+    <div id="descanso-tablero"></div><button id="btn-seguir"></button></section>
+  <section id="p-jefe" class="pantalla" hidden><h1 id="jefe-nombre"></h1>
+    <div id="jefe-criatura"></div><div id="jefe-armadura"></div>
+    <div id="jefe-enunciado"></div><div id="jefe-opciones"></div><p id="jefe-aviso"></p></section>
+  <section id="p-fin" class="pantalla" hidden><h1 id="fin-titulo"></h1>
+    <p id="fin-subtitulo"></p><div id="fin-dominado"></div><span id="fin-gemas"></span>
+    <p id="fin-bono"></p><div id="fin-animo" hidden></div>
+    <button id="btn-otra"></button><button id="btn-tranquila-fin" hidden></button></section>
+  <section id="p-casa" class="pantalla" hidden><p id="casa-resumen"></p>
+    <div id="rejilla-cromos"></div></section>
+  <section id="p-glosario" class="pantalla" hidden><p id="glosario-resumen"></p>
+    <div id="lista-glosario"></div></section>
+  <section id="p-ajustes" class="pantalla" hidden><div id="lista-ajustes"></div></section>
+  <section id="p-adulto" class="pantalla" hidden><div id="adulto-puerta">
+    <p id="adulto-pregunta"></p><input id="adulto-respuesta">
+    <button id="adulto-entrar"></button><p id="adulto-error" hidden></p></div>
+    <div id="adulto-contenido" hidden></div></section>
+  <section id="p-informe" class="pantalla imprimible" hidden><div id="informe-cuerpo"></div>
+    <button id="btn-imprimir"></button></section>
+  <section id="p-creditos" class="pantalla" hidden><div id="creditos-legal"></div>
+    <div id="creditos-curriculo"></div>
+    <div id="creditos-musica"></div></section>
+  <section id="p-error" class="pantalla" hidden><p id="error-detalle"></p>
+    <button id="btn-error-mapa"></button></section>
+</div>
+
+<!-- LOS MISMOS 44 SCRIPTS, en el MISMO orden. El contrato de §14.2 vive en un
+     solo sitio; aquí solo cambia el prefijo de ruta. -->
+<script src="../datos/curriculo-rd157.js"></script>
+<script src="../datos/nombres.js"></script>
+<script src="../datos/objetos.js"></script>
+<script src="../datos/vocabulario.js"></script>
+<script src="../datos/mensajes.js"></script>
+<script src="../datos/motes.js"></script>
+<script src="../datos/recomendaciones.js"></script>
+<script src="../js/00-nucleo.js"></script>
+<script src="../js/01-almacen.js"></script>
+<script src="../js/02-texturas.js"></script>
+<script src="../js/03-sprites.js"></script>
+<script src="../js/04-audio.js"></script>
+<script src="../js/05-voz.js"></script>
+<script src="../js/06-a11y.js"></script>
+<script src="../js/07-musica.js"></script>
+<script src="../js/10-gen-numeracion.js"></script>
+<script src="../js/11-gen-sumas.js"></script>
+<script src="../js/12-gen-restas.js"></script>
+<script src="../js/13-gen-multiplicacion.js"></script>
+<script src="../js/14-gen-problemas.js"></script>
+<script src="../js/15-gen-dinero.js"></script>
+<script src="../js/16-gen-vocabulario.js"></script>
+<script src="../js/17-catalogo.js"></script>
+<script src="../js/18-distractores.js"></script>
+<script src="../js/20-puntuacion.js"></script>
+<script src="../js/21-antiazar.js"></script>
+<script src="../js/22-vidas.js"></script>
+<script src="../js/23-adaptativo.js"></script>
+<script src="../js/24-logros.js"></script>
+<script src="../js/25-mensajes.js"></script>
+<script src="../js/26-reparacion.js"></script>
+<script src="../js/27-repaso.js"></script>
+<script src="../js/28-memoria.js"></script>
+<script src="../js/29-grafo.js"></script>
+<script src="../js/2A-escalera.js"></script>
+<script src="../js/30-ui.js"></script>
+<script src="../js/31-pantallas.js"></script>
+<script src="../js/32-componentes.js"></script>
+<script src="../js/40-partida.js"></script>
+<script src="../js/41-panel-adulto.js"></script>
+<script src="../js/42-jefes.js"></script>
+<script src="../js/43-mapa-destrezas.js"></script>
+<script src="../js/44-casa.js"></script>
+<script src="../js/99-arranque.js"></script>
+
+<!-- El ejecutor y los casos -->
+<script src="ejecutor.js"></script>
+<script src="casos-carga.js"></script>
+<script src="casos-formulas.js"></script>
+<script src="casos-generadores.js"></script>
+<script src="casos-problemas.js"></script>
+<script src="casos-motor.js"></script>
+<script src="casos-curriculo.js"></script>
+<script src="casos-mensajes.js"></script>
+<script src="casos-contraste.js"></script>
+<script src="casos-fuente.js"></script>
+<script src="casos-marca.js"></script>
+<script src="casos-musica.js"></script>
+<script src="casos-reloj.js"></script>
+<script>CB.pruebas.conectarBotones();</script>
+</body>
+</html>

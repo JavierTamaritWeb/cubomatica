@@ -1,0 +1,36 @@
+NOTA SOBRE LA TIPOGRAFIA
+========================
+
+Cubomatica NO distribuye ningun fichero de fuente. Ni .woff2, ni .ttf, ni base64.
+
+El @font-face de css/00-fuentes.css declara la familia "Bloque Pixel" usando
+EXCLUSIVAMENTE la funcion local(): si el sistema tiene instalada Silkscreen o
+Press Start 2P, se usa; si no, la cascada cae en la pila monoespaciada del
+sistema, que en las tres plataformas objetivo (macOS, Windows, ChromeOS) tiene
+cobertura completa de AEIOU con tilde, la enye, los signos de apertura y el
+simbolo del euro.
+
+pruebas/casos-fuente.js comprueba, comparando pixel a pixel contra un caracter
+del area de uso privado, que ninguno de los 29 glifos criticos cae en .notdef.
+El nino nunca ve un cuadrado vacio.
+
+SOBRE EL RESERVED FONT NAME
+---------------------------
+La SIL Open Font License 1.1 obliga a RENOMBRAR una fuente si se modifica o se
+subsetea. Por eso la familia se llama "Bloque Pixel" y no con el nombre original.
+Como este proyecto NO incrusta ni modifica ningun fichero de fuente, el nombre
+propio se conserva solo por coherencia con la cascada declarada.
+
+Si en el futuro se decidiera incrustar una fuente subseteada, el comando seria:
+
+  pyftsubset ORIGINAL.ttf \
+    --text="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ÁÉÍÓÚÜÑáéíóúüñ¿?¡!«»€+-×=.,:;" \
+    --flavor=woff2 --output-file=bloque-pixel.woff2
+
+y en ese momento habria que anadir aqui el nombre original de la fuente, su
+autoria y el texto integro de su licencia OFL.
+
+TEXTOS DE LICENCIA
+------------------
+docs/licencias/OFL-Silkscreen.txt      (referencia, fuente no distribuida)
+docs/licencias/OFL-PressStart2P.txt    (referencia, fuente no distribuida)

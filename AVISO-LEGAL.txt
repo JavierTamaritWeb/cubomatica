@@ -1,0 +1,96 @@
+CUBOMATICA — AVISO LEGAL
+========================
+Version 1.0.0
+
+1. INDEPENDENCIA Y AUSENCIA DE AFILIACION
+-----------------------------------------
+Cubomatica es una obra original e independiente. No esta afiliada, patrocinada,
+respaldada ni autorizada por Mojang Studios ni por Microsoft Corporation, ni por
+ninguna otra empresa titular de videojuegos de mundo abierto con estetica de bloques.
+
+Cubomatica no utiliza, reproduce ni deriva de ningun elemento protegido de terceros:
+ni nombres comerciales, ni logotipos, ni tipografias oficiales, ni texturas, ni
+disenos de personaje, ni sonidos, ni codigo. Todos los nombres de criaturas, mundos,
+bloques y personajes de este juego son creacion propia del proyecto.
+
+La estetica voxel o pixel-art de bloques es un GENERO artistico y, como tal, no es
+susceptible de apropiacion exclusiva. Lo que si esta protegido son las expresiones
+concretas —nombres, logotipos, texturas y disenos determinados—, y ninguna de ellas
+se emplea aqui.
+
+Cualquier marca registrada mencionada en este fichero, incluidas las de Mojang
+Studios y Microsoft Corporation, pertenece a sus respectivos titulares y se cita
+unicamente con finalidad identificativa y aclaratoria, al amparo del uso descriptivo
+de marca ajena.
+
+2. CURRICULO Y NORMATIVA EDUCATIVA
+----------------------------------
+Cubomatica trabaja el bloque A (Sentido numerico) y, de forma transversal, el bloque F
+(Sentido socioafectivo) de los saberes basicos del primer ciclo de Matematicas del
+Real Decreto 157/2022, de 1 de marzo, por el que se establecen la ordenacion y las
+ensenanzas minimas de la Educacion Primaria (BOE num. 52, de 2 de marzo de 2022;
+referencia BOE-A-2022-3296).
+
+NO trabaja los bloques B (sentido de la medida), C (sentido espacial), D (sentido
+algebraico) ni E (sentido estocastico): esos saberes se trabajan en el aula y este
+juego no los sustituye.
+
+El Real Decreto fija saberes basicos y criterios de evaluacion POR CICLO (1.er ciclo =
+1.o y 2.o juntos), no por curso ni por trimestre. La distribucion por curso y trimestre
+de este juego es una secuenciacion PROPIA del proyecto, basada en la practica de aula
+habitual. Debe confirmarse con la programacion didactica del centro.
+
+Las tablas del 2, del 5 y del 10 se practican como iniciacion en el tercer trimestre,
+tal como es habitual en el aula de 2.o. El Real Decreto 157/2022 situa la construccion
+de las tablas de multiplicar en el segundo ciclo, por lo que el resto de tablas esta
+desactivado salvo que la persona adulta lo active.
+
+Cubomatica no es una evaluacion, ni una nota, ni un test de capacidad, ni un
+instrumento de diagnostico clinico. No sustituye al criterio del maestro ni al
+material manipulativo.
+
+3. PRIVACIDAD Y PROTECCION DE DATOS
+-----------------------------------
+Cubomatica NO recoge datos personales de ningun tipo.
+
+  - No hay servidor. No hay red. No hay peticiones a internet de ninguna clase.
+  - No hay cuentas, ni registro, ni correo electronico, ni contrasenas.
+  - No hay analitica, ni telemetria, ni cookies de terceros, ni identificadores
+    publicitarios.
+  - El nino se identifica con un MOTE de una lista cerrada de 120 (por ejemplo,
+    "Topo Cavador"), jamas con su nombre real, su edad ni su ubicacion.
+  - Todo el progreso vive en el almacenamiento local del navegador de este
+    dispositivo (localStorage) y no sale de el.
+  - Borrar los datos del navegador, o pulsar "Borrar este perfil" en el panel de
+    personas adultas, elimina toda la informacion de forma definitiva.
+
+Al no tratarse datos personales, no procede la aplicacion del Reglamento (UE) 2016/679
+(RGPD) ni de la Ley Organica 3/2018 (LOPDGDD) a este software. El diseno sigue,
+ademas, los principios del codigo de diseno apropiado a la edad: sin patrones oscuros,
+sin compras, sin comparacion social entre menores, sin presion por abandonar y sin
+mecanicas de recompensa aleatoria opaca.
+
+LIMITACION ESTRUCTURAL: sin servidor, el progreso vive solo en este navegador. Si
+cambias de ordenador o limpias el navegador, se pierde. Haz una copia con "Exportar"
+al terminar cada trimestre.
+
+4. ACCESIBILIDAD
+----------------
+Cubomatica persigue el nivel AA de las WCAG 2.2 y los requisitos de la norma
+EN 301 549 aplicables a material educativo: contraste minimo 4,5:1 en texto normal,
+sin informacion transmitida unicamente por color, tiempo ajustable, navegacion
+completa por teclado y respeto de "prefers-reduced-motion".
+
+5. LICENCIAS DE TERCEROS
+------------------------
+Las tipografias de mapa de bits empleadas se distribuyen bajo SIL Open Font License
+1.1. Sus textos de licencia integros estan en docs/licencias/. El proyecto no incluye
+ningun otro componente de terceros: no hay bibliotecas, ni frameworks, ni CDN, ni
+ficheros de imagen o de audio.
+
+6. GARANTIA
+-----------
+Este software se proporciona "tal cual", sin garantia de ningun tipo. Las personas
+autoras no se responsabilizan de las decisiones pedagogicas que se tomen a partir de
+la informacion que muestra el panel de personas adultas, que es orientativa y en
+ningun caso diagnostica.

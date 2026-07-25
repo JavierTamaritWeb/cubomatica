@@ -1,0 +1,68 @@
+# Cubomática — .gitignore
+#
+# Este proyecto NO tiene dependencias, ni compilación, ni bundler, ni carpeta de
+# salida: el juego SON los ficheros del repositorio. Por eso aquí no hay
+# node_modules, ni dist/, ni build/. Todo lo que se ignora es basura del sistema
+# operativo, del editor o de haber levantado un servidor local para probar.
+#
+# Lo que NO se ignora, a propósito:
+#   audio/*.mp3   son parte del juego; sin ellas no suena. Ver audio/CREDITOS.txt
+#   docs/         documentación interna: no se distribuye CON EL JUEGO, pero sí
+#                 forma parte del repositorio, porque explica por qué el código
+#                 es como es.
+#   PLAN.md       la especificación de la que salió todo.
+
+# ── macOS ──────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+.DocumentRevisions-V100
+.VolumeIcon.icns
+
+# ── Windows ────────────────────────────────────────────────────────────────
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── Linux ──────────────────────────────────────────────────────────────────
+*~
+.directory
+.Trash-*
+.nfs*
+
+# ── Editores ───────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+.netrwhist
+
+# ── Servidor local de pruebas ──────────────────────────────────────────────
+# `servir.command` levanta python3 -m http.server; esto es lo que deja atrás.
+__pycache__/
+*.py[cod]
+.server.pid
+*.log
+
+# ── Copias y temporales del propio trabajo ─────────────────────────────────
+*.bak
+*.orig
+*.rej
+*.tmp
+/tmp/
+/scratch/
+
+# ── Exportaciones de perfil ────────────────────────────────────────────────
+# El panel del adulto exporta el progreso a JSON. Son datos de un niño concreto
+# y no pintan nada en un repositorio público.
+cubomatica-*.json
+perfil-*.json
+informe-*.pdf

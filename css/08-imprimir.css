@@ -1,0 +1,89 @@
+/* ============================================================================
+   08-imprimir.css — Informe A4 y ficha de refuerzo en papel (PLAN §17.4)
+   ----------------------------------------------------------------------------
+   Criterio de HECHO de F8: el informe A4 sale legible en 3 clics, sin HUD, y el
+   semáforo se distingue en blanco y negro porque lleva símbolo y texto.
+   ========================================================================== */
+
+@media print {
+  @page { size: A4 portrait; margin: 14mm 12mm; }
+
+  html, body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-family: Verdana, Geneva, sans-serif !important;
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    height: auto !important;
+  }
+
+  /* Solo se imprime la pantalla marcada como imprimible */
+  .pantalla:not(.imprimible) { display: none !important; }
+  .imprimible[hidden] { display: block !important; }
+  .imprimible {
+    display: block !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Fuera todo lo que no sea contenido */
+  .hud, .barra-herramientas, .btn-bloque, .btn-adulto,
+  .no-imprimir, #region-viva, .particula, .cielo, .nube,
+  .criatura, .suelo-hierba { display: none !important; }
+
+  a[href]::after { content: ""; }
+
+  h1 { font-size: 17pt !important; margin: 0 0 4mm 0 !important; }
+  h2 { font-size: 13pt !important; margin: 6mm 0 2mm 0 !important;
+       page-break-after: avoid; }
+  h3 { font-size: 11pt !important; page-break-after: avoid; }
+
+  .adulto-caja, .adulto-aviso {
+    box-shadow: none !important;
+    border: 1pt solid #000000;
+    padding: 3mm !important;
+    margin-bottom: 4mm !important;
+    background: #FFFFFF !important;
+    page-break-inside: avoid;
+  }
+
+  .tabla-adulto { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  .tabla-adulto th, .tabla-adulto td {
+    border: .6pt solid #000000 !important;
+    padding: 1.6mm !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .tabla-adulto th { font-weight: bold; }
+  .tabla-adulto tr { page-break-inside: avoid; }
+
+  /* El semáforo ya lleva símbolo y texto en ::before: en B/N sigue leyéndose */
+  .semaforo { color: #000000 !important; }
+
+  .metrica { border-bottom: .6pt solid #000000 !important; }
+
+  /* ── Ficha de refuerzo: 10 ítems para hacer a lápiz ────────────────────── */
+  .ficha-refuerzo { page-break-before: always; }
+  .ficha-refuerzo .rejilla-ejercicios {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8mm 12mm;
+    margin-top: 6mm;
+  }
+  .ficha-refuerzo .ejercicio {
+    font-size: 20pt;
+    font-family: Verdana, Geneva, sans-serif;
+    border-bottom: .8pt solid #000000;
+    padding-bottom: 12mm;
+    page-break-inside: avoid;
+  }
+  .ficha-refuerzo .pie-ficha {
+    margin-top: 8mm; font-size: 9pt; border-top: .6pt solid #000000; padding-top: 2mm;
+  }
+
+  .pie-informe {
+    margin-top: 6mm; font-size: 8.5pt; border-top: .6pt solid #000000; padding-top: 2mm;
+  }
+}

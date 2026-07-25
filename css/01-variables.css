@@ -1,0 +1,167 @@
+/* ============================================================================
+   01-variables.css — La única fuente de verdad de medidas y colores
+   ----------------------------------------------------------------------------
+   DOS GRUPOS DE COLOR QUE NUNCA SE MEZCLAN (PLAN §10.1):
+
+     --bg-texto-*   fondos PLANOS. TODO texto vive aquí.
+     --deco-* / --tex-*   bloques, biomas y texturas. NUNCA llevan texto encima.
+
+   Motivo: el contraste de un texto sobre ruido pseudoaleatorio de 16×16 no es un
+   par de colores y no se puede verificar. `pruebas/casos-contraste.js` comprueba
+   par a par los ratios WCAG de los fondos de texto.
+   ========================================================================== */
+
+:root {
+  /* ── Retícula ──────────────────────────────────────────────────────────── */
+  --u: 4px;                      /* unidad base. TODA medida es múltiplo de --u */
+
+  /* Escala de espaciado. Prohibido cualquier margin/padding/gap fuera de ella. */
+  --e1: calc(var(--u) * 1);      /*  4px  separación interna mínima      */
+  --e2: calc(var(--u) * 2);      /*  8px  entre elementos hermanos       */
+  --e3: calc(var(--u) * 4);      /* 16px  separación entre botones (mín) */
+  --e4: calc(var(--u) * 8);      /* 32px  margen de panel                */
+  --e5: calc(var(--u) * 12);     /* 48px  separación entre bloques de UI */
+  --e6: calc(var(--u) * 16);     /* 64px  margen de pantalla             */
+
+  /* ── Tamaños de texto ─────────────────────────────────────────────────── */
+  --tam-enunciado:     28px;     /* enunciados de problema, pila del sistema   */
+  --tam-texto-min:     20px;     /* SUELO ABSOLUTO de todo texto del niño      */
+  --tam-numero-opcion: 44px;     /* dígitos de opciones y teclado, en pixel    */
+  --tam-titulo:        40px;
+  --tam-adulto:        16px;     /* única excepción al suelo: panel del adulto */
+
+  --interlineado:  1.6;
+  --espaciado-letra: .05em;
+  --espaciado-palabra: .16em;
+  --ancho-lectura: 34ch;         /* en ch, no en px: sobrevive a «Letra grande» */
+
+  /* ── Tamaños de control ───────────────────────────────────────────────── */
+  --lado-respuesta: 96px;        /* mínimo absoluto 64px, nunca se cruza */
+  --lado-icono: 64px;
+  --bisel: 4px;
+
+  /* ══ GRUPO 1 — FONDOS DE TEXTO (planos, verificados) ═══════════════════ */
+  --bg-texto-panel:   #FFF6E5;   /* crema, NUNCA blanco puro */
+  --bg-texto-crema:   #FFF6E5;
+  --bg-texto-oscuro:  #241C14;
+  --bg-texto-aviso:   #FFE9B8;
+  --bg-pantalla:      #2B2118;
+
+  --texto-principal:  #241C14;   /* 15,8:1 sobre crema */
+  --texto-secundario: #4A3A28;   /* 10,3:1 sobre crema */
+  --texto-claro:      #FFF6E5;   /* 14,9:1 sobre --bg-pantalla */
+  --texto-sec-claro:  #D9C9AE;   /*  9,7:1 sobre --bg-pantalla */
+  --texto-aviso:      #241C14;
+
+  /* Los DOS pares de texto del proyecto, y cuándo se usa cada uno:
+       sobre --bg-pantalla (fondo oscuro de pantalla) → --texto-claro / --texto-sec-claro
+       dentro de un .panel-bloque (crema)             → --texto-principal / --texto-secundario
+     Mezclarlos produce texto oscuro sobre fondo oscuro. casos-contraste.js
+     verifica los cuatro pares. */
+
+  --btn-fondo:         #D9B98C;  /*  9,0:1 con --btn-texto */
+  --btn-fondo-hundido: #A88A5E;  /*  5,2:1 con --btn-texto */
+  --btn-texto:         #241C14;
+  --btn-borde-luz:     #F0DDBE;
+  --btn-borde-sombra:  #7A5628;
+
+  --btn-primario:         #5AA02C;
+  --btn-primario-hundido: #3F7A1E;
+  --btn-primario-texto:   #241C14;   /* 5,2:1 sobre --btn-primario.
+       Texto OSCURO sobre el verde, no claro: el crema sobre #5AA02C da 3,05:1 y
+       no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
+
+  --ok-fondo:    #E3F3D6;
+  --ok-texto:    #1E3D10;
+  --mal-fondo:   #E8E4DE;            /* gris, NUNCA rojo (§10.4) */
+  --mal-texto:   #33302B;
+
+  --foco-oro:   #F5C518;
+  --foco-borde: #241C14;             /* anillo exterior: ver nota abajo */
+
+  --alto-contraste-bg:    #000000;
+  --alto-contraste-texto: #FFFFFF;   /* 21:1 */
+
+  /* NOTA SOBRE EL FOCO (desviación documentada del PLAN §10.3).
+     El plan pedía el par [--foco-oro, --bg-texto-panel] ≥ 3,0. Es inalcanzable:
+     el oro #F5C518 sobre crema #FFF6E5 da 1,54:1 y ningún oro reconocible como
+     tal llega a 3:1 sobre un fondo claro. Se implementa un indicador de foco de
+     DOS TONOS (oro + anillo oscuro), que es la solución correcta para WCAG 2.4.11
+     y 1.4.11: el indicador contrasta con lo que tiene al lado en ambos sentidos.
+     Los pares que se verifican son [--foco-oro, --foco-borde] = 10,3:1 y
+     [--foco-borde, --bg-texto-panel] = 15,8:1. */
+
+  /* ══ GRUPO 2 — DECORACIÓN: 13 materiales × 3 tonos = 39 ════════════════ */
+  --deco-piedra:      #8C8C8C;  --deco-piedra-osc:  #6E6E6E;  --deco-piedra-cla:  #ADADAD;
+  --deco-tierra:      #8B5E3C;  --deco-tierra-osc:  #6B4526;  --deco-tierra-cla:  #A87850;
+  --deco-hierba:      #5AA02C;  --deco-hierba-osc:  #3F7A1E;  --deco-hierba-cla:  #7BC44A;
+  --deco-madera:      #A0763F;  --deco-madera-osc:  #7A5628;  --deco-madera-cla:  #C29A62;
+  --deco-arena:       #E0D08A;  --deco-arena-osc:   #C4B067;  --deco-arena-cla:   #F0E4AE;
+  --deco-agua:        #3C7BD4;  --deco-agua-osc:    #2A5CA8;  --deco-agua-cla:    #5C9BE8;
+  --deco-hielo:       #A8D8E8;  --deco-hielo-osc:   #7FB8CC;  --deco-hielo-cla:   #CDECF5;
+  --deco-carbon:      #3A3A3A;  --deco-carbon-osc:  #232323;  --deco-carbon-cla:  #545454;
+  --deco-cobre:       #C87137;  --deco-cobre-osc:   #9E5525;  --deco-cobre-cla:   #E08F55;
+  --deco-cristal:     #7FD4E8;  --deco-cristal-osc: #55AEC4;  --deco-cristal-cla: #B0EAF5;
+  --deco-musgo:       #4E7A3A;  --deco-musgo-osc:   #3A5C2A;  --deco-musgo-cla:   #6D9B54;
+  --deco-brasa:       #E8642A;  --deco-brasa-osc:   #B84618;  --deco-brasa-cla:   #F58B52;
+  --deco-oro:         #E8B923;  --deco-oro-osc:     #B8900F;  --deco-oro-cla:     #F5D45C;
+
+  /* Alias semánticos de la interfaz de juego */
+  --cristal-claro: var(--deco-cristal-cla);
+  --luz-apagada:   #59554F;
+  --gema:          var(--deco-cristal);
+
+  /* Cielo: 6 pasos discretos, base garantizada en TODO navegador del suelo */
+  --cielo-0: #8FD3F4;  --cielo-1: #7FC2E8;  --cielo-2: #6BA6D6;
+  --cielo-3: #4F7BA8;  --cielo-4: #2E4A72;  --cielo-5: #1A2A48;
+  --cielo-dia:   #8FD3F4;
+  --cielo-noche: #1A2A48;
+
+  /* Texturas: las rellena js/02-texturas.js con data: URI al arrancar.
+     Valor inicial: color plano del material, para que nunca se vea un hueco. */
+  --tex-piedra:  var(--deco-piedra);
+  --tex-tierra:  var(--deco-tierra);
+  --tex-hierba:  var(--deco-hierba);
+  --tex-madera:  var(--deco-madera);
+  --tex-arena:   var(--deco-arena);
+  --tex-agua:    var(--deco-agua);
+  --tex-musgo:   var(--deco-musgo);
+  --tex-cristal: var(--deco-cristal);
+}
+
+/* ── Ajuste «Letra grande» del panel del adulto ────────────────────────── */
+:root.letra-grande {
+  --tam-enunciado:     34px;
+  --tam-texto-min:     24px;
+  --tam-numero-opcion: 52px;
+  --tam-titulo:        46px;
+}
+
+/* ── Modo proyección para pizarra digital (×1,6) ───────────────────────── */
+:root.modo-proyeccion {
+  --tam-enunciado:     45px;
+  --tam-texto-min:     32px;
+  --tam-numero-opcion: 70px;
+  --tam-titulo:        64px;
+  --lado-respuesta:    150px;
+}
+
+/* ── Alto contraste ────────────────────────────────────────────────────── */
+:root.alto-contraste {
+  --bg-texto-panel:   #000000;
+  --bg-texto-crema:   #000000;
+  --bg-pantalla:      #000000;
+  --texto-principal:  #FFFFFF;
+  --texto-secundario: #FFFFFF;
+  --btn-fondo:        #000000;
+  --btn-fondo-hundido:#333333;
+  --btn-texto:        #FFFFFF;
+  --btn-borde-luz:    #FFFFFF;
+  --btn-borde-sombra: #FFFFFF;
+  --btn-primario:     #000000;
+  --btn-primario-texto:#FFFFFF;
+  --ok-fondo:         #000000;
+  --ok-texto:         #FFFFFF;
+  --mal-fondo:        #000000;
+  --mal-texto:        #FFFFFF;
+}

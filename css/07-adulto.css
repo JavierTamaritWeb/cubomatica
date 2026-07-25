@@ -1,0 +1,97 @@
+/* ============================================================================
+   07-adulto.css — Panel de personas adultas
+   ----------------------------------------------------------------------------
+   Tipografía del sistema, sin pixel. Es el único lugar del proyecto exento del
+   suelo de --tam-texto-min: aquí hay tablas densas y quien lee es adulto.
+   ========================================================================== */
+
+#p-adulto, #p-informe {
+  background: var(--bg-texto-panel);
+  color: var(--texto-principal);
+  font-family: var(--fuente-lectura);
+  font-size: var(--tam-adulto);
+  letter-spacing: normal;
+  word-spacing: normal;
+  overflow-y: auto;
+}
+#p-adulto h1, #p-informe h1,
+#p-adulto h2, #p-informe h2,
+#p-adulto h3, #p-informe h3 {
+  font-family: var(--fuente-lectura);
+  letter-spacing: normal;
+  font-weight: bold;
+}
+#p-adulto h1, #p-informe h1 { font-size: 26px; }
+#p-adulto h2, #p-informe h2 { font-size: 20px; margin-top: var(--e4); }
+#p-adulto h3, #p-informe h3 { font-size: 17px; }
+#p-adulto p, #p-informe p, #p-adulto li, #p-informe li { max-width: 68ch; }
+
+.adulto-caja {
+  background: #FFFFFF;
+  padding: var(--e3);
+  box-shadow: inset 2px 2px 0 0 var(--deco-piedra);
+  margin-bottom: var(--e3);
+}
+.adulto-aviso {
+  background: var(--bg-texto-aviso);
+  color: var(--texto-aviso);
+  padding: var(--e3);
+  box-shadow: inset var(--bisel) 0 0 0 var(--deco-oro-osc);
+  margin-bottom: var(--e3);
+}
+
+.tabla-adulto { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tabla-adulto th, .tabla-adulto td {
+  border: 2px solid var(--deco-piedra);
+  padding: var(--e2);
+  text-align: left;
+  vertical-align: top;
+}
+.tabla-adulto th { background: var(--bg-texto-aviso); font-weight: bold; }
+.tabla-adulto tr:nth-child(even) td { background: #F6F1E6; }
+
+/* Semáforo: NUNCA solo color. Siempre símbolo + texto (§10.4, impresión B/N) */
+.semaforo { font-weight: bold; white-space: nowrap; }
+.semaforo[data-nivel="verde"]::before   { content: "\25CF\00A0dominado\00A0\2014\00A0"; }
+.semaforo[data-nivel="ambar"]::before   { content: "\25B2\00A0en\00A0proceso\00A0\2014\00A0"; }
+.semaforo[data-nivel="rojo"]::before    { content: "\25A0\00A0conviene\00A0trabajarlo\00A0\2014\00A0"; }
+.semaforo[data-nivel="sindatos"]::before{ content: "\25CB\00A0sin\00A0datos\00A0suficientes\00A0\2014\00A0"; }
+.semaforo[data-nivel="verde"] { color: #1E3D10; }
+.semaforo[data-nivel="ambar"] { color: #6B4526; }
+.semaforo[data-nivel="rojo"]  { color: #7A2010; }
+.semaforo[data-nivel="sindatos"] { color: var(--texto-secundario); }
+
+.metrica {
+  display: flex; justify-content: space-between; gap: var(--e3);
+  padding: var(--e2) 0;
+  border-bottom: 2px solid var(--deco-piedra);
+}
+.metrica .valor { font-weight: bold; white-space: nowrap; }
+
+.btn-adulto {
+  font-family: var(--fuente-lectura);
+  font-size: 15px;
+  padding: var(--e2) var(--e3);
+  min-height: 44px;
+  background: var(--btn-fondo);
+  color: var(--btn-texto);
+  box-shadow: inset 2px 2px 0 0 var(--btn-borde-luz),
+              inset -2px -2px 0 0 var(--btn-borde-sombra);
+  cursor: pointer;
+}
+.btn-adulto:active { transform: translateY(2px); background: var(--btn-fondo-hundido); }
+.btn-adulto--peligro { background: #E8D3CE; }
+
+.puerta-parental { display: flex; flex-direction: column; gap: var(--e3); max-width: 480px; }
+.puerta-parental input {
+  font-size: 20px; padding: var(--e2);
+  background: #FFFFFF; color: var(--texto-principal);
+  box-shadow: inset 2px 2px 0 0 var(--deco-piedra);
+  min-height: 48px; width: 100%;
+}
+
+.rejilla-adulto { display: flex; flex-wrap: wrap; gap: var(--e3); align-items: flex-start; }
+.rejilla-adulto > * { flex: 1 1 320px; }
+
+.matriz-subtipos { font-size: 14px; }
+.matriz-subtipos td.dato { text-align: right; white-space: nowrap; }

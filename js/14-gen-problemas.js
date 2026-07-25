@@ -1,0 +1,706 @@
+/* ============================================================================
+   14-gen-problemas.js — P1…P20, las 20 estructuras semánticas aditivas
+   ----------------------------------------------------------------------------
+   FUNCIÓN PURA.
+
+   POR QUÉ 20 Y NO «problemas de sumas y restas» a secas (PLAN §9.1): dos
+   problemas con los mismos números y la misma operación tienen tasas de acierto
+   radicalmente distintas según su estructura. Un problema de cambio con
+   incógnita en el resultado lo resuelve casi todo 2.º; uno de comparación con
+   referente desconocido lo resuelve menos de un tercio. Saber que un niño
+   «falla las restas» no sirve de nada; saber que resuelve CAMBIO_2 al 95 % y
+   COMPARACION_5 al 0 % es un dato accionable el lunes siguiente.
+
+   PONDERACIÓN 3/2/1 (§9.2): el reparto equitativo del plan v1 ponía la mitad de
+   los problemas por encima del curso del niño. Con 3 luces, eso es fin de
+   partida.
+
+   validar() NO LANZA EXCEPCIONES (§9.8): una excepción desde el generador dentro
+   de servirItem() deja al niño con la pantalla congelada a mitad de partida y
+   sin guardar. Devuelve {ok, motivos}.
+   ========================================================================== */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.problemas = {};
+
+/* ── Ponderación y disponibilidad ───────────────────────────────────────── */
+CB.gen.problemas.NUCLEAR = ['CAMBIO_1', 'CAMBIO_2', 'COMBINACION_1', 'COMBINACION_2',
+                            'COMPARACION_1', 'COMPARACION_2'];
+CB.gen.problemas.INTERMEDIO = ['CAMBIO_3', 'CAMBIO_4', 'COMPARACION_3', 'COMPARACION_4',
+                               'IGUALACION_1', 'IGUALACION_2'];
+CB.gen.problemas.AMPLIACION = ['CAMBIO_5', 'CAMBIO_6', 'COMPARACION_5', 'COMPARACION_6',
+                               'IGUALACION_3', 'IGUALACION_4', 'IGUALACION_5', 'IGUALACION_6'];
+
+CB.gen.problemas.PESO = function (sub) {
+  if (CB.gen.problemas.NUCLEAR.indexOf(sub) !== -1) return 3;
+  if (CB.gen.problemas.INTERMEDIO.indexOf(sub) !== -1) return 2;
+  return 1;
+};
+
+CB.gen.problemas.SUBTIPOS = CB.gen.problemas.NUCLEAR
+  .concat(CB.gen.problemas.INTERMEDIO)
+  .concat(CB.gen.problemas.AMPLIACION);
+
+CB.gen.problemas.DESTREZA = function (sub) {
+  if (sub.indexOf('CAMBIO') === 0) return 'problemas_cambio';
+  if (sub.indexOf('COMBINACION') === 0) return 'problemas_combinacion';
+  if (sub.indexOf('COMPARACION') === 0) return 'problemas_comparacion';
+  return 'problemas_igualacion';
+};
+
+/* Verbos que funcionan de verdad en un problema de cambio. «Después ve 5 peces.
+   ¿Cuántos tiene ahora?» es una frase rota, y un niño de 7 años la detecta. */
+CB.gen.problemas.VERBOS_PROBLEMA = {
+  comida:    { ganar: ['coge', 'compra'],      perder: ['come', 'reparte'] },
+  juguete:   { ganar: ['gana', 'compra'],      perder: ['regala', 'presta'] },
+  escolar:   { ganar: ['compra', 'encuentra'], perder: ['pierde', 'presta'] },
+  natura:    { ganar: ['recoge', 'encuentra'], perder: ['regala', 'planta'] },
+  animal:    { ganar: ['encuentra', 'recoge'], perder: ['suelta', 'regala'] },
+  coleccion: { ganar: ['gana', 'compra'],      perder: ['regala', 'cambia'] },
+  bloque:    { ganar: ['pica', 'encuentra'],   perder: ['coloca', 'regala'] }
+};
+
+/* ── Bolsas persistidas: el género se ALTERNA por construcción (§9.7) ──────
+   El criterio «50/50 ±1 en 200 generaciones» es matemáticamente inalcanzable con
+   muestreo aleatorio (σ ≈ 7; la probabilidad de caer en 100±1 ronda el 12 %). El
+   test habría fallado casi siempre contra código correcto y se habría acabado
+   desactivando. Con bolsa, el equilibrio se garantiza además DENTRO de cada
+   partida, que es lo que ve el niño. */
+CB.gen.problemas.nuevoEstadoBolsas = function () {
+  return { genero: [], nombreF: [], nombreM: [], rol: [], objeto: [] };
+};
+
+CB.gen.problemas.elegirActores = function (rng, bolsas) {
+  bolsas = bolsas || CB.gen.problemas.nuevoEstadoBolsas();
+
+  var bG = new CB.util.BolsaBarajada(2, rng, bolsas.genero);
+  var g1 = bG.sacar([]);
+  bolsas.genero = bG.estado();
+
+  var listaA = (g1 === 0) ? CB.datos.NOMBRES_F : CB.datos.NOMBRES_M;
+  var listaB = (g1 === 0) ? CB.datos.NOMBRES_M : CB.datos.NOMBRES_F;
+  var claveA = (g1 === 0) ? 'nombreF' : 'nombreM';
+  var claveB = (g1 === 0) ? 'nombreM' : 'nombreF';
+
+  var bA = new CB.util.BolsaBarajada(listaA.length, rng, bolsas[claveA]);
+  var iA = bA.sacar([]); bolsas[claveA] = bA.estado();
+  var bB = new CB.util.BolsaBarajada(listaB.length, rng, bolsas[claveB]);
+  var iB = bB.sacar([]); bolsas[claveB] = bB.estado();
+
+  var bO = new CB.util.BolsaBarajada(CB.datos.OBJETOS.length, rng, bolsas.objeto);
+  var iO = bO.sacar([]); bolsas.objeto = bO.estado();
+
+  var bR = new CB.util.BolsaBarajada(2, rng, bolsas.rol);
+  var rol = bR.sacar([]); bolsas.rol = bR.estado();
+
+  return {
+    n1: listaA[iA < 0 ? 0 : iA],
+    n2: listaB[iB < 0 ? 0 : iB],
+    obj: CB.datos.OBJETOS[iO < 0 ? 0 : iO],
+    generoPrimero: (g1 === 0) ? 'F' : 'M',
+    rolPrimeroGana: rol === 0,
+    bolsas: bolsas
+  };
+};
+
+/* ── Las 20 plantillas ──────────────────────────────────────────────────────
+   Cada una devuelve tres frases. La TERCERA es siempre la pregunta, de ≤7
+   palabras. Comparación e igualación presentan el dato y la relación en frases
+   SEPARADAS: la subordinación es justo lo que peor comprende un lector de 7
+   años, y por eso está prohibida en el validador.
+   ────────────────────────────────────────────────────────────────────────── */
+
+function cuantos(obj) { return obj.g === 'f' ? 'Cuántas' : 'Cuántos'; }
+
+CB.gen.problemas.PLANTILLAS = {
+
+  CAMBIO_1: function (a, b, act, vg) {          /* incógnita en el resultado (+) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        'Después ' + vg + ' ' + b + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ahora?'
+      ],
+      datos: [a, b], respuesta: a + b, operacion: '+'
+    };
+  },
+
+  CAMBIO_2: function (a, b, act, vg, vp) {      /* incógnita en el resultado (−) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        'Después ' + vp + ' ' + b + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' le quedan?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  COMBINACION_1: function (a, b, act) {          /* incógnita en el todo */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        act.n2 + ' tiene ' + b + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tienen en total?'
+      ],
+      datos: [a, b], respuesta: a + b, operacion: '+'
+    };
+  },
+
+  COMBINACION_2: function (a, b, act) {          /* incógnita en una parte */
+    return {
+      frases: [
+        'Entre ' + act.n1 + ' y ' + act.n2 + ' tienen ' + a + ' ' + act.obj.plur + '.',
+        act.n1 + ' tiene ' + b + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ' + act.n2 + '?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  COMPARACION_1: function (a, b, act) {          /* diferencia desconocida (más) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        act.n2 + ' tiene ' + b + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' más tiene ' + act.n1 + '?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  COMPARACION_2: function (a, b, act) {          /* diferencia desconocida (menos) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        act.n2 + ' tiene ' + b + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' menos tiene ' + act.n2 + '?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  CAMBIO_3: function (a, c, act) {               /* incógnita en el cambio (+) */
+    return {
+      frases: [
+        act.n1 + ' tenía ' + a + ' ' + act.obj.plur + '.',
+        'Ahora tiene ' + c + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' ha ganado?'
+      ],
+      datos: [a, c], respuesta: c - a, operacion: '-'
+    };
+  },
+
+  CAMBIO_4: function (a, c, act) {               /* incógnita en el cambio (−) */
+    return {
+      frases: [
+        act.n1 + ' tenía ' + a + ' ' + act.obj.plur + '.',
+        'Ahora tiene ' + c + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' ha perdido?'
+      ],
+      datos: [a, c], respuesta: a - c, operacion: '-'
+    };
+  },
+
+  COMPARACION_3: function (a, b, act) {          /* referido desconocido (más) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        act.n2 + ' tiene ' + b + ' más.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ' + act.n2 + '?'
+      ],
+      datos: [a, b], respuesta: a + b, operacion: '+'
+    };
+  },
+
+  COMPARACION_4: function (a, b, act) {          /* referido desconocido (menos) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        act.n2 + ' tiene ' + b + ' menos.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ' + act.n2 + '?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  IGUALACION_1: function (a, b, act) {           /* añadir al menor */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        act.n2 + ' tiene ' + b + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' le faltan a ' + act.n2 + '?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  IGUALACION_2: function (a, b, act) {           /* quitar al mayor */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        act.n2 + ' tiene ' + b + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' le sobran a ' + act.n1 + '?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  CAMBIO_5: function (b, c, act, vg) {           /* estado inicial (+) */
+    return {
+      frases: [
+        act.n1 + ' ' + vg + ' ' + b + ' ' + act.obj.plur + '.',
+        'Ahora tiene ' + c + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tenía antes?'
+      ],
+      datos: [b, c], respuesta: c - b, operacion: '-'
+    };
+  },
+
+  CAMBIO_6: function (b, c, act, vg, vp) {       /* estado inicial (−) */
+    return {
+      frases: [
+        act.n1 + ' ' + vp + ' ' + b + ' ' + act.obj.plur + '.',
+        'Ahora tiene ' + c + ' ' + act.obj.plur + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tenía antes?'
+      ],
+      datos: [b, c], respuesta: c + b, operacion: '+'
+    };
+  },
+
+  COMPARACION_5: function (a, b, act) {          /* referente desconocido (más) */
+    /* El ejemplo canónico del plan, con elipsis del sujeto en la 2.ª frase. */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        'Tiene ' + b + ' más que ' + act.n2 + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ' + act.n2 + '?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  COMPARACION_6: function (a, b, act) {          /* referente desconocido (menos) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        'Tiene ' + b + ' menos que ' + act.n2 + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ' + act.n2 + '?'
+      ],
+      datos: [a, b], respuesta: a + b, operacion: '+'
+    };
+  },
+
+  IGUALACION_3: function (a, b, act) {           /* referido desconocido (añadir) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        'A ' + act.n2 + ' le faltan ' + b + ' para igualar.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ' + act.n2 + '?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  IGUALACION_4: function (a, b, act) {           /* referido desconocido (quitar) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + a + ' ' + act.obj.plur + '.',
+        'Le sobran ' + b + ' para igualar.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ' + act.n2 + '?'
+      ],
+      datos: [a, b], respuesta: a - b, operacion: '-'
+    };
+  },
+
+  IGUALACION_5: function (c, b, act) {           /* referente desconocido (añadir) */
+    return {
+      frases: [
+        act.n2 + ' tiene ' + c + ' ' + act.obj.plur + '.',
+        'Le faltan ' + b + ' para igualar a ' + act.n1 + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ' + act.n1 + '?'
+      ],
+      datos: [c, b], respuesta: c + b, operacion: '+'
+    };
+  },
+
+  IGUALACION_6: function (c, b, act) {           /* referente desconocido (quitar) */
+    return {
+      frases: [
+        act.n1 + ' tiene ' + c + ' ' + act.obj.plur + '.',
+        'Le sobran ' + b + ' para igualar a ' + act.n2 + '.',
+        '¿' + cuantos(act.obj) + ' ' + act.obj.plur + ' tiene ' + act.n2 + '?'
+      ],
+      datos: [c, b], respuesta: c - b, operacion: '-'
+    };
+  }
+};
+
+/* ── resolver(): recálculo INDEPENDIENTE de la plantilla ────────────────────
+   casos-problemas.js compara esto con lo que devuelve la plantilla. Si ambos
+   salieran del mismo código, el test sería una tautología. */
+CB.gen.problemas.resolver = function (subtipo, d) {
+  var x = d[0], y = d[1];
+  switch (subtipo) {
+    case 'CAMBIO_1':      return x + y;
+    case 'CAMBIO_2':      return x - y;
+    case 'COMBINACION_1': return x + y;
+    case 'COMBINACION_2': return x - y;
+    case 'COMPARACION_1': return x - y;
+    case 'COMPARACION_2': return x - y;
+    case 'CAMBIO_3':      return y - x;
+    case 'CAMBIO_4':      return x - y;
+    case 'COMPARACION_3': return x + y;
+    case 'COMPARACION_4': return x - y;
+    case 'IGUALACION_1':  return x - y;
+    case 'IGUALACION_2':  return x - y;
+    case 'CAMBIO_5':      return y - x;
+    case 'CAMBIO_6':      return y + x;
+    case 'COMPARACION_5': return x - y;
+    case 'COMPARACION_6': return x + y;
+    case 'IGUALACION_3':  return x - y;
+    case 'IGUALACION_4':  return x - y;
+    case 'IGUALACION_5':  return x + y;
+    case 'IGUALACION_6':  return x - y;
+    default: return null;
+  }
+};
+
+/* ── Elección de números por subtipo, respetando el techo del trimestre ──── */
+CB.gen.problemas.numeros = function (subtipo, rng, D, techo) {
+  var max = Math.min(techo || 99, (D === 1) ? 20 : (D === 2 ? 60 : techo || 99));
+  if (max < 6) max = 6;
+  var a, b, c, k = 0;
+
+  switch (subtipo) {
+    case 'CAMBIO_1': case 'COMBINACION_1': case 'COMPARACION_3': case 'COMPARACION_6':
+      do { k++; a = CB.util.ent(rng, 2, max); b = CB.util.ent(rng, 1, max); }
+      while (a + b > (techo || 99) && k < 40);
+      return [a, b];
+
+    case 'CAMBIO_6': case 'IGUALACION_5':
+      do { k++; b = CB.util.ent(rng, 1, Math.floor(max / 2)); c = CB.util.ent(rng, 2, max); }
+      while (c + b > (techo || 99) && k < 40);
+      return [c, b];
+
+    case 'CAMBIO_3': case 'CAMBIO_5':
+      /* El segundo dato es el mayor: la respuesta nunca es negativa. */
+      a = CB.util.ent(rng, 1, Math.max(2, max - 2));
+      c = CB.util.ent(rng, a + 1, max);
+      return [a, c];
+
+    default:
+      /* Todos los de resta: el primero SIEMPRE ≥ el segundo (invariante 2). */
+      a = CB.util.ent(rng, 3, max);
+      b = CB.util.ent(rng, 1, a);
+      return [a, b];
+  }
+};
+
+/* ── Dato sobrante (§9.4) ───────────────────────────────────────────────────
+   INVARIANTE 10: el dato sobrante NUNCA puede combinarse con un dato necesario
+   para dar la respuesta correcta. Si a+c, a−c, b+c o b−c coincide con la
+   respuesta, se regenera. */
+CB.gen.problemas.datoSobrante = function (datos, respuesta, rng, techo) {
+  var a = datos[0], b = datos[1], k = 0, c;
+  while (k < 40) {
+    k++;
+    c = CB.util.ent(rng, 1, Math.min(techo || 99, 40));
+    if (c === a || c === b || c === respuesta) continue;
+    if (a + c === respuesta || a - c === respuesta) continue;
+    if (b + c === respuesta || b - c === respuesta) continue;
+    if (c + a === respuesta || c - a === respuesta) continue;
+    if (c + b === respuesta || c - b === respuesta) continue;
+    return c;
+  }
+  return null;
+};
+
+/* ── El validador de lectura fácil — INVARIANTE 7 ───────────────────────── */
+
+CB.gen.problemas.SUBORDINANTES = ['si', 'cuando', 'mientras', 'aunque', 'porque'];
+/* «que» solo se admite en las comparativas: más que / menos que. */
+CB.gen.problemas.ANTES_DE_QUE = ['más', 'menos', 'tantos', 'tantas'];
+
+/* Formas que DEBEN llevar tilde en la acepción que usa el juego. Si aparece la
+   forma sin tilde, el test falla: es material escolar. */
+CB.gen.problemas.EXIGEN_TILDE = {
+  'mas': 'más', 'numero': 'número', 'cuantos': 'cuántos', 'cuantas': 'cuántas',
+  'cuanto': 'cuánto', 'despues': 'después', 'que': null, 'cual': 'cuál',
+  'como': null, 'tenia': 'tenía'
+};
+
+CB.gen.problemas.validar = function (item) {
+  var motivos = [];
+  var frases = item.frases || [];
+  var texto = frases.join(' ');
+  var i, j, w, palabras;
+
+  /* 1. Número de frases y forma de la pregunta */
+  if (frases.length > 3) motivos.push('frases');
+  if (!frases.length) { motivos.push('frases'); return { ok: false, motivos: motivos }; }
+
+  var ultima = frases[frases.length - 1];
+  if (ultima.indexOf('¿') !== 0 || ultima.charAt(ultima.length - 1) !== '?') {
+    motivos.push('pregunta');
+  }
+  if (CB.util.palabras(ultima).length > 8) motivos.push('preguntaLarga');
+
+  /* 2. Longitud */
+  for (i = 0; i < frases.length; i++) {
+    if (CB.util.palabras(frases[i]).length > 12) { motivos.push('fraseLarga'); break; }
+  }
+  if (CB.util.palabras(texto).length > 25) motivos.push('total');
+
+  /* 3. Ancho de línea, con el MISMO algoritmo que usa la interfaz */
+  var lineas = CB.util.cortarLineas(texto, 34);
+  for (i = 0; i < lineas.length; i++) {
+    if (lineas[i].length > 34) { motivos.push('ancho'); break; }
+  }
+  if (lineas.length > 5) motivos.push('demasiadasLineas');
+
+  /* 4. Datos numéricos */
+  var numeros = texto.match(/\d+/g) || [];
+  var maxDatos = item.datoSobrante ? 3 : 2;
+  if (numeros.length > maxDatos) motivos.push('datos');
+
+  /* 5. Subordinación prohibida */
+  palabras = CB.util.palabras(texto.toLowerCase().replace(/[¿?.,!¡]/g, ''));
+  for (i = 0; i < palabras.length; i++) {
+    w = palabras[i];
+    if (CB.gen.problemas.SUBORDINANTES.indexOf(w) !== -1) { motivos.push('subordinacion'); break; }
+    if (w === 'que') {
+      var previa = (i > 0) ? palabras[i - 1] : '';
+      if (CB.gen.problemas.ANTES_DE_QUE.indexOf(previa) === -1) {
+        motivos.push('subordinacion'); break;
+      }
+    }
+  }
+
+  /* 6. Tildes obligatorias */
+  for (i = 0; i < palabras.length; i++) {
+    var esperado = CB.gen.problemas.EXIGEN_TILDE[palabras[i]];
+    if (esperado) { motivos.push('tilde'); break; }
+  }
+  /* Toda exclamación abre con ¡ y cierra con !; toda interrogación con ¿ y ? */
+  if (texto.indexOf('!') !== -1 && texto.indexOf('¡') === -1) motivos.push('signos');
+  if (texto.indexOf('?') !== -1 && texto.indexOf('¿') === -1) motivos.push('signos');
+
+  /* 7. Sujeto explícito repetido en frases consecutivas */
+  for (i = 1; i < frases.length; i++) {
+    var s1 = CB.util.palabras(frases[i - 1])[0];
+    var s2 = CB.util.palabras(frases[i])[0];
+    if (s1 && s2 && s1 === s2 && /^[A-ZÁÉÍÓÚÑ]/.test(s1)) {
+      motivos.push('sujetoRepetido'); break;
+    }
+  }
+
+  /* 8. Lista blanca */
+  for (i = 0; i < palabras.length; i++) {
+    w = palabras[i];
+    if (/^\d+$/.test(w)) continue;
+    if (CB.datos.enListaBlanca(w)) continue;
+    /* Los nombres propios van con inicial mayúscula en el texto original */
+    var original = null;
+    var todas = CB.util.palabras(texto.replace(/[¿?.,!¡]/g, ''));
+    for (j = 0; j < todas.length; j++) {
+      if (todas[j].toLowerCase() === w) { original = todas[j]; break; }
+    }
+    if (original && CB.datos.enListaBlanca(original.toLowerCase())) continue;
+    motivos.push('listaBlanca:' + w);
+    break;
+  }
+
+  /* 9. Rango de la respuesta */
+  if (!(item.respuesta >= 0 && item.respuesta <= 999)) motivos.push('rango');
+
+  return { ok: motivos.length === 0, motivos: motivos };
+};
+
+/* ── PROBLEMAS_SEGUROS: 12 enunciados fijos validados a mano ──────────────
+   Si el generador no consigue un enunciado válido en 20 intentos, se sirve uno
+   de estos. Nunca se lanza una excepción en el camino caliente del bucle. */
+CB.gen.problemas.PROBLEMAS_SEGUROS = [
+  { subtipo: 'CAMBIO_1', frases: ['Ana tiene 12 cromos.', 'Después gana 5 cromos.', '¿Cuántos cromos tiene ahora?'], datos: [12, 5], respuesta: 17, operacion: '+' },
+  { subtipo: 'CAMBIO_2', frases: ['Leo tiene 15 canicas.', 'Después regala 6 canicas.', '¿Cuántas canicas le quedan?'], datos: [15, 6], respuesta: 9, operacion: '-' },
+  { subtipo: 'COMBINACION_1', frases: ['Sara tiene 8 fresas.', 'Hugo tiene 7 fresas.', '¿Cuántas fresas tienen en total?'], datos: [8, 7], respuesta: 15, operacion: '+' },
+  { subtipo: 'COMBINACION_2', frases: ['Entre Marta y Bruno tienen 20 globos.', 'Marta tiene 12.', '¿Cuántos globos tiene Bruno?'], datos: [20, 12], respuesta: 8, operacion: '-' },
+  { subtipo: 'COMPARACION_1', frases: ['Julia tiene 14 pegatinas.', 'Pablo tiene 9 pegatinas.', '¿Cuántas pegatinas más tiene Julia?'], datos: [14, 9], respuesta: 5, operacion: '-' },
+  { subtipo: 'COMPARACION_2', frases: ['Laia tiene 18 hojas.', 'Marc tiene 11 hojas.', '¿Cuántas hojas menos tiene Marc?'], datos: [18, 11], respuesta: 7, operacion: '-' },
+  { subtipo: 'CAMBIO_3', frases: ['Noa tenía 10 conchas.', 'Ahora tiene 16 conchas.', '¿Cuántas conchas ha ganado?'], datos: [10, 16], respuesta: 6, operacion: '-' },
+  { subtipo: 'CAMBIO_4', frases: ['Pau tenía 21 piedras.', 'Ahora tiene 13 piedras.', '¿Cuántas piedras ha perdido?'], datos: [21, 13], respuesta: 8, operacion: '-' },
+  { subtipo: 'COMPARACION_3', frases: ['Emma tiene 9 flores.', 'Jan tiene 4 más.', '¿Cuántas flores tiene Jan?'], datos: [9, 4], respuesta: 13, operacion: '+' },
+  { subtipo: 'COMPARACION_4', frases: ['Iris tiene 17 gemas.', 'Nil tiene 5 menos.', '¿Cuántas gemas tiene Nil?'], datos: [17, 5], respuesta: 12, operacion: '-' },
+  { subtipo: 'IGUALACION_1', frases: ['Alba tiene 13 setas.', 'Iker tiene 6 setas.', '¿Cuántas le faltan a Iker?'], datos: [13, 6], respuesta: 7, operacion: '-' },
+  { subtipo: 'COMPARACION_5', frases: ['Nora tiene 12 cromos.', 'Tiene 5 más que Mario.', '¿Cuántos cromos tiene Mario?'], datos: [12, 5], respuesta: 7, operacion: '-' }
+];
+
+/* ── Generación ─────────────────────────────────────────────────────────── */
+CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
+  ctx = ctx || {};
+  var techo = ctx.techo || 99;
+  var conSobrante = !!ctx.datoSobrante;
+  var intentos = 0, item;
+
+  while (intentos < 20) {
+    intentos++;
+    var act = CB.gen.problemas.elegirActores(rng, ctx.bolsas);
+    if (ctx.bolsas) ctx.bolsas = act.bolsas;
+
+    var verbos = CB.gen.problemas.VERBOS_PROBLEMA[act.obj.cat];
+    var vg = CB.util.elegir(rng, verbos.ganar);
+    var vp = CB.util.elegir(rng, verbos.perder);
+
+    var d = CB.gen.problemas.numeros(subtipo, rng, D, techo);
+    var plantilla = CB.gen.problemas.PLANTILLAS[subtipo];
+    if (!plantilla) break;
+
+    var base = plantilla(d[0], d[1], act, vg, vp);
+    if (base.respuesta < 0 || base.respuesta > 999) continue;
+
+    item = {
+      subtipo: subtipo,
+      formato: 'teclado',            /* SIEMPRE teclado en primer intento (§9.5) */
+      frases: base.frases,
+      enunciado: base.frases.join(' '),
+      datos: base.datos,
+      respuesta: base.respuesta,
+      operacion: base.operacion,
+      destreza: CB.gen.problemas.DESTREZA(subtipo),
+      objeto: act.obj,
+      actores: [act.n1, act.n2],
+      expr: subtipo + '_' + base.datos.join('_'),
+      diagnostico: true,
+      datoSobrante: false
+    };
+
+    if (conSobrante) {
+      var c = CB.gen.problemas.datoSobrante(base.datos, base.respuesta, rng, techo);
+      if (c != null) {
+        item.datoSobrante = true;
+        item.numeroSobrante = c;
+        item.frases = [base.frases[0], base.frases[1],
+                       base.frases[2]];
+        /* El dato sobrante se inserta como una coletilla de la 2.ª frase, sin
+           subordinación y sin pasar de 12 palabras. */
+        var extra = 'También tiene ' + c + ' ' + act.obj.plur + ' de otro color.';
+        if (CB.util.palabras(extra).length <= 12) {
+          item.frases = [base.frases[0], extra, base.frases[2]];
+          item.datos = base.datos.slice();
+        } else {
+          item.datoSobrante = false;
+        }
+        item.enunciado = item.frases.join(' ');
+      }
+    }
+
+    var v = CB.gen.problemas.validar(item);
+    if (v.ok) { item.validado = true; return item; }
+    item.motivos = v.motivos;
+  }
+
+  /* Ningún intento ha validado: se sirve un enunciado seguro. */
+  var seguro = CB.gen.problemas.PROBLEMAS_SEGUROS.filter(function (p) {
+    return p.subtipo === subtipo;
+  })[0] || CB.gen.problemas.PROBLEMAS_SEGUROS[0];
+
+  return {
+    subtipo: seguro.subtipo,
+    formato: 'teclado',
+    frases: seguro.frases.slice(),
+    enunciado: seguro.frases.join(' '),
+    datos: seguro.datos.slice(),
+    respuesta: seguro.respuesta,
+    operacion: seguro.operacion,
+    destreza: CB.gen.problemas.DESTREZA(seguro.subtipo),
+    expr: 'seguro_' + seguro.subtipo,
+    diagnostico: true,
+    datoSobrante: false,
+    deRespaldo: true
+  };
+};
+
+/* ── siguienteSubtipo(): deuda de cobertura PONDERADA (§9.2) ─────────────── */
+CB.gen.problemas.disponibles = function (perfil) {
+  var trimestre = (perfil && perfil.trimestreDeducido) ? perfil.trimestreDeducido : 1;
+  var out = CB.gen.problemas.NUCLEAR.slice(), i, p, nuclearOk = true;
+
+  /* Los INTERMEDIOS solo desde T2 y solo con ≥80 % en los nucleares. */
+  var aciertos = 0, intentos = 0;
+  for (i = 0; i < CB.gen.problemas.NUCLEAR.length; i++) {
+    p = (perfil && perfil.problemas) ? perfil.problemas[CB.gen.problemas.NUCLEAR[i]] : null;
+    if (p) { aciertos += p.aciertos || 0; intentos += p.intentos || 0; }
+  }
+  nuclearOk = (intentos >= 6) && ((aciertos / intentos) >= 0.8);
+
+  if (trimestre >= 2 && nuclearOk) out = out.concat(CB.gen.problemas.INTERMEDIO);
+  return out;
+};
+
+/**
+ * @param ctx {lucesActuales} — la AMPLIACIÓN nunca se sirve con menos de 3 luces.
+ */
+CB.gen.problemas.siguienteSubtipo = function (perfil, ctx) {
+  ctx = ctx || {};
+  var lista = CB.gen.problemas.disponibles(perfil);
+
+  var trimestre = (perfil && perfil.trimestreDeducido) ? perfil.trimestreDeducido : 1;
+  if (trimestre >= 3 && (ctx.lucesActuales == null || ctx.lucesActuales >= 3)) {
+    lista = lista.concat(CB.gen.problemas.AMPLIACION.filter(function (s) {
+      return !ctx.soloNucleares;
+    }));
+  }
+  if (!lista.length) lista = CB.gen.problemas.NUCLEAR.slice();
+
+  var totalPeso = 0, i;
+  for (i = 0; i < lista.length; i++) totalPeso += CB.gen.problemas.PESO(lista[i]);
+
+  var servidasTotal = 0;
+  for (i = 0; i < lista.length; i++) {
+    var pr = (perfil && perfil.problemas) ? perfil.problemas[lista[i]] : null;
+    servidasTotal += pr ? (pr.intentos || 0) : 0;
+  }
+
+  var mejor = null, mejorDeuda = -Infinity;
+  for (i = 0; i < lista.length; i++) {
+    var sub = lista[i];
+    var peso = CB.gen.problemas.PESO(sub);
+    var esperadas = (servidasTotal + 1) * (peso / totalPeso);
+    var pr2 = (perfil && perfil.problemas) ? perfil.problemas[sub] : null;
+    var servidas = pr2 ? (pr2.intentos || 0) : 0;
+    var deuda = peso * (esperadas - servidas);
+
+    if (deuda > mejorDeuda) {
+      mejorDeuda = deuda; mejor = sub;
+    } else if (deuda === mejorDeuda && mejor) {
+      /* Empate: el de menor tiempo medio, para no encadenar los más lentos. */
+      var a = (perfil && perfil.problemas && perfil.problemas[mejor]) ? perfil.problemas[mejor].rtMedioMs : 0;
+      var b = pr2 ? pr2.rtMedioMs : 0;
+      if (b < a) mejor = sub;
+    }
+  }
+  return mejor || 'CAMBIO_1';
+};
+
+/* Nivel P1..P20 ↔ subtipo */
+CB.gen.problemas.SUBTIPO_DE_NIVEL = {
+  P1: 'CAMBIO_1', P2: 'CAMBIO_2', P3: 'COMBINACION_1', P4: 'COMBINACION_2',
+  P5: 'COMPARACION_1', P6: 'COMPARACION_2', P7: 'CAMBIO_3', P8: 'CAMBIO_4',
+  P9: 'COMPARACION_3', P10: 'COMPARACION_4', P11: 'IGUALACION_1', P12: 'IGUALACION_2',
+  P13: 'CAMBIO_5', P14: 'CAMBIO_6', P15: 'COMPARACION_5', P16: 'COMPARACION_6',
+  P17: 'IGUALACION_3', P18: 'IGUALACION_4', P19: 'IGUALACION_5', P20: 'IGUALACION_6'
+};
+
+/* Los generadores P1..P20 que consume el catálogo. */
+(function () {
+  var k;
+  for (k in CB.gen.problemas.SUBTIPO_DE_NIVEL) {
+    if (!Object.prototype.hasOwnProperty.call(CB.gen.problemas.SUBTIPO_DE_NIVEL, k)) continue;
+    (function (nivelId, subtipo) {
+      CB.gen.problemas[nivelId] = function (rng, D, ctx) {
+        return CB.gen.problemas.generarSubtipo(subtipo, rng, D, ctx);
+      };
+    })(k, CB.gen.problemas.SUBTIPO_DE_NIVEL[k]);
+  }
+})();

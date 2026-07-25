@@ -1,0 +1,94 @@
+/* ============================================================================
+   06-biomas.css — Los 4 biomas de v1 y el cielo día→noche
+   ========================================================================== */
+
+/* ── Cielo: CAPA 1, base garantizada en TODO navegador del suelo (§10.7) ──
+   JS aplica la clase según Math.floor(avance * 6). Sin @property ni color-mix
+   no hay interpolación animable, y color-mix exige Chrome 111+ / Safari 16.2+,
+   por encima del suelo declarado en §2.3. El efecto estrella no puede depender
+   de eso. */
+/* z-index 0, no -1: con -1 el cielo se pinta DETRÁS del fondo del body y no se
+   ve nunca. El contenido de la pantalla sube a 1. */
+.cielo { position: absolute; inset: 0; z-index: 0; background: var(--cielo-0); }
+/* El .aviso-prisa se excluye de las dos reglas: es lo ÚNICO que va superpuesto
+   sobre la zona de juego en vez de dentro del flujo. Sin excluirlo, el
+   `position: relative` de aquí le ganaba a su `position: absolute` por orden de
+   cascada (misma especificidad, este fichero va después), su `top: 38%` pasaba
+   a ser un desplazamiento relativo y el cartel aparecía 250 px por debajo del
+   borde inferior de la pantalla. Es decir: no se veía, y nada fallaba. */
+.pantalla > *:not(.cielo):not(.aviso-prisa) { position: relative; z-index: 1; }
+.zona-juego > *:not(.cielo):not(.aviso-prisa) { position: relative; z-index: 1; }
+.cielo--0 { background: var(--cielo-0); }
+.cielo--1 { background: var(--cielo-1); }
+.cielo--2 { background: var(--cielo-2); }
+.cielo--3 { background: var(--cielo-3); }
+.cielo--4 { background: var(--cielo-4); }
+.cielo--5 { background: var(--cielo-5); }
+
+/* ── CAPA 2 — mejora progresiva, solo donde de verdad está soportada ────── */
+@supports (color: color-mix(in srgb, red, blue)) {
+  @property --avance { syntax: '<number>'; inherits: true; initial-value: 0; }
+  .cielo {
+    background: color-mix(in srgb,
+                var(--cielo-noche) calc(var(--avance) * 100%), var(--cielo-dia));
+    transition: --avance 600ms steps(6, end);
+  }
+}
+
+/* ── Los 4 biomas de v1 ─────────────────────────────────────────────────── */
+.bioma { position: relative; }
+/* z-index 0 por el mismo motivo que el cielo: con -1 el suelo se pinta detrás
+   del fondo del documento y no se ve nunca. */
+.bioma::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 56px; z-index: 0; pointer-events: none;
+  background-size: 56px 56px;
+  box-shadow: inset 0 var(--bisel) 0 0 rgba(255,255,255,.35);
+}
+
+.bioma--pradera { --tinte-bioma: var(--deco-hierba); }
+.bioma--pradera::after {
+  background-color: var(--deco-hierba);
+  background-image: var(--tex-hierba);
+}
+
+.bioma--bosque { --tinte-bioma: var(--deco-musgo); }
+.bioma--bosque::after {
+  background-color: var(--deco-musgo);
+  background-image: var(--tex-musgo);
+}
+
+.bioma--rio { --tinte-bioma: var(--deco-agua); }
+.bioma--rio::after {
+  background-color: var(--deco-agua);
+  background-image: var(--tex-agua);
+}
+
+.bioma--mina { --tinte-bioma: var(--deco-piedra); }
+.bioma--mina::after {
+  background-color: var(--deco-piedra);
+  background-image: var(--tex-piedra);
+}
+
+/* Cintas de bioma de las tarjetas del mapa */
+.cinta-bioma[data-bioma="pradera"] { background-color: var(--deco-hierba); background-image: var(--tex-hierba); }
+.cinta-bioma[data-bioma="bosque"]  { background-color: var(--deco-musgo);  background-image: var(--tex-musgo); }
+.cinta-bioma[data-bioma="rio"]     { background-color: var(--deco-agua);   background-image: var(--tex-agua); }
+.cinta-bioma[data-bioma="mina"]    { background-color: var(--deco-piedra); background-image: var(--tex-piedra); }
+
+/* Bandas duras del terreno: repeating-linear-gradient, nunca degradado continuo */
+.bandas-terreno {
+  background-image: repeating-linear-gradient(
+    180deg,
+    var(--deco-tierra) 0 16px,
+    var(--deco-tierra-osc) 16px 32px
+  );
+}
+
+/* ============================================================================
+   v2 — biomas documentados y NO entregados. No se activa CSS muerto (§5.2).
+
+   .bioma--cueva  { background-color: var(--deco-carbon);  background-image: var(--tex-piedra); }
+   .bioma--volcan { background-color: var(--deco-brasa);   background-image: var(--tex-piedra); }
+   .bioma--taller { background-color: var(--deco-madera);  background-image: var(--tex-madera); }
+   ========================================================================== */

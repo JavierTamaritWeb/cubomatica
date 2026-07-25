@@ -1,0 +1,14 @@
+CUBOMATICA — Matematicas de 2.o de Primaria
+Version 1.0.0
+
+1. Haz doble clic en "index.html". Se abre en el navegador. No hay que instalar nada.
+2. No necesita internet. No pide datos. Todo se queda en este ordenador.
+3. Cada partida dura entre 6 y 9 minutos. Con eso al dia es suficiente.
+4. La llave de arriba a la derecha abre el panel de personas adultas.
+5. La musica se ajusta en Ajustes, aparte del sonido: No, Baja, Media o Alta.
+6. Si el reloj de 30 segundos agobia, en Ajustes pon el reloj en "Sin prisa"
+   y desaparece del todo. No pasa nada por quedarse sin tiempo: no se pierde
+   ninguna luz.
+
+La carpeta ocupa unos 43 MB, casi todo musica. Cabe en cualquier memoria USB,
+pero no cabe en un correo.

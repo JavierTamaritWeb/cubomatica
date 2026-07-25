@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "id": "p-3f9a1c",
+  "mote": "Topo Cavador",
+  "avatar": 7,
+  "colorBloque": "#5AA02C",
+  "creadoISO": "2026-05-15",
+  "gemas": 1240,
+  "puntosTotales": 18420,
+  "mejorPuntuacion": 2640,
+
+  "destrezas": {
+    "suma_llevada": {
+      "theta": 1180, "n": 34, "aciertos": 29, "aciertosPrimerIntento": 25,
+      "rtMediana": 9100
+    },
+    "problemas_comparacion": {
+      "theta": 880, "n": 9, "aciertos": 4, "aciertosPrimerIntento": 3,
+      "rtMediana": 41300
+    }
+  },
+
+  "logros": {
+    "vena_de_cristal": { "desbloqueadoISO": "2026-05-19", "progreso": 10, "cobrado": true },
+    "primer_pico":     { "desbloqueadoISO": "2026-05-15", "progreso": 1,  "cobrado": true },
+    "coleccionista":   { "desbloqueadoISO": "2026-07-10", "progreso": 5,  "cobrado": true }
+  },
+
+  "cromos": ["blopi", "tronquete"],
+  "glosario": ["sumando", "decena", "centena", "diferencia"],
+
+  "historial": [
+    { "fechaISO": "2026-07-20", "modo": "expedicion", "mundo": "M2", "seg": 400,
+      "preguntas": 15, "aciertos": 13, "precision": 0.73, "puntos": 2100, "gemas": 55 },
+    { "fechaISO": "2026-07-24", "modo": "expedicion", "mundo": "M2", "seg": 412,
+      "preguntas": 15, "aciertos": 14, "precision": 0.80, "puntos": 2140, "gemas": 58 }
+  ],
+
+  "diario": {
+    "diasJugados": ["2026-05-15", "2026-07-20", "2026-07-24"],
+    "racha": 1, "mejorRacha": 6, "segundosHoy": 0, "ultimoDia": "2026-07-24"
+  },
+
+  "respuestas": []
+}

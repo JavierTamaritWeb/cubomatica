@@ -1,0 +1,49 @@
+MIT License
+
+Copyright (c) 2026 Javier Tamarit
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+===============================================================================
+EXCEPCIONES: LO QUE NO CUBRE ESTA LICENCIA
+===============================================================================
+
+La licencia MIT de arriba cubre el CODIGO, los estilos, los datos de contenido
+y la documentacion de este repositorio. NO cubre:
+
+1. LA MUSICA (audio/*.mp3)
+   Las nueve pistas son obra de sus autores y se usan bajo la Pixabay Content
+   License, que permite el uso comercial y no comercial pero PROHIBE venderlas
+   o distribuirlas por separado, fuera de un proyecto. Estan acreditadas una a
+   una en audio/CREDITOS.txt.
+   Si reutilizas este proyecto, la musica sigue sujeta a esa licencia, no a la
+   MIT: no la extraigas para redistribuirla suelta.
+
+2. EL TEXTO DEL CURRICULO (datos/curriculo-rd157.js)
+   Son citas literales del Real Decreto 157/2022, de 1 de marzo (BOE num. 52,
+   de 2 de marzo de 2022). El texto de una norma es de dominio publico; se
+   reproduce citando su origen.
+
+3. LAS FUENTES DE MAPA DE BITS
+   El proyecto NO incluye ningun fichero de fuente. Se declaran con local() y
+   se usan solo si el sistema ya las tiene instaladas. Las licencias OFL de
+   Silkscreen y Press Start 2P estan en docs/licencias/ a titulo informativo.
+
+Este proyecto es una obra original e independiente. No esta afiliado,
+patrocinado ni respaldado por ninguna empresa de videojuegos. Ver AVISO-LEGAL.txt.
