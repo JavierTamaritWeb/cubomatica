@@ -273,6 +273,11 @@ CB.partida.servirItem = function () {
 /* Elige y monta el componente de respuesta */
 CB.partida.pintarRespuesta = function (item) {
   var e = CB.partida.estado, perfil = CB.perfil;
+
+  /* Se abre el cerrojo de «una respuesta por intento». Pasa por aquí tanto el
+     ítem nuevo (desde servirItem) como el segundo intento tras un fallo. */
+  e.respondido = false;
+
   var efectos = CB.antiazar.consumir(e.antiazar);
   CB.componentes._confirmacionPendiente = efectos.confirmacionDoble;
   var bloqueo = Math.max(CB.componentes.MS_CONSTRUCCION, efectos.bloqueoMs || 0);
@@ -439,6 +444,24 @@ CB.partida.tiempoAgotado = function () {
 CB.partida.responder = function (valor, origen, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
   if (!e || !e.itemActual || CB.partida.bloqueado) return;
+
+  /* UNA RESPUESTA POR INTENTO. Los botones NO se deshabilitan al responder
+     —siguen en pantalla mientras se ve el mensaje—, así que seis toques en OK
+     registraban SEIS respuestas. Medido: 6 pulsaciones, 18 gemas en vez de 3.
+
+     Y lo grave no eran las gemas. Cada toque metía una observación más en el
+     motor adaptativo, así que la competencia estimada de esa destreza se movía
+     seis veces por un solo ítem; y el informe del adulto contaba seis intentos
+     donde hubo uno. Es decir: machacar el botón, que es exactamente lo que hace
+     un niño de 7 años cuando la respuesta le sale sola, falseaba en silencio lo
+     único que este juego promete medir.
+
+     El cerrojo se abre en pintarRespuesta(), que es el único sitio donde se
+     construye la zona de respuesta, y por el que pasan tanto el ítem nuevo como
+     el segundo intento tras un fallo. */
+  if (e.respondido) return;
+  e.respondido = true;
+
   extra = extra || {};
   CB.partida.pararCronometro();
 

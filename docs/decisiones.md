@@ -617,3 +617,49 @@ manipulation` para quitar el retardo de 300 ms del táctil, la regla de guarda
 clase anula el atributo `hidden` y las pantallas dejan de ocultarse— y el modo
 privado de Safari, donde `localStorage` lanza al escribir y `ls()` devuelve
 `null` para que entre el respaldo en memoria.
+
+### Cuarta ronda (1.3.0) — doble envío, datos y registro de regresiones
+
+**E11 — Machacar OK registraba una respuesta por pulsación.** Los botones no se
+deshabilitan al responder: siguen en pantalla mientras se ve el mensaje. Medido
+por la interfaz real: **seis toques en OK = seis respuestas registradas y 18
+gemas en vez de 3**.
+
+Y lo grave no eran las gemas. Cada toque metía **una observación más en el motor
+adaptativo**, así que la competencia estimada de esa destreza se movía seis veces
+por un solo ítem; y el informe del adulto contaba seis intentos donde hubo uno.
+Machacar el botón es exactamente lo que hace un niño de 7 años cuando la
+respuesta le sale sola, de modo que el juego falseaba en silencio lo único que
+promete medir, y lo hacía más cuanto más entusiasmado estaba el niño.
+
+Cerrojo de una respuesta por intento, que se abre en `pintarRespuesta()`: el
+único sitio donde se construye la zona de respuesta, y por el que pasan tanto el
+ítem nuevo como el segundo intento tras un fallo.
+
+**E12 — Pasar el objeto de destreza creaba una destreza basura.**
+`CB.adaptativo.actualizar()` espera el slug. Al pasarle el objeto, JavaScript lo
+convertía en `"[object Object]"`, se creaba una destreza con ese nombre, se
+guardaba en el perfil del niño y salía en el informe del adulto; mientras tanto
+la destreza de verdad no se actualizaba nunca. Es el fallo que cometió esta
+misma auditoría, y costó tres intentos verlo porque nada se quejaba. Ahora los
+13 slugs son lista cerrada y cualquier otra cosa lanza.
+
+**Nuevo: `pruebas/casos-regresiones.js`.** Registro único de los doce fallos ya
+corregidos, con el guardián de cada uno o el fichero donde vive. La regla que
+declara: *un fallo corregido sin prueba vuelve*.
+
+#### Lo que se comprobó y estaba bien
+
+- **Crecimiento del perfil guardado**: 120 partidas de 20 ítems —un curso
+  escolar jugando a diario— y el perfil se estabiliza en **241 KB**. El podado
+  acota `respuestas` en 800 y `historial` en 60; solo crece la lista de días
+  jugados, a unos 50 bytes por partida.
+- **Modo aula**: con los topes de aula el perfil baja a **54 KB**, y 30 niños
+  ocupan 1,58 MB, holgado dentro de los 5 MB típicos de un navegador. Con la
+  cuota llena se sigue jugando y se avisa al adulto.
+- **Motor adaptativo, 3000 ítems por perfil**: `candidatos()` **nunca** devuelve
+  la lista vacía, que es lo que terminaría una partida en el ítem 0; no aparecen
+  destrezas inventadas; y con acierto del 80 % —el objetivo de diseño— la
+  competencia estimada converge en 560-1248 sin saturar ninguno de los dos topes.
+  La saturación con aciertos del 95 % o del 35 % es artefacto del simulador, que
+  mantiene la tasa fija independientemente de la dificultad; un niño real no.

@@ -10,6 +10,37 @@ La versión de referencia es `CB.VERSION` en `js/00-nucleo.js`. Este fichero y
 
 ---
 
+## [1.3.0] — 2026-07-25
+
+Cuarta ronda: el fallo que falseaba las mediciones del juego.
+
+### Corregido
+
+- **Machacar OK registraba una respuesta por pulsación.** Los botones no se
+  deshabilitan al responder, así que seis toques daban seis respuestas y 18
+  gemas en vez de 3. Lo grave no eran las gemas: cada toque metía una
+  observación más en el motor adaptativo y un intento más en el informe del
+  adulto. Machacar el botón es lo que hace un niño de 7 años cuando la respuesta
+  le sale sola.
+- **Pasar el objeto de destreza en vez de su nombre creaba una destreza basura**
+  llamada `[object Object]` en el perfil del niño, sin que nada se quejara.
+
+### Añadido
+
+- **`pruebas/casos-regresiones.js`**: registro único de los doce fallos ya
+  corregidos, con el guardián de cada uno. La regla que declara es que un fallo
+  corregido sin prueba vuelve.
+- **326 comprobaciones**, 0 fallos, en suite rápida y larga.
+
+### Verificado y correcto
+
+- El perfil guardado se estabiliza en 241 KB tras un curso escolar entero; en
+  modo aula, 54 KB por niño y 1,58 MB para treinta.
+- En 3000 ítems por perfil, el motor nunca se queda sin candidatos y converge
+  sin saturar al 80 % de acierto, que es su objetivo de diseño.
+
+---
+
 ## [1.2.0] — 2026-07-25
 
 Tercera ronda: compatibilidad con Safari, Firefox e iPad.

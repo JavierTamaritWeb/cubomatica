@@ -103,6 +103,22 @@ CB.adaptativo.OBJETIVO_ACIERTO = 0.80;
  */
 CB.adaptativo.actualizar = function (destreza, acierto, beta, perfil) {
   if (!perfil.destrezas) perfil.destrezas = {};
+
+  /* `destreza` es el SLUG, no el objeto de destreza. Pasarle el objeto no daba
+     ningún error: JavaScript lo convertía a la cadena "[object Object]" y se
+     creaba una destreza con ese nombre, que se guardaba en el perfil del niño y
+     salía en el informe del adulto. Mientras tanto, la destreza de verdad no se
+     actualizaba nunca y su competencia estimada se quedaba clavada.
+
+     No es hipotético: es el fallo que cometí auditando este mismo motor, y
+     tardé tres intentos en verlo porque nada se quejaba. Trece slugs, lista
+     cerrada: cualquier otra cosa es un error de programación y tiene que
+     notarse. */
+  if (CB.adaptativo.SLUGS.indexOf(destreza) === -1) {
+    throw new Error('CB.adaptativo.actualizar: destreza desconocida «' + destreza +
+                    '». Se espera uno de los 13 slugs, no el objeto de destreza.');
+  }
+
   var d = perfil.destrezas[destreza];
   if (!d) d = perfil.destrezas[destreza] = CB.adaptativo.nuevaDestreza(null);
 
