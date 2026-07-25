@@ -81,7 +81,6 @@
   </div>
   <div class="barra-herramientas">
     <div class="grupo">
-      <button class="btn-bloque btn-bloque--rotulado" data-accion="leer" aria-label="Leer en voz alta"><span class="ico" aria-hidden="true">🔊</span><span class="rotulo">Leer</span></button>
     </div>
     <div class="grupo">
       <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="ico" aria-hidden="true">🔈</span><span class="rotulo">Sonido</span></button>
@@ -163,13 +162,14 @@
 
   <div class="barra-herramientas">
     <div class="grupo">
-      <!-- Icono Y PALABRA. Con el icono solo, «leer en voz alta» y «silenciar»
-           eran dos altavoces casi idénticos; cambiar uno por otro emoji no
-           arregla nada, porque el problema es que un dibujo de 26 px no dice
-           qué hace un botón. La palabra sí, y «Leer» o «Pista» están dentro de
-           lo que lee un niño de 2.º. El aria-label sigue llevando la frase
-           larga para quien use lector de pantalla. -->
-      <button class="btn-bloque btn-bloque--rotulado" data-accion="leer"  aria-label="Leer en voz alta"><span class="ico" aria-hidden="true">🔊</span><span class="rotulo">Leer</span></button>
+      <!-- Icono Y PALABRA: un dibujo de 26 px no dice qué hace un botón, y
+           «Pista» o «Pausa» están dentro de lo que lee un niño de 2.º. El
+           aria-label conserva la frase larga para los lectores de pantalla.
+
+           NO hay botón de «Leer en voz alta»: se retiró a petición expresa. La
+           lectura del enunciado sigue existiendo con la tecla L (CB.a11y.MAPA)
+           y la consigna se lee sola al aparecer, así que un niño que aún no lee
+           con soltura no se queda sin ella. -->
       <button class="btn-bloque btn-bloque--rotulado" data-accion="pista" aria-label="Pista"><span class="ico" aria-hidden="true">💡</span><span class="rotulo">Pista</span></button>
     </div>
     <div class="grupo">

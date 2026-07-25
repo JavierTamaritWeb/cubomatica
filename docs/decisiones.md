@@ -809,3 +809,29 @@ más que una ronda entera de auditoría automática. Siguen fuera de alcance
 Firefox, Safari, un lector de pantalla real, el táctil de verdad, `file://` con
 doble clic (`pruebas/comprobar-doble-clic.html`), y F0.5 y F10, que necesitan
 niños.
+
+### P3 — retirada del botón «Leer en voz alta»
+
+Pedida en firme después de probar la sexta ronda: «elimina el boton leer no
+sirve para nada». Se retira de las dos barras que lo llevaban (calibración y
+partida).
+
+Lo que **no** se retira, porque nadie lo pidió y quitarlo sí tocaría la
+accesibilidad de fondo:
+
+- la consigna y el enunciado **se siguen leyendo solos** al aparecer;
+- la tecla `L` (`CB.a11y.MAPA.leer`) sigue llamando a `CB.partida.accionLeer()`,
+  que por eso se conserva entera;
+- el resaltado palabra a palabra sigue siendo el respaldo cuando el aparato no
+  tiene voz en español.
+
+Queda una hipótesis sin comprobar que conviene anotar por si vuelve el tema: si
+al pulsarlo no sonaba nada, la causa más probable no era el diseño sino la falta
+de una voz española instalada en el equipo, en cuyo caso el botón caía al
+resaltado silencioso y parecía muerto. No se investigó porque la petición fue
+retirarlo, no arreglarlo; si algún día se echa en falta, ahí está el primer
+sitio donde mirar.
+
+El guardián E14 de `casos-regresiones.js` se conserva y cambia de significado:
+ya no protege un botón, protege que la lectura funcione también donde no hay
+partida —la calibración—, que era el fallo real de origen.

@@ -36,6 +36,13 @@ captura de pantalla enviada por quien lo estaba usando.
   class="zona-juego">` a secas, sin bioma ni cielo: un rectángulo marrón liso
   justo después de una portada con nubes y hierba. (E17)
 
+### Retirado
+
+- **El botón «Leer en voz alta» de la barra**, a petición expresa. Estaba en la
+  calibración y en la partida. La lectura del enunciado **no desaparece**: la
+  consigna se sigue leyendo sola al aparecer, y la tecla `L` la repite. Lo que
+  se va es el botón.
+
 ### Corregido en las pruebas
 
 - **Dos comprobaciones de música dependían de que la ventana tuviera el foco.**

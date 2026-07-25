@@ -185,14 +185,16 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'los 3 conceden una luz de verdad cuando quedan menos del tope',
     sinConceder.join(', '));
 
-  /* ── E14 · Ningún botón de la barra es decorativo ────────────────────────
-     El altavoz de «leer» de la pantalla de CALIBRACIÓN no hacía nada. La
-     calibración no crea CB.partida.estado (a propósito: sin cronómetro, sin
-     luces, sin puntuación, para que no parezca un test), y accionLeer() salía
-     por su primer `return`. Es la primera pantalla de la vida del niño y ese
-     botón es justo el que sirve para volver a oír la pregunta.
+  /* ── E14 · La lectura en voz alta funciona en la calibración ─────────────
+     Nació como fallo del botón «Leer»: la calibración no crea CB.partida.estado
+     (a propósito: sin cronómetro, sin luces y sin puntuación, para que no
+     parezca un examen) y accionLeer() salía por su primer `return`, de modo que
+     el botón no hacía nada en la primera pantalla de la vida del niño.
 
-     Se comprueba con el estado a null, que es como está siempre allí. */
+     El BOTÓN ya no existe —se retiró a petición— pero accionLeer() sí, porque
+     la tecla L de CB.a11y.MAPA la sigue usando. El guardián se queda: lo que
+     protege no es el botón, es que la lectura funcione también donde no hay
+     partida. Se comprueba con el estado a null, que es como está siempre allí. */
   var estadoPrev14 = CB.partida.estado;
   var pantallaPrev14 = CB.pantallas.actual;
   var vozPrev = CB.voz.leerOGuiar;
@@ -204,7 +206,11 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.voz.leerOGuiar = function (texto) { leido = texto; };
   CB.partida.accionLeer();
   t.igual(leido, '¿Cuánto es 2 + 3?',
-    'E14 · el altavoz de la calibración lee la consigna aunque no haya partida');
+    'E14 · la lectura en voz alta funciona en la calibración aunque no haya partida');
+
+  /* Y la tecla que ahora es su única puerta sigue conectada. */
+  t.ok(CB.a11y.MAPA.leer.indexOf('l') !== -1 && typeof CB.partida.accionLeer === 'function',
+    'E14 · la tecla L sigue siendo puerta de la lectura tras retirar el botón');
 
   /* Y en una pantalla sin consigna ni partida no revienta ni lee basura. */
   leido = null;

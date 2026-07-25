@@ -1118,7 +1118,8 @@ CB.partida.conectarBarra = function () {
     var a = b.getAttribute('data-accion');
     if (!a) return;
 
-    if (a === 'leer') CB.partida.accionLeer();
+    /* Ya no hay botón «Leer»: se retiró a petición. accionLeer() sigue viva
+       porque la tecla L de CB.a11y la usa. */
     if (a === 'pista') CB.partida.accionPista();
     if (a === 'pausa') CB.partida.pausar();
     if (a === 'sonido') {
