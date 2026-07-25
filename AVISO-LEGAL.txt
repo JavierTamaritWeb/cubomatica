@@ -1,6 +1,6 @@
 CUBOMATICA — AVISO LEGAL
 ========================
-Version 1.5.0
+Version 1.6.0
 
 1. INDEPENDENCIA Y AUSENCIA DE AFILIACION
 -----------------------------------------

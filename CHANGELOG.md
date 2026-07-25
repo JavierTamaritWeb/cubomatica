@@ -10,6 +10,68 @@ La versión de referencia es `CB.VERSION` en `js/00-nucleo.js`. Este fichero y
 
 ---
 
+## [1.6.0] — 2026-07-25
+
+Séptima ronda: **la auditoría de si se entiende**. Todo lo de aquí abajo salió
+de que alguien usara el juego, no de leer código. Las seis rondas anteriores
+comprobaron que el código cumpliera la especificación —y la cumplía— pero nadie
+había comprobado si un humano entiende lo que está pasando delante de él.
+
+Los siete defectos comparten causa: **el juego hacía lo correcto y no lo
+contaba**.
+
+### Corregido
+
+- **El botón de la portada prometía lo que no iba a pasar.** Decía siempre
+  «JUGAR» y la primera vez llevaba a cuatro preguntas de colocación sin reloj,
+  sin luces y sin puntos. Ahora `CB.arranque.rotuloJugar()` decide: **EMPEZAR**
+  sin calibrar, **SEGUIR JUGANDO** con partida a medias, **JUGAR** el resto. Y
+  debajo, una línea dice qué viene. (E21)
+- **Los mensajes se escribían en una pantalla oculta.** `CB.ui.mensaje()` iba
+  siempre a `#item-mensaje`, que vive dentro de la pantalla de partida; durante
+  la calibración esa pantalla está oculta, así que el «¡Muy bien!» de cada una
+  de las cuatro preguntas se escribía donde nadie podía verlo. Cuatro preguntas
+  seguidas sin una sola reacción. (E22)
+- **La calibración terminaba en silencio.** Contestabas la cuarta y aparecías en
+  el mapa, sin que nadie dijera que aquello era la preparación ni que el juego
+  empieza ahora. Descrito así por quien lo probó: «empiezas con una demo y no
+  avisa que es una demo». (E23)
+- **La pausa aterrizaba en un menú de configuración.** «Pausa» llevaba a una
+  pantalla titulada «Ajustes», con cinco opciones y la vuelta al juego en el
+  último sitio de la lista. Ahora se llama **«En pausa»** y «◀ Seguir cavando»
+  es el primer botón. El flag `desdePausa` ya se pasaba y no lo usaba nadie. (E24)
+- **El juego no contaba su propia regla de las luces.** Al primer fallo no pasaba
+  nada visible y parecía que no se enteraba de los errores; y la luz se apagaba
+  en el HUD mientras se miraba la reparación, sin causa aparente. Dos frases:
+  «Te queda otro intento» y «Se ha apagado una luz. Te quedan N». La regla no
+  cambia. (E20)
+- **Una recarga costaba la partida.** `pagehide` ya la guardaba y
+  `reanudarGuardada()` ya existía; faltaba la vuelta automática. Si al arrancar
+  hay una partida guardada hace menos de un minuto, se reanuda sola. (E18)
+- **La calibración no decía lo que era.** Su `<h1>` era invisible. Ahora lleva
+  título visible y «Pregunta N de 4 · Sin reloj y sin puntos». (E19)
+
+### Añadido
+
+- **`.vscode/settings.json`**: configuración de Live Server para este proyecto,
+  para que guardar un fichero no tire la partida de quien está jugando.
+- **Campo `partidaEnCurso.guardadaTs`**: `iniciadaTs` decía cuándo EMPEZÓ la
+  partida, no cuándo se guardó, y con una partida de diez minutos la distinción
+  es justo la que importa.
+
+### Verificado jugando
+
+Recorrido completo —portada, minero nuevo, calibración, mapa, cantera,
+expedición entera, fin, otra expedición y pausa— con **cero errores de consola**:
+acertar suma gemas; fallar dos veces lleva a la reparación, que exige tocar los
+tres pasos; al confirmarla se apaga una luz de verdad y el HUD la pinta en gris;
+la expedición termina con gemas, bono y lo dominado; «Otra expedición» encadena.
+
+### Contratos
+
+- Base de comprobaciones: **347 → 365**, determinista, 0 fallos.
+- Guardianes nuevos en `pruebas/casos-regresiones.js`: E20, E21, E22, E23, E24.
+
 ## [1.5.0] — 2026-07-25
 
 Sexta ronda: **la primera que se hizo mirando la pantalla en vez de leyendo el
