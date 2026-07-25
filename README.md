@@ -147,8 +147,9 @@ funciona en el Chromebook escolar de 2019 y en el iPad de 6.ª generación.
 Código, estilos, datos y documentación: **MIT** (ver [`LICENSE`](LICENSE)). Puedes
 usarlo, copiarlo y adaptarlo, también en un aula, citando la autoría.
 
-**La música no está bajo MIT.** Las nueve pistas son de sus autores y se usan bajo
-la *Pixabay Content License*, que permite el uso en proyectos pero prohíbe
-distribuirlas por separado. Están acreditadas en
-[`audio/CREDITOS.txt`](audio/CREDITOS.txt) y en la pantalla de Créditos del juego.
-Si reutilizas el proyecto, no extraigas los `.mp3` para redistribuirlos sueltos.
+**La música no está bajo MIT**, ni el texto citado del Real Decreto, ni las fuentes.
+Las nueve pistas son de sus autores y se usan bajo la *Pixabay Content License*,
+que permite el uso dentro de un proyecto pero prohíbe distribuirlas por separado.
+Están acreditadas en [`audio/CREDITOS.txt`](audio/CREDITOS.txt) y en la pantalla de
+Créditos del juego. Las tres excepciones, explicadas:
+**[`LICENCIAS-TERCEROS.md`](LICENCIAS-TERCEROS.md)**.
