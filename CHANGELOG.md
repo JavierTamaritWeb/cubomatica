@@ -10,6 +10,31 @@ La versión de referencia es `CB.VERSION` en `js/00-nucleo.js`. Este fichero y
 
 ---
 
+## [1.4.0] — 2026-07-25
+
+Quinta ronda: logros, borrado de perfil e impresión.
+
+### Corregido
+
+- **Ctrl+P desde cualquier pantalla imprimía un folio en blanco.** La hoja de
+  impresión hace que el informe se imprima siempre, se esté donde se esté, y
+  hasta generarlo el contenedor está vacío. Ahora trae una línea que dice dónde
+  se genera.
+
+### Verificado y correcto
+
+- **Los tres logros que dan vida extra funcionan de punta a punta** (requisito 10
+  del encargo): están declarados, sus eventos se disparan con el contexto que
+  necesitan, y conceden la luz de verdad. Bien acotados además: tope de 2 por
+  partida, sin cobrar dos veces, y con reserva al llegar al tope de 5.
+- **El borrado de perfil** exige escribir BORRAR y deja índice, disco,
+  `ultimoPerfil`, perfil activo y bloqueo del panel coherentes.
+- **La hoja de impresión**: A4, blanco y negro forzados, sin HUD ni botones ni
+  decoración, tamaños en puntos y `break-after: avoid` en los encabezados.
+- **329 comprobaciones**, 0 fallos.
+
+---
+
 ## [1.3.0] — 2026-07-25
 
 Cuarta ronda: el fallo que falseaba las mediciones del juego.

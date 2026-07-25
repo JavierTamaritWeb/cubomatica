@@ -663,3 +663,48 @@ declara: *un fallo corregido sin prueba vuelve*.
   competencia estimada converge en 560-1248 sin saturar ninguno de los dos topes.
   La saturación con aciertos del 95 % o del 35 % es artefacto del simulador, que
   mantiene la tasa fija independientemente de la dificultad; un niño real no.
+
+### Quinta ronda (1.4.0) — logros, borrado e impresión
+
+Ronda de rendimiento bajo, y eso también es un resultado: dos de las tres zonas
+estaban bien. Se anota lo comprobado para no volver a mirarlo.
+
+**E13 — Ctrl+P desde cualquier pantalla imprimía un folio en blanco.** La hoja
+de impresión fuerza `.imprimible[hidden] { display: block !important; }`, que
+gana por especificidad a la guarda `[hidden] { display: none !important; }`. El
+informe se imprime, por tanto, se esté donde se esté; y con el contenedor vacío
+—que es como está hasta que alguien lo genera desde el panel del adulto— salía
+una hoja en blanco sin una sola pista de qué había pasado. Ahora el contenedor
+trae una línea que dice dónde se genera, y `imprimirInforme()` la sustituye.
+
+#### Comprobado y correcto
+
+**Los tres logros que dan vida extra funcionan de punta a punta.** Es el
+requisito 10 del encargo y merecía la comprobación completa después de lo del
+panel del adulto: `vuelta_al_pozo`, `veta_restaurada` y `reto_bonus` están
+declarados con `luz: true`, los tres eventos se disparan desde `40-partida.js`
+con el contexto que sus condiciones necesitan, `filtrarConLuz` los reconoce y
+`CB.vidas.conceder()` sube la luz de verdad. Además están bien acotados: tope de
+2 por partida, `vuelta_al_pozo` no se cobra dos veces, y al llegar al tope de 5
+luces se guarda en reserva en vez de perderse. En Cantera Tranquila no se
+conceden, porque allí no hay luces.
+
+**El borrado de perfil es correcto y está bien protegido.** Hay que escribir la
+palabra BORRAR —con la palabra mal escrita no pasa nada—, y al confirmar se
+quita del índice, se borra la clave del disco, `ultimoPerfil` pasa al perfil que
+queda en vez de apuntar a un fantasma, el perfil activo se anula, el panel del
+adulto vuelve a bloquearse y se navega a la lista. Ni un cabo suelto.
+
+**La hoja de impresión está bien construida:** A4 con márgenes, fondo blanco y
+texto negro forzados, se ocultan HUD, barra de herramientas, botones, cielo,
+nubes y partículas, se quitan las URL de los enlaces, los tamaños van en puntos
+y los `h2` llevan `break-after: avoid` para no quedarse solos a pie de página.
+
+#### Dos falsos positivos míos, que también conviene anotar
+
+Esta ronda produjo dos sustos que no eran nada: leí `CB.logros.CONCEDEN_LUZ`
+como si guardara objetos cuando guarda ids, y pulsé «Confirmar» del borrado sin
+escribir la palabra. Los dos «fallos» eran errores de quien auditaba. Se anota
+porque el patrón se repite —de trece hallazgos, varios intentos fueron míos— y
+porque la conclusión práctica es la contraria de la que parece: cuando algo
+parece roto, lo primero que hay que dudar es del arnés de prueba.

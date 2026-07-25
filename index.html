@@ -292,7 +292,15 @@
 <!-- ══ 15. INFORME (imprimible) ════════════════════════════════════════════ -->
 <section id="p-informe" class="pantalla pantalla--scroll imprimible" hidden>
   <h1 class="solo-lectores">Informe</h1>
-  <div id="informe-cuerpo" class="contenido"></div>
+  <!-- Este texto se sustituye al generar el informe (imprimirInforme vacía el
+       nodo). Existe porque la hoja de impresión fuerza .imprimible[hidden] a
+       display:block: pulsar Ctrl+P desde CUALQUIER pantalla del juego imprimía
+       este contenedor, y estando vacío salía un folio en blanco sin una sola
+       pista de qué había pasado. Ahora sale una línea que dice qué hacer. -->
+  <div id="informe-cuerpo" class="contenido">
+    <p>Este informe se genera desde el panel de personas adultas: toca la llave
+       de la portada y luego «Ver informe imprimible».</p>
+  </div>
   <div class="fila fila--centro no-imprimir">
     <button id="btn-imprimir" class="btn-adulto">Imprimir</button>
     <button class="btn-bloque" data-salir>◀ Salir</button>

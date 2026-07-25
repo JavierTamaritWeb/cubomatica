@@ -5,7 +5,7 @@
    simple: un fallo corregido sin prueba vuelve. Este fichero existe para que
    nadie tenga que acordarse.
 
-   Los once fallos y dónde vive el guardián de cada uno. Los que no están en
+   Los trece fallos y dónde vive el guardián de cada uno. Los que no están en
    este fichero es porque su sitio natural es otro; la lista sigue siendo la
    única de la que fiarse.
 
@@ -22,6 +22,7 @@
      E10 En iPad la música no se podía silenciar                    casos-musica.js
      E11 Machacar OK registraba una respuesta por pulsación         AQUÍ
      E12 Pasar el objeto de destreza creaba una destreza basura     AQUÍ
+     E13 Ctrl+P desde cualquier pantalla imprimía un folio en blanco AQUÍ
 
    El detalle de cada uno, con lo que rompía y por qué, está en
    docs/decisiones.md.
@@ -147,6 +148,32 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     bien = isFinite(CB.adaptativo.theta(CB.adaptativo.SLUGS[0], perfilPrueba));
   } catch (err2) { bien = false; }
   t.ok(bien, 'E12 · con un slug correcto sigue funcionando igual');
+
+  /* ── E13 · Ctrl+P desde cualquier pantalla ya no imprime un folio blanco ─
+     La hoja de impresión fuerza `.imprimible[hidden] { display: block }`, que
+     gana por especificidad a la guarda `[hidden] { display: none }`. Es decir:
+     el informe se imprime SIEMPRE, se esté donde se esté. Con el contenedor
+     vacío eso era un folio en blanco sin ninguna pista. */
+  var cuerpoInf = document.getElementById('informe-cuerpo');
+  t.ok(!!cuerpoInf && cuerpoInf.textContent.trim().length > 20,
+    'E13 · el informe sin generar dice cómo generarlo, en vez de quedarse vacío',
+    cuerpoInf ? '«' + cuerpoInf.textContent.trim().slice(0, 40) + '»' : 'no existe');
+
+  /* ── Los 3 logros que dan luz existen y la conceden de verdad ────────────
+     Requisito 10 del encargo: «se pueden conseguir vidas extras con alcanzar
+     logros bonus». Un requisito que no se puede alcanzar es el panel del
+     adulto otra vez. */
+  t.igual(CB.logros.CONCEDEN_LUZ.length, 3, 'hay exactamente 3 logros que conceden luz');
+  var perfilLuz = CB.almacen.perfilNuevo('p-luz', 'Topo Cavador', 0, CB.util.hoyISO(), null);
+  var sinConceder = CB.logros.CONCEDEN_LUZ.filter(function (id) {
+    var est = CB.vidas.nuevoEstado(0);
+    est.luces = 2;
+    var r = CB.vidas.conceder(est, id, perfilLuz, 'expedicion');
+    return !(r.aplicada && est.luces === 3);
+  });
+  t.ok(sinConceder.length === 0,
+    'los 3 conceden una luz de verdad cuando quedan menos del tope',
+    sinConceder.join(', '));
 
   /* ── E1 · Ningún handler de pantalla navega a su propia pantalla ─────────
      El contrato es que un handler PINTA. El que navegaba desbordaba la pila y
