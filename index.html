@@ -84,6 +84,12 @@
     <div class="cielo cielo--0" aria-hidden="true"></div>
     <div class="zona-superior">
       <div id="cal-enunciado" class="panel-bloque enunciado"></div>
+      <!-- La calibración necesita su PROPIO nodo de mensaje. Usaba el de la
+           partida (#item-mensaje), que vive dentro de la pantalla p-partida y
+           está oculto mientras se calibra: el «¡Muy bien!» de cada respuesta se
+           escribía en un sitio invisible. Cuatro preguntas seguidas sin una
+           sola reacción. -->
+      <div id="cal-mensaje" class="mensaje-resultado" hidden></div>
       <div class="escena-criaturas">
         <div class="criatura flota" data-quien="cubi" aria-hidden="true">🧍</div>
       </div>

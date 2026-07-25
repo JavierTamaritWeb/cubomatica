@@ -396,6 +396,43 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.igual(CB.arranque.rotuloJugar(perfilNuevo), 'SEGUIR JUGANDO',
     'E21 · con una expedición a medias, lo dice en vez de fingir que empieza');
 
+  /* ── E22 · Los mensajes se escriben en la pantalla que se está viendo ────
+     CB.ui.mensaje() escribía siempre en #item-mensaje, que vive DENTRO de
+     <section id="p-partida">. Mientras se calibra esa sección está oculta, así
+     que el «¡Muy bien!» de cada una de las cuatro preguntas iba a un sitio
+     invisible: se contestaban cuatro preguntas seguidas sin una sola reacción.
+     Es la mitad de por qué la calibración parecía una demo rota. */
+  var pantallaPrev22 = CB.pantallas.actual;
+
+  CB.pantallas.actual = 'p-calibracion';
+  CB.ui.mensaje('¡Muy bien!', 'acierto');
+  var nCal = document.getElementById('cal-mensaje');
+  var nPar = document.getElementById('item-mensaje');
+  t.ok(!!nCal && nCal.textContent === '¡Muy bien!' && !nCal.hidden,
+    'E22 · en calibración el mensaje va a su propio nodo, y visible');
+  t.ok(!nPar || nPar.textContent !== '¡Muy bien!',
+    'E22 · y NO al de la partida, que allí está oculto');
+
+  CB.ui.ocultarMensaje();
+  t.ok(nCal.hidden && (!nPar || nPar.hidden),
+    'E22 · ocultarMensaje() limpia los dos, por si se cambió de pantalla');
+
+  CB.pantallas.actual = 'p-partida';
+  CB.ui.mensaje('Esta no suma gemas.', 'animo');
+  t.ok(!!nPar && nPar.textContent === 'Esta no suma gemas.',
+    'E22 · en partida sigue yendo al de la partida');
+  CB.ui.ocultarMensaje();
+  CB.pantallas.actual = pantallaPrev22;
+
+  /* ── E23 · La calibración anuncia que termina ────────────────────────────
+     Contestabas la cuarta pregunta y aparecías en el mapa, sin que nadie dijera
+     que aquello era la preparación ni que el juego empieza ahora. Una prueba
+     que no anuncia que termina no se distingue de una partida que se ha roto. */
+  t.ok(CB.calibracion.terminar.toString().indexOf('Ahora sí empieza el') !== -1,
+    'E23 · al acabar las 4 preguntas se dice que ahora empieza el juego');
+  t.ok(CB.calibracion.terminar.toString().indexOf('reloj') !== -1,
+    'E23 · y se nombra lo que cambia: reloj, luces y gemas');
+
   /* ── E1 · Ningún handler de pantalla navega a su propia pantalla ─────────
      El contrato es que un handler PINTA. El que navegaba desbordaba la pila y
      el catch de ir() lo convertía en «algo ha ido mal», de modo que el panel

@@ -116,7 +116,25 @@ CB.calibracion.terminar = function () {
   });
 
   CB.almacen.guardarPerfil(perfil);
-  CB.pantallas.ir('p-mapa');
+
+  /* Y decir que se ha acabado. Antes las cuatro preguntas terminaban en
+     silencio: contestabas la última y aparecías en un mapa, sin que nadie te
+     dijera que aquello era la preparación ni que el juego empieza ahora. Quien
+     lo probó lo dijo así: «empiezas con una demo y no avisa que es una demo».
+     Una prueba que no anuncia que termina no se distingue de una partida que se
+     ha roto. */
+  var cierre = '¡Ya está! Ya sabemos por dónde empezar. Ahora sí empieza el ' +
+               'juego: con reloj, con luces y con gemas.';
+  var paso = document.getElementById('cal-paso');
+  if (paso) paso.textContent = cierre;
+  CB.ui.mensaje(cierre, 'acierto');
+  CB.a11y.anunciar(cierre);
+  CB.voz.leer(cierre);
+
+  setTimeout(function () {
+    CB.ui.ocultarMensaje();
+    CB.pantallas.ir('p-mapa');
+  }, 3400);
 };
 
 /* ── Perfiles ───────────────────────────────────────────────────────────── */

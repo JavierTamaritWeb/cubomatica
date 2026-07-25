@@ -202,8 +202,19 @@ CB.ui.filaVagonetas = function (total, marcada) {
 };
 
 /* ── Mensajes ───────────────────────────────────────────────────────────── */
+/* El nodo de mensaje de la pantalla que está a la vista. #item-mensaje vive
+   DENTRO de <section id="p-partida">, así que mientras se calibra está oculto:
+   escribir ahí el «¡Muy bien!» de cada una de las cuatro preguntas equivalía a
+   no dar ninguna respuesta. Mismo patrón que usa 32-componentes.js para elegir
+   entre cal-respuesta e item-respuesta. */
+CB.ui.nodoMensaje = function () {
+  var id = (CB.pantallas && CB.pantallas.actual === 'p-calibracion')
+    ? 'cal-mensaje' : 'item-mensaje';
+  return document.getElementById(id) || document.getElementById('item-mensaje');
+};
+
 CB.ui.mensaje = function (texto, tipo) {
-  var m = document.getElementById('item-mensaje');
+  var m = CB.ui.nodoMensaje();
   if (!m) return;
   m.hidden = false;
   m.setAttribute('data-tipo', tipo);
@@ -212,8 +223,12 @@ CB.ui.mensaje = function (texto, tipo) {
 };
 
 CB.ui.ocultarMensaje = function () {
-  var m = document.getElementById('item-mensaje');
-  if (m) { m.hidden = true; m.textContent = ''; }
+  /* Se limpian LOS DOS: si la pantalla cambió entre mostrar y ocultar, el que
+     quedó escrito no es el que ahora devuelve nodoMensaje(). */
+  ['item-mensaje', 'cal-mensaje'].forEach(function (id) {
+    var m = document.getElementById(id);
+    if (m) { m.hidden = true; m.textContent = ''; }
+  });
 };
 
 /* ── Bono retrospectivo: GANANCIA, nunca pérdida en directo (§3.4) ──────── */
