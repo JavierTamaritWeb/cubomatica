@@ -348,6 +348,54 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(!!document.getElementById('cal-paso'),
     'E19 · y existe el sitio donde decir por qué pregunta va y que no hay reloj');
 
+  /* ── E20 · El juego cuenta la regla de las luces cuando importa ──────────
+     La regla (docs/decisiones.md, Documento 5) es que una luz se apaga SOLO al
+     fallar el segundo intento, tras ver la tarjeta de reparación. Es correcta.
+     El problema era que el juego no la contaba: al primer fallo no pasaba nada
+     visible —no caía la gema y ya— y quien jugaba concluía que el juego no se
+     entera de los errores. Y cuando por fin se apagaba la luz, ocurría arriba
+     del todo mientras se miraba la tarjeta, así que la luz desaparecía sin
+     causa aparente varias pantallas después del fallo que la costó. */
+  t.ok(CB.partida.trasFallo.toString().indexOf('Te queda otro intento') !== -1,
+    'E20 · el primer fallo dice que queda otro intento');
+  t.ok(CB.partida.trasFallo.toString().indexOf('Se ha apagado una luz') !== -1,
+    'E20 · y al apagarse una luz se dice, con las que quedan');
+
+  /* Y sigue sin apagarse en el primer intento, que es la regla que se protege. */
+  var luzEstado = CB.vidas.nuevoEstado(0);
+  var r1 = CB.vidas.fallo(luzEstado, 1, 'expedicion');
+  t.ok(!r1.apagada && luzEstado.luces === CB.vidas.INICIALES,
+    'E20 · un solo fallo NO apaga ninguna luz');
+  var r2 = CB.vidas.fallo(luzEstado, 2, 'expedicion');
+  t.ok(r2.apagada && luzEstado.luces === CB.vidas.INICIALES - 1,
+    'E20 · el segundo fallo del mismo ítem sí apaga una');
+
+  /* ── E21 · El botón de la portada no promete lo que no va a pasar ────────
+     Decía siempre «JUGAR» y la primera vez llevaba a cuatro preguntas de
+     colocación sin reloj, sin luces y sin puntos. La colocación es necesaria y
+     no debe parecer un examen —por eso no lleva cronómetro— pero anunciarla
+     como una partida es una promesa rota, y era la PRIMERA impresión del juego.
+     Descrito por quien lo probó como «muy muy muy confuso». */
+  var perfilSin = null;
+  t.igual(CB.arranque.rotuloJugar(perfilSin), 'EMPEZAR',
+    'E21 · sin minero elegido el botón dice EMPEZAR, no JUGAR');
+
+  var perfilNuevo = CB.almacen.perfilNuevo('p-rot', 'Topo Cavador', 0, CB.util.hoyISO(), null);
+  perfilNuevo.calibrado = false;
+  t.igual(CB.arranque.rotuloJugar(perfilNuevo), 'EMPEZAR',
+    'E21 · sin calibrar tampoco dice JUGAR: lo que viene no es una partida');
+  t.ok(CB.arranque.pistaJugar(perfilNuevo).indexOf('Sin reloj') !== -1,
+    'E21 · y avisa de que esas preguntas no llevan reloj');
+
+  perfilNuevo.calibrado = true;
+  perfilNuevo.partidaEnCurso = null;
+  t.igual(CB.arranque.rotuloJugar(perfilNuevo), 'JUGAR',
+    'E21 · ya calibrado y sin partida a medias, dice JUGAR');
+
+  perfilNuevo.partidaEnCurso = { iniciadaTs: Date.now(), guardadaTs: Date.now() };
+  t.igual(CB.arranque.rotuloJugar(perfilNuevo), 'SEGUIR JUGANDO',
+    'E21 · con una expedición a medias, lo dice en vez de fingir que empieza');
+
   /* ── E1 · Ningún handler de pantalla navega a su propia pantalla ─────────
      El contrato es que un handler PINTA. El que navegaba desbordaba la pila y
      el catch de ir() lo convertía en «algo ha ido mal», de modo que el panel

@@ -486,6 +486,39 @@ CB.arranque = function () {
    ayer sin haber tocado nada. */
 CB.arranque.MS_RECARGA = 60000;
 
+/* ── El botón de la portada dice lo que va a pasar ──────────────────────────
+   «JUGAR» prometía una partida y llevaba a cuatro preguntas de colocación sin
+   reloj, sin luces y sin puntos. La colocación es necesaria y no debe parecer
+   un examen —por eso no tiene cronómetro— pero eso no justifica anunciarla como
+   una partida: quien lo probó lo describió como «muy muy muy confuso», y la
+   confusión no estaba en el flujo sino en el rótulo.
+
+   Devuelve TEXTO, no navega: quien decide a dónde se va sigue siendo el
+   manejador del clic. */
+CB.arranque.rotuloJugar = function (perfil) {
+  if (!perfil || !perfil.calibrado) return 'EMPEZAR';
+  if (CB.partida.hayPartidaGuardada(perfil)) return 'SEGUIR JUGANDO';
+  return 'JUGAR';
+};
+
+CB.arranque.pistaJugar = function (perfil) {
+  if (!perfil) return 'Primero elegimos quién juega.';
+  if (!perfil.calibrado) {
+    return 'Primero, ' + CB.calibracion.ITEMS.length +
+           ' preguntas para saber por dónde empezar. Sin reloj y sin puntos.';
+  }
+  if (CB.partida.hayPartidaGuardada(perfil)) return 'Tienes una expedición a medias.';
+  return '';
+};
+
+/* PINTA, no navega: el contrato de alEntrar (ver casos-regresiones.js, E1). */
+CB.pantallas.alEntrar['p-portada'] = function () {
+  var b = document.getElementById('btn-jugar');
+  if (b) b.textContent = CB.arranque.rotuloJugar(CB.perfil);
+  var p = document.getElementById('portada-pista');
+  if (p) p.textContent = CB.arranque.pistaJugar(CB.perfil);
+};
+
 CB.arranque.esRecarga = function (perfil, ahoraMs) {
   var g = perfil && perfil.partidaEnCurso;
   if (!g || g.guardadaTs == null) return false;

@@ -257,3 +257,18 @@
   max-width: none;
   color: var(--texto-sec-claro);
 }
+
+/* La pista bajo el botón principal. Va sobre fondo de TEXTO, nunca sobre el
+   cielo: los colores decorativos no llevan texto encima (regla de
+   01-variables.css) y sobre el azul del cielo esta línea era ilegible. */
+#p-portada #portada-pista {
+  font-family: var(--fuente-lectura);
+  font-size: var(--tam-texto-min);
+  background: var(--bg-texto-panel);
+  color: var(--texto-secundario);
+  padding: var(--e2) var(--e3);
+  max-width: 42ch;
+  text-align: center;
+  margin: 0;
+}
+#p-portada #portada-pista:empty { display: none; }

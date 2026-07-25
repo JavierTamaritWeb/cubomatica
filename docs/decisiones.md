@@ -892,3 +892,49 @@ no hay reloj: «Pregunta N de 4 · Sin reloj y sin puntos: solo para saber por
 dónde empezar». El reloj sigue sin aparecer en la calibración, y esa parte de la
 decisión no cambia: ponerle cronómetro a la prueba de colocación falsearía la
 medida y asustaría al niño en su primer minuto de juego.
+
+### P5 — «poner Jugar es muy muy muy confuso»
+
+El diagnóstico lo dio quien lo estaba usando, y es exacto: el problema no era el
+flujo, era el RÓTULO. El botón decía siempre «JUGAR» y la primera vez llevaba a
+cuatro preguntas de colocación sin reloj, sin luces y sin puntos. La colocación
+es necesaria y no debe parecer un examen —por eso no lleva cronómetro, y esa
+parte no cambia— pero anunciarla como una partida es una promesa rota. Y era la
+PRIMERA impresión del juego.
+
+`CB.arranque.rotuloJugar(perfil)` devuelve TEXTO, nunca navega:
+
+    sin minero o sin calibrar  →  EMPEZAR
+    partida a medias           →  SEGUIR JUGANDO
+    resto                      →  JUGAR
+
+Debajo, `CB.arranque.pistaJugar()` dice qué viene: «Primero, 4 preguntas para
+saber por dónde empezar. Sin reloj y sin puntos.» Con eso, las tres cosas que
+más confusión dieron en toda la sesión —que JUGAR no lleva a jugar, que ahí no
+hay reloj y que la partida guardada existe— quedan dichas antes de pulsar, en
+vez de descubrirse a base de sorpresas.
+
+Se pintan desde `alEntrar['p-portada']`, que PINTA y no navega, como exige el
+contrato que dejó E1.
+
+Detalle que casi se cuela: la primera versión puso la pista directamente sobre
+el cielo y era ilegible. El cielo es color DECORATIVO, y la regla de
+`01-variables.css` dice que el texto vive solo sobre `--bg-texto-*`. Va sobre
+panel crema.
+
+### E20 — el juego no contaba la regla de las luces
+
+La regla (Documento 5) es correcta y no se toca: una luz se apaga SOLO al fallar
+el segundo intento, tras la tarjeta de reparación. Lo que fallaba es que el
+juego no la contaba en ningún momento.
+
+Al primer fallo no pasaba nada visible —no caía la gema y ya está—, así que
+quien jugaba concluía, razonablemente, que el juego no se entera de los errores:
+«cuando cometes un error no resta vidas». Y cuando por fin se apagaba la luz,
+ocurría en el HUD, arriba del todo, mientras se miraba la tarjeta de reparación:
+la luz desaparecía sin causa aparente y varias pantallas después del fallo que
+la costó.
+
+Dos frases, en los dos momentos en que importan: «Te queda otro intento» al
+primer fallo, y «Se ha apagado una luz. Te quedan N» cuando se apaga. Sin
+regañar y sin números negativos (§3.4).

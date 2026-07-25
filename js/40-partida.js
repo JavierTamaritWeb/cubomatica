@@ -569,7 +569,13 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     e.intento = 2;
     var pistas = CB.datos.MENSAJES.PISTAS[item.destreza];
     var pista = pistas ? pistas[0] : 'Vuelve a mirarlo con calma.';
-    CB.ui.mensaje('Esta no suma gemas. ' + pista, 'animo');
+    /* «Te queda otro intento» es la frase que faltaba. Sin ella, un fallo no
+       tiene ninguna consecuencia visible —no cae la gema y ya está— y quien
+       juega concluye que el juego no se entera de los errores. La regla es que
+       la luz se apaga SOLO al fallar el segundo intento (docs/decisiones.md,
+       Documento 5), y esa regla hay que contarla en el momento en que importa,
+       no dejarla escrita en un documento que el niño no lee. */
+    CB.ui.mensaje('Esta no suma gemas. Te queda otro intento. ' + pista, 'animo');
     CB.ui.personaje('rocarr', 'pista');
     CB.audio.sfx('rocarr');
     setTimeout(function () {
@@ -608,6 +614,24 @@ CB.partida.trasFallo = function (item, nivel, extra) {
 
     CB.pantallas.ir('p-partida');
     if (CB.vidas.agotadas(e.luces)) { CB.partida.finalizar('luces'); return; }
+
+    /* Y decir que se ha apagado. El HUD lo pinta —la luz se pone gris— pero eso
+       pasa arriba del todo mientras se mira la tarjeta de reparación, así que
+       nadie lo ve ocurrir. Sin esta línea, la luz desaparece sin causa aparente
+       varias pantallas después del fallo que la costó. Se dice lo que pasó y
+       cuántas quedan, sin regañar y sin números negativos (§3.4). */
+    if (r.apagada) {
+      var quedan = e.luces.luces;
+      var aviso = 'Se ha apagado una luz. Te ' +
+                  (quedan === 1 ? 'queda 1 luz.' : 'quedan ' + quedan + ' luces.');
+      CB.ui.mensaje(aviso, 'animo');
+      CB.a11y.anunciar(aviso);
+      setTimeout(function () {
+        CB.ui.ocultarMensaje();
+        CB.partida.siguiente();
+      }, 2200);
+      return;
+    }
     CB.partida.siguiente();
   });
 };
