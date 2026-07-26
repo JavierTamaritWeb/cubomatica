@@ -13,13 +13,13 @@ while lsof -i :$PUERTO >/dev/null 2>&1; do
   PUERTO=$((PUERTO + 1))
 done
 
-echo "Cubomatica se esta abriendo en http://localhost:$PUERTO/index.html"
+echo "Cubomatica se esta abriendo en http://localhost:$PUERTO/dist/index.html"
 echo "Suite de pruebas: http://localhost:$PUERTO/pruebas/pruebas.html"
 echo
 echo "Deja esta ventana abierta mientras juegas. Ctrl+C para parar."
 echo
 
 # Se abre el JUEGO, no el listado de directorio.
-( sleep 1 && open "http://localhost:$PUERTO/index.html" ) &
+( sleep 1 && open "http://localhost:$PUERTO/dist/index.html" ) &
 
 python3 -m http.server $PUERTO

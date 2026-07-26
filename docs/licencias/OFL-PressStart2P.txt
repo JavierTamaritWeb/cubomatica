@@ -3,7 +3,7 @@ SIL OPEN FONT LICENSE Version 1.1
 
 NOTA DE CUBOMATICA: esta fuente NO se distribuye con el juego. El texto de la
 licencia se conserva aqui como referencia porque la fuente se menciona en la
-cascada local() de css/00-fuentes.css. Si el sistema del usuario la tiene
+cascada local() de src/scss/_00-fuentes.scss. Si el sistema del usuario la tiene
 instalada, se usa la copia del sistema, bajo la licencia con la que ese usuario
 la instalo. Cubomatica no copia, no modifica y no redistribuye el fichero.
 

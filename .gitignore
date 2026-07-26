@@ -1,16 +1,36 @@
 # Cubomática — .gitignore
 #
-# Este proyecto NO tiene dependencias, ni compilación, ni bundler, ni carpeta de
-# salida: el juego SON los ficheros del repositorio. Por eso aquí no hay
-# node_modules, ni dist/, ni build/. Todo lo que se ignora es basura del sistema
-# operativo, del editor o de haber levantado un servidor local para probar.
+# Desde 1.7.0 este proyecto SÍ tiene compilación: Gulp 5 concatena las fuentes de
+# `src/` y escribe `dist/`. Hasta 1.6.0 no la tenía, y este fichero lo declaraba
+# por escrito; la migración a SCSS con BEM, minificado, responsive y caché sin
+# conexión no cabía sin un paso de construcción.
 #
-# Lo que NO se ignora, a propósito:
+# Lo que NO se ignora, a propósito, y esto es lo importante:
+#
+#   dist/         SE VERSIONA. Es la única razón por la que «clona el repositorio
+#                 y abre el HTML con doble clic» sigue siendo verdad para un
+#                 maestro que no tiene node instalado. Cuesta ruido en el
+#                 historial y se paga a gusto: es el modo de uso principal.
 #   audio/*.mp3   son parte del juego; sin ellas no suena. Ver audio/CREDITOS.txt
 #   docs/         documentación interna: no se distribuye CON EL JUEGO, pero sí
 #                 forma parte del repositorio, porque explica por qué el código
 #                 es como es.
 #   PLAN.md       la especificación de la que salió todo.
+
+# ── Lo que trae el paso de construcción ────────────────────────────────────
+node_modules/
+# Aquí había dos reglas que no correspondían a nada:
+#
+#   dist/**/*.map — gulp ya no emite mapas de origen. Emitirlos e ignorarlos era
+#   lo peor de las dos opciones: `dist/` se versiona, así que los dos ficheros
+#   minificados publicados acababan con un `sourceMappingURL` colgando, roto en
+#   todos los clones menos en la máquina que acababa de construir. El bundle
+#   legible `dist/js/cubomatica.js` cubre la depuración mucho mejor, porque no
+#   es una reconstrucción: son las fuentes pegadas byte a byte.
+#
+#   pruebas/vendor/ — reservaba sitio para axe-core, que la fase 7 planeaba y
+#   NO llegó a añadirse. La accesibilidad se comprueba con casos-a11y.js escrito
+#   a mano. Una regla que aparta un fichero inexistente sugiere que existe.
 
 # ── macOS ──────────────────────────────────────────────────────────────────
 .DS_Store
@@ -38,7 +58,16 @@ $RECYCLE.BIN/
 .nfs*
 
 # ── Editores ───────────────────────────────────────────────────────────────
-.vscode/
+# .vscode/ SÍ se versiona, con una sola excepción abajo, y es por 1.7.0.
+# Antes daba igual: `index.html` estaba en la raíz y Live Server acertaba solo.
+# Ahora las fuentes de `src/` NO son servibles —el HTML referencia los 45 guiones
+# sueltos y una hoja que solo existe compilada—, así que abrir `src/index.html`
+# con Live Server da una página sin estilo y sin juego. `settings.json` apunta al
+# sitio correcto y explica por qué; ignorarlo dejaba esa corrección dentro de un
+# único ordenador mientras todo el que clonara caía en la trampa que creó la
+# migración.
+.vscode/*
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo

@@ -1,0 +1,176 @@
+/* ============================================================================
+   _herramientas.scss — mapas, funciones y mixins. EMITE CERO CSS.
+   ----------------------------------------------------------------------------
+   Regla de este fichero: aquí solo hay definiciones. Si compilarlo a solas
+   produjera una sola llave, algo está mal.
+
+   LO QUE HACE ESTE FICHERO, Y NO ES AHORRAR LÍNEAS. Dos de las tres reglas
+   duras del proyecto —cero desenfoque, cero easing— eran hasta ahora reglas de
+   DISCIPLINA: se cumplían porque quien escribía se acordaba, y la auditoría lo
+   comprobaba después con un grep. `bisel()` y `paso()` no tienen parámetro donde
+   meter un desenfoque ni una curva. A través de ellos escribir una sombra difusa
+   o una transición suave no es que esté prohibido: es que no se puede.
+
+   Un grep que falla te dice que te has equivocado. Un mixin sin ese parámetro
+   hace que no llegues a equivocarte.
+   ========================================================================== */
+
+@use 'sass:map';
+@use 'sass:list';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MAPAS — la paleta deja de escribirse a mano
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* 13 materiales × 3 tonos (base, oscuro, claro) = las 39 --deco-*.
+   El orden importa: es el que tendrán las custom properties emitidas, y el
+   comparador de árboles compara posición a posición. */
+$materiales: (
+  piedra:  (#8C8C8C, #6E6E6E, #ADADAD),
+  tierra:  (#8B5E3C, #6B4526, #A87850),
+  hierba:  (#5AA02C, #3F7A1E, #7BC44A),
+  madera:  (#A0763F, #7A5628, #C29A62),
+  arena:   (#E0D08A, #C4B067, #F0E4AE),
+  agua:    (#3C7BD4, #2A5CA8, #5C9BE8),
+  hielo:   (#A8D8E8, #7FB8CC, #CDECF5),
+  carbon:  (#3A3A3A, #232323, #545454),
+  cobre:   (#C87137, #9E5525, #E08F55),
+  cristal: (#7FD4E8, #55AEC4, #B0EAF5),
+  musgo:   (#4E7A3A, #3A5C2A, #6D9B54),
+  brasa:   (#E8642A, #B84618, #F58B52),
+  oro:     (#E8B923, #B8900F, #F5D45C)
+);
+
+/* Cielo: 6 pasos discretos, de día a noche. Los pinta js/30-ui.js con
+   `'cielo cielo--' + Math.floor(avance * 6)`. */
+$cielos: (#8FD3F4, #7FC2E8, #6BA6D6, #4F7BA8, #2E4A72, #1A2A48);
+
+/* Los ocho materiales que js/02-texturas.js sustituye por un data: URI al
+   arrancar. El valor inicial es el color plano, para que nunca se vea un hueco. */
+$texturados: piedra, tierra, hierba, madera, arena, agua, musgo, cristal;
+
+/* Cada bioma es un material. Se usa DOS veces —en `.bioma--X` y en
+   `.cinta-bioma[data-bioma=X]`— y antes se escribía dos veces. */
+$biomas: (pradera: hierba, bosque: musgo, rio: agua, mina: piedra);
+
+/* Los 6 estados de una veta del Mapa de Destrezas, cada uno con su tono. */
+$estados-veta: (
+  bloqueado:   piedra-osc,
+  nuevo:       piedra,
+  aprendiendo: arena,
+  afianzada:   hierba-cla,
+  dominada:    cristal-cla,
+  oxidada:     musgo-cla
+);
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PUNTOS DE RUPTURA
+   ──────────────────────────────────────────────────────────────────────────
+   DOS EJES, Y NO COMPITEN. Es la decisión de diseño de toda esta parte.
+
+   Hasta 1.6.0 el proyecto tenía CERO `min-width`: los cinco puntos de ruptura
+   que existían eran de ALTURA (900/780/660/600/420) y estaban ahí para una sola
+   cosa —que la última fila del teclado 3×4 no se corte—. Añadir anchura sin
+   pensarlo habría hecho que las dos se pisaran: un proyector de 1400×700
+   recibiría «grande» por anchura y «pequeño» por altura, y ganaría el que
+   estuviera escrito más abajo en el fichero, que no es una decisión, es un
+   accidente.
+
+   El reparto:
+       la ANCHURA decide CUÁNTAS COLUMNAS y el ancho del contenedor.
+       la ALTURA  decide EL LADO DEL BOTÓN.
+
+   Y cuando las dos tienen algo que decir sobre el mismo número, cada una escribe
+   su PROPIA variable y el valor final es el min() de las dos (ver
+   --lado-deseado / --lado-techo en _01-variables.scss). Así se combinan en vez
+   de competir, y el orden dentro del fichero deja de importar. Sin eso, cinco
+   anchuras × cinco alturas serían veinticinco combinaciones escritas a mano.
+   ══════════════════════════════════════════════════════════════════════════ */
+$puntos: (movil: 480px, tableta: 768px, portatil: 1024px,
+          escritorio: 1200px, ancho: 1400px);
+
+$alturas: (alta: 900px, media: 780px, baja: 660px, corta: 600px, minima: 420px);
+
+/* El @error no es adorno. Con cinco nombres en español, `desde(ordenador)` en
+   vez de `desde(escritorio)` compilaría a nada y no avisaría de nada. */
+@mixin desde($punto) {
+  @if not map.has-key($puntos, $punto) {
+    @error 'Punto de ruptura desconocido: #{$punto}. Validos: #{map.keys($puntos)}.';
+  }
+  @media (min-width: map.get($puntos, $punto)) { @content; }
+}
+
+@mixin hasta-alto($punto) {
+  @if not map.has-key($alturas, $punto) {
+    @error 'Altura desconocida: #{$punto}. Validas: #{map.keys($alturas)}.';
+  }
+  @media (max-height: map.get($alturas, $punto)) { @content; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MIXINS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── bisel() ────────────────────────────────────────────────────────────────
+   El relieve de mundo de cubos: una luz arriba-izquierda y una sombra
+   abajo-derecha, las dos con desenfoque CERO.
+
+   NO HAY PARÁMETRO DE DESENFOQUE, y eso es el punto entero del mixin. El tercer
+   valor de cada capa lo pone él y siempre es 0. La regla del bloque 3 de la
+   auditoría deja de depender de que alguien se acuerde.
+
+   $extra permite añadir la sombra proyectada exterior que llevan los paneles,
+   que tampoco tiene desenfoque (es un desplazamiento sólido, estilo cubo). */
+@mixin bisel($luz, $sombra, $grosor: var(--bisel), $extra: null) {
+  $capas: (inset #{$grosor} #{$grosor} 0 0 #{$luz},
+           inset calc(#{$grosor} * -1) calc(#{$grosor} * -1) 0 0 #{$sombra});
+  @if $extra { $capas: list.append($capas, $extra, $separator: comma); }
+  box-shadow: $capas;
+}
+
+/* Bisel de un solo lado: la barra de progreso, el aviso, el paso de reparación. */
+@mixin bisel-lateral($color, $grosor: var(--bisel)) {
+  box-shadow: inset #{$grosor} 0 0 0 #{$color};
+}
+
+/* ── paso() y animar() ──────────────────────────────────────────────────────
+   Todo movimiento del juego es escalonado: `steps()`, nunca una curva. Es la
+   estética voxel, y es también una decisión de accesibilidad —un movimiento
+   discreto se sigue con la vista mejor que uno continuo.
+
+   Igual que bisel(): NO HAY PARÁMETRO donde meter `ease`, `linear` ni
+   `cubic-bezier`. El escalonado lo pone el mixin. */
+@mixin paso($propiedades, $ms: 90ms, $pasos: 2) {
+  $t: ();
+  @each $p in $propiedades {
+    $t: list.append($t, #{$p} #{$ms} steps(#{$pasos}, end), $separator: comma);
+  }
+  transition: $t;
+}
+
+@mixin animar($nombre, $ms, $pasos, $repite: 1, $relleno: null) {
+  animation: #{$nombre} #{$ms} steps(#{$pasos}, end) #{$repite} #{$relleno};
+}
+
+/* ── desactivar-movimiento() ────────────────────────────────────────────────
+   UNA lista, DOS contextos. El ajuste del sistema (prefers-reduced-motion) y el
+   del propio juego (:root.sin-movimiento) tienen que apagar exactamente lo
+   mismo, y estuvieron desincronizados durante meses porque eran dos listas
+   escritas a mano a cuarenta líneas de distancia: la del sistema apagaba 21
+   animaciones y la del juego 11 (E25).
+
+   Con el mixin, la lista existe una sola vez y la desincronización deja de ser
+   posible. El guardián de E25 se queda igualmente: comprueba el CSS cargado, así
+   que sigue valiendo si algún día esto se escribe de otra manera. */
+@mixin desactivar-movimiento($lista, $prefijo: '') {
+  $sel: ();
+  @each $s in $lista { $sel: list.append($sel, '#{$prefijo}#{$s}', $separator: comma); }
+  #{$sel} { animation: none !important; }
+  /* Sin animación, los botones aparecerían grises y cambiarían de color de golpe */
+  #{$prefijo}.btn-bloque--monta { opacity: 1; transform: none; }
+  #{$prefijo}.particula.particula--viva { display: none; }
+  /* El cartel sigue APARECIENDO: quitarle el movimiento no puede quitarle el
+     aviso, porque el aviso es información y el movimiento solo es la gracia.
+     Se queda quieto en el centro los mismos 1,9 s y se va sin recorrido. */
+  #{$prefijo}.aviso-prisa.aviso-prisa--entra { transform: none; opacity: 1; }
+}

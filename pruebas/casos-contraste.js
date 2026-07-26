@@ -10,9 +10,22 @@
 CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   var t = CB.pruebas;
 
+  /* Acepta las dos formas de hex. Hasta 1.7.0 solo admitía seis dígitos, y eso
+     bastaba mientras el CSS lo escribiera una persona. Con minificado, cssnano
+     acorta #000000 a #000 —es CSS igual de válido—, hex() devolvía null y la
+     comprobación de alto contraste se SALTABA.
+
+     Ese es el modo de fallo que este fichero no se puede permitir: no se ponía
+     roja, se ponía gris. Una verificación WCAG que desaparece en silencio de
+     material escolar es peor que no tenerla, porque el informe sigue en verde.
+     Por eso ahora, además, se exige abajo que no se salte ninguna. */
   function hex(v) {
     var s = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
     if (/^#[0-9A-Fa-f]{6}$/.test(s)) return s;
+    if (/^#[0-9A-Fa-f]{3}$/.test(s)) {
+      return '#' + s.charAt(1) + s.charAt(1) + s.charAt(2) + s.charAt(2) +
+                   s.charAt(3) + s.charAt(3);
+    }
     return null;
   }
   function lum(h) {
@@ -51,11 +64,12 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
     ['--alto-contraste-bg','--alto-contraste-texto', 7.0, 'modo de alto contraste']
   ];
 
-  var malos = 0, i;
+  var malos = 0, saltados = [], i;
   for (i = 0; i < CB.pruebas.PARES.length; i++) {
     var p = CB.pruebas.PARES[i];
     var a = hex(p[0]), b = hex(p[1]);
     if (!a || !b) {
+      saltados.push(a ? p[1] : p[0]);
       CB.pruebas.saltar(p[3], 'variable no resuelta: ' + (a ? p[1] : p[0]));
       continue;
     }
@@ -67,6 +81,13 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   }
   t.ok(malos === 0, 'ningún par de color queda por debajo de su umbral WCAG',
        malos + ' pares por debajo');
+
+  /* LA COMPROBACIÓN QUE FALTABA. Un par que no se puede medir se saltaba, y un
+     salto no cuenta como fallo: el resumen seguía diciendo «TODO EN VERDE» con
+     una obligación legal sin verificar. Aquí un salto es un fallo. */
+  t.ok(saltados.length === 0,
+    'los ' + CB.pruebas.PARES.length + ' pares WCAG se han podido medir, ninguno saltado',
+    'sin resolver: ' + saltados.join(', '));
 
   /* Ningún texto se dibuja jamás sobre una textura (§10.1): el contraste de un
      texto sobre ruido pseudoaleatorio no es un par de colores y no se puede
@@ -98,7 +119,20 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   t.ok(numOpcion >= 44,
     'los dígitos en tipografía pixel van a 44 px o más (6/8/9 y 1/7 se confunden por debajo)',
     numOpcion + ' px');
-  var lado = parseInt(raiz.getPropertyValue('--lado-respuesta'), 10);
+  /* --lado-respuesta es ahora min(--lado-deseado, --lado-techo), y
+     getPropertyValue devuelve el TEXTO SIN RESOLVER: «min(var(--lado-deseado),
+     var(--lado-techo))». parseInt de eso da NaN, y NaN >= 64 es false: esta
+     comprobacion se habria puesto roja el dia del responsive por una razon que
+     no tiene nada que ver con el tamano del boton.
+
+     Se renderiza para leer el valor real, que es la misma sonda que este fichero
+     ya usaba unas lineas mas abajo para --e3, que tambien es un calc(). */
+  var sondaLado = document.createElement('div');
+  sondaLado.style.position = 'absolute';
+  sondaLado.style.width = 'var(--lado-respuesta)';
+  document.body.appendChild(sondaLado);
+  var lado = parseFloat(getComputedStyle(sondaLado).width);
+  document.body.removeChild(sondaLado);
   t.ok(lado >= 64, 'el botón de respuesta nunca baja de 64 px', lado + ' px');
   /* --e3 es un calc(): getPropertyValue devuelve la expresión sin resolver.
      Hay que renderizarla para leer el valor real. */

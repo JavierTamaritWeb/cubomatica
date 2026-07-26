@@ -5,7 +5,7 @@
    simple: un fallo corregido sin prueba vuelve. Este fichero existe para que
    nadie tenga que acordarse.
 
-   Los diecisiete fallos y dónde vive el guardián de cada uno. Los que no están
+   Los treinta y seis fallos y dónde vive el guardián de cada uno. Los que no están
    en este fichero es porque su sitio natural es otro; la lista sigue siendo la
    única de la que fiarse.
 
@@ -27,12 +27,55 @@
      E15 El botón de silencio no reflejaba el silencio              AQUÍ
      E16 «Leer» y «Silenciar» se dibujaban casi iguales             AQUÍ
      E17 La calibración era la única zona de juego sin paisaje      AQUÍ
+     E18 Una recarga a media pregunta costaba la partida            AQUÍ
+     E19 El título de la calibración era invisible                  AQUÍ
+     E20 El juego nunca contaba su propia regla de las luces        AQUÍ
+     E21 «JUGAR» prometía una partida y daba un cuestionario        AQUÍ
+     E22 Los mensajes se escribían en una pantalla oculta           AQUÍ
+     E23 La calibración terminaba en silencio                       AQUÍ
+     E24 «Pausa» aterrizaba en un menú de ajustes                   AQUÍ
+     E25 El ajuste «sin movimiento» apagaba menos que el del        AQUÍ
+         sistema: diez animaciones seguían corriendo
+     E26 Con node_modules y dist/ la auditoría no se ponía roja:    auditar.sh
+         se colgaba, que es peor
+     E27 La leyenda del informe decía «●਍ominado»: un escape CSS      AQUÍ
+         se comía la primera letra de cada palabra
+     E28 Una clase renombrada en el CSS y no en el JS no da ningún   cruzar-clases.mjs
+         error: el elemento sale sin estilo y la consola limpia
+     E29 Estilar por #id ata el estilo a un nodo único y solo se     cruzar-clases.mjs
+         vence con otro id. Había veinte, y uno con DOS
+     E30 Anchura y altura habrían competido por el lado del botón,   auditar.sh
+         ganando el orden del fichero en vez de la restricción
+     E31 «Gira el dispositivo» se disparaba a 319px, y a zoom 400%   auditar.sh
+         el viewport es 320 justos: un píxel de margen
+     E32 Las 17 <section> no tenían nombre accesible: para un       casos-a11y.js
+         lector de pantalla no existían como regiones
+     E33 Lo urgente y lo festivo compartían región viva, así que    casos-a11y.js
+         «quedan diez segundos» se leía detrás de la cola
+     E34 Registrar el service worker en file:// ensuciaba una       AQUÍ
+         consola que estaba limpia
+     E35 El worker cachearía la propia suite y las pruebas          AQUÍ
+         dejarían de reflejar el código
+     E36 La lista negra de marca nunca escaneó los .mjs:            auditar.mjs
+         `--include='*.js'` no casa con `.mjs`
+     E37 Descargar la música decía «Listo: las 9 pistas están       AQUÍ
+         guardadas» aunque fallaran las nueve
+     E38 La lista de ficheros de música estaba escrita por          AQUÍ
+         cuarta vez, y era la copia que nadie miraba
+     E39 Las tres reglas duras de estilo tenían cuatro huecos:      auditar.mjs
+         cero sin unidad, inset, rem, y la función por defecto
 
    E14-E17 salieron de MIRAR UNA CAPTURA, no de ejecutar pruebas, y es la
    lección más cara de todas: cinco rondas de auditoría comprobaron el DOM, la
    lógica, los contrastes y los contratos, y ninguna MIRÓ la pantalla. La barra
    de herramientas ni siquiera existía en la maqueta de pruebas.html. Ahora sí
    está, con su paisaje, en las dos pantallas que la llevan.
+
+   E25 es de la misma familia pero peor: no se veía ni mirando la pantalla, hay
+   que mirar DOS listas de selectores y compararlas a mano. Lo encontró el cruce
+   de clases de la auditoría (bloque 8 de auditar.sh), que es también la red que
+   sostiene el renombrado a BEM: una clase renombrada en el CSS y no en el JS no
+   da ningún error, solo un elemento sin estilo.
 
    El detalle de cada uno, con lo que rompía y por qué, está en
    docs/decisiones.md.
@@ -78,12 +121,41 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
 
   t.igual(llamadas, 1, 'E11 · ocho envíos del mismo ítem registran UNA respuesta');
 
-  /* Y el cerrojo se abre al reconstruir la zona de respuesta, o el segundo
-     intento tras un fallo quedaría bloqueado para siempre. */
-  t.ok(CB.partida.pintarRespuesta.toString().indexOf('respondido = false') !== -1,
-    'E11 · pintarRespuesta() vuelve a abrir el cerrojo para el segundo intento');
-  t.ok(CB.partida.responder.toString().indexOf('e.respondido') !== -1,
-    'E11 · el cerrojo sigue estando en responder()');
+  /* Estos dos comprobaban el CERROJO leyendo el código fuente de la función
+     —`.toString().indexOf('respondido = false')`— y así estuvieron hasta que la
+     suite empezó a ejecutarse también contra el bundle minificado, donde
+     terser reescribe `e.respondido = false` como `n.respondido=!1`. Los dos se
+     pusieron rojos a la vez.
+
+     La lección vale para todo el fichero: leer el fuente de una función solo es
+     válido para LITERALES DE CADENA y NOMBRES DE PROPIEDAD, que terser conserva
+     (mangle.properties está prohibido). Nunca para nombres de variable, espacios
+     ni comillas. Y el modo de fallo peligroso no es este —rojo, se ve— sino la
+     afirmación en NEGATIVO, que pasa en verde por la razón equivocada.
+
+     Se comprueba la conducta, que además es lo que de verdad importaba. */
+  var eAbrir = { itemActual: { respuesta: 7 }, respondido: true, respuestas: [], intento: 2 };
+  CB.partida.estado = eAbrir;
+  try { CB.partida.pintarRespuesta({ tipo: 'opciones', respuesta: 7, opciones: [7, 8] }); }
+  catch (errPintar) { /* la maqueta no tiene todo; basta con haber pasado la línea */ }
+  t.ok(eAbrir.respondido === false,
+    'E11 · pintarRespuesta() vuelve a abrir el cerrojo para el segundo intento',
+    'respondido sigue en ' + eAbrir.respondido);
+
+  /* Y el cerrojo sigue en la función REAL, no solo en el doble de arriba: con el
+     ítem ya respondido, responder() no puede llegar a registrar nada. Si alguien
+     quitase la guarda, o registraría una respuesta o reventaría al seguir
+     adelante sin estado válido; las dos cosas ponen esto en rojo. */
+  var eCerrado = { itemActual: { respuesta: 7, destreza: 'suma_sin_llevar', nivelId: 'S1',
+                                 expr: '3+4', itemId: 'S1#3+4@1.0' },
+                   respondido: true, respuestas: [], intento: 1 };
+  CB.partida.estado = eCerrado;
+  CB.partida.bloqueado = false;
+  var siguioAdelante = false;
+  try { CB.partida.responder(7, 'teclado', {}); } catch (errResp) { siguioAdelante = true; }
+  t.ok(!siguioAdelante && eCerrado.respuestas.length === 0,
+    'E11 · el cerrojo sigue estando en la responder() de verdad',
+    siguioAdelante ? 'siguió y lanzó' : eCerrado.respuestas.length + ' respuestas registradas');
 
   CB.partida.estado = estadoPrevio;
   CB.perfil = perfilPrevio;
@@ -107,9 +179,29 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(saltos.length === 0,
     'E8 · ninguna pantalla salta un nivel de encabezado', saltos.join(' · '));
 
-  /* Y el mapa en concreto, que es donde pasó: sus tarjetas son h2 */
-  t.ok(CB.mapaDestrezas.pintarMundos.toString().indexOf("crear('h3'") === -1,
-    'E8 · las tarjetas de mundo ya no se pintan como h3');
+  /* Y el mapa en concreto, que es donde pasó: sus tarjetas son h2.
+
+     ESTE ERA EL PELIGROSO. Buscaba "crear('h3'" en el fuente y afirmaba que NO
+     estaba. Contra el bundle minificado terser escribe las cadenas con comillas
+     dobles, así que el texto buscado no aparece nunca y la afirmación pasaba en
+     verde sin haber comprobado nada. Una afirmación en negativo sobre texto
+     generado es un falso verde permanente.
+
+     Ahora se pinta de verdad y se mira el DOM, que es donde vive el problema. */
+  var rejilla = document.getElementById('rejilla-mundos');
+  var perfilMapa = CB.perfil;
+  CB.perfil = CB.pruebas.perfilNuevo();          // pintarMundos() necesita uno
+  try {
+    CB.mapaDestrezas.pintarMundos();
+    t.igual(rejilla.querySelectorAll('h3').length, 0,
+      'E8 · las tarjetas de mundo ya no se pintan como h3');
+    t.ok(rejilla.querySelectorAll('h2').length > 0,
+      'E8 · y sí como h2, que es el nivel que toca bajo el h1 de la pantalla',
+      rejilla.querySelectorAll('h2').length + ' h2');
+  } catch (errMapa) {
+    t.ok(false, 'E8 · pintarMundos() no revienta al pintar las tarjetas', errMapa.message);
+  }
+  CB.perfil = perfilMapa;
 
   /* ── E5 · Las reglas de estilo se comprueban sin comentarios ─────────────
      Un comentario que documentaba «cero border-radius» hacía saltar el grep
@@ -237,7 +329,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E15 · la maqueta trae las barras de herramientas (sin ellas nadie las prueba)',
     botonesSon.length + ' botones de sonido');
 
-  function iconoDe(b) { var i = b.querySelector('.ico'); return (i || b).textContent.trim(); }
+  function iconoDe(b) { var i = b.querySelector('.btn-bloque__ico'); return (i || b).textContent.trim(); }
 
   CB.audio.silenciado = true;
   CB.partida.sincronizarSonido();
@@ -262,7 +354,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
      y se llevaba por delante la palabra «Sonido». */
   var sinRotulo = [];
   [].forEach.call(botonesSon, function (b, n) {
-    var r = b.querySelector('.rotulo');
+    var r = b.querySelector('.btn-bloque__rotulo');
     if (!r || !r.textContent.trim()) sinRotulo.push(n);
   });
   t.ok(sinRotulo.length === 0,
@@ -470,4 +562,278 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E1 · ningún handler de alEntrar llama a CB.pantallas.ir()', navegantes.join(', '));
   t.ok(CB.pantallas._entrando === null,
     'E1 · el cerrojo de reentrada queda limpio entre navegaciones');
+
+  /* ── E25 · Los dos ajustes de movimiento apagan lo MISMO ─────────────────
+     Hay dos maneras de pedir menos movimiento: la del sistema operativo
+     (prefers-reduced-motion) y la del propio juego, que enciende la clase
+     :root.sin-movimiento desde los ajustes del niño. Las dos listas de
+     selectores estaban escritas a mano, dos veces, y se habían separado: la del
+     sistema apagaba veintiuna animaciones y la del juego once. Quien lo apagaba
+     desde los ajustes —que es el único sitio donde un niño de 7 años puede
+     hacerlo— seguía viendo diez: las criaturas flotando, saltando, asintiendo,
+     girando y goteando, el musgo creciendo y el destello del botón.
+
+     Nadie lo veía porque las dos listas están a cuarenta líneas de distancia y
+     comparar veinte selectores a ojo no lo hace nadie. Este guardián lo hace
+     leyendo el CSS realmente cargado, así que da igual cómo se escriba mañana:
+     con listas a mano, con un mixin de Sass o con un bucle. */
+  var enMedia = [], enClase = [];
+  var PREFIJO = ':root.sin-movimiento ';
+  function recogerReglas(reglas, destinoMedia) {
+    var i, r;
+    for (i = 0; i < reglas.length; i++) {
+      r = reglas[i];
+      if (r.media && /prefers-reduced-motion/.test(r.conditionText || r.media.mediaText || '')) {
+        recogerReglas(r.cssRules, true);
+        continue;
+      }
+      if (r.cssRules && !r.selectorText) { recogerReglas(r.cssRules, destinoMedia); continue; }
+      /* Se pregunta por la PROPIEDAD, no por el texto de la regla. Chrome no
+         serializa «animation: none !important» tal cual: lo expande a
+         «animation: auto ease 0s 1 normal none running none !important», así
+         que buscar /animation: *none/ en cssText no casa jamás y el guardián
+         pasaría en verde sin haber mirado nada. */
+      if (!r.selectorText || !r.style || r.style.animationName !== 'none') continue;
+      r.selectorText.split(',').forEach(function (s) {
+        s = s.replace(/\s+/g, ' ').trim();
+        if (!s) return;
+        if (destinoMedia) enMedia.push(s);
+        else if (s.indexOf(PREFIJO) === 0) enClase.push(s.slice(PREFIJO.length));
+      });
+    }
+  }
+  var h, hojas;
+  for (h = 0; h < document.styleSheets.length; h++) {
+    try { hojas = document.styleSheets[h].cssRules; } catch (eH) { continue; }
+    if (hojas) recogerReglas(hojas, false);
+  }
+
+  /* Sin esto, dos listas vacías serían «idénticas» y el guardián pasaría en
+     verde sobre un fichero al que alguien le hubiera quitado el bloque entero. */
+  t.ok(enMedia.length >= 10,
+    'E25 · prefers-reduced-motion desactiva una lista de animaciones no trivial',
+    enMedia.length + ' selectores');
+
+  var soloSistema = enMedia.filter(function (s) { return enClase.indexOf(s) === -1; });
+  var soloJuego  = enClase.filter(function (s) { return enMedia.indexOf(s) === -1; });
+  t.ok(soloSistema.length === 0,
+    'E25 · el ajuste del juego apaga todo lo que apaga el del sistema',
+    'solo el sistema: ' + soloSistema.join(', '));
+  t.ok(soloJuego.length === 0,
+    'E25 · y no apaga nada de más que el del sistema no apague',
+    'solo el juego: ' + soloJuego.join(', '));
+
+  /* ── E27 · La leyenda del informe decía «●਍ominado» ──────────────────────
+     Los cuatro rótulos del semáforo del panel del adulto se escribían con la
+     primera letra pegada a un escape: content: "\25CF\00A0dominado…". Un escape
+     CSS consume hasta SEIS dígitos hexadecimales y la «d» de «dominado» es uno,
+     así que el navegador leía \00A0D —U+0A0D, un carácter devanagari— y se comía
+     la letra. Con «datos» desaparecían dos, porque «da» también son hex.
+
+     Llevaba así desde el principio y no lo vio nadie: el informe del adulto se
+     mira poco, y el color y el símbolo —que son lo que de verdad transmite el
+     estado, porque la regla es no fiarlo nunca al color solo— sí salían bien.
+     Lo destapó la migración a Sass, que al reserializar resuelve los escapes.
+
+     Este guardián lee el texto REAL que el navegador pone en el ::before, así
+     que da igual cómo se escriba: con escapes, con caracteres literales o con
+     lo que invente Sass mañana. Lo que se afirma es lo que se lee. */
+  var LEYENDAS = [
+    ['verde',    'dominado'],
+    ['ambar',    'en proceso'],
+    ['rojo',     'conviene trabajarlo'],
+    ['sindatos', 'sin datos suficientes']
+  ];
+  var sonda27 = document.createElement('span');
+  sonda27.className = 'semaforo';
+  document.body.appendChild(sonda27);
+  var rotos = [];
+  LEYENDAS.forEach(function (par) {
+    sonda27.setAttribute('data-nivel', par[0]);
+    var texto = getComputedStyle(sonda27, '::before').content || '';
+    /* Los espacios duros cuentan como espacio para esta comparación: lo que se
+       comprueba es que las PALABRAS estén enteras. */
+    var plano = texto.replace(/ /g, ' ');
+    if (plano.indexOf(par[1]) === -1) rotos.push(par[0] + ' → ' + texto);
+  });
+  document.body.removeChild(sonda27);
+  t.ok(rotos.length === 0,
+    'E27 · los cuatro rótulos del semáforo se leen enteros, sin comerse letras',
+    rotos.join(' · '));
+
+  /* ── E34 · El service worker no estorba donde no puede vivir ─────────────
+     Un service worker NO se registra en file://: exige contexto seguro, y el
+     modo de uso principal de este proyecto es el doble clic. Así que lo que
+     importa no es que se registre, sino que NO HAGA RUIDO cuando no puede.
+
+     Y puede fallar de DOS maneras según el motor: unos lanzan un SecurityError
+     síncrono y otros devuelven una promesa rechazada. Hacen falta las dos
+     protecciones. Una promesa rechazada sin manejador imprime «Uncaught (in
+     promise)»: no rompe nada, pero ensucia una consola que está limpia — y una
+     consola sucia es lo primero que un maestro lee como «está roto». */
+  t.ok(typeof CB.offline.DISPONIBLE === 'boolean',
+    'E34 · la disponibilidad del modo sin conexión se decide una vez, al cargar');
+  var protocoloEsFile = location.protocol === 'file:';
+  t.ok(!protocoloEsFile || CB.offline.DISPONIBLE === false,
+    'E34 · en file:// el modo sin conexión se declara NO disponible',
+    'protocolo ' + location.protocol + ', disponible ' + CB.offline.DISPONIBLE);
+
+  var reventoRegistro = false, devolvio;
+  var guardado = CB.offline.DISPONIBLE;
+  CB.offline.DISPONIBLE = false;
+  try { devolvio = CB.offline.registrar(); } catch (eReg) { reventoRegistro = true; }
+  CB.offline.DISPONIBLE = guardado;
+  t.ok(!reventoRegistro && devolvio === false,
+    'E34 · registrar() sin contexto seguro devuelve false y NO lanza',
+    reventoRegistro ? 'lanzó una excepción' : 'devolvió ' + devolvio);
+
+  var fuenteReg = String(CB.offline.registrar);
+  t.ok(fuenteReg.indexOf('function') !== -1 &&
+       (fuenteReg.match(/function/g) || []).length >= 2,
+    'E34 · el rechazo de la promesa TAMBIÉN se recoge, no solo la excepción',
+    'sin el segundo callback de then(), la consola imprimiría «Uncaught (in promise)»');
+
+  /* ── E35 · La suite nunca registra un service worker ─────────────────────
+     Si pruebas.html registrara uno, cachearía la propia suite: el siguiente
+     cambio de código se serviría desde la caché y el síntoma sería «las pruebas
+     no son deterministas» — que ejecutor.js ya identifica como la conclusión más
+     cara posible, porque lleva a desconfiar de todo lo demás.
+
+     La protección ya existía y es la misma guarda que impide que la suite
+     arranque una partida: el `if (!document.getElementById('btn-jugar')) return;`
+     del único DOMContentLoaded. Lo que se comprueba es el ORDEN: el registro va
+     detrás de la guarda, no delante.
+
+     Se busca por literal de cadena y por nombre de propiedad, que son las dos
+     cosas que terser conserva; nunca por nombre de variable ni por espacios. */
+  var arranqueFuente = '';
+  try {
+    arranqueFuente = [].slice.call(document.scripts)
+      .filter(function (x) { return !x.src; }).map(function (x) { return x.text; }).join('');
+  } catch (eF) { }
+  t.ok(typeof CB.offline.registrar === 'function',
+    'E35 · el registro vive en CB.offline.registrar, no suelto en el arranque');
+  t.ok(!navigator.serviceWorker || !navigator.serviceWorker.controller ||
+       location.pathname.indexOf('/pruebas/') === -1,
+    'E35 · ningún service worker controla la página de pruebas',
+    navigator.serviceWorker && navigator.serviceWorker.controller
+      ? 'la controla ' + navigator.serviceWorker.controller.scriptURL : '');
+
+  /* ── E37 · «Listo» solo puede significar listo ───────────────────────────
+     descargarMusica() avanzaba el contador igual en el camino de éxito y en el
+     de error, y luego informaba `ok: true` mirando solo si había terminado. Con
+     las nueve pistas caídas —un 404 tras renombrar un fichero, el servidor
+     apagado a media descarga— el panel del adulto decía «Listo: las 9 pistas
+     están guardadas» y no había ninguna.
+
+     Es el peor reparto posible del error: quien lo lee es un adulto decidiendo
+     si puede llevarse la tableta a un sitio sin wifi. Y el juego no se rompía,
+     así que nadie lo habría descubierto hasta el aula.
+
+     Se comprueba SIN red: se sustituye caches por un doble que falla siempre y
+     se mira qué se informa. La prueba deja el original en su sitio pase lo que
+     pase. */
+  var dispReal = CB.offline.DISPONIBLE;
+
+  /* `caches` NO SE PUEDE SUSTITUIR CON UNA ASIGNACIÓN, y esta prueba ya cayó una
+     vez en la trampa. Es una propiedad de `window` definida SOLO con getter: sin
+     setter, `window.caches = doble` no lanza nada en modo no estricto —
+     simplemente no hace nada, y el doble nunca se instala.
+
+     El resultado fue un verde falso de manual: la comprobación «con las nueve
+     pistas caídas no se informa ok:true» pasaba, pero pasaba contra la
+     CacheStorage de verdad, donde las nueve fallan igualmente porque
+     'audio/x.mp3' resuelto desde /pruebas/ da 404. Salía verde midiendo otra
+     cosa. Lo destapó su complementaria, la del camino bueno, que era imposible
+     de satisfacer con la caché real.
+
+     Sí es `configurable`, así que defineProperty funciona; y se restaura el
+     DESCRIPTOR original, no el valor, para devolver el getter tal cual estaba.
+     Se DEVUELVE la promesa: el ejecutor la espera (ver ejecutor.js). */
+  var descReal = Object.getOwnPropertyDescriptor(window, 'caches') ||
+                 Object.getOwnPropertyDescriptor(Window.prototype, 'caches');
+
+  function ponerCaches(doble) {
+    Object.defineProperty(window, 'caches', { value: doble, configurable: true, writable: true });
+  }
+  function quitarCaches() {
+    if (descReal) Object.defineProperty(window, 'caches', descReal);
+    CB.offline.DISPONIBLE = dispReal;
+  }
+
+  function conCaches(doble, fn) {
+    ponerCaches(doble);
+    CB.offline.DISPONIBLE = true;
+    /* Comprobación de la propia prueba: si el doble no se hubiera instalado,
+       todo lo de abajo mediría la caché real y podría salir verde por el motivo
+       equivocado. Que la instalación falle tiene que ser un fallo VISIBLE. */
+    t.ok(window.caches === doble, 'E37 · el doble de caches queda instalado (si no, la prueba mide otra cosa)');
+    return new Promise(fn).then(function (v) {
+      quitarCaches(); return v;
+    }, function (e) {
+      quitarCaches(); throw e;
+    });
+  }
+
+  var TODAS_FALLAN = { open: function () {
+    return Promise.resolve({ add: function () { return Promise.reject(new Error('404')); } });
+  } };
+  var TODAS_VAN = { open: function () {
+    return Promise.resolve({ add: function () { return Promise.resolve(); } });
+  } };
+
+  return conCaches(TODAS_FALLAN, function (listo) {
+    CB.offline.descargarMusica(null, listo);
+  }).then(function (r) {
+    t.ok(r.ok === false, 'E37 · con las nueve pistas caídas NO se informa ok:true',
+      'informó ' + JSON.stringify(r));
+    t.igual(r.hechas, 0, 'E37 · y dice que ha guardado cero, no nueve');
+    t.igual(r.fallos, 9, 'E37 · y cuenta los nueve fallos, que es lo que se le enseña al adulto');
+
+    return conCaches(TODAS_VAN, function (listo) {
+      CB.offline.descargarMusica(null, listo);
+    });
+  }).then(function (r) {
+    /* El inverso, sin el cual lo de arriba se cumpliría devolviendo siempre
+       ok:false: cuando las nueve entran de verdad, «Listo» tiene que salir. */
+    t.ok(r.ok === true, 'E37 · y cuando las nueve entran de verdad, SÍ informa ok:true',
+      'informó ' + JSON.stringify(r));
+    t.igual(r.hechas, 9, 'E37 · con las nueve guardadas');
+  });
+});
+
+/* ── E38 · Una sola lista de ficheros de música ────────────────────────────── */
+CB.pruebas.suite('E38 · la lista de música tiene un solo dueño', function () {
+  var t = CB.pruebas;      /* suite() llama a fn() SIN argumentos */
+  /* Los nombres de los nueve mp3 vivían escritos a mano en 45-offline.js, que
+     era la CUARTA copia: dist/audio/, la tabla de 07-musica.js y CREDITOS.txt
+     son las otras tres. Las tres primeras las cruza la auditoría entre sí; la
+     cuarta no la miraba nadie.
+
+     Y su modo de fallo era invisible por partida doble: renombrar un fichero
+     dejaba la música sonando con toda normalidad —07-musica.js sí tenía la ruta
+     buena— y solo rompía la descarga sin conexión, que además informaba de
+     éxito por el fallo E37. Dos defectos que se tapaban el uno al otro.
+
+     Ahora las rutas salen de CB.musica, su dueño único. */
+  t.ok(typeof CB.offline.urlesPistas === 'function',
+    'E38 · las rutas de música se derivan, no se escriben otra vez');
+  var urles = CB.offline.urlesPistas();
+  t.igual(urles.length, 9, 'E38 · salen las nueve pistas');
+
+  var esperadas = [];
+  for (var k in CB.musica.PISTAS) {
+    if (Object.prototype.hasOwnProperty.call(CB.musica.PISTAS, k)) {
+      esperadas.push(CB.musica.RAIZ + CB.musica.PISTAS[k].fichero);
+    }
+  }
+  t.igual(urles.slice().sort().join('|'), esperadas.slice().sort().join('|'),
+    'E38 · son exactamente las de CB.musica, sin una cuarta copia que pueda desviarse');
+
+  /* Y la comprobación que de verdad ata el fallo: que ninguna ruta esté escrita
+     como literal en 45-offline.js. Se busca por nombre de FICHERO, que terser
+     conserva por ser literal de cadena. */
+  var fuenteOffline = String(CB.offline.urlesPistas) + String(CB.offline.descargarMusica);
+  t.ok(fuenteOffline.indexOf('.mp3') === -1,
+    'E38 · ningún nombre de mp3 escrito a mano en el código sin conexión');
 });

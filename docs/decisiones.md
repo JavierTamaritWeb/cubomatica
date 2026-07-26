@@ -973,3 +973,1086 @@ confirmarla se apaga una luz de verdad y el HUD la pinta en gris; la expedición
 termina en «Fin de la expedición» con gemas, bono y lo dominado; «Otra
 expedición» encadena con gemas a 0 y las tres luces; la pausa para el reloj y
 «Seguir cavando» lo reanuda. Cero errores de consola en todo el recorrido.
+
+---
+
+## Octava ronda — el cambio de stack (1.7.0)
+
+Se pide otro stack: **HTML + SCSS con BEM + Sass + JS vanilla + Gulp 5**, con
+`dist/` minificada, responsive en 480/768/1024/1200/1400, accesibilidad completa
+y caché sin conexión.
+
+Nada de eso convive con «no hay compilación», que era la premisa de la que salían
+todas las decisiones anteriores. Así que el objetivo real de la migración no es
+añadir Gulp: es **trasladar las invariantes existentes a la forma nueva sin
+perder ni una**. `pruebas/auditar.sh` tiene que seguir siendo una puerta.
+
+### Las cuatro decisiones de partida
+
+| | Decisión | Por qué |
+|---|---|---|
+| Despliegue | **doble clic + PWA** | un Service Worker no se registra en `file://` (exige contexto seguro). `dist/index.html` se abre con doble clic igual que hoy y el SW solo actúa servido por HTTP, fallando en silencio si no |
+| `dist/` en git | **sí se versiona** | quien clona o baja el ZIP de GitHub sigue jugando sin instalar node, que es el modo de uso principal declarado |
+| BEM | **completo** | ~125 renombrados. Hoy hay 28 modificadores correctos y **cero** `bloque__elemento`: no hay un solo `__` en las 1 721 líneas de CSS |
+| Caché | **armazón siempre, música a petición** | el armazón minificado son ~300 KB; la música 42 MB. En un aula de 25 tabletas, precachear serían ~1 GB simultáneos, y `cache.addAll()` es atómico: una pista que falle tira las nueve y, dentro de `install`, impide instalar también el armazón |
+
+También: `1.7.0` y no `2.0.0`. La regla escrita es que el mayor sube cuando cambia
+el formato del perfil guardado, y esta migración no lo toca. Es contraintuitivo
+porque cambia todo lo demás, y por eso se escribe.
+
+### El cruce de clases (fase 0)
+
+Antes de renombrar nada hace falta el juez, porque **una clase renombrada en el
+CSS y no en el JS no produce ningún error**: `CB.ui.crear('div', 'veta-icono')`
+sigue creando el div, sale sin estilo, la consola queda limpia y la suite sigue
+en verde. Con ~150 clases repartidas entre CSS, HTML y JS ese es el único modo de
+fallo real del renombrado.
+
+`herramientas/cruzar-clases.mjs` (Node puro, sin dependencias, bloque 8 de la
+auditoría) cruza en las dos direcciones: toda clase declarada en el CSS se usa, y
+toda clase que se aplica existe en el CSS.
+
+**No vive en la suite del navegador**, y eso es un cambio respecto al plan
+inicial: `pruebas/pruebas.html` monta maquetas reducidas de las 17 pantallas, no
+el `index.html` real, así que contra esas maquetas media clase del juego
+parecería no usarse. El cruce necesita leer los ficheros de verdad.
+
+Dos precisiones distintas a propósito, porque las dos direcciones quieren cosas
+opuestas: pasarse recogiendo literales es **seguro** en la dirección «CSS → uso»
+(a lo sumo una clase muerta pasa por viva) y **peligroso** en la dirección «uso →
+CSS», donde una frase en español se denunciaría como clase inexistente. Así que
+la primera usa todos los literales del fichero y la segunda solo los sitios donde
+una cadena *es* una clase — que son exactamente los que tocará el codemod.
+
+Las clases que el JS construye por concatenación no llevan lista a mano: **todo
+literal que termina en `-`, `--` o `__` es un prefijo** y habilita cualquier
+clase que empiece por él. `js/30-ui.js` contiene `'zona-juego bioma bioma--'` y
+`'cielo cielo--'`, así que los 4 biomas y los 6 cielos quedan justificados solos,
+y el sistema obliga a que toda construcción futura deje un prefijo visible.
+
+### CSS muerto retirado
+
+El cruce encontró **15 clases declaradas que no usaba nadie**, verificadas una a
+una con grep sobre `js/`, `datos/` e `index.html`. Se retiran, y no se dejan
+comentadas, por la misma doctrina que `06-biomas.css` ya aplica a los tres biomas
+de v2: no se guarda CSS muerto. El historial de git lo conserva entero.
+
+- **Cinco animaciones con sus `@keyframes`**: `.estalla` (el bloque estalla al
+  acertar), `.agrieta` (se agrieta al fallar), `.veta-sube`, `.brillo-cofre`,
+  `.bloque-raro`. Y `.mano-cursor` con `mano-señala`. Se comprobó antes de
+  borrarlas que la realimentación **sí existe** por otra vía: al acertar,
+  `.destello` sobre el botón más el surtidor de partículas; al fallar, la tarjeta
+  de reparación, que sustituyó al bloque agrietado cuando se fijó la regla de las
+  luces.
+- **`.oculto-visual`**: hacía lo mismo que `.solo-lectores`, que es la que usan
+  los `<h1>`. Dos utilidades para lo mismo es una de más.
+- **`.panel-bloque--oscuro` y `--aviso`**, `.fila--separada`, `.sobre-textura`,
+  `.bandas-terreno`, `.rejilla-adulto`, `.enunciado .numero-dato`.
+- **`.barra-carga`** no estaba muerta pero no era del juego: la única página que
+  la pinta es `pruebas/pruebas.html`, para su propia barra de progreso. Se muda a
+  la hoja en línea de esa página.
+
+De 168 clases a 153.
+
+### E25 — el ajuste de movimiento del juego apagaba menos que el del sistema
+
+Encontrado al limpiar las listas, y es un fallo de accesibilidad en producción,
+no un detalle de estilo.
+
+Hay dos maneras de pedir menos movimiento: `prefers-reduced-motion`, del sistema
+operativo, y la clase `:root.sin-movimiento`, que enciende el ajuste visible
+dentro del juego. Las dos listas de selectores estaban escritas a mano, dos
+veces, a cuarenta líneas de distancia, y se habían separado: la del sistema
+apagaba 21 animaciones y la del juego 11. **Quien apagaba el movimiento desde los
+ajustes —el único sitio donde un niño de 7 años puede hacerlo— seguía viendo
+diez**: las criaturas flotando, saltando, asintiendo, girando y goteando, el
+musgo creciendo y el destello del botón.
+
+Nadie lo veía porque comparar veinte selectores a ojo no lo hace nadie. Las dos
+listas son ahora idénticas (15 y 15) y el guardián las compara **leyendo el CSS
+realmente cargado**, así que da igual cómo se escriban mañana: a mano, con un
+mixin de Sass o con un bucle.
+
+Dos detalles del guardián que costaron encontrarlos:
+
+1. **Chrome no serializa `animation: none !important` tal cual.** Lo expande a
+   `animation: auto ease 0s 1 normal none running none !important`, así que
+   buscar `/animation: *none/` en `cssText` no casa jamás. Se pregunta por la
+   propiedad (`r.style.animationName === 'none'`), que es lo semántico. Es
+   también la razón de que el bloque 3 de la auditoría deba mirar el CSS
+   expandido y nunca el minificado.
+2. **Comparar dos listas vacías da «idénticas».** Sin una tercera afirmación de
+   que la lista del sistema no es trivial, el guardián pasaría en verde sobre un
+   fichero al que alguien le hubiera quitado el bloque entero. Y pasó: la primera
+   versión del guardián salió en verde en dos de sus tres comprobaciones
+   precisamente por eso.
+
+### Dos cosas más que nadie comprobaba
+
+- **`pruebas/pruebas.html` cargaba 8 hojas de estilo, no 9**: le faltaba
+  `css/08-imprimir.css` desde siempre, así que `casos-marca.js` y
+  `casos-contraste.js` nunca la miraron. Añadida; sus reglas van todas dentro de
+  `@media print` y no cambian nada en pantalla.
+- **La cabecera de `casos-regresiones.js` se había quedado en E17** aunque el
+  fichero ya tenía guardianes hasta E24. Puesta al día hasta E25.
+
+Base de la suite: **368 comprobaciones, 0 fallos**.
+
+### El andamiaje del build (fase 1)
+
+`package.json`, `gulpfile.js` en CommonJS, `manifiesto.json` **generado leyendo
+`index.html`** (no escrito a mano) y `.gitignore` reescrito: su cabecera declaraba
+por escrito que este proyecto no tenía compilación, y ya no es verdad.
+
+**`manifiesto.json` es la fuente única del orden de carga.** Vivía en tres sitios
+—`index.html`, `pruebas/pruebas.html` y contado en `auditar.sh`— y `CLAUDE.md`
+tenía que pedirle al humano que los sincronizara. Eso no es un contrato, es un
+fallo esperando. `index.html` gana dos marcadores (`GUIONES:INICIO/FIN` y
+`ESTILOS:INICIO/FIN`) y `gulp html` sustituye cada bloque por una sola etiqueta.
+
+#### E26 — la auditoría no se ponía roja: se colgaba
+
+El plan preveía que `dist/` y `node_modules/` la pusieran en rojo el primer día,
+por tres motivos a la vez. La realidad fue peor: `grep -r` y `find` recorriendo
+415 paquetes **agotaron un tiempo de espera de cinco minutos sin llegar a
+imprimir nada**. Una auditoría en rojo se investiga; una que se cuelga se
+desactiva, y ahí muere la puerta de entrega.
+
+Se poda con `-prune` y no con `-not -path`: `-not` visita igualmente cada fichero
+del árbol podado. De colgarse a **0,62 s**.
+
+Los tres motivos, por si vuelven: el grep de marca entraba en
+`dist/js/cubomatica.js`, que contiene el texto de `00-nucleo.js` con su `CB.LEGAL`
+y **no está en la lista de exentos, que va por nombre de fichero**; el `find` de
+binarios sacaba cientos de PNG de la interfaz web de browser-sync; y el de peso
+medía ~120 MB contra un tope de 900 KB.
+
+Y saltó una cuarta, que no estaba prevista y es la más divertida: **el propio
+`gulpfile.js` disparaba la lista negra**, porque el regex que le dice a terser qué
+comentarios conservar nombraba la marca. La salida no fue eximir el fichero
+—cada exención debilita el grep— sino quitar la palabra: el aviso de no
+afiliación vive en `CB.LEGAL.AVISO`, que es una **cadena**, y terser no toca las
+cadenas. Verificado: aparece una vez en el minificado, y ahora la auditoría lo
+comprueba.
+
+#### Los contadores 44/44/17/9 mueren, y lo que nace es más fuerte
+
+Medían «se carga lo que hay que cargar, en su orden» de la única manera posible
+sin build: contando etiquetas. Con un bundle, `dist/index.html` tiene **un**
+`<script>` y contar deja de significar nada.
+
+`herramientas/comprobar-dist.mjs` (Node puro, bloque 5c) los sustituye por una
+cadena de cinco eslabones anclada en el manifiesto. El cuarto es el que importa:
+**se reconstruye el bundle en memoria y se compara byte a byte** con el de disco.
+Tres líneas, y demuestra dos cosas de una vez —que el orden es correcto y que
+`dist/` está al día. Sin ella, la auditoría puede pasar en verde sobre una
+entrega de hace tres días, que es el peor fallo posible porque es verde y es
+falso. Comprobado que se pone roja tocando una fuente sin reconstruir.
+
+Detalles que costaron:
+
+- **El bundle legible no lleva sourcemap.** La línea `//# sourceMappingURL=…` son
+  39 bytes que rompen la igualdad byte a byte y obligarían a normalizar antes de
+  comparar. Un mapa de origen ahí tampoco aporta nada: el fichero *son* las
+  fuentes pegadas. El minificado sí lo conserva.
+- **`grep -c` cuenta líneas, y el HTML minificado es una línea.**
+  `grep -c '<section id="p-' dist/index.html` devuelve **1**, no 17. Toda
+  comprobación sobre `dist/` cuenta ocurrencias, nunca líneas. Es la misma
+  familia que la expansión de `animation` de E25: el texto de un artefacto
+  generado no se parece al que escribió una persona.
+
+#### Presupuestos: de uno a tres
+
+| presupuesto | qué mide | ahora | tope |
+|---|---|---|---|
+| fuentes | `css/ js/ datos/ pruebas/` + raíz | 820 KB | < 1 100 KB |
+| **arranque** | `index.html` + **exactamente lo que referencia** | **309 KB** | < 400 KB |
+| música | `audio/*.mp3` | 42 MB | < 60 MB |
+
+El de arranque es el que sustituye de verdad a los 900 KB de antes, porque es lo
+que querían proteger. No se pesa la carpeta `dist/` entera: dentro conviven el
+bundle minificado que se sirve y el legible que solo usan la auditoría y la
+suite, así que pesarla daría más del doble de lo que nadie descarga.
+
+`dist/audio/` son **enlaces duros** a `audio/`: 42 MB que no se duplican en disco
+en cada build, con caída a copia con aviso —no con error— si el sistema de
+ficheros no los admite. En la fase 2, cuando `index.html` se mude a `src/`, esa
+tarea desaparece y `audio/` pasa a ser `dist/audio/` con un `git mv`.
+
+**Verificado jugando `dist/index.html`**: reanuda la expedición guardada con sus
+gemas y sus tres luces, el reloj corre, las texturas se inyectan como `data:` URI,
+los 12 globales están en `window`, los 92 niveles se cargan y las rutas de audio
+resuelven dentro de `dist/`. Un guion, una hoja, cero errores de consola.
+
+### El movimiento a `src/` (fase 2)
+
+`git mv` de `index.html`, `js/`, `datos/` y `css/` a `src/`, y de `audio/` a
+`dist/audio/`. Git detectó **58 renombrados**, así que `git log --follow` sigue
+funcionando fichero a fichero.
+
+Los 9 MP3 viven ahora **directamente en `dist/audio/`** y gulp no los toca nunca.
+No se compilan desde nada —ya son el artefacto— y con `dist/` versionada,
+tenerlos además en `audio/` duplicaría 42 MB en el árbol de trabajo de todo el
+que clone. La contrapartida es que `gulp limpiar` borra rutas concretas en vez de
+arrasar la carpeta, y eso hay que recordarlo al añadir salidas nuevas.
+
+#### La suite pasa a probar lo que se entrega
+
+`pruebas/pruebas.html` cargaba las 9 hojas y los 44 guiones a mano. Con un paso
+de construcción eso deja de valer: un fallo de orden de concatenación, o un
+fichero que el manifiesto olvidara, **no aparecería hasta que un niño abriera
+`dist/index.html`** — que es justo el modo de fallo que introduce la migración.
+
+Ahora hay dos páginas, las dos contra `dist/`:
+
+- `pruebas.html` → el bundle legible. Es la de trabajar: una traza que apunta a
+  `cubomatica.min.js:1:48231` es un impuesto permanente.
+- `pruebas-min.html` → el minificado. Es **la** prueba que valida la
+  configuración entera de terser.
+
+Y el contador «44 scripts» de `casos-carga.js` muere aquí. Medía «están las 44
+aportaciones a `CB`» contando etiquetas; con un bundle hay una. El invariante se
+parte en dos, cada mitad donde puede comprobarse de verdad: la auditoría cuenta
+ficheros en disco y los cruza con el manifiesto, y el navegador comprueba que el
+bundle **defina** lo que tiene que definir —los 37 espacios de nombre, los 7
+generadores, los 92 niveles, los 4 mundos, los 12 globales—, que siempre fue la
+comprobación buena.
+
+#### Lo que encontró la página del minificado, el primer día
+
+Tres fallos que ninguna otra cosa podía ver. Los tres de la misma familia: **el
+texto de un artefacto generado no se parece al que escribió una persona.**
+
+**Dos guardianes de E11 leían el código fuente de una función.**
+`CB.partida.pintarRespuesta.toString().indexOf('respondido = false')`. Terser
+escribe `n.respondido=!1` y los dos se pusieron rojos. La regla que sale de aquí,
+y que vale para todo `casos-regresiones.js`: *leer el fuente de una función solo
+es válido para literales de cadena y nombres de propiedad* —que terser conserva,
+porque `mangle.properties` está prohibido—, **nunca para nombres de variable,
+espacios ni comillas**. Los dos pasan a comprobar conducta.
+
+**Y uno pasaba en falso verde, que es peor.**
+`pintarMundos.toString().indexOf("crear('h3'") === -1` afirmaba que las tarjetas
+de mundo ya no son `h3`. Contra el minificado, terser escribe las cadenas con
+comillas dobles, así que el texto buscado no aparece nunca y la afirmación pasaba
+sin haber comprobado nada. **Una afirmación en negativo sobre texto generado es
+un falso verde permanente.** Ahora se pinta el mapa de verdad y se mira el DOM,
+que es donde vive el problema.
+
+**Una verificación WCAG se estaba saltando en silencio.** `casos-contraste.js`
+solo aceptaba hex de seis dígitos; cssnano acorta `#000000` a `#000` —CSS igual
+de válido— y el par de alto contraste devolvía `null`. El modo de fallo es lo
+grave: la línea 59 hace `saltar()`, no `ok(false)`. **No se ponía roja: se ponía
+gris**, y el resumen seguía diciendo «TODO EN VERDE» con una obligación legal sin
+verificar. Se arregla en dos sitios: `hex()` acepta las dos formas, y **se exige
+que no se salte ningún par**, que es la comprobación que faltaba desde el
+principio.
+
+Base de las dos suites: **371 comprobaciones, 0 fallos, 0 saltadas**, tanto
+contra el bundle legible como contra el minificado.
+
+### CSS → SCSS sin tocar una sola clase (fase 3)
+
+`git mv` de los nueve `.css` a `src/scss/_NN-*.scss`, más `cubomatica.scss` como
+único punto de entrada y `_herramientas.scss` **vacío a propósito**: los mixins
+son la fase siguiente. Separar los dos pasos no es ceremonia, es lo único que
+permite distinguir «Sass lo compila distinto» de «he escrito mal un mixin», que
+es exactamente la duda que convierte una migración de 1 721 líneas en un acto de
+fe.
+
+Se conservan los nueve nombres numerados en vez de adoptar 7-1 porque **la
+numeración *es* la cascada**, y aquí eso es carga útil: `_06-biomas.scss` dedica
+seis líneas de comentario a explicar que su `position: relative` gana por venir
+después de `_04-pantallas.scss`. Una estructura `components/ layout/ pages/`
+esconde esa relación y la rompe la primera vez que alguien reordena un `@use`.
+
+Dos trampas de Sass, las dos con solución de una línea y las dos escritas en el
+fichero: `@use` **no es transitivo**, y los nueve necesitan `as *` porque Sass
+deriva el espacio de nombres del nombre del fichero y «00-fuentes» no es un
+identificador válido —empieza por dígito.
+
+#### El criterio: comparar árboles, no texto
+
+`herramientas/comparar-css.mjs` (postcss, de un solo uso) aplana las dos hojas a
+una lista de declaraciones con su ruta de selectores y las compara. El texto
+cambia por razones que no significan nada y no cambia por una que significaría
+mucho: una declaración perdida en medio de un bloque.
+
+Hubo que normalizar cuatro reserializaciones de Sass que producían 91 líneas de
+ruido: comillas simples a dobles, `.08em` a `0.08em`, `[aria-disabled="true"]` a
+`[aria-disabled=true]`, `rgba(0,0,0,.45)` a `rgba(0, 0, 0, 0.45)`, más el
+`@charset "UTF-8"` que añade al principio. Lo que **no** se normaliza, a
+propósito: mayúsculas de los hex, unidades, y el orden y la presencia de cada
+declaración. Ahí es donde viviría un error de verdad.
+
+Resultado: **1166 declaraciones antes, 1166 después**, y seis diferencias, todas
+en `content:` y todas explicadas:
+
+- dos son Sass resolviendo escapes que no eran ambiguos (`"\25C6\00A0"` → `"◆ "`,
+  idéntico para el navegador);
+- cuatro son la corrección de E27.
+
+#### E27 — la leyenda del informe decía «●਍ominado»
+
+El comparador lo encontró, y no es cosmético.
+
+Los cuatro rótulos del semáforo del panel del adulto se escribían con la primera
+letra pegada a un escape: `content: "\25CF\00A0dominado\00A0\2014\00A0"`. **Un
+escape CSS consume hasta seis dígitos hexadecimales**, y la «d» de «dominado» es
+un dígito hexadecimal: el navegador leía `\00A0D` —U+0A0D, un carácter
+devanagari— y se comía la letra. Con «datos» era peor, porque «da» son dos
+dígitos: `\00A0da` daba U+A0DA y desaparecían dos letras.
+
+Comprobado en el navegador antes de tocar nada: los puntos de código eran
+`25cf **a0d** 6f 6d 69 6e 61 64 6f`, es decir `●` + U+0A0D + «ominado». Los
+cuatro rótulos llevaban así desde el principio.
+
+No lo vio nadie por dos razones que conviene recordar: el informe del adulto se
+mira poco, y **el color y el símbolo sí salían bien**. La regla del proyecto de
+no fiar nunca un estado al color solo hizo que el fallo fuera invisible; el
+semáforo seguía comunicando su estado por forma y por color, y solo el texto
+—que es la parte que hace falta al imprimir en blanco y negro— estaba roto.
+
+Se arregla escribiendo los caracteres tal cual, con espacios duros de verdad
+(U+00A0) para conservar la intención original. El guardián lee el texto **real**
+que el navegador pone en el `::before`, así que da igual cómo se escriba mañana.
+
+#### La comprobación de «dist/ al día», para el CSS
+
+Con el JS basta con reconstruir el bundle en memoria: es una concatenación pura.
+Con el CSS ya no, porque Sass no concatena, genera. Recompilar desde la auditoría
+exigiría `sass-embedded`, y la auditoría tiene que correr en un clon limpio sin
+`npm install`.
+
+Solución: `gulp build` escribe `dist/.huellas.json` con el sha1 de cada fuente de
+estilo y la auditoría lo recalcula. Cero dependencias, y detecta igualmente un
+`.scss` tocado sin reconstruir.
+
+Y muere el último de los cuatro contadores: `ls css/*.css == 9`. Medía que la
+cascada estuviera completa cuando la cascada **era** la lista de `<link>`. Ahora
+la declara el orden de los `@use` de `cubomatica.scss`, y se verifica en dos
+direcciones contra el manifiesto. Contar ficheros habría seguido pasando en verde
+con un `@use` olvidado.
+
+Base de las dos suites: **372 comprobaciones, 0 fallos, 0 saltadas**.
+
+### Mixins y bucles (fase 4)
+
+Lo que hace `_herramientas.scss` no es ahorrar líneas.
+
+**Dos de las tres reglas duras del proyecto eran reglas de disciplina.** Cero
+desenfoque y cero *easing* se cumplían porque quien escribía se acordaba, y la
+auditoría lo comprobaba después con un grep. `bisel()` y `paso()` **no tienen
+parámetro** donde meter un desenfoque ni una curva: el tercer valor de cada capa
+de sombra lo pone el mixin y siempre es `0`, y el escalonado de la transición
+también. A través de ellos, escribir una sombra difusa o una transición suave no
+es que esté prohibido; es que no se puede.
+
+Un grep que falla te dice que te has equivocado. Un mixin sin ese parámetro hace
+que no llegues a equivocarte. La auditoría gana las dos reglas **en positivo y
+sobre la fuente**: cero `transition:` fuera del mixin, cero color suelto fuera de
+`_01-variables.scss`.
+
+#### El criterio, otra vez: diff vacío
+
+Se aplicó por pasos, compilando y comparando árboles después de cada uno. Los
+cinco pasos dieron **diff vacío, declaración a declaración y en orden**:
+
+| paso | qué |
+|---|---|
+| mapas | 39 `--deco-*` de `$materiales`, 6 `--cielo-*`, 8 `--tex-*` |
+| `animar()` | 18 animaciones |
+| `desactivar-movimiento()` | las dos listas de E25 pasan a ser una |
+| `bisel()` / `bisel-lateral()` | 16 sombras |
+| `@each` | 4 biomas (que se escribían **dos** veces), 6 cielos, 6 estados de veta; `paso()` en las 2 transiciones |
+
+El comparador ganó su sueldo una vez: al convertir los estados de veta, saqué el
+`color` del estado bloqueado fuera del bucle y lo emití al final. Semánticamente
+da igual —ningún otro selector toca ese `color`— pero el diff lo marcó como
+reordenamiento, y se corrigió con un `@if` dentro del bucle. Sin esa comprobación
+nadie lo habría visto, y la próxima vez podría no dar igual.
+
+#### Los 42 colores sueltos
+
+La cabecera de `_01-variables.scss` lleva desde 1.0.0 declarando que allí vive
+«la única fuente de verdad de medidas y colores». Había **42 literales
+hexadecimales repartidos por cinco hojas**: 21 blancos, 11 negros y 10 tonos
+sueltos.
+
+Importa más de lo que parece: `:root.alto-contraste` reescribe dieciséis
+variables, y un `#FFFFFF` literal dentro de un bisel no se entera de nada. Con
+nombre, el modo de alto contraste puede alcanzarlo el día que haga falta.
+
+Aquí el diff **no** es vacío por definición, así que se verificó de otra manera:
+un comprobador que exige que **toda** diferencia sea exactamente la sustitución
+prevista. Resultado: cero declaraciones sin explicar, y exactamente 11
+declaraciones nuevas, que son las 11 variables.
+
+#### Consecuencia: el cruce de clases cambia de sujeto
+
+Con `@each`, media docena de clases **no existen literalmente en ningún `.scss`**:
+`.bioma--pradera`, `.cielo--0`…`--5` y los seis `.veta[data-estado]` los genera
+Sass por interpolación. `herramientas/cruzar-clases.mjs` leía las fuentes y las
+denunciaba a todas como inexistentes.
+
+Pasa a leer `dist/css/cubomatica.css`, que además es lo correcto: lo que hay que
+cruzar es lo que se **sirve**. Y si el compilado no está, se salta con aviso en
+vez de producir una lista larguísima de falsos positivos — que es exactamente lo
+que hace que alguien acabe desactivando una auditoría.
+
+Peso: 85 KB de SCSS generan 101 KB de CSS expandido y 37 KB minificado.
+Las dos suites siguen en **372 comprobaciones, 0 fallos, 0 saltadas**.
+
+### El renombrado a BEM (fase 5)
+
+La fase peligrosa, y lo es por su modo de fallo: **suite en verde y pantalla
+rota**. `CB.ui.crear('div', 'veta-icono')` sigue creando el div si la clase ya no
+existe. No lanza, no avisa, la consola queda limpia.
+
+**43 renombrados** en 17 ficheros: SCSS, los tres HTML y ocho ficheros de JS.
+`pruebas/mapa-bem.json` los declara uno a uno **con su motivo**, porque dentro de
+seis meses el motivo es lo único que queda.
+
+#### Las dos decisiones que hacen que el codemod sea seguro
+
+**1. Sustitución en dos fases con centinelas.** Cada nombre pasa primero por un
+centinela y solo al final los centinelas se convierten en su destino. Sin esto,
+aplicar `{veta → veta}` y `{veta-icono → veta__icono}` en el orden equivocado
+produce `.veta__icono-icono` — y, lo grave, produce **lo mismo en el CSS y en el
+JS**, así que el cruce de clases lo daría por bueno. Es el único fallo que la red
+de seguridad no ve, y este es su remedio.
+
+**2. En JS no se toca texto plano.** Solo literales que están en posición de
+clase: 2.º argumento de `CB.ui.crear`/`boton`, `.className`, `classList.*`,
+`setAttribute('class')` y los selectores de `querySelector`/`closest`. La razón
+es concreta: `valor`, `etiqueta`, `dato`, `grupo`, `ico`, `entra`, `viva` y
+`gira` son palabras españolas corrientes, y el JS está lleno de cadenas que el
+niño lee en pantalla. Un `sed` global reescribiría la interfaz.
+
+Y una tercera regla del propio mapa: **cero sustituciones para una entrada es un
+error**, no un aviso. Significa que el mapa está desfasado y quien lo lea mañana
+creerá que ese renombrado se hizo.
+
+#### Lo que el codemod NO puede ver, y quién lo atrapa
+
+`js/30-ui.js` aplica las cinco animaciones de las criaturas desde un **array** y
+una **tabla de consulta**: `['flota','saltito',…].forEach(c => el.classList.remove(c))`
+y `{acierto:'saltito',…}[estado]`. Ahí `classList` recibe una *variable*, así que
+ningún análisis de posición sirve. Hubo que tocarlas a mano.
+
+Lo importante es quién las habría atrapado si se olvidan: la **dirección 1** del
+cruce. `.criatura--flota` habría quedado en el CSS sin que nadie la nombrase, y
+se habría denunciado como muerta. Las dos direcciones del cruce cubren los dos
+lados del olvido, y por eso existen las dos.
+
+#### La verificación que cierra la fase
+
+Además del cruce a cero, se comprobó lo más fuerte posible: **aplicar el mapa al
+CSS anterior tiene que dar exactamente el CSS nuevo**, declaración a declaración
+y en orden. 1177 = 1177, cero diferencias. Ningún selector cambió por otro
+motivo que no fuera una entrada del mapa.
+
+#### Los 20 selectores por `#id` → 0
+
+Estilar a través de un id ata el estilo a que ese nodo sea único y se llame así,
+con una especificidad que solo se vence con otro id — de hecho había un
+`#p-portada #portada-pista` con **dos**, puesto ahí para ganarle a una clase.
+
+Los 14 de `_07-adulto.scss` colapsan a 7 con `.pantalla--documento` y `:is()`.
+Los de `_04-pantallas.scss` se reparten entre `.pantalla--portada`, `--juego`,
+`--reparacion`, `--fin` y `--error`. Y `#aviso-gira` y `#region-viva`, que son
+nodos únicos del documento, también pasan a clase: dejarlos convertía la regla en
+«casi cero», y «casi cero» no se puede auditar.
+
+**Los ids siguen en el HTML.** Los necesitan `getElementById`,
+`CB.pantallas.IDS` y los `data-ir`. Lo que se ha quitado es estilar *por* ellos.
+
+#### El resultado
+
+De **cero** `bloque__elemento` en 1 721 líneas a **29**. La familia del reloj, que
+se escribía de dos maneras incompatibles (`.reloj-*` y la abreviatura `.ra-*`),
+es una sola con nueve elementos; la colisión real —`.reloj-arena` es el objeto y
+`.ra-arena` la arena de dentro, y los dos querían `__arena`— se resolvió con
+`reloj__grano`.
+
+Verificado jugando: portada, calibración con la barra de icono **y** rótulo,
+mapa, cantera, expedición con el reloj de arena dibujándose, acierto con gemas, y
+el panel del adulto. Las dos suites en **372 comprobaciones, 0 fallos**.
+
+### Responsive 480 / 768 / 1024 / 1200 / 1400 (fase 6)
+
+Hasta 1.6.0 el proyecto tenía **cero `min-width`**. Los cinco puntos de ruptura
+que existían eran de **altura** —900/780/660/600/420— y estaban ahí para una sola
+cosa: que la última fila del teclado 3×4 no se corte. El eje de anchura no era un
+reescalado de nada: era enteramente nuevo.
+
+#### E30 — el reparto de competencias
+
+Añadir anchura sin pensarlo habría hecho que los dos ejes se pisaran. Un proyector
+de 1400×700 recibiría «grande» por anchura y «pequeño» por altura, y ganaría el
+que estuviera escrito más abajo en el fichero — que no es una decisión, es un
+accidente.
+
+> La **anchura** decide **cuántas columnas** y el ancho del contenedor.
+> La **altura** decide **el lado del botón**.
+
+Y cuando las dos tienen algo que decir sobre el mismo número, **cada una escribe
+su propia variable** y el valor final es el menor de las dos:
+
+```css
+--lado-deseado: 96px;   /* lo escribe SOLO la anchura */
+--lado-techo:   96px;   /* lo escribe SOLO la altura  */
+--lado-respuesta: min(var(--lado-deseado), var(--lado-techo));
+```
+
+Así se **combinan** en vez de competir, y el orden dentro del fichero deja de
+importar. Sin esto, cinco anchuras × cinco alturas serían veinticinco
+combinaciones escritas a mano.
+
+Verificado midiendo el valor calculado en seis viewports:
+
+| viewport | lado | quién manda |
+|---|---:|---|
+| 500×723 | 72 | anchura pide 80, altura permite 72 |
+| 800×812 | 80 | anchura pide 96, altura permite 80 |
+| 1260×812 | 80 | anchura pide 112, altura permite 80 |
+| 1460×812 | 80 | anchura pide 128, altura permite 80 |
+| **1460×583** | **64** | **anchura pide 128, altura permite 64** |
+
+La última fila es la prueba: ancho de sobra, alto escaso, y gana la restricción.
+
+Hay **una excepción documentada**: en `max-height: 660px` la altura sí decide
+columnas, y despliega el teclado de 3×4 a 6×2. Es que a esa altura el 3×4 no cabe
+de ninguna manera.
+
+#### Nada de `clamp()`, y no es capricho
+
+Pasos discretos, todos múltiplos de `--u` = 4px: **64 / 80 / 96 / 112 / 128**.
+
+La estética es voxel: 90 capas de sombra con desenfoque 0 sobre una retícula de
+4px. Un `clamp()` fluido da 83,4px y el bisel de 4px se dibuja a 3,7 con
+antialias — exactamente lo que 1 721 líneas llevan evitando. `min()` sí, porque
+elige entre dos valores ya discretos; no interpola.
+
+También hay una regla de emisión obligatoria: los `@media (min-width)` que tocan
+variables de `:root` van **antes** de los tres bloques `:root.<clase>`. Tienen la
+misma especificidad, así que gana el orden, y la intención es que la clase gane al
+punto de ruptura —`modo-proyeccion` sube el lado a 150px para una pizarra.
+
+#### El suelo de 64 px se comprueba, no se confía
+
+WCAG 2.5.8 pide 24×24. Aquí son 96 por diseño, porque el usuario tiene 7 años, y
+el suelo declarado es 64. **El riesgo no es incumplirlo hoy: es que un punto de
+ruptura futuro baje de 64 sin que nadie lo note**, porque nadie redimensiona el
+navegador a diez tamaños antes de entregar.
+
+La auditoría lee todas las asignaciones a `--lado-deseado` y `--lado-techo` del
+CSS compilado, estén dentro de una media query o fuera, y toma la menor.
+
+#### E31 — un píxel de margen contra el reflow
+
+`@media (max-width: 319px)` disparaba «Gira el dispositivo». A **zoom 400 % sobre
+1280px el viewport CSS es exactamente 320px**, que es el criterio de conformidad
+WCAG 1.4.10. Un píxel de margen: cualquier redondeo del navegador lo mostraba en
+un escritorio con la letra grande — es decir, justo al usuario que más necesita
+que no salga. Baja a 299, y la auditoría lo vigila.
+
+#### El efecto colateral previsto
+
+`casos-contraste.js` leía `--lado-respuesta` con `parseInt(getPropertyValue(…))`.
+Ahora es un `min()`, y `getPropertyValue` devuelve el **texto sin resolver**:
+`parseInt` da `NaN` y `NaN >= 64` es `false`. Se habría puesto roja el día del
+responsive por una razón que no tiene nada que ver con el tamaño del botón.
+
+Estaba previsto, y la solución ya estaba escrita en el mismo fichero unas líneas
+más abajo: la sonda de render que usaba para `--e3`, que también es un `calc()`.
+Va en el mismo commit, no después.
+
+Las dos suites siguen en **372 comprobaciones, 0 fallos**, y a 520px de viewport
+no hay desbordamiento horizontal (`scrollWidth === clientWidth`).
+
+### Accesibilidad (fase 7)
+
+Lo que ya se verificaba: contraste par a par, glifos medidos con `measureText`,
+límite de tiempo desactivable, foco de dos tonos, un `<h1>` por pantalla, palabra
+visible en todo botón de barra. Lo que **no miraba nadie** era la navegación.
+
+#### E32 — las diecisiete secciones no eran regiones
+
+Una `<section>` sin nombre accesible **no cuenta como landmark**: no aparece en
+la lista de regiones del lector de pantalla. Eran diecisiete secciones que, para
+quien navega por regiones, no existían como tales.
+
+Se arregla sin añadir una sola palabra de texto que traducir o mantener:
+`CB.pantallas.ir()` apunta el `aria-labelledby` de la sección a su propio `<h1>`,
+que ya existe y que `casos-carga.js` ya garantiza que es exactamente uno.
+
+Y `role="main"` va **solo en la visible**. Diecisiete «main» simultáneos no es
+que sean incorrectos: es que dejan de significar nada, que es peor.
+
+#### E33 — lo urgente iba detrás de la cola
+
+Había una sola región viva, `polite`, y por ella pasaba todo: «¡Muy bien!», «has
+ganado 3 gemas», «se ha apagado una luz» y «quedan diez segundos». Una región
+`polite` se anuncia cuando el lector termina y **respetando el orden de
+llegada**, así que el aviso urgente se leía después del festivo — con la pregunta
+ya cerrada.
+
+Nace `#region-urgente` con `role="alert"` y `CB.a11y.urgente()`. Va **solo** para
+lo que caduca: los diez segundos y la luz que se apaga, cuyo mensaje visible dura
+2,2 s antes de que la pantalla pase sola. Todo lo demás sigue en la educada,
+porque un lector que interrumpe cada tres segundos es inutilizable.
+
+Y el test exige que la región **la use alguien**: una región viva que existe y
+nadie escribe es una comprobación que no comprueba nada.
+
+#### El enlace de salto que se puso y se quitó
+
+Se añadió un «Ir a la respuesta» dando por supuesto que en la pantalla de partida
+había que tabular por la barra de herramientas —Pista, Pausa, Sonido, Salir—
+antes de llegar a los números: cuatro tabulaciones por pregunta, treinta veces
+por expedición.
+
+**Se comprobó el DOM y es al revés.** El orden es `<h1>` → HUD (nada enfocable) →
+respuestas → barra. La barra va la última.
+
+Así que el enlace se retira. Resolvía un problema inexistente, y su comentario
+habría mentido en el código durante años. **Un mecanismo de accesibilidad cuyo
+motivo declarado es falso es peor que no tenerlo: parece trabajo hecho y no lo
+es.** WCAG 2.4.1 se cumple igualmente, por dos vías que ya existían y que ahora
+sí se comprueban —el foco viaja al `<h1>` en cada navegación (técnica G1) y las
+secciones son regiones con nombre (ARIA11)— más una comprobación nueva de que la
+barra es lo último del orden de tabulación.
+
+#### `prefers-contrast` y `forced-colors`
+
+El ajuste de alto contraste solo existía **dentro** del juego: quien lo pide en
+el sistema tenía además que encontrarlo en los ajustes. Los dieciséis overrides
+pasan a un `@mixin alto-contraste` usado en los dos contextos —una lista, dos
+sitios, exactamente el remedio de E25.
+
+`_09-forzado.scss` es nuevo, y este proyecto es **especialmente vulnerable**:
+todo su relieve son 55 `box-shadow` inset con 90 capas, y `forced-colors: active`
+sustituye `background` y `color` pero **no toca `box-shadow`**. Sin el fichero, el
+resultado sería lo peor de los dos mundos: fondos del sistema con biseles de la
+paleta del juego encima. Se cambian por `border` real, que sí se traduce, y la
+luz apagada se distingue por trazo discontinuo — porque en `forced-colors` el
+color lo elige el sistema y la forma es lo único que queda.
+
+**Honestidad: `forced-colors` no se puede probar automáticamente.** Chrome lo
+emula en las herramientas de desarrollo, y ahí queda, en la lista manual. Decirlo
+es mejor que fingir lo contrario.
+
+#### Un falso positivo que conviene recordar
+
+La primera versión del test de tabulación miraba el documento entero y cazaba los
+botones de la **propia página de pruebas** — «Suite rápida», el enlace a
+`pruebas.html` del texto de la página del minificado. Herramienta, no producto.
+Se acotó a las diecisiete secciones del juego. Un falso positivo en una
+comprobación de accesibilidad acaba igual que cualquier otro: en que alguien la
+desactiva.
+
+Las dos suites: **388 comprobaciones, 0 fallos**.
+
+### Service worker y caché sin conexión (fase 8)
+
+Lo primero, porque es lo que más se malentiende: **el juego ya funcionaba sin
+internet**. Cero `fetch`, cero CDN, cero fuentes remotas. Abrir `dist/index.html`
+con doble clic y jugar una expedición entera no toca la red ni una vez.
+
+Entonces, ¿para qué un service worker? Para tres cosas, y ninguna es «que
+funcione sin conexión»:
+
+1. Que siga funcionando **cuando el servidor se apaga** — el caso real es un
+   colegio que sirve el juego desde un portátil que se apaga a las 14:00.
+2. Arrancar sin idas y venidas de revalidación.
+3. La música sin conexión, bajo control explícito de un adulto.
+
+#### E34 — que no estorbe donde no puede vivir
+
+Un service worker **no se registra en `file://`**: exige contexto seguro. Y el
+modo de uso principal de este proyecto es el doble clic. Así que lo importante no
+es registrarlo, es que **no haga ruido cuando no puede**.
+
+Puede fallar de **dos maneras según el motor**: unos lanzan un `SecurityError`
+síncrono y otros devuelven una promesa rechazada. Hacen falta las dos
+protecciones — el `try/catch` y el segundo callback del `.then()`. Sin el
+segundo, la consola imprime «Uncaught (in promise)»: no rompe nada, pero ensucia
+una consola que está limpia, y **una consola sucia es lo primero que un maestro
+lee como «está roto»**.
+
+Con `CB.offline.DISPONIBLE === false` no cambia nada visible. Ningún cartel de
+«modo sin conexión no disponible»: un aviso sobre algo que nadie ha pedido es
+ruido.
+
+#### E35 — la suite no puede cachearse a sí misma
+
+Si `pruebas.html` registrara un worker, cachearía la propia suite: el siguiente
+cambio de código se serviría desde la caché y el síntoma sería «las pruebas no
+son deterministas», que `ejecutor.js` ya identifica como la conclusión más cara
+posible, porque lleva a desconfiar de todo lo demás.
+
+La protección ya existía: el registro va detrás del
+`if (!document.getElementById('btn-jugar')) return;` del único
+`DOMContentLoaded`, que es la misma guarda que impide que la suite arranque una
+partida. Lo que se ha añadido es comprobarlo.
+
+#### Los 42 MB, y por qué no van en el precache
+
+| caché | contenido | política |
+|---|---|---|
+| `cubomatica-armazon-<VER>-<HUELLA>` | HTML + CSS min + JS min + manifest, ~300 KB | precache en `install` |
+| `cubomatica-musica-<MAYOR>` | los 9 MP3, 42 MB | **vacía**; solo la llena el botón del adulto |
+
+`cache.addAll()` es **atómico**: una sola pista que falle tira las nueve. Y como
+el precache va dentro de `waitUntil`, ese fallo impediría instalar **también** el
+armazón de 300 KB. Se perdería todo por querer ganar de más. Aritmética de aula,
+además: 42 MB × 25 tabletas ≈ 1 GB simultáneos.
+
+La descarga va **de una en una**, con progreso y cancelación, y una pista que
+falle no tira las otras ocho. Y va en el panel del adulto, detrás de la puerta
+parental, porque descargar 42 MB en el disco de un aparato escolar es una
+decisión informada de una persona adulta, no un efecto colateral de darle a
+jugar.
+
+#### Contra el peor fallo posible
+
+El peor fallo de un service worker no es que no cachee: es que **sirva una
+versión vieja para siempre**. En un aula, veinticinco aparatos con el juego de la
+semana pasada y nadie sabiendo por qué. Cuatro medidas, ninguna sobra:
+
+- el nombre de la caché lleva la **versión** y además una **huella sha1 del
+  contenido**, para el caso «se corrige un fallo sin subir de versión»;
+- `activate` borra toda caché de armazón que no sea la actual;
+- **sin `skipWaiting()` ni `clients.claim()`**: la versión nueva entra en el
+  siguiente arranque, porque cambiar el JS bajo los pies de una partida en curso
+  es peor que esperar y este juego se abre veinticinco veces al día;
+- y un botón **«Borrar lo guardado y recargar»** en el panel del adulto, que es
+  lo que un maestro puede pulsar sin saber qué es un service worker.
+
+La caché de música se indexa por versión **mayor**, no completa: los nueve MP3
+son una lista cerrada que no cambia, y volver a bajar 42 MB porque se ha tocado
+el CSS es inaceptable en la conexión de un colegio.
+
+#### El icono, sin un solo binario
+
+El bloque 4 de la auditoría prohíbe cualquier fichero de imagen, y sin `icons` el
+navegador no ofrece instalar. Se resuelve con un **SVG en `data:` URI dentro del
+propio `.webmanifest`**, generado por gulp: no es un fichero, no dispara el
+`find` de binarios, y es texto. `"orientation": "any"`, no `"landscape"`: el
+juego funciona en las dos y avisa por **tamaño**, no por orientación — forzarla
+se lo quitaría a quien tiene la tableta fijada en vertical por su propia
+configuración de accesibilidad.
+
+#### Verificado apagando el servidor
+
+Registrado el worker en `localhost`, **se mató el proceso del servidor** y se
+recargó: el juego arranca, los 92 niveles cargan y las 17 pantallas responden.
+Y se distinguió de una caché de navegador: lo que no está en el armazón devuelve
+`504 sin conexión` —respuesta que fabrica el propio worker cuando la red falla— y
+lo que sí está devuelve `200` con sus 38 982 bytes.
+
+Los contadores contratados pasan de **44 a 45** guiones, a propósito y con la
+auditoría cambiada en el mismo commit.
+
+Las dos suites: **394 comprobaciones, 0 fallos**.
+
+### La auditoría se reescribe en Node (fase 9)
+
+Cuatro razones, y la primera es la que decide:
+
+1. **Había dos implementaciones y ya habían divergido.** `auditar.bat` cubría
+   **cinco de los ocho bloques**: le faltaban la versión, la documentación y el
+   peso. Mantener dos veces la misma lógica es exactamente el fallo que esta
+   auditoría persigue en el resto del proyecto —«un número repetido a mano en
+   tres sitios está mal en dos en cuanto alguien se despista una vez»— aplicado a
+   sí misma.
+2. **Dependía de `python3` y de `perl`.** En Windows no hay ninguno de los dos
+   por defecto, y por eso el `.bat` estaba capado. Node ya es obligatorio desde
+   que hay compilación, así que el problema desaparece en vez de repartirse.
+3. Los bloques nuevos no son trabajo de `grep`: el 3 lee **un** fichero compilado
+   en vez de nueve fuentes, y el 5 cruza tres estructuras contra un manifiesto.
+4. `node --check` y la extracción de los doce globales necesitan Node igual.
+
+400 líneas de shell pasan a **24**; `auditar.bat`, a 20. Windows recupera los
+tres bloques que le faltaban y desaparece la posibilidad de que vuelvan a
+separarse.
+
+#### Se validó contra sí misma antes de sustituir nada
+
+Las dos corrieron en paralelo y se compararon sus salidas ordenadas: **55
+comprobaciones el `.sh`, 56 el `.mjs`**, y cada línea que solo aparecía en una
+tenía su equivalente en la otra con distinta redacción. La de más es la quinta
+réplica de la versión, en `dist/sw.js`, que el shell no comprobaba.
+
+#### E36 — la lista negra nunca escaneó los `.mjs`
+
+Lo encontró el port, el primer día: la nueva implementación se puso roja contra
+`herramientas/comprobar-dist.mjs`, que nombraba la marca para contar sus
+apariciones en el bundle.
+
+El motivo de que el shell no lo viera es de una línea: su lista de extensiones
+era `--include='*.js'`, y **`*.js` no casa con `.mjs`**. Las tres herramientas
+nuevas —unas mil líneas— nunca se escanearon.
+
+La salida no fue eximir el fichero. Se cambió la comprobación para que busque la
+**frase** del aviso («No está afiliada») en vez de la marca: no dispara la lista
+negra, no hace falta una exención nueva que la debilite, y además es mejor
+comprobación —lo que importa es que sobreviva la declaración de no afiliación, no
+que aparezca un nombre.
+
+#### La autoprueba
+
+Una auditoría que no se prueba a sí misma puede llevar meses en verde por estar
+rota, y nadie se entera porque el verde es justo lo que se espera.
+`npm run autoprueba` introduce violaciones reales en un fichero temporal
+—`Math.random` en un fichero puro, una clave de almacenamiento fuera de
+`01-almacen`, un `toISOString`— y comprueba que las ve.
+
+Y comprueba el caso inverso, que es el que de verdad falla: la **misma violación
+escrita dentro de un comentario NO debe contar**. Sin el despiece de comentarios,
+la auditoría se pone roja contra código correcto, que es el fallo E5 y la razón
+de que exista `sin-comentarios.py`.
+
+#### Verificado como clon limpio
+
+- **Cero dependencias**: los tres ficheros solo importan de `node:`. Se movió
+  `node_modules/` fuera y la auditoría siguió en verde.
+- **Sin `dist/`**: se salta con aviso lo que necesita construir, en vez de
+  fallar. Un rojo falso acaba siempre igual, en que alguien desactiva la
+  auditoría.
+- Y un diagnóstico que costó un intento: al borrar `dist/` entera salían tres
+  rojos crípticos sobre pistas y créditos. **`dist/audio/` no es una carpeta
+  generada** —los nueve MP3 están versionados— así que ahora dice exactamente
+  eso, con el `git checkout` que lo arregla.
+
+### Entrega 1.7.0 (fase 10)
+
+**1.7.0, no 2.0.0.** La regla escrita del proyecto es que el número mayor sube
+cuando cambia el formato del perfil guardado, porque eso obliga a migrar
+`01-almacen.js` y es lo único que puede romperle el progreso a un niño. Esta
+migración cambia el stack entero y **no toca el formato del perfil**. Es
+contraintuitivo, y por eso se escribe: alguien pondría 2.0.0 «porque es grande».
+
+La versión pasa a tener **cinco réplicas**: las cuatro que escribe una persona
+—README, CHANGELOG, LEEME, `package.json`— más `dist/sw.js`, que la inyecta gulp
+leyendo `CB.VERSION` y por tanto no puede desviarse. La auditoría comprueba las
+cinco.
+
+#### Sin tarea de empaquetado, y por qué
+
+El plan preveía un `gulp empaquetar` que generase un ZIP. Se descarta: con
+`dist/` versionada, el botón «Download ZIP» de GitHub ya trae todo, y un ZIP
+propio ahorraría **1,4 MB de 43** —un 3 %—. No compensa mantener un camino de
+código que depende del `zip` del sistema (que en Windows no existe) y que se
+pudre sin que nadie lo note, porque nadie lo ejecuta hasta el día que hace falta.
+
+Para repartir el juego basta con copiar `dist/`, que es autosuficiente. Está
+dicho en el README.
+
+#### Lo que sigue fuera de alcance, sin cambios
+
+- **`file://` por doble clic**: la herramienta de navegador rechaza esas URL.
+  `pruebas/comprobar-doble-clic.html` existe para eso y ahora comprueba también
+  que el modo sin conexión no se queje donde no puede funcionar.
+- Firefox y Safari: solo se ha conducido Chrome.
+- Un lector de pantalla real (VoiceOver, NVDA) y el táctil en una tableta.
+- `forced-colors`, que se emula en las herramientas de desarrollo.
+- **F0.5** (pilotaje en papel con 3 niños) y **F10** (calibración de β con 10-15
+  niños). Siguen necesitando niños de verdad, no código.
+
+#### Estado final
+
+| | 1.6.0 | 1.7.0 |
+|---|---|---|
+| Comprobaciones | 365 | **394** en dos suites |
+| Fallos registrados | E1–E24 | **E1–E36** |
+| Guiones | 44 | 45 |
+| `bloque__elemento` | 0 | **29** |
+| Selectores por `#id` | 20 | **0** |
+| `min-width` | 0 | **5** |
+| Descarga de arranque | ~800 KB | **319 KB** |
+| Auditoría | 400 líneas de shell + un espejo capado | 24 líneas + `.mjs` sin dependencias |
+
+---
+
+## Novena ronda — limpieza y auditoría severa (26 de julio de 2026)
+
+Encargo de dos partes: **quitar lo que sobra** y **buscar fallos en serio**. Es
+la primera ronda que se hace *después* de una entrega en verde, y eso condiciona
+todo lo que sigue: no había ningún síntoma que perseguir. Nueve hallazgos, y lo
+que los une es que **casi todos estaban en verde**.
+
+### El método que los encontró
+
+Ninguno salió de leer código buscando errores. Salieron de dos gestos repetidos:
+
+1. **Probar el detector contra la violación**, no el código contra el detector.
+   A cada comprobación que dice «cero X» se le dio una X inventada a ver si la
+   veía. Ahí aparecieron los cuatro huecos del bloque 3.
+2. **Volver a meter el fallo ya corregido** y comprobar que el guardián nuevo se
+   pone rojo. Ahí aparecieron los dos verdes falsos de la propia prueba, que sin
+   este paso se habrían quedado dentro para siempre — verdes, y sin medir nada.
+
+### Los tres fallos de comportamiento
+
+**E37 · «Listo: las 9 pistas están guardadas» sin haber guardado ninguna.**
+`descargarMusica()` avanzaba el contador igual al acertar y al fallar, y luego
+informaba `ok: true` mirando solo si había terminado. Con las nueve pistas
+caídas, el panel del adulto daba por buena una descarga vacía.
+
+Lo grave no es el `if`: es **a quién se lo dice**. Quien lee ese mensaje es un
+adulto decidiendo si puede llevarse la tableta a un aula sin wifi. Y el juego no
+se rompía por ello, así que no había ningún camino por el que esto se descubriera
+antes del aula.
+
+**E38 · una cuarta copia de la lista de música.** Los nombres de los nueve mp3
+estaban escritos a mano en `45-offline.js`. Las otras tres copias —`dist/audio/`,
+la tabla de `07-musica.js`, `CREDITOS.txt`— sí las cruzaba la auditoría entre sí;
+la cuarta no la miraba nadie, y era la única sin dueño declarado.
+
+Su modo de fallo estaba tapado **por partida doble**: renombrar un fichero
+dejaba la música sonando con normalidad —`07-musica.js` sí tenía la ruta buena— y
+solo rompía la descarga sin conexión, que a su vez informaba de éxito por culpa
+de E37. Dos defectos independientes que se ocultaban el uno al otro. Ahora las
+rutas se derivan de `CB.musica`, su dueño único.
+
+**`gulp dev` vigilaba 10 de los 12 `.scss`.** El manifiesto declara los diez
+parciales —lo que se compila y en qué orden— y el vigilante usaba esa lista tal
+cual. Fuera quedaban el punto de entrada y `_herramientas.scss`, es decir **el
+fichero donde viven todos los mixins**: el sitio que más se toca al ajustar el
+diseño era el único que no reconstruía al guardar. El síntoma no es un error, es
+que la pantalla no cambia — que se lee como «el mixin no funciona».
+
+### E39 · Las tres reglas duras no protegían lo que decían
+
+Cuatro huecos, todos por la misma causa: **cero se escribe de muchas maneras y el
+regex solo conocía una**.
+
+| se colaba | por qué |
+|---|---|
+| `border-radius: 0.5rem` | el filtro que perdona el cero casaba con el **cero inicial** de «0.5rem» |
+| `box-shadow: 0 0 4px` | exigía `px` en los desplazamientos, y en CSS el cero no lleva unidad |
+| `box-shadow: inset 0 0 8px` | lo mismo, y todo el relieve del juego es inset |
+| `transition: opacity 90ms` | no nombra ninguna función — y la **función por defecto en CSS es `ease`** |
+
+**Ninguno escondía una violación real**: se comprobó con detectores correctos y
+el CSS estaba limpio. Lo que fallaba era la garantía, no el resultado — pero una
+garantía que no garantiza es peor que no tenerla, porque ocupa su sitio.
+
+Los tres detectores se reescribieron leyendo declaración a declaración y capa a
+capa, y en positivo donde se puede: en vez de enumerar las maneras de ser suave
+—que incluyen no decir nada—, exigir la única admitida de ser escalonado
+(`steps(`).
+
+Y la **autoprueba pasó de 4 casos a 16**. Antes cubría tres greps del bloque 2 y
+**ninguno** del bloque 3, que es donde estaban los cuatro agujeros: la autoprueba
+no llegaba hasta la comprobación rota, así que daba la misma tranquilidad que no
+tenerla y además la firmaba.
+
+Dos más de la misma familia, encontradas de paso:
+
+- El grep de colores excluía `_herramientas.scss` **por accidente**: heredaba la
+  exclusión puesta para que el mixin `paso()` pudiera escribir `transition:`. Los
+  39 hex del mapa de materiales llevaban meses sin mirarse mientras el verde
+  afirmaba «todos con nombre en `_01-variables.scss`». Ahora cada exclusión se
+  nombra por su motivo y no se hereda.
+- La comprobación del aviso de girar exigía que **ningún** `max-width` del
+  proyecto pasara de 300px. Pasaba solo porque hoy hay uno. El primer
+  `@media (max-width: 767px)` legítimo —lo más normal en una hoja responsiva—
+  habría tumbado la construcción con un mensaje sobre el aviso de girar. Un rojo
+  que miente sobre su causa acaba desactivado, y se lleva por delante la
+  comprobación que sí valía.
+
+### Los dos verdes falsos de la prueba nueva
+
+Aparecieron al sembrar el fallo E37 a propósito. Se dejan escritos porque los dos
+son trampas de plataforma, no descuidos:
+
+**1. El ejecutor no esperaba.** Llamaba a `s.fn()` y pasaba a la siguiente suite
+en el mismo turno. Cualquier comprobación sobre algo asíncrono acababa escrita
+como «si todavía no ha llegado, pasa» — o sea, **pasaba siempre**. Ahora una
+suite puede devolver una promesa y la cadena la espera; el rechazo cuenta como
+fallo en vez de imprimir «Uncaught (in promise)» y dejar la cadena colgada.
+
+**2. `window.caches = doble` no hace nada.** Es una propiedad definida **solo con
+getter**: sin setter, en modo no estricto la asignación se pierde en silencio. La
+prueba medía la CacheStorage real, donde las nueve pistas fallan igualmente
+porque `audio/x.mp3` resuelto desde `/pruebas/` da 404. **Salía verde midiendo
+otra cosa.**
+
+Lo destapó su complementaria: la comprobación del camino bueno —«cuando las nueve
+entran de verdad, sí informa `ok:true`»— es imposible de satisfacer con la caché
+real. Sin esa segunda mitad, la primera habría seguido verde y falsa
+indefinidamente. **Una aserción negativa necesita casi siempre su positiva al
+lado**; sola, no distingue «funciona» de «no se ha ejercitado».
+
+La solución: `Object.defineProperty` (la propiedad **sí** es configurable),
+restaurando el **descriptor** original y no el valor, más un centinela que
+comprueba que el doble se ha instalado de verdad.
+
+### Referencias que apuntaban a nada
+
+- **Los mapas de origen.** `dist/js/cubomatica.min.js` y `.min.css` terminaban
+  con un `sourceMappingURL` hacia dos ficheros que `.gitignore` excluía. Con
+  `dist/` versionada, eso está roto en **todos** los clones menos en el que acaba
+  de construir. Las dos salidas eran malas —publicar 977 KB generados en cada
+  construcción, o dejar la referencia colgando—, así que se dejan de emitir: la
+  depuración ya la cubre mejor `dist/js/cubomatica.js`, que no es una
+  reconstrucción aproximada sino las fuentes pegadas byte a byte.
+- **`LICENCIAS-TERCEROS.md`, que sí se distribuye**, apuntaba a
+  `css/00-fuentes.css`, desaparecido en la migración. Igual en los tres ficheros
+  de `docs/licencias/` y en `CLAUDE.md`.
+- **`CLAUDE.md` afirmaba que la auditoría despieza comentarios con
+  `sin-comentarios.py` y un `perl` en línea.** Las dos cosas se fueron con la
+  auditoría de shell en 1.7.0.
+- **`pruebas/mapa-bem.json` decía que «lo verifica el bloque 8 de la auditoría».**
+  No lo hace ni lo ha hecho nunca. **No se ha arreglado haciendo que lo lea**: un
+  guardián que comprobara que los nombres viejos ya no aparecen sería un
+  generador de falsos rojos, porque `valor`, `dato`, `grupo`, `etiqueta` y
+  `entra` son palabras españolas corrientes y propiedades de objeto que salen por
+  todo el código sin ser clases — exactamente la razón por la que el codemod
+  trabajaba sobre el AST y no con `sed`. Quien cubre ese fallo por la vía buena
+  es `cruzar-clases.mjs`. Se corrigió el texto y se explicó por qué no se
+  «arregla».
+- **`.gitignore` reservaba `pruebas/vendor/` para axe-core, que nunca se añadió.**
+  La fase 7 se entregó sin él; la accesibilidad se comprueba con `casos-a11y.js`
+  escrito a mano. Una regla que aparta un fichero inexistente sugiere que existe.
+- **`.gitignore` apartaba `.vscode/`.** Daba igual hasta 1.7.0, cuando
+  `index.html` estaba en la raíz y Live Server acertaba solo. Ahora `src/` no es
+  servible, y la corrección que apunta Live Server a `dist/` vivía en un solo
+  ordenador mientras todo el que clonara caía en la trampa que creó la migración.
+  Pasa a versionarse.
+
+### Lo borrado, con la prueba de que nadie lo usaba
+
+| fichero | por qué |
+|---|---|
+| `herramientas/comparar-css.mjs` | de un solo uso: probó la fidelidad CSS→SCSS de las fases 3 y 4, y ya no existe CSS de 1.6.0 contra el que comparar |
+| `herramientas/renombrar-bem.mjs` | codemod aplicado e irreversible; volver a pasarlo sobre un árbol ya renombrado solo puede hacer daño |
+| `pruebas/sin-comentarios.py` | la auditoría en Node lleva su propio despiece desde 1.7.0 |
+| `pruebas/fixtures/perfilV1.json` | ningún código lo lee, y ninguno **puede**: sin `fetch` en `file://`. La prueba de migración usa un objeto en línea que cubre las mismas afirmaciones |
+
+`pruebas/mapa-bem.json` **se conserva**: es el acta de 43 renombrados
+irreversibles con su motivo, y dentro de seis meses el motivo es lo único que
+queda.
+
+### Lo que se deja anotado sin tocar
+
+El service worker responde a una petición con rango (`Range`) devolviendo la
+respuesta completa de 200 que hay en caché. Es el patrón habitual al cachear
+medios y **Chrome lo tolera**; donde suele romper la reproducción es en
+**Safari**, que sigue sin probarse. No se toca porque arreglarlo a ciegas, sin
+poder comprobarlo en el motor donde falla, es cambiar código que hoy funciona por
+código que nadie ha visto funcionar.
+
+#### Estado final
+
+| | tras la 8.ª ronda | tras la 9.ª |
+|---|---|---|
+| Comprobaciones de la suite | 394 | **405** en dos suites |
+| Comprobaciones de la auditoría | 56 | 56 — las mismas, pero tres ya no mienten |
+| Casos de la autoprueba | 4 | **16** |
+| Fallos registrados | E1–E36 | **E1–E39** |
+| Ficheros de herramientas | 4 | **2** |
+| Referencias colgando en `dist/` | 2 | **0** |

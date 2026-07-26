@@ -4,14 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cubomática — suite de pruebas</title>
-<link rel="stylesheet" href="../css/00-fuentes.css">
-<link rel="stylesheet" href="../css/01-variables.css">
-<link rel="stylesheet" href="../css/02-base.css">
-<link rel="stylesheet" href="../css/03-componentes.css">
-<link rel="stylesheet" href="../css/04-pantallas.css">
-<link rel="stylesheet" href="../css/05-animaciones.css">
-<link rel="stylesheet" href="../css/06-biomas.css">
-<link rel="stylesheet" href="../css/07-adulto.css">
+<!-- LA SUITE PRUEBA LO QUE SE ENTREGA, no las fuentes sueltas.
+     Antes cargaba las 9 hojas y los 44 guiones a mano —de hecho cargaba 8 de 9:
+     le faltó 08-imprimir.css desde siempre, así que casos-marca.js y
+     casos-contraste.js nunca la miraron—. Con un paso de construcción eso deja
+     de valer: un fallo de orden de concatenación, o un fichero que el manifiesto
+     olvidó, no aparecería hasta que un niño abriera dist/index.html. Que es
+     justo el modo de fallo que introduce la migración.
+
+     Se carga el bundle SIN minificar. El minificado tiene su propia página,
+     pruebas-min.html, porque cuando algo falla una traza que apunta a
+     cubomatica.min.js:1:48231 es un impuesto permanente. -->
+<link rel="stylesheet" href="../dist/css/cubomatica.css">
 <style>
   body { font-family: var(--fuente-lectura); padding: 24px; letter-spacing: normal; }
   h1 { font-family: var(--fuente-lectura); font-size: 24px; }
@@ -26,7 +30,11 @@
              background: #241C14; color: #FFF6E5; z-index: 10; }
   #resumen.verde { background: #14601C; }
   #resumen.rojo  { background: #8C1500; }
-  .barra-carga { margin: 8px 0; }
+  /* Barra de progreso de la propia suite. Vivía en css/03-componentes.css, pero
+     el juego no la pinta en ninguna de sus 17 pantallas: es de la herramienta. */
+  .barra-carga { margin: 8px 0; width: 100%; max-width: 480px; height: 32px;
+                 background: #3A3A3A; box-shadow: inset 4px 4px 0 0 #000000; }
+  .barra-carga > i { display: block; height: 100%; background: #5AA02C; }
   button { font-size: 15px; padding: 8px 14px; margin-right: 8px;
            background: #D9B98C; color: #241C14; border: 0; cursor: pointer; }
   #region-viva { position: absolute; width: 1px; height: 1px; overflow: hidden; }
@@ -50,21 +58,22 @@
 </p>
 
 <div id="salida"></div>
-<div id="region-viva" role="status" aria-live="polite"></div>
+<div id="region-viva" class="region-viva" role="status" aria-live="polite"></div>
+<div id="region-urgente" class="region-viva" role="alert" aria-live="assertive"></div>
 
 <!-- Las 17 secciones, ocultas: casos-carga.js comprueba que existen todas y
      30-ui.js necesita algunos nodos para pintar sin reventar. -->
 <div hidden>
-  <section id="p-portada" class="pantalla" hidden><h1>CUBOMÁTICA</h1>
-    <p id="portada-pista"></p></section>
+  <section id="p-portada" class="pantalla pantalla--portada" hidden><h1>CUBOMÁTICA</h1>
+    <p id="portada-pista" class="portada__pista"></p></section>
   <section id="p-perfiles" class="pantalla" hidden><h1>¿Quién juega?</h1><div id="lista-perfiles"></div>
     <button id="btn-nuevo-perfil"></button></section>
-  <section id="p-calibracion" class="pantalla" hidden><h1>Vamos a empezar</h1><p id="cal-paso"></p><div id="cal-enunciado"></div>
+  <section id="p-calibracion" class="pantalla pantalla--juego" hidden><h1>Vamos a empezar</h1><p id="cal-paso"></p><div id="cal-enunciado"></div>
     <div class="zona-juego bioma bioma--pradera"><div class="cielo"></div></div>
     <div id="cal-mensaje" hidden></div>
     <div id="cal-respuesta"></div>
     <div class="barra-herramientas">
-      <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="ico" aria-hidden="true">🔈</span><span class="rotulo">Sonido</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="btn-bloque__ico" aria-hidden="true">🔈</span><span class="btn-bloque__rotulo">Sonido</span></button>
       <button class="btn-bloque" data-salir>◀ Salir</button>
     </div></section>
   <section id="p-mapa" class="pantalla" hidden><h1>La Cantera</h1><p id="mapa-saludo"></p>
@@ -72,12 +81,12 @@
   <section id="p-cantera" class="pantalla" hidden><h1>Mis vetas</h1><p id="cantera-pista"></p>
     <div id="rejilla-vetas"></div><button id="btn-toda-cantera"></button>
     <div id="leyenda-vetas"></div></section>
-  <section id="p-partida" class="pantalla" hidden><h1>Expedición</h1>
+  <section id="p-partida" class="pantalla pantalla--juego" hidden><h1>Expedición</h1>
     <div id="hud-luces"></div>
-    <div id="hud-reloj" hidden><div class="reloj-arena">
-      <span class="ra-bulbo ra-bulbo--alto"><i id="ra-alta" class="ra-arena"></i></span>
-      <span class="ra-chorro"></span>
-      <span class="ra-bulbo ra-bulbo--bajo"><i id="ra-baja" class="ra-arena"></i></span>
+    <div id="hud-reloj" hidden><div class="reloj__arena">
+      <span class="reloj__bulbo reloj__bulbo--alto"><i id="ra-alta" class="reloj__grano"></i></span>
+      <span class="reloj__chorro"></span>
+      <span class="reloj__bulbo reloj__bulbo--bajo"><i id="ra-baja" class="reloj__grano"></i></span>
     </div><span id="hud-segundos">30</span></div>
     <span id="hud-gemas"></span>
     <div class="zona-juego bioma bioma--pradera" id="zona-juego"><div class="cielo"></div>
@@ -87,20 +96,20 @@
       <div id="item-bono" hidden></div><div id="item-respuesta"></div>
       <div id="aviso-prisa" hidden>Hurry up!</div></div>
     <div class="barra-herramientas">
-      <button class="btn-bloque btn-bloque--rotulado" data-accion="pista" aria-label="Pista"><span class="ico" aria-hidden="true">💡</span><span class="rotulo">Pista</span></button>
-      <button class="btn-bloque btn-bloque--rotulado" data-accion="pausa"  aria-label="Pausa"><span class="ico" aria-hidden="true">⏸</span><span class="rotulo">Pausa</span></button>
-      <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="ico" aria-hidden="true">🔈</span><span class="rotulo">Sonido</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="pista" aria-label="Pista"><span class="btn-bloque__ico" aria-hidden="true">💡</span><span class="btn-bloque__rotulo">Pista</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="pausa"  aria-label="Pausa"><span class="btn-bloque__ico" aria-hidden="true">⏸</span><span class="btn-bloque__rotulo">Pausa</span></button>
+      <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="btn-bloque__ico" aria-hidden="true">🔈</span><span class="btn-bloque__rotulo">Sonido</span></button>
       <button class="btn-bloque" data-accion="salir-partida">◀ Salir</button>
     </div>
   </section>
-  <section id="p-reparacion" class="pantalla" hidden><h1>Vamos a verlo</h1><div id="rep-lienzo"></div>
+  <section id="p-reparacion" class="pantalla pantalla--reparacion" hidden><h1>Vamos a verlo</h1><div id="rep-lienzo"></div>
     <div id="rep-pasos"></div><button id="btn-lo-pillo"></button><p id="rep-ayuda"></p></section>
-  <section id="p-descanso" class="pantalla" hidden><h1 id="descanso-titulo"></h1>
+  <section id="p-descanso" class="pantalla" hidden><h1 id="descanso-titulo">Descanso</h1>
     <div id="descanso-tablero"></div><button id="btn-seguir"></button></section>
-  <section id="p-jefe" class="pantalla" hidden><h1 id="jefe-nombre"></h1>
+  <section id="p-jefe" class="pantalla pantalla--juego" hidden><h1 id="jefe-nombre">Jefe de mundo</h1>
     <div id="jefe-criatura"></div><div id="jefe-armadura"></div>
     <div id="jefe-enunciado"></div><div id="jefe-opciones"></div><p id="jefe-aviso"></p></section>
-  <section id="p-fin" class="pantalla" hidden><h1 id="fin-titulo"></h1>
+  <section id="p-fin" class="pantalla pantalla--fin" hidden><h1 id="fin-titulo">Fin de la expedición</h1>
     <p id="fin-subtitulo"></p><div id="fin-dominado"></div><span id="fin-gemas"></span>
     <p id="fin-bono"></p><div id="fin-animo" hidden></div>
     <button id="btn-otra"></button><button id="btn-tranquila-fin" hidden></button></section>
@@ -109,65 +118,23 @@
   <section id="p-glosario" class="pantalla" hidden><h1>Diccionario</h1><p id="glosario-resumen"></p>
     <div id="lista-glosario"></div></section>
   <section id="p-ajustes" class="pantalla" hidden><h1 id="ajustes-titulo">Ajustes</h1><div id="lista-ajustes"></div></section>
-  <section id="p-adulto" class="pantalla" hidden><h1>Personas adultas</h1><div id="adulto-puerta">
+  <section id="p-adulto" class="pantalla pantalla--documento" hidden><h1>Personas adultas</h1><div id="adulto-puerta">
     <p id="adulto-pregunta"></p><input id="adulto-respuesta">
     <button id="adulto-entrar"></button><p id="adulto-error" hidden></p></div>
     <div id="adulto-contenido" hidden></div></section>
-  <section id="p-informe" class="pantalla imprimible" hidden><h1>Informe</h1><div id="informe-cuerpo"><p>Este informe se genera desde el panel de personas adultas.</p></div>
+  <section id="p-informe" class="pantalla imprimible pantalla--documento" hidden><h1>Informe</h1><div id="informe-cuerpo"><p>Este informe se genera desde el panel de personas adultas.</p></div>
     <button id="btn-imprimir"></button></section>
   <section id="p-creditos" class="pantalla" hidden><h1>Créditos</h1><div id="creditos-legal"></div>
     <div id="creditos-curriculo"></div>
     <div id="creditos-musica"></div></section>
-  <section id="p-error" class="pantalla" hidden><h1>Algo ha ido mal</h1><p id="error-detalle"></p>
+  <section id="p-error" class="pantalla pantalla--error" hidden><h1>Algo ha ido mal</h1><p id="error-detalle"></p>
     <button id="btn-error-mapa"></button></section>
 </div>
 
-<!-- LOS MISMOS 44 SCRIPTS, en el MISMO orden. El contrato de §14.2 vive en un
-     solo sitio; aquí solo cambia el prefijo de ruta. -->
-<script src="../datos/curriculo-rd157.js"></script>
-<script src="../datos/nombres.js"></script>
-<script src="../datos/objetos.js"></script>
-<script src="../datos/vocabulario.js"></script>
-<script src="../datos/mensajes.js"></script>
-<script src="../datos/motes.js"></script>
-<script src="../datos/recomendaciones.js"></script>
-<script src="../js/00-nucleo.js"></script>
-<script src="../js/01-almacen.js"></script>
-<script src="../js/02-texturas.js"></script>
-<script src="../js/03-sprites.js"></script>
-<script src="../js/04-audio.js"></script>
-<script src="../js/05-voz.js"></script>
-<script src="../js/06-a11y.js"></script>
-<script src="../js/07-musica.js"></script>
-<script src="../js/10-gen-numeracion.js"></script>
-<script src="../js/11-gen-sumas.js"></script>
-<script src="../js/12-gen-restas.js"></script>
-<script src="../js/13-gen-multiplicacion.js"></script>
-<script src="../js/14-gen-problemas.js"></script>
-<script src="../js/15-gen-dinero.js"></script>
-<script src="../js/16-gen-vocabulario.js"></script>
-<script src="../js/17-catalogo.js"></script>
-<script src="../js/18-distractores.js"></script>
-<script src="../js/20-puntuacion.js"></script>
-<script src="../js/21-antiazar.js"></script>
-<script src="../js/22-vidas.js"></script>
-<script src="../js/23-adaptativo.js"></script>
-<script src="../js/24-logros.js"></script>
-<script src="../js/25-mensajes.js"></script>
-<script src="../js/26-reparacion.js"></script>
-<script src="../js/27-repaso.js"></script>
-<script src="../js/28-memoria.js"></script>
-<script src="../js/29-grafo.js"></script>
-<script src="../js/2A-escalera.js"></script>
-<script src="../js/30-ui.js"></script>
-<script src="../js/31-pantallas.js"></script>
-<script src="../js/32-componentes.js"></script>
-<script src="../js/40-partida.js"></script>
-<script src="../js/41-panel-adulto.js"></script>
-<script src="../js/42-jefes.js"></script>
-<script src="../js/43-mapa-destrezas.js"></script>
-<script src="../js/44-casa.js"></script>
-<script src="../js/99-arranque.js"></script>
+<!-- El juego, en un solo guion. El orden de los 44 ficheros lo posee ahora
+     manifiesto.json y lo materializa gulp; aqui ya no se repite, que es lo que
+     evita la clase entera de fallo «anadi un script y olvide pruebas.html». -->
+<script src="../dist/js/cubomatica.js"></script>
 
 <!-- El ejecutor y los casos -->
 <script src="ejecutor.js"></script>
@@ -183,7 +150,20 @@
 <script src="casos-marca.js"></script>
 <script src="casos-musica.js"></script>
 <script src="casos-reloj.js"></script>
+<script src="casos-a11y.js"></script>
 <script src="casos-regresiones.js"></script>
-<script>CB.pruebas.conectarBotones();</script>
+<script>
+/* Sin `npm run build` no hay dist/ y el <script> de arriba da 404 en silencio:
+   la página quedaría en blanco con «Preparando…» para siempre y sin una pista
+   de por qué. Este aviso es la diferencia entre «esto está roto» y «me falta un
+   paso». */
+if (typeof CB === 'undefined' || !CB.pruebas) {
+  document.getElementById('resumen').className = 'rojo';
+  document.getElementById('resumen').textContent =
+    'No se encuentra dist/js/cubomatica.js — ejecuta «npm run build» y recarga.';
+} else {
+  CB.pruebas.conectarBotones();
+}
+</script>
 </body>
 </html>

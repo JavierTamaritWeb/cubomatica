@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 1.6.0**
+**Versión 1.7.0**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.
@@ -110,38 +110,84 @@ música se ajusta aparte de los efectos, en **Ajustes → Música**, con cuatro 
 ## Estructura
 
 ```
-index.html          Único fichero de entrada. Doble clic.
-css/                9 hojas de estilo (00-08)
-js/                 37 scripts: plataforma, generadores, motor, interfaz
-datos/              7 ficheros de contenido, incluido el currículo literal del RD
-audio/              9 pistas de música + CREDITOS.txt
-pruebas/            Suite propia (pruebas.html) y la comprobación del doble clic
+dist/               LO QUE SE JUEGA. Se versiona en git a propósito.
+  index.html          Doble clic aquí. No hace falta instalar nada.
+  css/  js/           Una hoja y un guion, compilados desde src/
+  audio/              9 pistas + CREDITOS.txt. No se generan: son el artefacto.
+  sw.js               Service worker (solo actúa servido por HTTP)
+src/                LAS FUENTES. No se sirven tal cual.
+  index.html          Plantilla; gulp sustituye los bloques marcados
+  scss/               11 parciales + el punto de entrada
+  js/  datos/         45 guiones en orden contratado
+manifiesto.json     FUENTE ÚNICA del orden de carga
+gulpfile.js         El paso de construcción
+herramientas/       Cruce de clases, cadena del manifiesto, comparador de CSS
+pruebas/            Suite (dos páginas) y auditar.mjs, la puerta de entrega
 docs/               Documentación interna. NO se distribuye con el juego.
-servir.command      Plan B para macOS si el navegador restringe file://
-servir.bat          Plan B para Windows
 ```
 
-Cero ficheros de imagen, cero dependencias, cero peticiones de red. Las texturas se
-generan con `canvas`, los efectos de sonido con Web Audio y los sprites con mapas de
-píxeles. Los únicos ficheros binarios son las nueve pistas de música.
+Cero ficheros de imagen, cero fuentes, cero peticiones de red. Las texturas se
+generan con `canvas`, los efectos de sonido con Web Audio y los sprites con mapas
+de píxeles. Los únicos ficheros binarios son las nueve pistas de música.
 
-**Peso: unos 43 MB**, de los cuales 42 MB son música y menos de 1 MB es el juego
-entero. Cabe de sobra en cualquier memoria USB, pero **no cabe en un correo**: para
-repartirlo en un centro, usa un USB o una carpeta compartida.
+**Peso: unos 43 MB**, de los cuales 42 MB son música. Lo que el navegador
+descarga al arrancar son **319 KB**. Cabe de sobra en cualquier memoria USB, pero
+**no cabe en un correo**: para repartirlo en un centro, usa un USB o una carpeta
+compartida.
+
+Para repartirlo basta con **copiar la carpeta `dist/`**: es autosuficiente. No
+hay una tarea que genere un ZIP a propósito — `dist/` está versionada, así que el
+botón «Download ZIP» de GitHub ya trae todo, y un ZIP propio ahorraría 1,4 MB de
+43. No compensa mantener un camino de código que se pudre sin que nadie lo note.
+
+## Para jugar: nada
+
+Abre `dist/index.html` con doble clic. No hay que instalar nada, no hace falta
+internet y no se envía ningún dato a ninguna parte.
+
+## Para desarrollar
+
+Hace falta [Node 20 o superior](https://nodejs.org).
+
+```bash
+npm install          # una vez
+npm run build        # compila src/ → dist/
+npm run dev          # build + servidor con recarga
+npm run entregar     # build + auditoría: LA PUERTA DE ENTREGA
+npm run autoprueba   # ¿ve la auditoría lo que dice que ve?
+```
+
+Desde 1.7.0 el proyecto tiene compilación. Hasta 1.6.0 no la tenía, y la razón de
+que ahora sí es concreta: SCSS con BEM, minificado, responsive y caché sin
+conexión no caben sin un paso intermedio. Lo que **no** ha cambiado es el destino:
+`dist/` se versiona precisamente para que «clona el repositorio y abre el HTML»
+siga siendo verdad para quien no tiene Node ni ganas de instalarlo.
 
 ## Pruebas
 
 **¿Funciona con doble clic en tu ordenador?** Abre
-**`pruebas/comprobar-doble-clic.html`** haciendo doble clic sobre el fichero. Comprueba
-en unos segundos que se puede guardar el progreso, que las texturas se generan y que
-las nueve pistas de música se leen. Es la única comprobación que hay que hacer así:
-todas las demás valen igual desde un servidor.
+**`pruebas/comprobar-doble-clic.html`** haciendo doble clic sobre el fichero.
+Comprueba en unos segundos que se puede guardar el progreso, que las texturas se
+generan, que las nueve pistas se leen y que el modo sin conexión no se queja
+donde no puede funcionar. Es la única comprobación que hay que hacer así.
 
-Abre **`pruebas/pruebas.html`** con doble clic para la suite rápida. Los tests que
-necesitan leer ficheros del disco requieren servidor local: ejecuta `servir.command`
-(macOS) o `servir.bat` (Windows) y abre `http://localhost:8000/pruebas/pruebas.html`.
+La suite son **dos páginas**, y hay que mirar las dos:
 
-La auditoría que bloquea la entrega es `pruebas/auditar.sh` (o `auditar.bat`).
+- `pruebas/pruebas.html` — contra el bundle legible. Es la de trabajar.
+- `pruebas/pruebas-min.html` — contra el minificado. Es la que valida la
+  configuración del minificador: si alguien la «optimiza», doce comprobaciones se
+  ponen rojas.
+
+Las dos necesitan `npm run build` antes; sin él lo dicen en vez de quedarse en
+blanco. Base actual: **405 comprobaciones, 0 fallos**.
+
+La auditoría que bloquea la entrega es `pruebas/auditar.mjs` — `auditar.sh` y
+`auditar.bat` solo la llaman. No usa ni una dependencia, así que corre en un clon
+recién descargado.
+
+**Nunca la ejecutes sola antes de entregar**: puede pasar en verde sobre un
+`dist/` construido hace tres días, que es el peor fallo posible porque es verde y
+es falso. `npm run entregar` construye primero.
 
 ## Navegadores soportados
 

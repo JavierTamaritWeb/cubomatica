@@ -1,0 +1,45 @@
+{
+  // ── Live Server ──────────────────────────────────────────────────────────
+  // Desde 1.7.0 el juego que hay que abrir es `dist/index.html`: las fuentes de
+  // `src/` ya no son servibles tal cual. Con `npm run dev` esto no hace falta
+  // —browser-sync ya sirve dist/ y recarga solo—, pero Live Server sigue siendo
+  // lo primero que se pulsa en VS Code y tiene que llevar al sitio correcto.
+  //
+  // Solo se vigila `dist/`. Vigilar `src/` recargaría el navegador ANTES de que
+  // gulp haya terminado de reconstruir, mostrando la versión anterior y haciendo
+  // creer que el cambio no ha surtido efecto.
+  //
+  // El porqué de fondo no ha cambiado desde 1.6.0: Live Server recarga la
+  // pestaña entera, y jugando eso interrumpe a media pregunta. El reloj vuelve a
+  // 30 y la pantalla al principio, de modo que una recarga a destiempo hace
+  // creer que la cuenta atrás y el aviso «Hurry up!» no funcionan.
+  "liveServer.settings.ignoreFiles": [
+    "src/**",
+    "docs/**",
+    "pruebas/**",
+    "herramientas/**",
+    "node_modules/**",
+    "dist/audio/**",
+    "**/*.map",
+    "**/*.md",
+    "**/*.txt",
+    "**/*.sh",
+    "**/*.command",
+    "**/*.bat",
+    ".git/**"
+  ],
+  // Un respiro antes de recargar: evita recargar a mitad de un guardado.
+  "liveServer.settings.wait": 300,
+  // Sin recarga completa cuando basta con reinyectar el CSS.
+  "liveServer.settings.fullReload": false,
+  "liveServer.settings.donotShowInfoMsg": true,
+
+  // ── Editor ───────────────────────────────────────────────────────────────
+  // El proyecto es ES2017 con `var` y expresiones de función por decisión, no
+  // por descuido: el suelo declarado es un Chromebook de 2019.
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "[scss]": { "editor.tabSize": 2 },
+  "[javascript]": { "editor.tabSize": 2 }
+}

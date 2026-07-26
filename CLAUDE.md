@@ -2,25 +2,39 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Cubomática 1.6.0** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
+**Cubomática 1.7.0** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
 
-## No build step, no dependencies, no network
+## A build step, but the same target: double-click, no network
 
-There is no `package.json`, no bundler, no transpiler and no server. The deployment target is **double-clicking `index.html` from `file://`**. Every design decision downstream follows from that:
+Until 1.6.0 there was no `package.json`, no bundler and no server. 1.7.0 adds Gulp 5, but **the deployment target did not change**: `dist/index.html` opens by double-click from `file://`, with no server, exactly as before. Everything below still follows from that:
 
-- 44 `<script src>` tags in `index.html`, in a **contracted order**, each assigning onto one global `CB` object. No ES modules, no `import`.
-- ES2017 strict subset with `var` and function expressions: no `?.`, no `??`, no private fields. Baseline hardware is a 2019 school Chromebook and a 6th-gen iPad.
-- **No `fetch`, no `XMLHttpRequest`, no `import()` anywhere** — CORS blocks them on `file://`. Anything that needs to read a file must be a subresource (`<script>`, `<link>`, `<audio>`).
+- Sources live in `src/`. Gulp concatenates them in a **contracted order** into one bundle, each file assigning onto one global `CB` object. No ES modules, no `import`.
+- ES2017 strict subset with `var` and function expressions: no `?.`, no `??`, no private fields. Baseline hardware is a 2019 school Chromebook and a 6th-gen iPad. `terser` runs with `ecma: 5` so it can't rewrite that away.
+- **No `fetch`, no `XMLHttpRequest`, no `import()` anywhere** in the game — CORS blocks them on `file://`. Anything that needs to read a file must be a subresource (`<script>`, `<link>`, `<audio>`).
+- **`dist/` is committed to git.** That is the only reason "clone the repo and double-click" stays true for a teacher with no tooling.
+
+**`manifiesto.json` owns the load order.** It used to live in three places at once. `gulpfile.js`, `gulp html`, the test pages and the audit all read it; nothing repeats it.
 
 ## Commands
 
 ```bash
-bash pruebas/auditar.sh          # THE DELIVERY GATE. Must be green. auditar.bat on Windows.
-bash servir.command              # local server, auto-picks a free port from 8000 (servir.bat on Windows)
-node --check js/07-musica.js     # syntax check a single file (node is used for nothing else)
+npm install                      # once
+npm run build                    # gulp build → dist/
+npm run dev                      # build + browser-sync on dist/ + watch
+npm run entregar                 # build && auditar — THE DELIVERY GATE
+npm run autoprueba               # meta-test: does the audit see what it says it sees?
+node pruebas/auditar.mjs         # the audit itself; .sh and .bat are 3-line wrappers
+node herramientas/cruzar-clases.mjs   # the CSS↔HTML↔JS class cross-check, standalone
 ```
 
-Tests run **in a browser** (they need DOM, canvas, `getComputedStyle` and font metrics). Open `pruebas/pruebas.html` by double-click, or via the local server for the checks that need HTTP.
+**Never run `auditar.sh` alone before a delivery.** It can pass green over a `dist/` built three days ago — that is the worst possible failure because it is green and it is false. `npm run entregar` builds first. (Block 5c does catch a stale `dist/`, by rebuilding the bundle in memory and comparing it byte for byte; `entregar` means you never have to rely on that.)
+
+Tests run **in a browser** (they need DOM, canvas, `getComputedStyle` and font metrics), and there are two pages, both generated against `dist/` — **the suite tests what ships, not the sources**:
+
+- `pruebas/pruebas.html` → the readable bundle. Use this one; a stack trace pointing into `cubomatica.min.js:1:48231` helps nobody.
+- `pruebas/pruebas-min.html` → the minified bundle. This is what validates the whole terser configuration: flip `mangle.toplevel` and twelve checks go red. **Run both before closing anything.**
+
+Both need `npm run build` first; without it they say so instead of hanging on "Preparando…".
 
 - **Suite rápida** button, or `CB.pruebas.ejecutar(false)` in the console.
 - **Suite larga** button, or `CB.pruebas.ejecutar(true)` — same assertion count, but generators run 10× more items (`CB.pruebas.modoLargo` gates the sample size).
@@ -29,37 +43,47 @@ Tests run **in a browser** (they need DOM, canvas, `getComputedStyle` and font m
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **365 checks, 0 failures** (deterministic).
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **405 checks, 0 failures** (deterministic).
 - **Run it in a foreground tab.** Chrome throttles `setTimeout` in a background tab, and the suites are chained with `setTimeout(…, 0)`: backgrounded, a 10 s run stretches past 80 s or stalls outright. A partial `resumen` is easy to mistake for a finished one — the `· NNNN ms` suffix is only appended when the last suite ends, so a summary without it is still running.
 
-**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all twenty-four found so far (E1-E24) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
+**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all thirty-nine found so far (E1-E39) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
 
-`pruebas/pruebas.html` loads the same 44 scripts with a `../` prefix plus mock `<section>`s. When you add a script to `index.html` you must add it here too, and when you add a DOM node that a module caches at runtime, add it to the mocks.
+`auditar.mjs` block 8 runs `herramientas/cruzar-clases.mjs` — a zero-dependency Node cross-check of every CSS class against HTML and JS, in both directions. It is the only thing that can see a half-finished rename: a class renamed in the CSS and not in the JS throws no error, it just renders unstyled. It reads the real files on purpose; the browser suite mounts reduced mock sections, so half the game's classes would look unused there.
+
+Both test pages load ONE bundle plus mock `<section>`s. Adding a source file means adding it to `manifiesto.json` and nowhere else — that is the point of the manifest. But when you add a DOM node that a module caches at runtime, add it to the mocks.
 
 ## The architecture frontier (enforced, not aspirational)
 
-`js/00-nucleo.js`, `js/10-*` … `js/18-*`, and `js/20-*` … `js/2A-*` are **pure**. In those files:
+`src/js/00-nucleo.js`, `src/js/10-*` … `js/18-*`, and `src/js/20-*` … `src/js/2A-*` are **pure**. In those files:
 
 - no `document.`, `window.`, `localStorage`, `navigator.`
 - no `Math.random` — all randomness goes through the injected seeded RNG (`CB.util.mulberry32`), so a game is reproducible from its seed
 - no `toISOString` anywhere in the project (it returns the previous day after 22:00 in Spain) — use `CB.util.hoyISO()`
-- storage key literals (`'cubomatica.'`) exist **only** in `js/01-almacen.js`
+- storage key literals (`'cubomatica.'`) exist **only** in `src/js/01-almacen.js`
 
 Note the flip side: with no modules, every top-level `function name()` lands on `window`. There are twelve, with names as generic as `tabla` and `serie`; `casos-carga.js` pins the exact list so a colliding thirteenth fails a test instead of silently shadowing.
 
-`auditar.sh` greps for these after stripping comments (`pruebas/sin-comentarios.py` for JS, an inline `perl` for CSS). The comment stripping exists because a comment documenting a prohibition used to trip the grep for it — if you add a check, strip comments first.
+`pruebas/auditar.mjs` greps for these after stripping comments — with its own `sinComentariosJS`, in Node, no `python3` and no `perl` (those went with the shell audit in 1.7.0; `sin-comentarios.py` is gone). The comment stripping exists because a comment documenting a prohibition used to trip the grep for it — if you add a check, strip comments first.
+
+Its blind spot, if you extend it: a regex literal containing `\/\/` looks like the start of a line comment, so the rest of that line is stripped and becomes invisible to every grep. No source file has one today. Prefer `[/]{2}` or a character class if you ever need one in `src/`.
 
 ## Load-order tiers
 
 | Range | Layer | Rule |
 |---|---|---|
-| `datos/*.js` (7) | content tables | loaded first; `25-mensajes.js` and `14-gen-problemas.js` read them at definition time |
+| `datos/*.js` (7) | content tables | loaded first |
 | `js/00`–`js/07` | platform adapters | may touch DOM/Web Audio/`localStorage`; this is where the outside world is allowed in |
 | `js/10`–`js/18` | generators + catalogue | pure |
 | `js/20`–`js/2A` | engine (scoring, anti-guess, lives, adaptive, memory, DAG) | pure |
 | `js/30`–`js/99` | UI, screens, game loop | DOM lives here |
 
-`js/99-arranque.js` holds the project's **only** `DOMContentLoaded`, and it returns early when `#btn-jugar` is absent — that is what stops the test page from booting a game.
+Reordering is what breaks; concatenating is safe. There are exactly **three hard edges**, and everything else is order-independent (a previous version of this file claimed `25-mensajes.js` and `14-gen-problemas.js` read `CB.datos` at definition time — they do not; no `js/*.js` does):
+
+1. `datos/nombres.js` + `datos/objetos.js` → `datos/vocabulario.js`, whose IIFE builds `LISTA_BLANCA`
+2. `js/10`…`js/16` → `js/17-catalogo.js`, whose IIFE captures references to the seven generator objects
+3. `js/31-pantallas.js` → `js/99-arranque.js`, which registers 8 `alEntrar` and 2 `alSalir` at definition time
+
+`js/99-arranque.js` holds the project's **only** `DOMContentLoaded`, and it returns early when `#btn-jugar` is absent — that is what stops the test pages from booting a game, and (since 1.7.0) what stops them from registering a service worker that would cache the suite itself.
 
 **`alEntrar` handlers paint; they must never navigate.** A handler that calls `CB.pantallas.ir()` on its own screen recurses until the stack blows, and `ir()`'s `catch` turns that into the generic error screen rather than a stack trace. This shipped in 1.0.0 and made the adult panel unreachable. `ir()` now carries a re-entrancy latch, and `casos-carga.js` enters all 16 navigable screens on every run.
 
@@ -67,18 +91,28 @@ Note the flip side: with no modules, every top-level `function name()` lands on 
 
 Changing any of these numbers means changing the test that asserts it, on purpose:
 
-- **44 scripts** on disk and in `index.html` · **17 screens** · **9 stylesheets** · **9 music tracks** · **12 SFX**
+- **45 sources** on disk *and* in `manifiesto.json` — equality is checked both ways, so a new file nobody declared is a failure · **17 screens** · **10 SCSS partials** in the manifest, **12 `.scss` files** on disk (the manifest owns the ten that get `@use`d, in order; `cubomatica.scss` and `_herramientas.scss` are the entry point and the mixins) · **9 music tracks** · **12 SFX**
 - **92 levels** across **4 worlds**, no repeats and no orphans (`casos-curriculo.js`, CU1–CU8)
 - **24 error codes = 24 recommendations**, same key set
 - **30 exact scoring cases**, no tolerance (`casos-formulas.js`)
-- Code weight **< 900 KB**; music weight **< 60 MB** (two separate budgets on purpose — one budget would let the code balloon unnoticed)
-- **The version string**: `CB.VERSION` in `js/00-nucleo.js` is the single source. `README.md`, `CHANGELOG.md` and `LEEME.txt` repeat it and `auditar.sh` fails if they drift. Bump the major only when the saved-profile format changes, because that forces a migration in `01-almacen.js`.
+- Three weight budgets, not one: **sources < 1100 KB**, **boot download < 400 KB** (`index.html` plus exactly what it references — this is the one that protects startup, and the one the old 900 KB was really about), **music < 60 MB**
+
+**Anything checked against `dist/` counts occurrences, never lines.** `grep -c '<section id="p-' dist/index.html` returns **1**, not 17, because the minified HTML is a single line. Same family of trap: `animation: none !important` serialises as `animation: auto ease 0s 1 normal none running none`, so match on `style.animationName`, not on text; and cssnano shortens `#000000` to `#000`, which silently *skipped* a WCAG contrast pair until `hex()` learned to read both forms.
+
+**Seed the bug before you trust the guard.** Every self-check written here that turned out to be broken looked correct and was green. Three that only surfaced by reintroducing the defect on purpose:
+
+- **Zero has many spellings in CSS**, and the hard-rule regexes knew one. `border-radius: 0.5rem` slipped past the filter that forgives zero, because `0.5rem` *starts* with `0`; `box-shadow: 0 0 4px` slipped past a regex demanding `px` on the offsets; `transition: opacity 90ms` slipped past a search for `ease` — CSS's **default timing function is `ease`**, so a smooth transition need never write the word. Read declaration by declaration and layer by layer, and prefer asserting the one permitted form (`steps(`) over enumerating the forbidden ones.
+- **`window.caches = doble` does nothing.** It is getter-only, so in sloppy mode the assignment is silently dropped and your test measures the real CacheStorage. Use `Object.defineProperty` (it *is* configurable), restore the saved **descriptor**, and assert the double actually installed.
+- **A suite may return a promise and the runner awaits it** (`ejecutor.js`). Before that it called `s.fn()` and moved on in the same turn, so every assertion about async work was written as "if it hasn't arrived yet, pass" — which passes always.
+
+**Reading a function's source (`fn.toString().indexOf(…)`) is only valid for string literals and property names.** Terser preserves those (`mangle.properties` is forbidden — it would rewrite the localStorage keys of every saved profile). It does not preserve variable names, spacing or quote style. The dangerous case is a *negative* assertion: `indexOf("crear('h3'") === -1` passed for years and then passed for the wrong reason, because terser writes double quotes. Assert behaviour instead.
+- **The version string**: `CB.VERSION` in `js/00-nucleo.js` is the single source. `README.md`, `CHANGELOG.md` and `LEEME.txt` repeat it and `auditar.mjs` fails if they drift. Bump the major only when the saved-profile format changes, because that forces a migration in `01-almacen.js`.
 
 `js/17-catalogo.js` is the single source of truth for the 92 levels and 4 worlds and is explicitly a contract file.
 
 ## Two rules that look like style and are not
 
-**CSS**: zero `border-radius` other than 0, zero blurred `box-shadow` (3rd value must be 0), zero eased transitions — all motion is `steps()`. This is the voxel aesthetic and `auditar.sh` fails the build on any of the three.
+**CSS**: zero `border-radius` other than 0, zero blurred `box-shadow` (3rd value must be 0), zero eased transitions — all motion is `steps()`. This is the voxel aesthetic and `auditar.mjs` fails the build on any of the three — and the self-test (`npm run autoprueba`) now fires all three against invented violations, because for a while they only looked like they did.
 
 **Trademark**: a blacklist grep runs over every distributed file. `docs/` is excluded (declared non-distributable), and `AVISO-LEGAL.txt`, `js/00-nucleo.js` (`CB.LEGAL`), `datos/nombres.js` and `pruebas/casos-marca.js` are exempt because they *declare* the blacklist. Never let a third-party mark into a filename, an identifier or user-visible text. This is why the nine music files were renamed.
 
@@ -94,7 +128,7 @@ This is school material subject to **EN 301 549 / WCAG 2.2 AA**:
 
 - Any time limit must be disableable — `CB.partida.SEGUNDOS_ITEM.sinPrisa === 0` is asserted by `casos-reloj.js`.
 - Never colour alone: every state that uses colour also changes shape, size, text or motion.
-- `prefers-reduced-motion` and `:root.sin-movimiento` must both be handled, at the end of `css/05-animaciones.css`. Removing motion may not remove information.
+- `prefers-reduced-motion` and `:root.sin-movimiento` must both be handled, at the end of `src/scss/_05-animaciones.scss`. They come from **one list** through `desactivar-movimiento()` emitted twice, because for months they were two hand-kept lists and the in-game setting silently missed ten animations (E27). Removing motion may not remove information.
 - Contrast pairs are measured against computed CSS variables in `casos-contraste.js`, not asserted by hand.
 
 ## Before changing behaviour, read `docs/decisiones.md`

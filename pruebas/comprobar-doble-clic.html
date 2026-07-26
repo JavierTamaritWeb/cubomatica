@@ -158,12 +158,38 @@ PISTAS.forEach(function (nombre) {
     acabar(false, 'NO se puede leer este fichero');
   });
   setTimeout(function () { acabar(false, 'no ha respondido en 15 segundos'); }, 15000);
-  a.src = '../audio/' + nombre + '.mp3';
+  a.src = '../dist/audio/' + nombre + '.mp3';
   a.load();
 });
 
 veredicto();
 </script>
 
+
+<h2>Modo sin conexión</h2>
+<p>Con doble clic esto SIEMPRE debe decir «no disponible», y la consola debe
+quedar limpia. Un service worker exige contexto seguro y <code>file://</code> no
+lo es; lo que se comprueba aquí es que el juego no lo intente y no se queje.</p>
+<div id="sc-resultado">Comprobando…</div>
+<script>
+(function () {
+  var d = document.getElementById('sc-resultado');
+  var lineas = [];
+  var esFile = location.protocol === 'file:';
+  lineas.push('protocolo: ' + location.protocol);
+  lineas.push('contexto seguro: ' + (window.isSecureContext ? 'sí' : 'no'));
+  if (typeof CB === 'undefined' || !CB.offline) {
+    lineas.push('✘ no se ha cargado CB.offline');
+  } else {
+    lineas.push((CB.offline.DISPONIBLE === false || !esFile ? '✔' : '✘') +
+      ' CB.offline.DISPONIBLE = ' + CB.offline.DISPONIBLE);
+    var revento = false, dev;
+    try { dev = CB.offline.registrar(); } catch (e) { revento = true; }
+    lineas.push((!revento ? '✔' : '✘') + ' registrar() no lanza (devolvió ' + dev + ')');
+  }
+  lineas.push('Mira la consola: NO debe haber ni un «Uncaught (in promise)».');
+  d.textContent = lineas.join(' · ');
+})();
+</script>
 </body>
 </html>

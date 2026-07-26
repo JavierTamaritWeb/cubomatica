@@ -9,14 +9,14 @@ cd /d "%~dp0"
 
 set PUERTO=8000
 
-echo Cubomatica se esta abriendo en http://localhost:%PUERTO%/index.html
+echo Cubomatica se esta abriendo en http://localhost:%PUERTO%/dist/index.html
 echo Suite de pruebas: http://localhost:%PUERTO%/pruebas/pruebas.html
 echo.
 echo Deja esta ventana abierta mientras juegas. Ctrl+C para parar.
 echo.
 
 REM Se abre el JUEGO, no el listado de directorio.
-start "" "http://localhost:%PUERTO%/index.html"
+start "" "http://localhost:%PUERTO%/dist/index.html"
 
 python -m http.server %PUERTO%
 if errorlevel 1 py -3 -m http.server %PUERTO%

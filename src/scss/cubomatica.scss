@@ -1,0 +1,42 @@
+/* ============================================================================
+   cubomatica.scss — el único punto de entrada de la hoja de estilo
+   ----------------------------------------------------------------------------
+   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
+   7-1 al uso:
+
+   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
+      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
+      explicar que su `position: relative` gana por venir DESPUÉS de
+      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
+      esa relación y la rompe la primera vez que alguien reordena un @use.
+   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
+      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
+      activos externos» obliga a dejar vacío para siempre.
+   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
+      estos nombres. Mantenerlos convirtió la migración en un renombrado
+      mecánico verificable, y `git mv` conservó el historial de cada fichero.
+
+   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
+   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
+   primera línea. Es la causa número uno de errores al añadir mixins — pero
+   falla ruidosamente, en compilación, que es lo bueno.
+      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
+   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
+   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
+   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
+   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
+   con miembros es `herramientas`, y por eso es el único que importa de verdad.
+   ========================================================================== */
+
+@use 'herramientas' as *;   /* solo definiciones: no emite ni una regla */
+
+@use '00-fuentes' as *;
+@use '01-variables' as *;
+@use '02-base' as *;
+@use '03-componentes' as *;
+@use '04-pantallas' as *;
+@use '05-animaciones' as *;
+@use '06-biomas' as *;
+@use '07-adulto' as *;
+@use '08-imprimir' as *;
+@use '09-forzado' as *;

@@ -5,10 +5,225 @@ Versionado semántico: la primera cifra sube solo cuando cambia el formato del
 perfil guardado, porque eso obliga a migrar `js/01-almacen.js` y es lo único
 que puede romperle el progreso a un niño.
 
-La versión de referencia es `CB.VERSION` en `js/00-nucleo.js`. Este fichero y
-`README.md` la repiten, y `pruebas/auditar.sh` comprueba que las tres coinciden.
+La versión de referencia es `CB.VERSION` en `src/js/00-nucleo.js`. La repiten
+este fichero, `README.md`, `LEEME.txt` y `package.json`; `dist/sw.js` la lleva
+también, pero esa la inyecta gulp y no puede desviarse.
+`pruebas/auditar.mjs` comprueba que las cinco coincidan.
 
 ---
+
+## [1.7.0] — 2026-07-26
+
+### Novena ronda: **limpieza y auditoría severa** (26 de julio)
+
+Repaso posterior a la migración, con dos encargos: quitar lo que sobra y buscar
+fallos en serio. Salieron **nueve**, y el patrón que los une es que **casi todos
+estaban en verde**.
+
+**Fallos de comportamiento**
+
+- **E37 · «Listo: las 9 pistas están guardadas» sin haber guardado ninguna.**
+  `descargarMusica()` avanzaba el contador igual al acertar y al fallar, y luego
+  informaba `ok: true` mirando solo si había terminado. Con las nueve pistas
+  caídas —un 404, el servidor apagado a media descarga— el panel del adulto daba
+  por buena una descarga vacía. Quien lo lee es quien decide si puede llevarse la
+  tableta a un sitio sin wifi.
+- **E38 · una cuarta copia de la lista de música.** Los nombres de los nueve mp3
+  estaban escritos a mano en `45-offline.js`; las otras tres copias
+  (`dist/audio/`, la tabla de `07-musica.js`, `CREDITOS.txt`) sí las cruzaba la
+  auditoría entre sí. Su modo de fallo era invisible **por partida doble**:
+  renombrar un fichero dejaba la música sonando con normalidad y solo rompía la
+  descarga sin conexión, que además informaba de éxito por culpa de E37. Ahora
+  las rutas salen de `CB.musica`, su dueño único.
+- **`gulp dev` vigilaba 10 de los 12 `.scss`.** Fuera quedaban el punto de
+  entrada y `_herramientas.scss`, o sea **el fichero donde viven todos los
+  mixins**: el sitio que más se toca al ajustar el diseño era el único que no
+  reconstruía al guardar. El síntoma no es un error, es que la pantalla no
+  cambia — que se lee como «el mixin no funciona».
+
+**Guardianes que no guardaban** (E39). Las tres reglas duras de estilo tenían
+cuatro huecos, todos por la misma causa: **cero se escribe de muchas maneras y
+el regex solo conocía una**.
+
+| se colaba | por qué |
+|---|---|
+| `border-radius: 0.5rem` | el filtro que perdona el cero casaba con el **cero inicial** de «0.5rem» |
+| `box-shadow: 0 0 4px` | exigía `px` en los desplazamientos, y en CSS el cero no lleva unidad |
+| `box-shadow: inset 0 0 8px` | lo mismo, y todo el relieve del juego es inset |
+| `transition: opacity 90ms` | no nombra ninguna función — y la **función por defecto en CSS es `ease`** |
+
+Ninguno escondía una violación real: el CSS estaba limpio. Lo que fallaba era la
+garantía, no el resultado. Los detectores se reescribieron leyendo declaración a
+declaración y capa a capa, y la **autoprueba pasó de 4 casos a 16**: antes cubría
+tres greps del bloque 2 y **ninguno** del bloque 3 — justo donde estaban los
+cuatro agujeros.
+
+Además: el grep de colores excluía `_herramientas.scss` **por accidente** —
+heredaba la exclusión puesta para `transition:` — mientras el verde afirmaba
+«todos con nombre en `_01-variables.scss`»; y la comprobación del aviso de girar
+exigía que **ningún** `max-width` del proyecto pasara de 300px, así que el primer
+punto de ruptura legítimo habría tumbado la construcción con un mensaje sobre
+otra cosa.
+
+**Dos verdes falsos en la propia prueba nueva**, encontrados sembrando el fallo a
+propósito para ver si el guardián se ponía rojo:
+
+1. El ejecutor llamaba a `s.fn()` y pasaba a la siguiente suite **en el mismo
+   turno**. Cualquier comprobación sobre algo asíncrono se escribía como «si
+   todavía no ha llegado, pasa» — o sea, pasaba siempre. Ahora una suite puede
+   devolver una promesa y la cadena la espera.
+2. `window.caches = doble` **no hace nada**: es una propiedad definida solo con
+   getter y en modo no estricto la asignación se pierde en silencio. La prueba
+   medía la CacheStorage real, donde las nueve pistas fallan igual por 404 — y
+   salía verde midiendo otra cosa. Lo destapó su complementaria, la del camino
+   bueno, imposible de satisfacer con la caché real.
+
+**Referencias colgando**
+
+- `dist/js/cubomatica.min.js` y `.min.css` terminaban con un `sourceMappingURL`
+  hacia dos ficheros que `.gitignore` excluía. Con `dist/` versionada, eso está
+  roto en **todos** los clones salvo el que acaba de construir. Se dejan de
+  emitir: la depuración ya la cubre mejor `dist/js/cubomatica.js`, que no es una
+  reconstrucción aproximada sino las fuentes pegadas byte a byte.
+- `LICENCIAS-TERCEROS.md` —que **sí se distribuye**— apuntaba a
+  `css/00-fuentes.css`, que dejó de existir en la migración. Igual en los tres
+  ficheros de `docs/licencias/` y en `CLAUDE.md`.
+- `pruebas/mapa-bem.json` afirmaba que «lo verifica el bloque 8 de la auditoría».
+  No lo hace ni lo ha hecho nunca. No se ha arreglado haciendo que lo lea, porque
+  un guardián así sería un generador de falsos rojos: `valor`, `dato`, `grupo`,
+  `etiqueta` y `entra` son palabras corrientes que salen por todo el código sin
+  ser clases — que es justo por lo que el codemod trabajaba sobre el AST. Quien
+  cubre ese fallo de verdad es `cruzar-clases.mjs`.
+- `.gitignore` reservaba `pruebas/vendor/` para **axe-core, que nunca se añadió**:
+  la fase 7 se entregó sin él y la accesibilidad se comprueba con `casos-a11y.js`
+  escrito a mano. Y apartaba `.vscode/`, con lo que la corrección que apunta Live
+  Server a `dist/` —necesaria justo porque `src/index.html` dejó de ser
+  servible— vivía en un solo ordenador mientras todo el que clonara caía en la
+  trampa que creó la migración.
+
+**Borrado**, con la evidencia de que nadie los usa:
+
+| fichero | por qué |
+|---|---|
+| `herramientas/comparar-css.mjs` | de un solo uso; probó la fidelidad CSS→SCSS de las fases 3 y 4 y ya no hay CSS de 1.6.0 contra el que comparar |
+| `herramientas/renombrar-bem.mjs` | codemod aplicado e irreversible; volver a pasarlo solo puede hacer daño |
+| `pruebas/sin-comentarios.py` | la auditoría en Node lleva su propio despiece desde 1.7.0 |
+| `pruebas/fixtures/perfilV1.json` | ningún código lo lee, y ninguno **puede**: sin `fetch` en `file://`. La prueba de migración usa un objeto en línea |
+
+**Suite**: 394 → **405** comprobaciones, 0 fallos, en los dos bundles.
+**Auditoría**: 56 comprobaciones, las mismas de antes — lo que cambia no es cuántas son, sino que tres de ellas comprueban de verdad lo que dicen. La autoprueba pasa de 4 casos a 16.
+
+Queda anotado, porque no se ha tocado: el service worker responde a una petición
+con rango (`Range`) devolviendo la respuesta completa de 200 que hay en caché.
+Chrome lo tolera; **Safari es donde esto suele romper la reproducción**, y Safari
+sigue sin probarse.
+
+### Octava ronda: **el cambio de stack**
+
+Otro stack: **HTML + SCSS con BEM + Sass + JS vanilla + Gulp 5**, con `dist/`
+minificada, responsive en cinco puntos de anchura, accesibilidad completa y caché
+sin conexión.
+
+Nada de eso convivía con «no hay compilación», que era la premisa de la que
+salían todas las decisiones anteriores. Así que el objetivo real no fue añadir
+Gulp: fue **trasladar las invariantes existentes a la forma nueva sin perder ni
+una**. La auditoría tenía que seguir siendo una puerta.
+
+**Lo que NO cambia**, y es la decisión que gobierna el resto: `dist/index.html`
+se abre con **doble clic** desde `file://`, igual que antes. `dist/` se versiona
+en git para que «clona y juega» siga siendo verdad sin instalar nada.
+
+### El paso de construcción
+
+- **Gulp 5** con `sass-embedded`, `terser` y `cssnano`. `npm run entregar` =
+  construir + auditar, y esa es la puerta.
+- **`manifiesto.json` es la fuente única del orden de carga.** Vivía en tres
+  sitios a la vez y `CLAUDE.md` tenía que pedirle al humano que los
+  sincronizara. Lo consumen el gulpfile, el HTML, las dos páginas de pruebas y
+  la auditoría.
+- **Las fuentes se mudan a `src/`** (58 renombrados detectados por git, historial
+  intacto) y los nueve MP3 a `dist/audio/`, que es su única casa.
+- **Dos bundles**: uno legible, idéntico byte a byte a la concatenación del
+  manifiesto, y uno minificado. Terser va con `ecma: 5` y sin manglear el nivel
+  superior ni las propiedades — lo segundo reescribiría las claves de
+  `localStorage` y dejaría ilegible el perfil guardado de todo niño.
+- **La suite prueba lo que se entrega**: `pruebas.html` contra el bundle legible
+  y `pruebas-min.html` contra el minificado, que es lo que valida terser entero.
+
+### SCSS con BEM
+
+- Los nueve `.css` pasan a parciales `.scss`, **conservando los nombres
+  numerados**: la numeración *es* la cascada, y `_06-biomas.scss` documenta que
+  su `position: relative` gana por venir después.
+- **`bisel()` y `paso()` no tienen parámetro** de desenfoque ni de curva. Dos
+  reglas que se cumplían por disciplina pasan a ser imposibles de romper.
+- Mapas y bucles: 39 colores decorativos, 6 cielos, 8 texturas, 4 biomas (que se
+  escribían dos veces), 6 estados de veta.
+- **43 clases renombradas a BEM**: de **cero** `bloque__elemento` a **29**. Y de
+  **20** selectores por `#id` a **cero**.
+- Los 42 colores sueltos repartidos por cinco hojas pasan a tener nombre.
+
+### Responsive
+
+Cinco puntos de anchura (480/768/1024/1200/1400) que **no se pelean** con los
+cinco de altura que ya existían: la anchura decide columnas, la altura decide el
+lado del botón, y cuando las dos opinan gana el `min()` de las dos. Pasos
+discretos de 64/80/96/112/128 px — nada de `clamp()`, que rompería la retícula
+de 4 px.
+
+### Accesibilidad
+
+- Las 17 pantallas pasan a ser **regiones con nombre**; sin él no eran landmarks.
+- **Dos regiones vivas**: la educada y la urgente. Lo que caduca ya no se lee
+  detrás de la cola.
+- `prefers-contrast: more` y `forced-colors`, con el relieve traducido a bordes.
+
+### Sin conexión
+
+Service worker que **falla en silencio en `file://`** y no ensucia la consola.
+Precache del armazón (~300 KB); la música (42 MB) solo por botón explícito en el
+panel del adulto, pista a pista y con cancelación.
+
+### La auditoría
+
+Reescrita en Node: de 400 líneas de shell a 24 más un `.mjs` sin una sola
+dependencia. `auditar.bat` cubría cinco de los ocho bloques y ahora cubre los
+ocho. Con **autoprueba**: comprueba que ve lo que dice que ve.
+
+### Once fallos encontrados (E25–E36)
+
+| | |
+|---|---|
+| **E25** | El ajuste «sin movimiento» del juego apagaba 11 animaciones y el del sistema 21. Quien lo apagaba desde los ajustes seguía viendo diez. |
+| **E26** | Con `node_modules` la auditoría no se ponía roja: **se colgaba**, que es peor. |
+| **E27** | La leyenda del informe decía **«●਍ominado»**: un escape CSS se comía la primera letra de cada palabra. Llevaba así desde el principio. |
+| **E28** | Una clase renombrada en el CSS y no en el JS no da ningún error. |
+| **E29** | Estilar por `#id` ata el estilo a un nodo único; había veinte, y uno con **dos**. |
+| **E30** | Anchura y altura habrían competido por el lado del botón. |
+| **E31** | «Gira el dispositivo» a 319 px, y a zoom 400 % el viewport es 320 justos. |
+| **E32** | Las 17 secciones no tenían nombre accesible. |
+| **E33** | Lo urgente y lo festivo compartían región viva. |
+| **E34** | Registrar el worker en `file://` ensuciaba una consola limpia. |
+| **E35** | El worker cachearía la propia suite. |
+| **E36** | La lista negra nunca escaneó los `.mjs`: `*.js` no casa con `.mjs`. |
+
+Y **un mecanismo que se puso y se quitó**: un enlace «Ir a la respuesta» añadido
+dando por supuesto que había que tabular por la barra de herramientas antes de
+llegar a los números. Se comprobó el DOM y es al revés. Se retiró: un mecanismo
+de accesibilidad cuyo motivo declarado es falso parece trabajo hecho y no lo es.
+
+### Números
+
+| | 1.6.0 | 1.7.0 |
+|---|---|---|
+| Comprobaciones | 365 | **394** |
+| Fallos registrados | E1–E24 | **E1–E36** |
+| Guiones | 44 | 45 |
+| `bloque__elemento` | 0 | 29 |
+| Selectores por `#id` | 20 | 0 |
+| `min-width` | 0 | 5 |
+| Descarga de arranque | ~800 KB | **319 KB** |
+
 
 ## [1.6.0] — 2026-07-25
 

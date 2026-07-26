@@ -1,14 +1,31 @@
-/* casos-carga.js — 44 scripts, 17 secciones y los espacios de nombre de CB */
+/* casos-carga.js — el bundle, 17 secciones y los espacios de nombre de CB */
 
-CB.pruebas.suite('Carga: contrato de 44 scripts y 17 pantallas', function () {
+CB.pruebas.suite('Carga: contrato del bundle y las 17 pantallas', function () {
   var t = CB.pruebas;
 
-  /* En pruebas.html hay además los ficheros de la propia suite: se cuentan solo
-     los del juego, que son los que llevan el prefijo de ruta «../». */
+  /* AQUÍ VIVÍA «el juego carga exactamente 44 scripts».
+     Esa cifra medía una sola cosa —«están las 44 aportaciones a CB»— de la única
+     manera posible sin empaquetador: contando etiquetas. Con un bundle hay UNA,
+     y contar deja de significar nada.
+
+     El invariante no desaparece, cambia de sitio y se parte en dos, cada mitad
+     donde puede comprobarse de verdad:
+
+       · la AUDITORÍA (herramientas/comprobar-dist.mjs) cuenta los ficheros en
+         disco, los cruza con manifiesto.json y reconstruye el bundle en memoria
+         para compararlo byte a byte. Eso demuestra el orden Y que dist/ está al
+         día, que es más de lo que el contador probaba.
+       · el NAVEGADOR comprueba lo que de verdad importaba: que el bundle DEFINA
+         todo lo que tiene que definir. Es lo que hacen las líneas de aquí abajo
+         —los 37 espacios de nombre, los 7 generadores, los 92 niveles, los 4
+         mundos y los 12 globales—, y siempre fueron la comprobación buena. */
   var delJuego = [].slice.call(document.scripts).filter(function (s) {
     return s.src && s.src.indexOf('/pruebas/') === -1;
   });
-  t.igual(delJuego.length, 44, 'el juego carga exactamente 44 scripts');
+  t.igual(delJuego.length, 1, 'el juego entero se carga en un solo guion');
+  t.ok(delJuego.length === 1 && /\/dist\/js\/cubomatica(\.min)?\.js$/.test(delJuego[0].src),
+    'y ese guion es el bundle de dist/, no las fuentes sueltas',
+    delJuego.length ? delJuego[0].src : 'ninguno');
 
   t.igual(CB.pantallas.IDS.length, 17, 'hay 17 ids de pantalla declarados');
   var faltan = CB.pantallas.IDS.filter(function (id) {

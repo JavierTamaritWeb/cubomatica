@@ -107,20 +107,43 @@ CB.pruebas.ejecutar = function (largo) {
     salida.appendChild(caja);
     CB.pruebas._actual = caja;
 
-    /* El catch mantiene viva la cadena, así que el cerrojo se suelta siempre en
-       el `if` de arriba: una suite que revienta no lo deja echado. */
-    try {
-      s.fn();
-    } catch (e) {
-      CB.pruebas.ok(false, 'la suite ha lanzado una excepción', e && e.message);
+    function cerrar() {
+      i++;
+      document.getElementById('progreso').style.width =
+        Math.round(i / CB.pruebas.suites.length * 100) + '%';
+      CB.pruebas.render();
+      /* setTimeout 0 entre suites: la pestaña respira y el resultado parcial se ve. */
+      setTimeout(siguiente, 0);
     }
 
-    i++;
-    document.getElementById('progreso').style.width =
-      Math.round(i / CB.pruebas.suites.length * 100) + '%';
-    CB.pruebas.render();
-    /* setTimeout 0 entre suites: la pestaña respira y el resultado parcial se ve. */
-    setTimeout(siguiente, 0);
+    /* El catch mantiene viva la cadena, así que el cerrojo se suelta siempre en
+       el `if` de arriba: una suite que revienta no lo deja echado. */
+    var devuelto;
+    try {
+      devuelto = s.fn();
+    } catch (e) {
+      CB.pruebas.ok(false, 'la suite ha lanzado una excepción', e && e.message);
+      cerrar();
+      return;
+    }
+
+    /* UNA SUITE PUEDE DEVOLVER UNA PROMESA, y la cadena la espera. Hasta ahora
+       no: se llamaba a s.fn() y se pasaba a la siguiente en el mismo turno.
+       Consecuencia, y no es teórica: cualquier comprobación sobre algo asíncrono
+       —una descarga, una caché, un callback— se escribía como
+       `if (aunNoHaLlegado) pasa`, o sea PASABA SIEMPRE. Verde por no haber
+       mirado, que es el peor verde que hay.
+       Se reconoce por `.then` y no por `instanceof Promise` para no atarse a la
+       implementación, y el rechazo cuenta como fallo de la suite en vez de
+       imprimir «Uncaught (in promise)» y dejar la cadena colgada para siempre. */
+    if (devuelto && typeof devuelto.then === 'function') {
+      devuelto.then(cerrar, function (e) {
+        CB.pruebas.ok(false, 'la suite ha rechazado su promesa', e && e.message);
+        cerrar();
+      });
+      return;
+    }
+    cerrar();
   }
   siguiente();
 };
