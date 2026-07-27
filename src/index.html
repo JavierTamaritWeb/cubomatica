@@ -179,9 +179,10 @@
       <div id="item-respuesta"></div>
     </div>
 
-    <!-- «Hurry up!» sube desde abajo cuando quedan 10 s. aria-hidden porque el
-         aviso ya se ha dicho por la región viva, en español y una sola vez. -->
-    <div id="aviso-prisa" class="aviso-prisa" aria-hidden="true" hidden>Hurry up!</div>
+    <!-- La cinta: un solo nodo para los nueve avisos que la usan, desde el
+         «Hurry up!» hasta la felicitación. aria-hidden porque lo que dice ya se
+         ha anunciado por la región viva, en español y una sola vez. -->
+    <div id="cinta" class="cinta" aria-hidden="true" hidden><span class="cinta__texto"></span></div>
   </div>
 
   <div class="barra-herramientas">
@@ -241,6 +242,9 @@
     <div id="jefe-opciones" class="opciones-jefe"></div>
     <p id="jefe-aviso" class="texto-menor">Aquí no se apagan luces. Aquí solo se cavan bloques.</p>
     <button class="btn-bloque" data-salir>◀ Salir</button>
+    <!-- La pantalla del jefe tiene su propia cinta. CB.ui.cinta.nodoDe()
+         resuelve la de la pantalla visible en cada llamada. -->
+    <div class="cinta" aria-hidden="true" hidden><span class="cinta__texto"></span></div>
   </div>
 </section>
 

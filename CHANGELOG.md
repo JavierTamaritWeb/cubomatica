@@ -12,6 +12,134 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.8.0] — 2026-07-27
+
+**Segunda cifra: entra capacidad nueva y el perfil guardado no cambia de forma
+incompatible.** La bolsa de gritos (`perfil.mensajes.gritos`) la crea
+`CB.mensajes.asegurar()` si falta, así que un perfil de 1.7.1 abre en 1.8.0 sin
+migración y la primera cifra se queda donde está.
+
+### La cinta: un cartel, nueve coreografías
+
+El «Hurry up!» era el único momento del juego con espectáculo, y gustaba. Pero
+llevar *ese mismo* efecto a las felicitaciones habría sido el error contrario:
+un niño acierta entre veinte y treinta veces por sesión, y un efecto idéntico
+deja de celebrar al tercero — pasa a ser una espera con adorno.
+
+Así que hay repertorio, con tres capas para que no canse:
+
+1. **La forma significa algo.** Las cuatro categorías de acierto ya existían en
+   `js/25-mensajes.js` desde el primer día —superación, descubrimiento, esfuerzo,
+   procedimiento— y no se veían por ninguna parte. Ahora cada una tiene su
+   coreografía. Acertar a la segunda después de haber fallado ya no se celebra
+   igual que acertar a la primera.
+2. **No se repite.** El grito sale de una bolsa barajada, el mismo mecanismo que
+   ya impedía repetir mensaje.
+3. **Hay algo que casi nunca se ve.** El bloque raro (1 de cada 20) se lleva
+   `cinta-veta-madre`, la más lenta y la de más pasos. Sin algo raro no hay
+   sorpresa; solo hay rotación.
+
+Y la regla que ordena la tabla: **el espectáculo es inversamente proporcional a
+la frecuencia**. El acierto de todos los días se lleva la más corta y limpia
+(900 ms); las largas se reservan para el jefe, la luz extra y el bloque raro.
+
+| Coreografía | ms | pasos | Cuándo |
+|---|---|---|---|
+| `cinta-sello` | 900 | 6 | acierto normal (categoría A) |
+| `cinta-sube` | 1100 | 8 | esfuerzo (B) |
+| `cinta-junta` | 1300 | 10 | superación (C) |
+| `cinta-cascada` | 1500 | 12 | descubrimiento (D) |
+| `cinta-estalla` | 1600 | 12 | logro o luz extra |
+| `cinta-bandera` | 1800 | 14 | jefe derrotado |
+| `cinta-veta-madre` | 2000 | 16 | bloque raro |
+| `cinta-posa` | 800 | 6 | ánimo, tras fallar |
+| `cinta-prisa` | 1900 | 18 | «Hurry up!», sin cambios |
+
+**Lo que la cinta NO se lleva es lo que enseña.** El mensaje entero sigue quieto
+en `#item-mensaje`: «Has pedido prestada una decena y la has deshecho bien» no se
+lee de refilón, y esa frase es la única parte del mensaje que educa. La cinta
+lleva un grito corto, material nuevo, de dos listas de 24 y 12. Ninguna de las
+84 + 48 plantillas se ha tocado.
+
+Nada de esto varía por color solo: cada coreografía cambia recorrido, duración y
+número de pasos, y el glifo repite las dos formas de `.mensaje-resultado`.
+Con `prefers-reduced-motion` o `sin-movimiento`, las nueve se paran y **las nueve
+siguen viéndose**: quitar movimiento no puede quitar información.
+
+### Un solo nodo, y ningún número duplicado
+
+`.aviso-prisa` pasa a `.cinta--prisa`, y `#aviso-prisa` a `#cinta`. **Un solo
+nodo por pantalla**: dos cintas superpuestas son ilegibles, y mientras hubiera un
+nodo por aviso, evitar que coincidieran era disciplina. Ahora es imposible.
+
+Y desaparece `CB.ui.reloj.MS_CARTEL = 1900`, que valía eso «porque es lo que dura
+`prisa-cruza`», copiado a mano, con un comentario avisando de lo frágil que era.
+Con nueve coreografías habrían sido nueve copias. El reparto ahora: **el CSS es
+dueño de la forma** (fotogramas y número de pasos), **el JS es dueño del tiempo**
+(`CB.ui.cinta.COREOGRAFIAS`). Ningún número vive en dos sitios.
+
+La espera antes del ítem siguiente pasa a `max(la de siempre, duración + 400 ms)`.
+Nunca se encoge: acortarla recortaría tiempo de lectura.
+
+### El escalón 4, que llevaba desde la primera versión sin existir
+
+La escalera anti-frustración declaraba **cinco** escalones. El cuarto —«volvemos
+un paso atrás al prerrequisito»— estaba declarado en `2A-escalera.js`,
+`CB.grafo.prerrequisitoDominado()` estaba escrita y documentada *para él*, y **no
+la llamaba nadie**. El juego seguía preguntando lo que el niño no entendía, y de
+ahí saltaba a retirarle el concepto.
+
+Ahora, al cuarto fallo seguido de un concepto, se cuela por delante del guion un
+ítem de un prerrequisito **ya dominado**, y se dice: «Vamos a por uno más fácil de
+este mismo tema. Luego volvemos.» Se dice, en vez de cambiar el nivel en
+silencio, porque un niño que ve aparecer algo mucho más fácil sin explicación
+concluye que el juego se ha estropeado o que le está dando lástima.
+
+Si no hay ningún prerrequisito dominado no se hace nada y el fallo siguiente cae
+en el escalón 5, como antes. Nunca se inventa un nivel.
+
+La decisión se extrae a `CB.partida.aplicarEscalon()` a propósito: mientras vivía
+dentro del callback de la tarjeta de reparación, la única forma de comprobar el
+escalón 4 era leer el código, y leer el código es exactamente como pasó varias
+versiones sin implementar sin que nada se pusiera rojo.
+
+### Pruebas: 443 → 489 comprobaciones
+
+Nueve guardianes nuevos, **E47-E55**, y los nueve validados sembrando el fallo a
+propósito y comprobando que se ponía rojo el que debía. Dos no lo hicieron a la
+primera:
+
+- **E51 estaba en verde con el fallo dentro.** Comprobaba clases y el valor de
+  `_salida`, y las dos cosas sobreviven a quitar la cancelación: reasignar
+  `className` repone las clases igual, y `_salida` cambia igual al programar el
+  segundo temporizador. El fallo real —el temporizador de la primera cinta se
+  queda vivo y esconde la segunda a media animación— solo se ve espiando
+  `clearTimeout`. Y el doble se afirma instalado, por lo de `window.caches`.
+- **E55 se puso rojo contra código correcto**, porque copié el umbral de la
+  escalera (4) en vez de preguntárselo (es 3). Ahora se le pregunta.
+
+Además, dos comprobaciones mecánicas nuevas en `auditar.mjs`, y la primera tapa
+un agujero que abrió esta misma versión:
+
+- **`animation-timing-function` en forma larga.** El grep de la regla dura solo
+  miraba `animation:` abreviado, y el mixin `coreografia()` emite longhands. Sin
+  esto, la regla del proyecto habría dejado de mirar precisamente las nueve
+  animaciones más nuevas — en verde.
+- **`@keyframes` que no dispara nadie.** Una animación muerta no da error: no se
+  ve. Es lo que les pasó a las cinco retiradas en 1.7.0, ahí versión tras versión.
+
+Las dos, también validadas sembrando la violación.
+
+### Retirado
+
+- `CB.ui.reloj.MS_CARTEL` y `CB.ui.reloj.aviso`: la cinta es dueña de lo suyo.
+- El `sfx('cofre')` duplicado de `darCromo()`, que sonaba dos veces seguidas.
+- El `sfx('acierto')` fijo de `trasAcierto()`: ahora el sonido lo trae la
+  coreografía, y por eso una superación no suena igual que un acierto normal.
+  Sin efectos nuevos: los 12 de `04-audio.js` siguen siendo doce.
+
+---
+
 ## [1.7.1] — 2026-07-27
 
 **Solo correcciones.** La tercera cifra, y no la segunda, porque no entra nada

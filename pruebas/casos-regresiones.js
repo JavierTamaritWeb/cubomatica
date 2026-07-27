@@ -78,6 +78,24 @@
          llamaban los contadores que hacen SUBIR la dificultad
      E46 Enter contestaba sin pasar por la confirmación doble       AQUÍ
          del antiazar: la regla no valía con teclado
+     E47 una coreografía podía taparle al niño la fila del ⌫,      AQUÍ
+         el 0 y el OK, que es con lo que se contesta
+     E48 la duración vivía en el CSS y en el JS a la vez, y        AQUÍ
+         al divergir el cartel se iba a media pantalla
+     E49 una coreografía nueva no entraba en la lista del          AQUÍ
+         movimiento reducido y seguía moviéndose
+     E50 con el movimiento apagado la cinta desaparecía, y         AQUÍ
+         quitar movimiento no puede quitar información
+     E51 dos cintas seguidas se pisaban y quedaban dos             AQUÍ
+         temporizadores sueltos ocultando la de después
+     E52 la bolsa de gritos no sobrevivía al guardado: el          AQUÍ
+         grito se repetía cada dos por tres
+     E53 los gritos se saltaban las dos listas negras que sí       casos-mensajes.js
+         se aplicaban a los 132 mensajes
+     E54 el juego servía el ítem siguiente antes de que la         AQUÍ
+         cinta acabara de cruzar
+     E55 el escalón 4 de la escalera estaba declarado, tenía       AQUÍ
+         su función escrita y no la llamaba nadie
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -1355,4 +1373,352 @@ CB.pruebas.suite('E46 · Enter pasa por la misma confirmación que el toque', fu
       CB.pantallas.actual = pantallaPrevia;
     });
   });
+});
+
+/* ══ E47-E55 · La cinta, y el escalón que llevaba desde el principio sin
+      llamar a nadie ═══════════════════════════════════════════════════════════
+
+   Los ocho primeros protegen un componente NUEVO, así que no hay un fallo
+   histórico que reproducir: hay un fallo histórico que NO repetir. El de E47 ya
+   se cometió una vez con el cartel de prisa —tapaba la fila del ⌫, el 0 y el OK,
+   justo el botón con el que se contesta— y está contado en el comentario de
+   _03-componentes.scss. Con nueve coreografías en vez de una, la probabilidad de
+   volver a cometerlo se multiplica por nueve; de ahí que se mida, no se confíe.
+
+   E55 sí es un fallo con historia: la escalera anti-frustración declaraba cinco
+   escalones y el cuarto no estaba implementado. CB.grafo.prerrequisitoDominado()
+   existía, estaba documentada «para el escalón 4», y no la invocaba nadie. Es la
+   misma familia que E41: una función correcta que nunca se ejecuta no falla
+   nunca, simplemente no ocurre.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Todas las reglas y fotogramas de la cinta, leídos del CSS REALMENTE CARGADO.
+   Del cargado y no del fuente: es lo único que sigue valiendo si mañana esto se
+   escribe de otra manera, y lo único que ve lo que hizo el compilador. */
+CB.pruebas._reglasCinta = function () {
+  var fotogramas = {}, reglas = [], h, i, hojas, r;
+  for (h = 0; h < document.styleSheets.length; h++) {
+    try { hojas = document.styleSheets[h].cssRules; } catch (eH) { continue; }
+    if (!hojas) continue;
+    for (i = 0; i < hojas.length; i++) {
+      r = hojas[i];
+      if (r.type === 7 || (window.CSSKeyframesRule && r instanceof CSSKeyframesRule)) {
+        if (/^cinta-/.test(r.name)) fotogramas[r.name] = r;
+      } else if (r.selectorText && r.selectorText.indexOf('.cinta') !== -1) {
+        reglas.push(r);
+      }
+    }
+  }
+  return { fotogramas: fotogramas, reglas: reglas };
+};
+
+CB.pruebas.suite('E47 · ninguna coreografía baja hasta el teclado', function () {
+  var t = CB.pruebas;
+  var c = CB.pruebas._reglasCinta();
+
+  /* Que la lectura del CSS haya funcionado se AFIRMA. Si document.styleSheets
+     no trajera nada, todo lo de abajo pasaría por vacuidad, que es como el
+     guardián de E46 estuvo pasando sin comprobar nada. */
+  t.ok(Object.keys(c.fotogramas).length >= 9,
+    'E47 · se leen los fotogramas de la cinta del CSS cargado',
+    'encontrados ' + Object.keys(c.fotogramas).length);
+
+  /* Ninguna regla de coreografía toca la posición: la fija .cinta y solo .cinta.
+     Un `top: 70%` en un modificador es exactamente cómo se vuelve a tapar el
+     teclado sin que ninguna animación tenga la culpa. */
+  var mueveElSitio = c.reglas.filter(function (r) {
+    if (!/\.cinta--/.test(r.selectorText)) return false;
+    var s = r.style;
+    return s.top || s.bottom || s.height || s.position;
+  }).map(function (r) { return r.selectorText; });
+  t.igual(mueveElSitio.length, 0,
+    'E47 · ningún modificador de cinta reposiciona el cartel');
+
+  /* Y ningún fotograma VISIBLE lo empuja hacia abajo. Los que están fuera de
+     pantalla pueden: cinta-prisa empieza en translateY(340%) con opacity 0. */
+  var bajan = [];
+  Object.keys(c.fotogramas).forEach(function (nombre) {
+    var kf = c.fotogramas[nombre], j, paso, m, y;
+    for (j = 0; j < kf.cssRules.length; j++) {
+      paso = kf.cssRules[j];
+      if (paso.style.opacity === '0') continue;          // invisible: da igual
+      m = /translateY\(\s*(-?[\d.]+)%/.exec(paso.style.transform || '');
+      if (!m) continue;
+      y = parseFloat(m[1]);
+      if (y > 30) bajan.push(nombre + ' @' + paso.keyText + ' → ' + y + '%');
+    }
+  });
+  t.igual(bajan.length, 0,
+    'E47 · ningún fotograma visible baja el cartel más de un 30 %',
+    bajan.join(' · '));
+});
+
+CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
+  var t = CB.pruebas;
+  var c = CB.pruebas._reglasCinta();
+  var tabla = Object.keys(CB.ui.cinta.COREOGRAFIAS);
+
+  t.igual(tabla.length, 9, 'E48 · la tabla declara las nueve coreografías');
+
+  /* Ida: toda clave de la tabla tiene sus fotogramas. */
+  var sinFotogramas = tabla.filter(function (k) {
+    return !c.fotogramas['cinta-' + k];
+  });
+  t.igual(sinFotogramas.length, 0,
+    'E48 · toda coreografía de la tabla existe en el CSS', sinFotogramas.join(', '));
+
+  /* Vuelta: todo fotograma cinta-* está en la tabla. Sin esta dirección, una
+     animación huérfana se queda en la hoja sin que nada la dispare, y eso no da
+     ningún error: simplemente no se ve nunca. La única excepción declarada es
+     cinta-arde, que es el parpadeo del texto y no una coreografía. */
+  var huerfanos = Object.keys(c.fotogramas).filter(function (n) {
+    return n !== 'cinta-arde' && tabla.indexOf(n.replace(/^cinta-/, '')) === -1;
+  });
+  t.igual(huerfanos.length, 0,
+    'E48 · no hay fotogramas de cinta que no dispare nadie', huerfanos.join(', '));
+
+  /* Y el CSS NO declara duración: si la declarase volveríamos a tener el número
+     en dos sitios, que es justo lo que mató a MS_CARTEL. */
+  var conDuracion = c.reglas.filter(function (r) {
+    return /\.cinta--/.test(r.selectorText) &&
+           r.selectorText.indexOf('.cinta__texto') === -1 &&
+           r.style.animationDuration && r.style.animationDuration !== '0s';
+  }).map(function (r) { return r.selectorText; });
+  t.igual(conDuracion.length, 0,
+    'E48 · el CSS no fija la duración de ninguna coreografía', conDuracion.join(', '));
+
+  /* Todas con steps(): es la regla dura del proyecto y ahora hay nueve sitios
+     donde saltársela.
+
+     Se excluyen las reglas que APAGAN la animación, y no es una excepción de
+     conveniencia: «animation: none !important» pone animationTimingFunction en
+     'ease', porque la forma abreviada devuelve todas las sub-propiedades a su
+     valor inicial. Sin excluirlas, este guardián acusa de movimiento suavizado
+     precisamente a las dos reglas que existen para que no haya movimiento
+     ninguno. Es la misma trampa de serialización que ya costó un rato en E27. */
+  var suaves = c.reglas.filter(function (r) {
+    var f = r.style.animationTimingFunction;
+    if (!f || f.indexOf('steps(') !== -1) return false;
+    var n = r.style.animationName;
+    return !(n === 'none' || r.style.animation === 'none');
+  }).map(function (r) { return r.selectorText + ' → ' + r.style.animationTimingFunction; });
+  t.igual(suaves.length, 0,
+    'E48 · las nueve se mueven a saltos, ninguna suavizada', suaves.join(' · '));
+});
+
+CB.pruebas.suite('E49-E50 · con el movimiento apagado la cinta se para pero se ve', function () {
+  var t = CB.pruebas;
+  var raiz = document.documentElement;
+  var teniaClase = raiz.classList.contains('sin-movimiento');
+  var nodo = document.getElementById('cinta');
+
+  t.ok(!!nodo, 'E49 · la cinta existe en la maqueta de pruebas');
+  if (!nodo) return;
+
+  raiz.classList.add('sin-movimiento');
+
+  var claves = Object.keys(CB.ui.cinta.COREOGRAFIAS);
+  var moviendose = [], invisibles = [];
+  claves.forEach(function (k) {
+    nodo.className = 'cinta cinta--' + k + ' cinta--entra';
+    nodo.hidden = false;
+    var cs = getComputedStyle(nodo);
+    /* animationName, NUNCA el texto: «animation: none !important» se serializa
+       como «auto ease 0s 1 normal none running none» y buscar «none» ahí dentro
+       da verde con cualquier animación corriendo. */
+    if (cs.animationName !== 'none') moviendose.push(k + ' → ' + cs.animationName);
+    /* Y quitar el movimiento no puede quitar la información: el mensaje tiene
+       que seguir viéndose. */
+    if (cs.opacity !== '1') invisibles.push(k + ' → opacidad ' + cs.opacity);
+  });
+
+  t.igual(moviendose.length, 0,
+    'E49 · las nueve coreografías se paran con sin-movimiento', moviendose.join(' · '));
+  t.igual(invisibles.length, 0,
+    'E50 · y las nueve siguen visibles con el movimiento apagado', invisibles.join(' · '));
+
+  /* El parpadeo del texto del «Hurry up!» también se apaga. */
+  var hijo = nodo.querySelector('.cinta__texto');
+  if (hijo) {
+    nodo.className = 'cinta cinta--prisa cinta--entra';
+    t.igual(getComputedStyle(hijo).animationName, 'none',
+      'E49 · y el parpadeo del texto también se para');
+  }
+
+  nodo.className = 'cinta';
+  nodo.hidden = true;
+  if (!teniaClase) raiz.classList.remove('sin-movimiento');
+});
+
+CB.pruebas.suite('E51 · dos cintas seguidas no se pisan', function () {
+  var t = CB.pruebas;
+  var nodo = document.getElementById('cinta');
+  if (!t.ok(!!nodo, 'E51 · hay nodo de cinta')) return;
+
+  CB.ui.cinta.ocultar();
+
+  /* SE ESPÍA clearTimeout, y no es rebuscado: es la única forma de ver el fallo.
+     La primera versión de este guardián comprobaba las clases y el valor de
+     _salida, y con el `ocultar()` de mostrar() borrado a propósito SEGUÍA EN
+     VERDE — porque reasignar className repone las clases igual, y _salida
+     cambia igual al programar el segundo temporizador. El fallo real es otro: el
+     temporizador de la primera cinta se queda vivo y dispara a mitad de la
+     segunda, escondiéndola antes de tiempo. Eso solo se ve mirando si alguien lo
+     canceló. */
+  var limpiados = [], origClear = window.clearTimeout;
+  window.clearTimeout = function (id) { limpiados.push(id); return origClear.call(window, id); };
+  /* Que el doble se haya instalado se AFIRMA. Si la propiedad fuese de solo
+     lectura, la asignación se caería en silencio y todo esto mediría el
+     clearTimeout de verdad, es decir, nada. Es lo que pasó con window.caches. */
+  var dobleInstalado = (window.clearTimeout !== origClear);
+
+  CB.ui.cinta.mostrar('sello', '¡Toma!');
+  var primerTemporizador = CB.ui.cinta._salida;
+  CB.ui.cinta.mostrar('cascada', '¡Se abre!');
+  window.clearTimeout = origClear;
+
+  t.ok(dobleInstalado, 'E51 · el doble de clearTimeout se ha instalado de verdad');
+  t.ok(primerTemporizador !== null, 'E51 · la primera cinta programa su salida');
+  t.ok(limpiados.indexOf(primerTemporizador) !== -1,
+    'E51 · la segunda cancela el temporizador de la primera, no lo deja vivo',
+    'cancelados: ' + limpiados.join(','));
+  t.ok(!nodo.classList.contains('cinta--sello'),
+    'E51 · la segunda borra la coreografía de la primera');
+  t.ok(nodo.classList.contains('cinta--cascada'), 'E51 · y pone la suya');
+
+  /* Que solo quede UNA clase de coreografía. Dos a la vez darían dos
+     animation-name y el navegador elegiría por orden de hoja, en silencio. */
+  var coreos = Array.prototype.filter.call(nodo.classList, function (c) {
+    return /^cinta--/.test(c) && c !== 'cinta--entra';
+  });
+  t.igual(coreos.length, 1, 'E51 · una sola coreografía puesta a la vez', coreos.join(','));
+
+  CB.ui.cinta.ocultar();
+  t.igual(CB.ui.cinta._salida, null, 'E51 · ocultar() no deja temporizadores sueltos');
+  t.igual(nodo.hidden, true, 'E51 · y esconde el nodo');
+});
+
+CB.pruebas.suite('E52 · la bolsa de gritos sobrevive al guardado', function () {
+  var t = CB.pruebas;
+  var perfil = CB.pruebas.perfilNuevo();
+  var m = CB.mensajes.asegurar(perfil);
+
+  t.ok(!!m.gritos, 'E52 · el estado de mensajes trae bolsa de gritos');
+
+  /* Ninguna clave con guion bajo delante: sanear() las borra todas, y así es
+     como la dificultad D se quedó en un trinquete de una sola dirección (E45). */
+  var conGuion = Object.keys(m.gritos).filter(function (k) { return k.charAt(0) === '_'; });
+  t.igual(conGuion.length, 0, 'E52 · ninguna clave de la bolsa empieza por guion bajo');
+
+  /* Se gastan varios gritos y se comprueba que la bolsa recuerda. */
+  var rng = CB.util.mulberry32(7), i, vistos = [];
+  for (i = 0; i < 6; i++) vistos.push(CB.mensajes.grito('acierto', { perfil: perfil, rng: rng }));
+  t.ok(m.gritos.bolsaAcierto.length > 0, 'E52 · la bolsa guarda lo ya sacado');
+
+  var antes = m.gritos.bolsaAcierto.slice();
+  var saneado = CB.almacen.sanear(JSON.parse(JSON.stringify(perfil)));
+  t.ok(!!(saneado.mensajes && saneado.mensajes.gritos),
+    'E52 · la bolsa sigue ahí después de sanear()');
+  t.igual(JSON.stringify(saneado.mensajes.gritos.bolsaAcierto), JSON.stringify(antes),
+    'E52 · y con el mismo contenido');
+
+  /* Y no repite: seis gritos de una bolsa de 24 tienen que ser seis distintos. */
+  var unicos = vistos.filter(function (v, k) { return vistos.indexOf(v) === k; });
+  t.igual(unicos.length, vistos.length, 'E52 · seis gritos seguidos, seis distintos');
+});
+
+CB.pruebas.suite('E54 · el ítem siguiente no llega antes que la cinta', function () {
+  var t = CB.pruebas;
+  var cortas = [];
+  Object.keys(CB.ui.cinta.COREOGRAFIAS).forEach(function (k) {
+    var ms = CB.ui.cinta.COREOGRAFIAS[k].ms;
+    /* Las dos esperas reales del juego: 1600 tras acertar, 2200 tras fallar. */
+    if (CB.ui.cinta.espera(k, 1600) < ms + 400) cortas.push(k + ' (acierto)');
+    if (CB.ui.cinta.espera(k, 2200) < ms + 400) cortas.push(k + ' (fallo)');
+  });
+  t.igual(cortas.length, 0,
+    'E54 · toda coreografía cabe entera en su espera', cortas.join(', '));
+
+  /* Y la espera NUNCA se encoge por debajo de lo que había antes de las cintas:
+     acortarla recortaría tiempo de lectura, que es lo contrario de lo que se
+     busca. Con 'sello', que dura 900 ms, el máximo tiene que seguir siendo 1600. */
+  t.igual(CB.ui.cinta.espera('sello', 1600), 1600,
+    'E54 · una coreografía corta no acelera el juego');
+  t.igual(CB.ui.cinta.espera('veta-madre', 1600), 2400,
+    'E54 · una larga sí estira la espera');
+  t.igual(CB.ui.cinta.espera('inventada', 1600), 1600,
+    'E54 · una clave que no existe deja la espera de siempre');
+});
+
+CB.pruebas.suite('E55 · el escalón 4 lleva al prerrequisito, y alguien lo llama', function () {
+  var t = CB.pruebas;
+
+  /* Primero la escalera. NO se copia aquí el umbral: se le PREGUNTA a ella cuál
+     es. Escribir el número a mano en el test es lo que produjo E43 —dos
+     implementaciones de la misma escalera y solo una probada, la que no se
+     usaba— y de hecho la primera versión de este guardián puso 4 donde el módulo
+     dice 3, y se puso roja contra código correcto. */
+  var umbral = -1, f;
+  for (f = 0; f <= 8; f++) {
+    if (CB.escalera.siguienteEscalon(f, 2).accion === 'prerrequisito') { umbral = f; break; }
+  }
+  t.ok(umbral >= 0, 'E55 · algún número de fallos lleva al prerrequisito', 'ninguno de 0 a 8');
+  var esc = CB.escalera.siguienteEscalon(umbral, 2);
+  t.igual(esc.escalon, 4, 'E55 · y esa acción es la del escalón 4');
+
+  /* Y ahora lo que faltaba: que exista un camino real. Se busca un nivel del
+     catálogo que TENGA prerrequisitos, se marca el prerrequisito como superado
+     en un perfil de verdad, y se comprueba que la función lo encuentra. */
+  var perfil = CB.pruebas.perfilNuevo();
+  var ids = CB.catalogo.ids(), i, nivel, conPre = null;
+  for (i = 0; i < ids.length; i++) {
+    nivel = CB.catalogo.get(ids[i]);
+    if (nivel && nivel.prerrequisitos && nivel.prerrequisitos.length) { conPre = nivel; break; }
+  }
+  if (!t.ok(!!conPre, 'E55 · el catálogo tiene niveles con prerrequisito')) return;
+
+  var pre = conPre.prerrequisitos[0];
+  perfil.niveles[pre] = { n: 10, aciertos: 10, caja: 3, D: 2, ultimoISO: CB.util.hoyISO(), enPausa: false };
+  var encontrado = CB.grafo.prerrequisitoDominado(conPre.id, perfil);
+  t.ok(!!encontrado, 'E55 · prerrequisitoDominado() devuelve un nivel dominado');
+
+  /* Sin ningún prerrequisito superado devuelve null, y entonces el juego NO
+     inventa un nivel: deja caer el fallo siguiente en el escalón 5, que es lo
+     que pasaba antes. Degradar así es lo correcto. */
+  var limpio = CB.pruebas.perfilNuevo();
+  t.igual(CB.grafo.prerrequisitoDominado(conPre.id, limpio), null,
+    'E55 · sin nada dominado devuelve null en vez de inventarse un nivel');
+
+  /* Y LA PARTE QUE FALTABA DE VERDAD: que alguien la llame. El fallo no era la
+     función, que estaba bien; era que servirItem() no tenía por dónde recibir el
+     nivel. Se comprueba el conducto, y se comprueba sobre el estado que produce
+     CB.partida.iniciar() de verdad: construirlo a mano aquí sería fabricar la
+     forma que a mí me conviene, que es como el test de E42 estuvo años de
+     acuerdo con el fallo que tenía que denunciar. */
+  var perfilPrevio = CB.perfil;
+  CB.perfil = perfil;
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  if (t.ok(!!estado, 'E55 · iniciar() devuelve estado')) {
+    t.ok('prerrequisitoPendiente' in estado,
+      'E55 · el estado de partida tiene dónde guardar el nivel inyectado');
+    t.igual(estado.prerrequisitoPendiente, null,
+      'E55 · y empieza vacío, sin colar nada en el primer ítem');
+
+    /* Y AQUÍ ESTÁ LO QUE DE VERDAD FALTABA: que la acción se APLIQUE. Que la
+       escalera devuelva 'prerrequisito' y que el grafo encuentre el nivel no
+       sirve de nada si nadie junta las dos cosas, que es exactamente lo que
+       pasaba. Se le pasa el escalón real y se mira el estado real. */
+    var hecho = CB.partida.aplicarEscalon(esc, { nivelId: conPre.id }, perfil, estado);
+    t.igual(hecho, 'prerrequisito', 'E55 · el escalón 4 se aplica, no se ignora');
+    t.igual(estado.prerrequisitoPendiente, encontrado,
+      'E55 · y deja el prerrequisito dominado listo para el ítem siguiente');
+
+    /* Sin prerrequisito dominado no hace nada y no rompe nada. */
+    estado.prerrequisitoPendiente = null;
+    var nada = CB.partida.aplicarEscalon(esc, { nivelId: conPre.id }, limpio, estado);
+    t.igual(nada, null, 'E55 · sin prerrequisito dominado no se aplica');
+    t.igual(estado.prerrequisitoPendiente, null, 'E55 · y no deja basura en el estado');
+  }
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
 });

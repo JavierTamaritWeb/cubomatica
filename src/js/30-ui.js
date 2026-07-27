@@ -567,18 +567,113 @@ CB.ui.barra = function (fraccion) {
    La cifra es texto de verdad y el dibujo es aria-hidden. Un lector de pantalla
    lee «18», no «reloj de arena a dos tercios».
    ────────────────────────────────────────────────────────────────────────── */
+/* ── LA CINTA ───────────────────────────────────────────────────────────────
+   Un solo cartel para los nueve momentos que merecen uno, y UN SOLO NODO por
+   pantalla. Lo segundo importa más de lo que parece: dos cintas superpuestas
+   son ilegibles, y mientras hubiera un nodo por cada tipo de aviso, evitar que
+   coincidieran era disciplina. Con un nodo es imposible que coincidan.
+
+   EL REPARTO DE NÚMEROS, que es lo que hace que esto no se pudra:
+     · el CSS es dueño de la FORMA — los fotogramas y el número de pasos
+     · el JS es dueño del TIEMPO — la tabla de aquí abajo
+   Ningún número vive en los dos sitios. Antes MS_CARTEL valía 1900 «porque es
+   lo que dura prisa-cruza», copiado a mano, con un comentario avisando de lo
+   frágil que era. Con nueve coreografías habrían sido nueve copias.
+   ────────────────────────────────────────────────────────────────────────── */
+CB.ui.cinta = { nodo: null, _salida: null, _clave: null };
+
+/* La regla que ordena la tabla: EL ESPECTÁCULO ES INVERSAMENTE PROPORCIONAL A
+   LA FRECUENCIA. 'sello' es el 60 % de los aciertos y es la más corta; las
+   largas se reservan para lo que casi no pasa. Un efecto único repetido treinta
+   veces por sesión no celebra: hace esperar.
+
+   Ni un efecto de sonido nuevo. Los doce de 04-audio.js son contrato. */
+CB.ui.cinta.COREOGRAFIAS = {
+  'prisa':      { ms: 1900, sfx: 'prisa'      },
+  'sello':      { ms:  900, sfx: 'acierto'    },
+  'sube':       { ms: 1100, sfx: 'acierto'    },
+  'junta':      { ms: 1300, sfx: 'subirNivel' },
+  'cascada':    { ms: 1500, sfx: 'gema'       },
+  'estalla':    { ms: 1600, sfx: 'luzExtra'   },
+  'bandera':    { ms: 1800, sfx: 'cofre'      },
+  'veta-madre': { ms: 2000, sfx: 'cofre'      },
+  'posa':       { ms:  800, sfx: null         }
+};
+
+/* Las cuatro categorías de acierto de js/25-mensajes.js, cada una con su forma.
+   No se sortea la coreografía: acertar a la segunda después de haber fallado
+   (C) no es lo mismo que acertar a la primera (A), y la cinta lo dice sin que
+   nadie tenga que leer nada. */
+CB.ui.cinta.POR_CATEGORIA = { A: 'sello', B: 'sube', C: 'junta', D: 'cascada' };
+
+/**
+ * Cuánto espera el juego antes de servir el ítem siguiente.
+ * NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es
+ * justo lo contrario de lo que se busca. Los 400 ms de propina son para leer lo
+ * que queda escrito, no para ver el final de la animación.
+ */
+CB.ui.cinta.espera = function (clave, minimoMs) {
+  var co = CB.ui.cinta.COREOGRAFIAS[clave];
+  var m = minimoMs || 0;
+  return co ? Math.max(m, co.ms + 400) : m;
+};
+
+/* La cinta de la pantalla que se está viendo. Se resuelve en cada llamada y no
+   se cachea: la partida y el jefe tienen la suya, y cachear la primera dejaba
+   al jefe escribiendo en un nodo oculto de otra pantalla. */
+CB.ui.cinta.nodoDe = function () {
+  var visible = document.querySelector('.pantalla:not([hidden]) .cinta');
+  return visible || document.getElementById('cinta');
+};
+
+CB.ui.cinta.mostrar = function (clave, texto) {
+  var c = CB.ui.cinta;
+  var co = c.COREOGRAFIAS[clave];
+  var n = c.nodoDe();
+  if (!n || !co) return false;
+
+  CB.ui.cinta.ocultar();                 // una cinta a la vez, siempre
+  c.nodo = n;
+  c._clave = clave;
+
+  var t = n.querySelector('.cinta__texto');
+  if (!t) {
+    t = CB.ui.crear('span', 'cinta__texto');
+    CB.ui.vaciar(n);
+    n.appendChild(t);
+  }
+  t.textContent = String(texto);
+
+  /* Reasignar className entero es lo que quita la coreografía anterior. */
+  n.className = 'cinta cinta--' + clave;
+  n.hidden = false;
+  n.style.animationDuration = co.ms + 'ms';
+  void n.offsetWidth;                    // reinicia la animación
+  n.classList.add('cinta--entra');
+
+  if (co.sfx) CB.audio.sfx(co.sfx);
+
+  c._salida = setTimeout(function () { CB.ui.cinta.ocultar(); }, co.ms);
+  return true;
+};
+
+CB.ui.cinta.ocultar = function () {
+  var c = CB.ui.cinta;
+  if (c._salida) { clearTimeout(c._salida); c._salida = null; }
+  var n = c.nodo || c.nodoDe();
+  c._clave = null;
+  if (!n) return;
+  n.classList.remove('cinta--entra');
+  n.hidden = true;
+};
+
 CB.ui.reloj = {
-  caja: null, arena: null, cifra: null, alta: null, baja: null, aviso: null,
-  _tic: null, _finMs: 0, _totalMs: 0, _ultimoSeg: -1, _avisado: false,
-  _salida: null
+  caja: null, arena: null, cifra: null, alta: null, baja: null,
+  _tic: null, _finMs: 0, _totalMs: 0, _ultimoSeg: -1, _avisado: false
 };
 
 CB.ui.reloj.SEG_PRISA = 10;          // cuándo sale «Hurry up!»
 CB.ui.reloj.PASOS_ARENA = 20;        // la arena baja a saltos de un veinteavo
-/* Tiene que valer EXACTAMENTE lo que dura la animación prisa-cruza de
-   05-animaciones.css. Si el JS oculta antes, el cartel desaparece a media
-   pantalla; si oculta después, se queda un rectángulo invisible tapando. */
-CB.ui.reloj.MS_CARTEL = 1900;
 
 CB.ui.reloj.montar = function () {
   var r = CB.ui.reloj;
@@ -587,7 +682,6 @@ CB.ui.reloj.montar = function () {
   r.cifra = document.getElementById('hud-segundos');
   r.alta  = document.getElementById('ra-alta');
   r.baja  = document.getElementById('ra-baja');
-  r.aviso = document.getElementById('aviso-prisa');
   r.arena = r.caja ? r.caja.querySelector('.reloj__arena') : null;
   return r.caja;
 };
@@ -622,7 +716,6 @@ CB.ui.reloj.arrancar = function (ms) {
 CB.ui.reloj.parar = function () {
   var r = CB.ui.reloj;
   if (r._tic) { clearInterval(r._tic); r._tic = null; }
-  if (r._salida) { clearTimeout(r._salida); r._salida = null; }
   if (r.caja) {
     r.caja.hidden = true;
     r.caja.classList.remove('reloj--prisa');
@@ -671,31 +764,14 @@ CB.ui.reloj.pintar = function (restaMs) {
 /* «Hurry up!» sube desde abajo. El texto va en inglés porque así se pidió; el
    aviso que oye un lector de pantalla va en español y se dice UNA vez. */
 CB.ui.reloj.gritar = function () {
-  var r = CB.ui.reloj;
-  if (!r.aviso) return;
-
-  r.aviso.hidden = false;
-  r.aviso.classList.remove('aviso-prisa--entra');
-  void r.aviso.offsetWidth;                   // reinicia la animación
-  r.aviso.classList.add('aviso-prisa--entra');
-
-  CB.audio.sfx('prisa');
+  CB.ui.cinta.mostrar('prisa', 'Hurry up!');
   /* URGENTE, no educado. Este aviso caduca: dentro de diez segundos ya no sirve
      de nada. En la region polite se leia detras de la cola —«¡Muy bien!», «has
      ganado 3 gemas»— y podia llegar con la pregunta ya cerrada. Es el unico
      mensaje del juego que tiene fecha de caducidad, junto con el de la luz. */
   CB.a11y.urgente('Quedan diez segundos.');
-
-  if (r._salida) clearTimeout(r._salida);
-  r._salida = setTimeout(function () {
-    CB.ui.reloj.ocultarCartel(true);
-  }, CB.ui.reloj.MS_CARTEL);
 };
 
 CB.ui.reloj.ocultarCartel = function () {
-  var r = CB.ui.reloj;
-  if (r._salida) { clearTimeout(r._salida); r._salida = null; }
-  if (!r.aviso) return;
-  r.aviso.classList.remove('aviso-prisa--entra');
-  r.aviso.hidden = true;
+  CB.ui.cinta.ocultar();
 };

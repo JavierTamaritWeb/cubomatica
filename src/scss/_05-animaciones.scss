@@ -151,17 +151,31 @@
 }
 .reloj__cifra.reloj__cifra--late { @include animar('cifra-late', 400ms, 4, 1); }
 
-/* ── «Hurry up!» ────────────────────────────────────────────────────────────
-   Un solo recorrido: entra por debajo del borde inferior, se pasa de largo,
-   rebota, se queda quieto un segundo en el centro y sale por arriba. Una sola
-   animación en vez de entrada + salida, porque con dos había que sincronizar
-   dos temporizadores con dos duraciones de CSS, y eso se desincroniza el día
-   que alguien toque un número.
+/* ── LAS NUEVE COREOGRAFÍAS DE LA CINTA ─────────────────────────────────────
+   El «Hurry up!» era una sola y gustó. Repetirla en cada acierto habría sido el
+   error: un niño acierta entre veinte y treinta veces por sesión, y un efecto
+   idéntico deja de celebrar nada al tercero — pasa a ser una espera con adorno.
 
-   18 pasos: bastantes para que se lea el recorrido, pocos para que se vea a
-   saltos. Todo el juego se mueve a saltos y esto no va a ser la excepción.
+   De ahí la regla que ordena la tabla: EL ESPECTÁCULO ES INVERSAMENTE
+   PROPORCIONAL A LA FRECUENCIA. El acierto normal, que es el 60 % de los casos,
+   se lleva la más corta y la más limpia (900 ms, un sello que se estampa sin
+   moverse del sitio). Las largas se reservan para lo que casi no pasa: ganarle
+   al jefe, una luz extra, el bloque raro de uno entre veinte.
+
+   Y la forma DICE algo verdadero. No se sortea: acertar a la segunda después de
+   haber fallado no es lo mismo que acertar a la primera, y las categorías que lo
+   distinguen ya existían en js/25-mensajes.js desde el primer día. Aquí solo se
+   les pone cuerpo.
+
+   NINGUNA LLEVA DURACIÓN. La pone js/30-ui.js desde CB.ui.cinta.COREOGRAFIAS,
+   vía el mixin coreografia(). Ver el porqué en _herramientas.scss.
    ────────────────────────────────────────────────────────────────────────── */
-@keyframes prisa-cruza {
+
+/* 1 · PRISA — «Hurry up!», el único que no celebra nada: avisa. Entra por debajo
+   del borde inferior, se pasa de largo, rebota, se queda quieto un segundo en el
+   centro y sale por arriba. 18 pasos: bastantes para que se lea el recorrido,
+   pocos para que se vea a saltos. Todo el juego se mueve a saltos. */
+@keyframes cinta-prisa {
   0%   { transform: translateY(340%) scale(.55); opacity: 0; }
   12%  { transform: translateY(-14%) scale(1.30); opacity: 1; }
   20%  { transform: translateY(6%)   scale(.94);  opacity: 1; }
@@ -171,19 +185,139 @@
   86%  { transform: translateY(-30%) scale(1.14); opacity: 1; }
   100% { transform: translateY(-340%) scale(.6);  opacity: 0; }
 }
+.cinta--prisa.cinta--entra { @include coreografia('cinta-prisa', 18); }
 
-/* Y mientras cruza, cambia de color: oro, brasa, blanco. Es lo que hace que se
-   vea «encendido» y no solo «movido». */
-@keyframes prisa-arde {
+/* Y mientras cruza, arde: oro, brasa, blanco. Es lo que hace que se vea
+   «encendido» y no solo «movido».
+
+   Va sobre el hijo .cinta__texto, no sobre la cinta, y no es un capricho: si
+   fuese sobre la cinta habría que declarar dos animaciones en la misma
+   propiedad, y entonces la duración que escribe el JS afectaría también al
+   parpadeo. Sobre el hijo, los 300 ms viven aquí y solo aquí. */
+@keyframes cinta-arde {
   0%, 100% { color: var(--deco-oro-cla); }
   33%      { color: var(--deco-brasa-cla); }
   66%      { color: var(--blanco); }
 }
+.cinta--prisa.cinta--entra .cinta__texto { @include animar('cinta-arde', 300ms, 3, 6); }
 
-.aviso-prisa.aviso-prisa--entra {
-  animation: prisa-cruza 1900ms steps(18, end) 1 forwards,
-             prisa-arde  300ms steps(3, end) 6;
+/* 2 · SELLO — el acierto de todos los días, categoría A. No se desplaza: cae de
+   golpe sobre el sitio y se estampa, con un solo rebote. Corta a propósito. */
+@keyframes cinta-sello {
+  0%   { transform: scale(2.4); opacity: 0; }
+  30%  { transform: scale(.88); opacity: 1; }
+  45%  { transform: scale(1.08); opacity: 1; }
+  60%  { transform: scale(1);   opacity: 1; }
+  88%  { transform: scale(1);   opacity: 1; }
+  100% { transform: scale(1);   opacity: 0; }
 }
+.cinta--sello.cinta--entra { @include coreografia('cinta-sello', 6); }
+
+/* 3 · SUBE — categoría B, el esfuerzo: «te ha costado y ha salido». Sube desde
+   abajo y SE QUEDA. No cruza como la de prisa: llega y se planta, que es
+   justo lo que celebra. */
+@keyframes cinta-sube {
+  0%   { transform: translateY(260%); opacity: 0; }
+  25%  { transform: translateY(-8%);  opacity: 1; }
+  45%  { transform: translateY(0);    opacity: 1; }
+  88%  { transform: translateY(0);    opacity: 1; }
+  100% { transform: translateY(0);    opacity: 0; }
+}
+.cinta--sube.cinta--entra { @include coreografia('cinta-sube', 8); }
+
+/* 4 · JUNTA — categoría C, la superación: acierta tras haber fallado o tras una
+   tarjeta de reparación. Es el acierto que más pesa de todos, y por eso tiene la
+   única forma que no existe en ningún otro sitio del juego: dos mitades que
+   entran por los lados y se encuentran en el centro. Lo que estaba roto encaja.
+
+   Se hace con clip-path porque no hay dos nodos: son los dos bordes del mismo
+   rectángulo acercándose. Sin desenfoque y sin curva, como todo aquí. */
+@keyframes cinta-junta {
+  0%   { clip-path: inset(0 50% 0 50%); opacity: 0; }
+  30%  { clip-path: inset(0 22% 0 22%); opacity: 1; }
+  55%  { clip-path: inset(0 0 0 0);     opacity: 1; }
+  70%  { clip-path: inset(0 0 0 0); transform: scale(1.06); }
+  80%  { clip-path: inset(0 0 0 0); transform: scale(1); }
+  90%  { clip-path: inset(0 0 0 0); opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); opacity: 0; }
+}
+.cinta--junta.cinta--entra { @include coreografia('cinta-junta', 10); }
+
+/* 5 · CASCADA — categoría D, el descubrimiento: racha de tres, veta nueva o
+   mundo nuevo. Cae desde arriba con dos rebotes. Es la contraria de la de
+   prisa, y esa oposición es intencionada: una anuncia que se acaba el tiempo,
+   la otra que se ha abierto algo. */
+@keyframes cinta-cascada {
+  0%   { transform: translateY(-320%) scale(.7); opacity: 0; }
+  20%  { transform: translateY(12%)   scale(1.18); opacity: 1; }
+  32%  { transform: translateY(-6%)   scale(.96);  opacity: 1; }
+  42%  { transform: translateY(4%)    scale(1.04); opacity: 1; }
+  52%  { transform: translateY(0)     scale(1);    opacity: 1; }
+  90%  { transform: translateY(0)     scale(1);    opacity: 1; }
+  100% { transform: translateY(0)     scale(1);    opacity: 0; }
+}
+.cinta--cascada.cinta--entra { @include coreografia('cinta-cascada', 12); }
+
+/* 6 · ESTALLA — logro desbloqueado o luz extra. Del centro hacia fuera, con
+   tres sobreimpulsos. Es la única que empieza en escala 0: no viene de ningún
+   sitio, aparece. */
+@keyframes cinta-estalla {
+  0%   { transform: scale(0) ; opacity: 0; }
+  16%  { transform: scale(1.35); opacity: 1; }
+  28%  { transform: scale(.92);  opacity: 1; }
+  40%  { transform: scale(1.14); opacity: 1; }
+  52%  { transform: scale(.98);  opacity: 1; }
+  62%  { transform: scale(1);    opacity: 1; }
+  90%  { transform: scale(1);    opacity: 1; }
+  100% { transform: scale(1);    opacity: 0; }
+}
+.cinta--estalla.cinta--entra { @include coreografia('cinta-estalla', 12); }
+
+/* 7 · BANDERA — el jefe cede y el mundo queda cerrado. Se despliega a lo ancho,
+   como una tela que se estira desde el centro. Se ve una vez por mundo: cuatro
+   veces en toda la vida de un perfil, y por eso puede permitirse ser la más
+   larga de las que se ven jugando. */
+@keyframes cinta-bandera {
+  0%   { transform: scaleX(0) scaleY(.4); opacity: 0; }
+  22%  { transform: scaleX(1.08) scaleY(1); opacity: 1; }
+  34%  { transform: scaleX(.96) scaleY(1); opacity: 1; }
+  46%  { transform: scaleX(1) scaleY(1);   opacity: 1; }
+  92%  { transform: scaleX(1) scaleY(1);   opacity: 1; }
+  100% { transform: scaleX(1) scaleY(1);   opacity: 0; }
+}
+.cinta--bandera.cinta--entra { @include coreografia('cinta-bandera', 14); }
+
+/* 8 · VETA MADRE — LA RARA. Sale con el bloque raro: uno de cada veinte, que ya
+   estaba en el juego (PROB_BLOQUE_RARO, js/40-partida.js) dando un cromo sin que
+   se notara nada. La sorpresa necesita que exista algo que casi nunca se ve; sin
+   eso no hay sorpresa, hay rotación. Es la más lenta y la de más pasos: temblor
+   de piedra, la cinta se abre desde una rendija y se queda. */
+@keyframes cinta-veta-madre {
+  0%   { transform: scaleY(.06) translateX(0); opacity: 0; }
+  10%  { transform: scaleY(.06) translateX(-4px); opacity: 1; }
+  16%  { transform: scaleY(.06) translateX(4px);  opacity: 1; }
+  22%  { transform: scaleY(.06) translateX(-3px); opacity: 1; }
+  30%  { transform: scaleY(1.22) translateX(0);   opacity: 1; }
+  40%  { transform: scaleY(.94) translateX(0);    opacity: 1; }
+  48%  { transform: scaleY(1.06) translateX(0);   opacity: 1; }
+  56%  { transform: scaleY(1) translateX(0);      opacity: 1; }
+  92%  { transform: scaleY(1) translateX(0);      opacity: 1; }
+  100% { transform: scaleY(1) translateX(0);      opacity: 0; }
+}
+.cinta--veta-madre.cinta--entra { @include coreografia('cinta-veta-madre', 16); }
+
+/* 9 · POSA — el ánimo, detrás de un fallo. Es la más corta y la más quieta de
+   todas, y va en tono piedra: baja un poco y se posa. Nada de rebotes, nada de
+   oro, nada de estallidos. Un cartel de fiesta encima de un fallo se lee como
+   burla, y el mensaje que hay debajo es el que importa. */
+@keyframes cinta-posa {
+  0%   { transform: translateY(-70%); opacity: 0; }
+  35%  { transform: translateY(6%);   opacity: 1; }
+  55%  { transform: translateY(0);    opacity: 1; }
+  90%  { transform: translateY(0);    opacity: 1; }
+  100% { transform: translateY(0);    opacity: 0; }
+}
+.cinta--posa.cinta--entra { @include coreografia('cinta-posa', 6); }
 
 /* ── Movimiento reducido: SIEMPRE al final del fichero ──────────────────────
    DOS CONTEXTOS, UNA SOLA LISTA. El ajuste del sistema
@@ -206,7 +340,11 @@ $animados:
   '.particula.particula--viva', '.criatura--flota', '.criatura--saltito', '.criatura--asiente', '.criatura--gotea', '.criatura--gira',
   '.nube', '.veta--musgo', '.btn-bloque--monta', '.btn-bloque--destello',
   '.reloj__arena.reloj__arena--voltea', '.reloj .reloj__chorro', '.reloj--prisa .reloj__arena',
-  '.reloj__cifra.reloj__cifra--late', '.aviso-prisa.aviso-prisa--entra';
+  '.reloj__cifra.reloj__cifra--late',
+  /* UNA entrada para las nueve coreografías: todas se disparan con la misma
+     clase. Antes cada cartel habría necesitado la suya, y añadir el décimo y
+     olvidarse de apuntarlo aquí es exactamente cómo nació E25. */
+  '.cinta.cinta--entra', '.cinta--prisa.cinta--entra .cinta__texto';
 
 @media (prefers-reduced-motion: reduce) {
   @include desactivar-movimiento($animados);

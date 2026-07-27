@@ -114,7 +114,10 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
   t.ok(CB.ui.reloj._tic === null, 'y no deja ningún intervalo corriendo');
 
   CB.ui.reloj.parar();
-  t.ok(CB.ui.reloj._tic === null && CB.ui.reloj._salida === null,
+  /* El temporizador de ocultar el cartel ya no es del reloj: es de la cinta, que
+     desde 1.8.0 la comparten los nueve avisos. El invariante es el mismo —parar()
+     no puede dejar nada pendiente— pero hay que mirar donde vive ahora. */
+  t.ok(CB.ui.reloj._tic === null && CB.ui.cinta._salida === null,
     'parar() deja el reloj sin intervalos ni temporizadores pendientes');
 
   CB.ui.reloj.caja = previo.caja; CB.ui.reloj.cifra = previo.cifra;

@@ -43,11 +43,19 @@ Both need `npm run build` first; without it they say so instead of hanging on "P
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **443 checks, 0 failures** (deterministic).
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **489 checks, 0 failures** (deterministic).
+- **The page auto-runs on load.** Filtering `CB.pruebas.suites` while that run is in flight truncates the list *mid-race*: the runner stops early and prints a green summary for a subset — 248/0 instead of 489. Wait for the `· NNNN ms` suffix before touching the array.
 - **Serve the test pages with `Cache-Control: no-store`.** Chrome will happily reuse a cached `dist/js/cubomatica.js` or `casos-*.js` across a reload, so a green summary can be measuring code from three edits ago — and the check count won't necessarily change, which is what makes it invisible. Before trusting a run, assert something about the bundle you just built (`/paso <= 20/.test(String(CB.jefes.opciones))`, a function that should now exist) rather than assuming the reload did it.
 - **Run it in a foreground tab.** Chrome throttles `setTimeout` in a background tab, and the suites are chained with `setTimeout(…, 0)`: backgrounded, a 10 s run stretches past 80 s or stalls outright. A partial `resumen` is easy to mistake for a finished one — the `· NNNN ms` suffix is only appended when the last suite ends, so a summary without it is still running.
 
-**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all forty-six found so far (E1-E46) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
+**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all fifty-five found so far (E1-E55) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
+
+**The cinta (1.8.0) is where the newest traps live.** One node per screen — `.cinta` plus `.cinta--<coreografía>` — shared by nine moments, from the `Hurry up!` to the boss victory. Two invariants that are structural, not stylistic:
+
+- **No number exists twice.** CSS owns the shape (`@keyframes` + `steps(n)`, via the `coreografia()` mixin, which has *no duration parameter*); JS owns the time (`CB.ui.cinta.COREOGRAFIAS`). This replaced `MS_CARTEL = 1900`, a constant hand-copied from the stylesheet whose own comment warned it would drift. E48 cross-checks both directions.
+- **The mixin emits longhands**, so the audit's `animation:`-shorthand grep for `steps(` stopped seeing the newest animations. Block 3 gained an `animation-timing-function` check for exactly this. When you add a rule to the hard-rule greps, ask which *form* of the property you are matching — the blind spot is always the form you didn't think of.
+
+Message text splits in two on purpose: the cinta carries a short grito from `CB.datos.MENSAJES.GRITOS`, and the full message — including the `{proc}` sentence, which is the only part that teaches — stays still in `#item-mensaje`. Don't move the procedure onto the cinta; it cannot be read in 900 ms.
 
 **Where the last seven came from, because none of them was a typo.** E40-E46 were all green under 56 audit checks, 405 suite checks and a clean class cross-check. Three families, and each one is a place worth looking first:
 

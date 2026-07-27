@@ -232,23 +232,33 @@
 .reloj--prisa .reloj__chorro { background: var(--deco-brasa-cla); }
 .reloj--prisa .reloj__cifra { color: var(--deco-oro-cla); font-size: calc(var(--tam-texto-min) + 6px); }
 
-/* ── «Hurry up!»: CRUZA la pantalla de abajo arriba a los 10 s ──────────────
-   La primera versión dejaba el cartel quieto encima de la zona de respuesta, y
-   en la primera prueba en pantalla se vio el problema: caía justo sobre la fila
-   del ⌫, el 0 y el OK. Es decir, el aviso de que queda poco tiempo tapaba el
-   botón con el que se contesta, y precisamente en los diez segundos en los que
-   el niño va con prisa. Tenía pointer-events:none, así que se podía pulsar a
-   ciegas, pero no se veía lo que se estaba pulsando.
+/* ── La cinta: un solo cartel para los nueve momentos ───────────────────────
+   Empezó siendo el «Hurry up!» del reloj y ahora lo comparten las felicitaciones,
+   los ánimos, los logros y el jefe. Es UN SOLO NODO por pantalla, y eso no es
+   ahorro: dos cintas superpuestas son ilegibles, y con un único nodo la colisión
+   deja de ser algo que haya que evitar y pasa a ser imposible.
 
-   Ahora no se queda: entra por abajo, se para un segundo en el centro y sale
-   por arriba. No tapa nada de forma permanente, y «de abajo a arriba» pasa a
-   ser literal: ese es el recorrido.
+   El tono cambia según qué celebra, pero el tono NUNCA es lo único que cambia
+   (§10.4, y es obligación legal): cada coreografía tiene su recorrido, su
+   duración y su número de pasos, y el glifo de delante repite el mismo par de
+   formas que ya usa .mensaje-resultado: ◆ para lo que sale bien, ■ para el ánimo.
+
+   El texto va dentro de .cinta__texto para que el parpadeo del «Hurry up!»
+   pueda animarse aparte sin pisar la animación del recorrido, que es la única
+   cuya duración manda el JS.
+   EL 38 % NO SE BAJA, Y ESTA ES LA RAZÓN. La primera versión dejaba el cartel
+   quieto encima de la zona de respuesta, y en la primera prueba en pantalla se
+   vio el problema: caía justo sobre la fila del ⌫, el 0 y el OK. Es decir, el
+   aviso tapaba el botón con el que se contesta. Tenía pointer-events:none, así
+   que se podía pulsar a ciegas, pero no se veía lo que se estaba pulsando.
+   Ninguna coreografía nueva puede bajar de ahí, y hay un guardián que lo mide
+   (E47), porque este es un fallo que ya se cometió una vez.
 
    Es una cinta con fondo sólido, no texto suelto. El cartel cae sobre el cielo,
    sobre la hierba, sobre la piedra o sobre la lava según el bioma, y con solo
    contorno habría cuatro fondos distintos que validar. Con cinta, uno.
    ────────────────────────────────────────────────────────────────────────── */
-.aviso-prisa {
+.cinta {
   position: absolute;
   left: 0; right: 0; top: 38%;
   z-index: 620;
@@ -263,6 +273,30 @@
   letter-spacing: 2px;
   color: var(--deco-oro-cla);
   text-shadow: 3px 3px 0 var(--sombra-honda);
+}
+
+/* El glifo repite las dos formas de .mensaje-resultado: ◆ lo que sale bien,
+   ■ el ánimo. Es lo que hace que la cinta no dependa del color. */
+.cinta::before { content: "\25C6\00A0"; }
+.cinta.cinta--posa::before { content: "\25A0\00A0"; }
+
+/* ── Los nueve tonos ────────────────────────────────────────────────────────
+   Acompañan; no distinguen. Todos van sobre --bg-texto-oscuro y todos están
+   muy por encima de 4,5:1, que es lo que exige la norma para texto grande. */
+.cinta--prisa       { color: var(--deco-oro-cla); }
+.cinta--sello       { color: var(--deco-hierba-cla); }
+.cinta--sube        { color: var(--deco-hierba-cla); }
+.cinta--junta       { color: var(--deco-cristal-cla); }
+.cinta--cascada     { color: var(--deco-oro-cla); }
+.cinta--estalla     { color: var(--blanco); }
+.cinta--bandera     { color: var(--deco-oro-cla); }
+.cinta--veta-madre  { color: var(--deco-cristal-cla); }
+
+/* El ánimo baja el volumen: tono piedra, sin brillo y sin oro. Un cartel de
+   fiesta encima de un fallo es crueldad decorada. */
+.cinta--posa {
+  color: var(--deco-piedra-cla);
+  box-shadow: 0 -4px 0 0 var(--deco-piedra), 0 4px 0 0 var(--deco-piedra-osc);
 }
 
 /* ── Contador de gemas: solo sube, nunca es negativo ────────────────────── */

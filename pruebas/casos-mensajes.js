@@ -51,6 +51,29 @@ CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
   t.ok(conPista.length >= 20,
     'M4-bis · ' + conPista.length + ' de los 48 mensajes de ánimo señalan el procedimiento');
 
+  /* E53 · LOS GRITOS PASAN POR EL MISMO FILTRO. Son texto que el niño lee, igual
+     que los 132 mensajes, y el hecho de que sean cortos y vivan en otra lista no
+     los exime de nada. Un criterio aplicado en un sitio de dos es exactamente la
+     tercera familia de fallo de este proyecto (E44: el cerrojo de una respuesta
+     por intento estaba en la partida y faltaba en el jefe y en la calibración). */
+  var G = M.GRITOS;
+  t.ok(G && G.acierto.length >= 20 && G.animo.length >= 10,
+    'E53 · hay gritos suficientes para que no se repitan en una sesión',
+    G ? G.acierto.length + '/' + G.animo.length : 'no existen');
+
+  var largos = G.acierto.concat(G.animo).filter(function (g) { return g.length > 16; });
+  t.ok(largos.length === 0,
+    'E53 · ningún grito pasa de 16 caracteres: la cinta cruza en menos de 2 s',
+    largos.join(' | '));
+
+  /* Los de ánimo van sin exclamación a propósito: detrás de un fallo, un cartel
+     gritando se lee como burla. */
+  var animoGritado = G.animo.filter(function (g) { return g.indexOf('!') !== -1; });
+  t.ok(animoGritado.length === 0,
+    'E53 · los gritos de ánimo no llevan exclamación', animoGritado.join(' | '));
+
+  todos = todos.concat(G.acierto).concat(G.animo);
+
   /* M5 — 0 elogios de PERSONA. El elogio de rasgo instala mentalidad fija:
      cada fallo posterior contradice la etiqueta. */
   var conElogio = [];

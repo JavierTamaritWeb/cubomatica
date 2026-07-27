@@ -38,7 +38,13 @@ CB.mensajes.listaDe = function (cat) {
 CB.mensajes.nuevoEstado = function () {
   return {
     acierto: { bolsaA: [], bolsaB: [], bolsaC: [], bolsaD: [], ultimos12: [] },
-    animo:   { bolsa1: [], bolsa2: [], ultimos10: [] }
+    animo:   { bolsa1: [], bolsa2: [], ultimos10: [] },
+    /* SIN GUION BAJO DELANTE, y no es estilo. CB.almacen.sanear() borra todas
+       las claves que empiezan por «_», así que una bolsa llamada `_gritos` se
+       reiniciaría en cada guardado y el grito volvería a repetirse cada dos por
+       tres sin que nada fallara. Es exactamente lo que le pasó a la dificultad D
+       (E45), que era un trinquete de una sola dirección por este mismo motivo. */
+    gritos:  { bolsaAcierto: [], bolsaAnimo: [] }
   };
 };
 
@@ -49,6 +55,9 @@ CB.mensajes.asegurar = function (perfil) {
   if (!m.animo)   m.animo   = { bolsa1: [], bolsa2: [], ultimos10: [] };
   if (!m.acierto.ultimos12) m.acierto.ultimos12 = [];
   if (!m.animo.ultimos10)   m.animo.ultimos10 = [];
+  /* Un perfil de 1.7.1 no la trae. Se crea aquí y por eso 1.8.0 no necesita
+     migración en 01-almacen.js: la primera cifra de la versión se queda. */
+  if (!m.gritos)  m.gritos  = { bolsaAcierto: [], bolsaAnimo: [] };
   return m;
 };
 
@@ -181,6 +190,33 @@ CB.mensajes.animo = function (ctx) {
   return CB.mensajes.rellenar(lista[idx], ctx, rng);
 };
 
+/**
+ * El grito corto que va escrito en la cinta. No es un trozo del mensaje: es
+ * material aparte, porque el mensaje entero se queda quieto donde se pueda leer.
+ *
+ * Sale de su propia bolsa barajada, igual que los mensajes, así que no se
+ * repite hasta agotarla. Esa es la segunda de las tres capas contra la
+ * monotonía: la primera es que la coreografía significa algo (js/30-ui.js) y la
+ * tercera es que hay una que casi nunca sale.
+ *
+ * @param tipo 'acierto' | 'animo'
+ * @param ctx {perfil, rng}
+ */
+CB.mensajes.grito = function (tipo, ctx) {
+  ctx = ctx || {};
+  var perfil = ctx.perfil || {};
+  var m = CB.mensajes.asegurar(perfil);
+  var esAnimo = (tipo === 'animo');
+  var lista = esAnimo ? CB.datos.MENSAJES.GRITOS.animo
+                      : CB.datos.MENSAJES.GRITOS.acierto;
+  var clave = esAnimo ? 'bolsaAnimo' : 'bolsaAcierto';
+  var rng = ctx.rng || CB.util.mulberry32(CB.util.hash32(clave + lista.length));
+
+  var idx = CB.mensajes.sacarDeBolsa(m.gritos, clave, lista.length, [], [], 0, rng);
+  if (idx < 0) idx = 0;
+  return lista[idx];
+};
+
 /* Contrato de tamaño, para casos-mensajes.js (M1 y M2). */
 CB.mensajes.contrato = function () {
   var M = CB.datos.MENSAJES;
@@ -189,6 +225,8 @@ CB.mensajes.contrato = function () {
     animoTotal: M.animo.length,
     porCategoriaAcierto: [M.acierto_A.length, M.acierto_B.length,
                           M.acierto_C.length, M.acierto_D.length],
-    porCategoriaAnimo: [M.animo_P1.length, M.animo_P2.length]
+    porCategoriaAnimo: [M.animo_P1.length, M.animo_P2.length],
+    gritosAcierto: M.GRITOS.acierto.length,
+    gritosAnimo: M.GRITOS.animo.length
   };
 };

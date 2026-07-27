@@ -103,6 +103,23 @@
 
    Igual que bisel(): NO HAY PARÁMETRO donde meter `ease`, `linear` ni
    `cubic-bezier`. El escalonado lo pone el mixin. */
+/* ── coreografia() ──────────────────────────────────────────────────────────
+   Como animar(), pero SIN DURACIÓN. La pone js/30-ui.js desde
+   CB.ui.cinta.COREOGRAFIAS, y por eso este mixin no la acepta: es la única
+   forma de que el número exista en un solo sitio.
+
+   El reparto es: el CSS es dueño de la FORMA (los fotogramas y el número de
+   pasos) y el JS es dueño del TIEMPO. Ningún número aparece dos veces, así que
+   no hay nada que sincronizar a mano.
+
+   Antes no era así. CB.ui.reloj.MS_CARTEL valía 1900 «porque es exactamente lo
+   que dura prisa-cruza», copiado a ojo de la hoja de animaciones, y el propio
+   comentario avisaba de que si divergían el cartel desaparecía a media pantalla
+   o se quedaba un rectángulo invisible tapando. Con una cinta eso era un número
+   duplicado; con ocho coreografías habrían sido ocho.
+
+   Sigue siendo imposible escribir una animación suavizada a través del mixin:
+   el tipo de tiempo es steps() y no se puede pasar otro. */
 /* ── desactivar-movimiento() ────────────────────────────────────────────────
    UNA lista, DOS contextos. El ajuste del sistema (prefers-reduced-motion) y el
    del propio juego (:root.sin-movimiento) tienen que apagar exactamente lo
@@ -1067,23 +1084,33 @@ button:focus:not(:focus-visible) {
   font-size: calc(var(--tam-texto-min) + 6px);
 }
 
-/* ── «Hurry up!»: CRUZA la pantalla de abajo arriba a los 10 s ──────────────
-   La primera versión dejaba el cartel quieto encima de la zona de respuesta, y
-   en la primera prueba en pantalla se vio el problema: caía justo sobre la fila
-   del ⌫, el 0 y el OK. Es decir, el aviso de que queda poco tiempo tapaba el
-   botón con el que se contesta, y precisamente en los diez segundos en los que
-   el niño va con prisa. Tenía pointer-events:none, así que se podía pulsar a
-   ciegas, pero no se veía lo que se estaba pulsando.
+/* ── La cinta: un solo cartel para los nueve momentos ───────────────────────
+   Empezó siendo el «Hurry up!» del reloj y ahora lo comparten las felicitaciones,
+   los ánimos, los logros y el jefe. Es UN SOLO NODO por pantalla, y eso no es
+   ahorro: dos cintas superpuestas son ilegibles, y con un único nodo la colisión
+   deja de ser algo que haya que evitar y pasa a ser imposible.
 
-   Ahora no se queda: entra por abajo, se para un segundo en el centro y sale
-   por arriba. No tapa nada de forma permanente, y «de abajo a arriba» pasa a
-   ser literal: ese es el recorrido.
+   El tono cambia según qué celebra, pero el tono NUNCA es lo único que cambia
+   (§10.4, y es obligación legal): cada coreografía tiene su recorrido, su
+   duración y su número de pasos, y el glifo de delante repite el mismo par de
+   formas que ya usa .mensaje-resultado: ◆ para lo que sale bien, ■ para el ánimo.
+
+   El texto va dentro de .cinta__texto para que el parpadeo del «Hurry up!»
+   pueda animarse aparte sin pisar la animación del recorrido, que es la única
+   cuya duración manda el JS.
+   EL 38 % NO SE BAJA, Y ESTA ES LA RAZÓN. La primera versión dejaba el cartel
+   quieto encima de la zona de respuesta, y en la primera prueba en pantalla se
+   vio el problema: caía justo sobre la fila del ⌫, el 0 y el OK. Es decir, el
+   aviso tapaba el botón con el que se contesta. Tenía pointer-events:none, así
+   que se podía pulsar a ciegas, pero no se veía lo que se estaba pulsando.
+   Ninguna coreografía nueva puede bajar de ahí, y hay un guardián que lo mide
+   (E47), porque este es un fallo que ya se cometió una vez.
 
    Es una cinta con fondo sólido, no texto suelto. El cartel cae sobre el cielo,
    sobre la hierba, sobre la piedra o sobre la lava según el bioma, y con solo
    contorno habría cuatro fondos distintos que validar. Con cinta, uno.
    ────────────────────────────────────────────────────────────────────────── */
-.aviso-prisa {
+.cinta {
   position: absolute;
   left: 0;
   right: 0;
@@ -1100,6 +1127,58 @@ button:focus:not(:focus-visible) {
   letter-spacing: 2px;
   color: var(--deco-oro-cla);
   text-shadow: 3px 3px 0 var(--sombra-honda);
+}
+
+/* El glifo repite las dos formas de .mensaje-resultado: ◆ lo que sale bien,
+   ■ el ánimo. Es lo que hace que la cinta no dependa del color. */
+.cinta::before {
+  content: "◆ ";
+}
+
+.cinta.cinta--posa::before {
+  content: "■ ";
+}
+
+/* ── Los nueve tonos ────────────────────────────────────────────────────────
+   Acompañan; no distinguen. Todos van sobre --bg-texto-oscuro y todos están
+   muy por encima de 4,5:1, que es lo que exige la norma para texto grande. */
+.cinta--prisa {
+  color: var(--deco-oro-cla);
+}
+
+.cinta--sello {
+  color: var(--deco-hierba-cla);
+}
+
+.cinta--sube {
+  color: var(--deco-hierba-cla);
+}
+
+.cinta--junta {
+  color: var(--deco-cristal-cla);
+}
+
+.cinta--cascada {
+  color: var(--deco-oro-cla);
+}
+
+.cinta--estalla {
+  color: var(--blanco);
+}
+
+.cinta--bandera {
+  color: var(--deco-oro-cla);
+}
+
+.cinta--veta-madre {
+  color: var(--deco-cristal-cla);
+}
+
+/* El ánimo baja el volumen: tono piedra, sin brillo y sin oro. Un cartel de
+   fiesta encima de un fallo es crueldad decorada. */
+.cinta--posa {
+  color: var(--deco-piedra-cla);
+  box-shadow: 0 -4px 0 0 var(--deco-piedra), 0 4px 0 0 var(--deco-piedra-osc);
 }
 
 /* ── Contador de gemas: solo sube, nunca es negativo ────────────────────── */
@@ -2382,17 +2461,30 @@ button:focus:not(:focus-visible) {
   animation: cifra-late 400ms steps(4, end) 1;
 }
 
-/* ── «Hurry up!» ────────────────────────────────────────────────────────────
-   Un solo recorrido: entra por debajo del borde inferior, se pasa de largo,
-   rebota, se queda quieto un segundo en el centro y sale por arriba. Una sola
-   animación en vez de entrada + salida, porque con dos había que sincronizar
-   dos temporizadores con dos duraciones de CSS, y eso se desincroniza el día
-   que alguien toque un número.
+/* ── LAS NUEVE COREOGRAFÍAS DE LA CINTA ─────────────────────────────────────
+   El «Hurry up!» era una sola y gustó. Repetirla en cada acierto habría sido el
+   error: un niño acierta entre veinte y treinta veces por sesión, y un efecto
+   idéntico deja de celebrar nada al tercero — pasa a ser una espera con adorno.
 
-   18 pasos: bastantes para que se lea el recorrido, pocos para que se vea a
-   saltos. Todo el juego se mueve a saltos y esto no va a ser la excepción.
+   De ahí la regla que ordena la tabla: EL ESPECTÁCULO ES INVERSAMENTE
+   PROPORCIONAL A LA FRECUENCIA. El acierto normal, que es el 60 % de los casos,
+   se lleva la más corta y la más limpia (900 ms, un sello que se estampa sin
+   moverse del sitio). Las largas se reservan para lo que casi no pasa: ganarle
+   al jefe, una luz extra, el bloque raro de uno entre veinte.
+
+   Y la forma DICE algo verdadero. No se sortea: acertar a la segunda después de
+   haber fallado no es lo mismo que acertar a la primera, y las categorías que lo
+   distinguen ya existían en js/25-mensajes.js desde el primer día. Aquí solo se
+   les pone cuerpo.
+
+   NINGUNA LLEVA DURACIÓN. La pone js/30-ui.js desde CB.ui.cinta.COREOGRAFIAS,
+   vía el mixin coreografia(). Ver el porqué en _herramientas.scss.
    ────────────────────────────────────────────────────────────────────────── */
-@keyframes prisa-cruza {
+/* 1 · PRISA — «Hurry up!», el único que no celebra nada: avisa. Entra por debajo
+   del borde inferior, se pasa de largo, rebota, se queda quieto un segundo en el
+   centro y sale por arriba. 18 pasos: bastantes para que se lea el recorrido,
+   pocos para que se vea a saltos. Todo el juego se mueve a saltos. */
+@keyframes cinta-prisa {
   0% {
     transform: translateY(340%) scale(0.55);
     opacity: 0;
@@ -2426,9 +2518,21 @@ button:focus:not(:focus-visible) {
     opacity: 0;
   }
 }
-/* Y mientras cruza, cambia de color: oro, brasa, blanco. Es lo que hace que se
-   vea «encendido» y no solo «movido». */
-@keyframes prisa-arde {
+.cinta--prisa.cinta--entra {
+  animation-name: cinta-prisa;
+  animation-timing-function: steps(18, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/* Y mientras cruza, arde: oro, brasa, blanco. Es lo que hace que se vea
+   «encendido» y no solo «movido».
+
+   Va sobre el hijo .cinta__texto, no sobre la cinta, y no es un capricho: si
+   fuese sobre la cinta habría que declarar dos animaciones en la misma
+   propiedad, y entonces la duración que escribe el JS afectaría también al
+   parpadeo. Sobre el hijo, los 300 ms viven aquí y solo aquí. */
+@keyframes cinta-arde {
   0%, 100% {
     color: var(--deco-oro-cla);
   }
@@ -2439,8 +2543,328 @@ button:focus:not(:focus-visible) {
     color: var(--blanco);
   }
 }
-.aviso-prisa.aviso-prisa--entra {
-  animation: prisa-cruza 1900ms steps(18, end) 1 forwards, prisa-arde 300ms steps(3, end) 6;
+.cinta--prisa.cinta--entra .cinta__texto {
+  animation: cinta-arde 300ms steps(3, end) 6;
+}
+
+/* 2 · SELLO — el acierto de todos los días, categoría A. No se desplaza: cae de
+   golpe sobre el sitio y se estampa, con un solo rebote. Corta a propósito. */
+@keyframes cinta-sello {
+  0% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+  30% {
+    transform: scale(0.88);
+    opacity: 1;
+  }
+  45% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  88% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+.cinta--sello.cinta--entra {
+  animation-name: cinta-sello;
+  animation-timing-function: steps(6, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/* 3 · SUBE — categoría B, el esfuerzo: «te ha costado y ha salido». Sube desde
+   abajo y SE QUEDA. No cruza como la de prisa: llega y se planta, que es
+   justo lo que celebra. */
+@keyframes cinta-sube {
+  0% {
+    transform: translateY(260%);
+    opacity: 0;
+  }
+  25% {
+    transform: translateY(-8%);
+    opacity: 1;
+  }
+  45% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  88% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+.cinta--sube.cinta--entra {
+  animation-name: cinta-sube;
+  animation-timing-function: steps(8, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/* 4 · JUNTA — categoría C, la superación: acierta tras haber fallado o tras una
+   tarjeta de reparación. Es el acierto que más pesa de todos, y por eso tiene la
+   única forma que no existe en ningún otro sitio del juego: dos mitades que
+   entran por los lados y se encuentran en el centro. Lo que estaba roto encaja.
+
+   Se hace con clip-path porque no hay dos nodos: son los dos bordes del mismo
+   rectángulo acercándose. Sin desenfoque y sin curva, como todo aquí. */
+@keyframes cinta-junta {
+  0% {
+    clip-path: inset(0 50% 0 50%);
+    opacity: 0;
+  }
+  30% {
+    clip-path: inset(0 22% 0 22%);
+    opacity: 1;
+  }
+  55% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  70% {
+    clip-path: inset(0 0 0 0);
+    transform: scale(1.06);
+  }
+  80% {
+    clip-path: inset(0 0 0 0);
+    transform: scale(1);
+  }
+  90% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+.cinta--junta.cinta--entra {
+  animation-name: cinta-junta;
+  animation-timing-function: steps(10, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/* 5 · CASCADA — categoría D, el descubrimiento: racha de tres, veta nueva o
+   mundo nuevo. Cae desde arriba con dos rebotes. Es la contraria de la de
+   prisa, y esa oposición es intencionada: una anuncia que se acaba el tiempo,
+   la otra que se ha abierto algo. */
+@keyframes cinta-cascada {
+  0% {
+    transform: translateY(-320%) scale(0.7);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(12%) scale(1.18);
+    opacity: 1;
+  }
+  32% {
+    transform: translateY(-6%) scale(0.96);
+    opacity: 1;
+  }
+  42% {
+    transform: translateY(4%) scale(1.04);
+    opacity: 1;
+  }
+  52% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  90% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+}
+.cinta--cascada.cinta--entra {
+  animation-name: cinta-cascada;
+  animation-timing-function: steps(12, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/* 6 · ESTALLA — logro desbloqueado o luz extra. Del centro hacia fuera, con
+   tres sobreimpulsos. Es la única que empieza en escala 0: no viene de ningún
+   sitio, aparece. */
+@keyframes cinta-estalla {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  16% {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+  28% {
+    transform: scale(0.92);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1.14);
+    opacity: 1;
+  }
+  52% {
+    transform: scale(0.98);
+    opacity: 1;
+  }
+  62% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  90% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+.cinta--estalla.cinta--entra {
+  animation-name: cinta-estalla;
+  animation-timing-function: steps(12, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/* 7 · BANDERA — el jefe cede y el mundo queda cerrado. Se despliega a lo ancho,
+   como una tela que se estira desde el centro. Se ve una vez por mundo: cuatro
+   veces en toda la vida de un perfil, y por eso puede permitirse ser la más
+   larga de las que se ven jugando. */
+@keyframes cinta-bandera {
+  0% {
+    transform: scaleX(0) scaleY(0.4);
+    opacity: 0;
+  }
+  22% {
+    transform: scaleX(1.08) scaleY(1);
+    opacity: 1;
+  }
+  34% {
+    transform: scaleX(0.96) scaleY(1);
+    opacity: 1;
+  }
+  46% {
+    transform: scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+  92% {
+    transform: scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1) scaleY(1);
+    opacity: 0;
+  }
+}
+.cinta--bandera.cinta--entra {
+  animation-name: cinta-bandera;
+  animation-timing-function: steps(14, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/* 8 · VETA MADRE — LA RARA. Sale con el bloque raro: uno de cada veinte, que ya
+   estaba en el juego (PROB_BLOQUE_RARO, js/40-partida.js) dando un cromo sin que
+   se notara nada. La sorpresa necesita que exista algo que casi nunca se ve; sin
+   eso no hay sorpresa, hay rotación. Es la más lenta y la de más pasos: temblor
+   de piedra, la cinta se abre desde una rendija y se queda. */
+@keyframes cinta-veta-madre {
+  0% {
+    transform: scaleY(0.06) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    transform: scaleY(0.06) translateX(-4px);
+    opacity: 1;
+  }
+  16% {
+    transform: scaleY(0.06) translateX(4px);
+    opacity: 1;
+  }
+  22% {
+    transform: scaleY(0.06) translateX(-3px);
+    opacity: 1;
+  }
+  30% {
+    transform: scaleY(1.22) translateX(0);
+    opacity: 1;
+  }
+  40% {
+    transform: scaleY(0.94) translateX(0);
+    opacity: 1;
+  }
+  48% {
+    transform: scaleY(1.06) translateX(0);
+    opacity: 1;
+  }
+  56% {
+    transform: scaleY(1) translateX(0);
+    opacity: 1;
+  }
+  92% {
+    transform: scaleY(1) translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1) translateX(0);
+    opacity: 0;
+  }
+}
+.cinta--veta-madre.cinta--entra {
+  animation-name: cinta-veta-madre;
+  animation-timing-function: steps(16, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/* 9 · POSA — el ánimo, detrás de un fallo. Es la más corta y la más quieta de
+   todas, y va en tono piedra: baja un poco y se posa. Nada de rebotes, nada de
+   oro, nada de estallidos. Un cartel de fiesta encima de un fallo se lee como
+   burla, y el mensaje que hay debajo es el que importa. */
+@keyframes cinta-posa {
+  0% {
+    transform: translateY(-70%);
+    opacity: 0;
+  }
+  35% {
+    transform: translateY(6%);
+    opacity: 1;
+  }
+  55% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  90% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+.cinta--posa.cinta--entra {
+  animation-name: cinta-posa;
+  animation-timing-function: steps(6, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
 }
 
 /* ── Movimiento reducido: SIEMPRE al final del fichero ──────────────────────
@@ -2461,7 +2885,7 @@ button:focus:not(:focus-visible) {
    sigue valiendo si mañana esto se escribe de otra manera.
    ────────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .particula.particula--viva, .criatura--flota, .criatura--saltito, .criatura--asiente, .criatura--gotea, .criatura--gira, .nube, .veta--musgo, .btn-bloque--monta, .btn-bloque--destello, .reloj__arena.reloj__arena--voltea, .reloj .reloj__chorro, .reloj--prisa .reloj__arena, .reloj__cifra.reloj__cifra--late, .aviso-prisa.aviso-prisa--entra {
+  .particula.particula--viva, .criatura--flota, .criatura--saltito, .criatura--asiente, .criatura--gotea, .criatura--gira, .nube, .veta--musgo, .btn-bloque--monta, .btn-bloque--destello, .reloj__arena.reloj__arena--voltea, .reloj .reloj__chorro, .reloj--prisa .reloj__arena, .reloj__cifra.reloj__cifra--late, .cinta.cinta--entra, .cinta--prisa.cinta--entra .cinta__texto {
     animation: none !important;
   }
   /* Sin animación, los botones aparecerían grises y cambiarían de color de golpe */
@@ -2472,15 +2896,20 @@ button:focus:not(:focus-visible) {
   .particula.particula--viva {
     display: none;
   }
-  /* El cartel sigue APARECIENDO: quitarle el movimiento no puede quitarle el
-     aviso, porque el aviso es información y el movimiento solo es la gracia.
-     Se queda quieto en el centro los mismos 1,9 s y se va sin recorrido. */
-  .aviso-prisa.aviso-prisa--entra {
+  /* La cinta sigue APARECIENDO: quitarle el movimiento no puede quitarle el
+     mensaje, porque el mensaje es información y el movimiento solo es la gracia.
+     Se queda quieta en el centro el mismo tiempo y se va sin recorrido.
+
+     UNA sola línea cubre las nueve coreografías, porque todas se disparan con
+     la misma clase .cinta--entra. Cuando cada cartel tenía su propio par de
+     clases, añadir uno y olvidarse de su excepción dejaba un mensaje invisible
+     para quien juega con el movimiento apagado: el modo que más lo necesita. */
+  .cinta.cinta--entra {
     transform: none;
     opacity: 1;
   }
 }
-:root.sin-movimiento .particula.particula--viva, :root.sin-movimiento .criatura--flota, :root.sin-movimiento .criatura--saltito, :root.sin-movimiento .criatura--asiente, :root.sin-movimiento .criatura--gotea, :root.sin-movimiento .criatura--gira, :root.sin-movimiento .nube, :root.sin-movimiento .veta--musgo, :root.sin-movimiento .btn-bloque--monta, :root.sin-movimiento .btn-bloque--destello, :root.sin-movimiento .reloj__arena.reloj__arena--voltea, :root.sin-movimiento .reloj .reloj__chorro, :root.sin-movimiento .reloj--prisa .reloj__arena, :root.sin-movimiento .reloj__cifra.reloj__cifra--late, :root.sin-movimiento .aviso-prisa.aviso-prisa--entra {
+:root.sin-movimiento .particula.particula--viva, :root.sin-movimiento .criatura--flota, :root.sin-movimiento .criatura--saltito, :root.sin-movimiento .criatura--asiente, :root.sin-movimiento .criatura--gotea, :root.sin-movimiento .criatura--gira, :root.sin-movimiento .nube, :root.sin-movimiento .veta--musgo, :root.sin-movimiento .btn-bloque--monta, :root.sin-movimiento .btn-bloque--destello, :root.sin-movimiento .reloj__arena.reloj__arena--voltea, :root.sin-movimiento .reloj .reloj__chorro, :root.sin-movimiento .reloj--prisa .reloj__arena, :root.sin-movimiento .reloj__cifra.reloj__cifra--late, :root.sin-movimiento .cinta.cinta--entra, :root.sin-movimiento .cinta--prisa.cinta--entra .cinta__texto {
   animation: none !important;
 }
 
@@ -2494,10 +2923,15 @@ button:focus:not(:focus-visible) {
   display: none;
 }
 
-/* El cartel sigue APARECIENDO: quitarle el movimiento no puede quitarle el
-   aviso, porque el aviso es información y el movimiento solo es la gracia.
-   Se queda quieto en el centro los mismos 1,9 s y se va sin recorrido. */
-:root.sin-movimiento .aviso-prisa.aviso-prisa--entra {
+/* La cinta sigue APARECIENDO: quitarle el movimiento no puede quitarle el
+   mensaje, porque el mensaje es información y el movimiento solo es la gracia.
+   Se queda quieta en el centro el mismo tiempo y se va sin recorrido.
+
+   UNA sola línea cubre las nueve coreografías, porque todas se disparan con
+   la misma clase .cinta--entra. Cuando cada cartel tenía su propio par de
+   clases, añadir uno y olvidarse de su excepción dejaba un mensaje invisible
+   para quien juega con el movimiento apagado: el modo que más lo necesita. */
+:root.sin-movimiento .cinta.cinta--entra {
   transform: none;
   opacity: 1;
 }
@@ -2549,18 +2983,18 @@ button:focus:not(:focus-visible) {
   background: var(--cielo-0);
 }
 
-/* El .aviso-prisa se excluye de las dos reglas: es lo ÚNICO que va superpuesto
-   sobre la zona de juego en vez de dentro del flujo. Sin excluirlo, el
+/* La .cinta se excluye de las dos reglas: es lo ÚNICO que va superpuesto sobre
+   la zona de juego en vez de dentro del flujo. Sin excluirla, el
    `position: relative` de aquí le ganaba a su `position: absolute` por orden de
    cascada (misma especificidad, este fichero va después), su `top: 38%` pasaba
    a ser un desplazamiento relativo y el cartel aparecía 250 px por debajo del
    borde inferior de la pantalla. Es decir: no se veía, y nada fallaba. */
-.pantalla > *:not(.cielo):not(.aviso-prisa) {
+.pantalla > *:not(.cielo):not(.cinta) {
   position: relative;
   z-index: 1;
 }
 
-.zona-juego > *:not(.cielo):not(.aviso-prisa) {
+.zona-juego > *:not(.cielo):not(.cinta) {
   position: relative;
   z-index: 1;
 }

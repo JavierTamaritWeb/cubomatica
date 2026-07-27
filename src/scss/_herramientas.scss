@@ -152,6 +152,30 @@ $alturas: (alta: 900px, media: 780px, baja: 660px, corta: 600px, minima: 420px);
   animation: #{$nombre} #{$ms} steps(#{$pasos}, end) #{$repite} #{$relleno};
 }
 
+/* ── coreografia() ──────────────────────────────────────────────────────────
+   Como animar(), pero SIN DURACIÓN. La pone js/30-ui.js desde
+   CB.ui.cinta.COREOGRAFIAS, y por eso este mixin no la acepta: es la única
+   forma de que el número exista en un solo sitio.
+
+   El reparto es: el CSS es dueño de la FORMA (los fotogramas y el número de
+   pasos) y el JS es dueño del TIEMPO. Ningún número aparece dos veces, así que
+   no hay nada que sincronizar a mano.
+
+   Antes no era así. CB.ui.reloj.MS_CARTEL valía 1900 «porque es exactamente lo
+   que dura prisa-cruza», copiado a ojo de la hoja de animaciones, y el propio
+   comentario avisaba de que si divergían el cartel desaparecía a media pantalla
+   o se quedaba un rectángulo invisible tapando. Con una cinta eso era un número
+   duplicado; con ocho coreografías habrían sido ocho.
+
+   Sigue siendo imposible escribir una animación suavizada a través del mixin:
+   el tipo de tiempo es steps() y no se puede pasar otro. */
+@mixin coreografia($nombre, $pasos) {
+  animation-name: #{$nombre};
+  animation-timing-function: steps(#{$pasos}, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
 /* ── desactivar-movimiento() ────────────────────────────────────────────────
    UNA lista, DOS contextos. El ajuste del sistema (prefers-reduced-motion) y el
    del propio juego (:root.sin-movimiento) tienen que apagar exactamente lo
@@ -169,8 +193,13 @@ $alturas: (alta: 900px, media: 780px, baja: 660px, corta: 600px, minima: 420px);
   /* Sin animación, los botones aparecerían grises y cambiarían de color de golpe */
   #{$prefijo}.btn-bloque--monta { opacity: 1; transform: none; }
   #{$prefijo}.particula.particula--viva { display: none; }
-  /* El cartel sigue APARECIENDO: quitarle el movimiento no puede quitarle el
-     aviso, porque el aviso es información y el movimiento solo es la gracia.
-     Se queda quieto en el centro los mismos 1,9 s y se va sin recorrido. */
-  #{$prefijo}.aviso-prisa.aviso-prisa--entra { transform: none; opacity: 1; }
+  /* La cinta sigue APARECIENDO: quitarle el movimiento no puede quitarle el
+     mensaje, porque el mensaje es información y el movimiento solo es la gracia.
+     Se queda quieta en el centro el mismo tiempo y se va sin recorrido.
+
+     UNA sola línea cubre las nueve coreografías, porque todas se disparan con
+     la misma clase .cinta--entra. Cuando cada cartel tenía su propio par de
+     clases, añadir uno y olvidarse de su excepción dejaba un mensaje invisible
+     para quien juega con el movimiento apagado: el modo que más lo necesita. */
+  #{$prefijo}.cinta.cinta--entra { transform: none; opacity: 1; }
 }

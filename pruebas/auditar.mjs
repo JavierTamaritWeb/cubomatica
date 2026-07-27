@@ -155,6 +155,31 @@ const ESTILO = {
      solo la única manera admitida de ser escalonado. */
   suaves: (css) => [...css.matchAll(/(?:transition|animation):\s*([^;}]+)/g)].map((m) => m[1].trim())
     .filter((v) => !/steps\(/.test(v) && !/^(none|inherit|initial|unset)\b/.test(v)),
+
+  /* EL AGUJERO QUE ABRIÓ 1.8.0. El grep de arriba solo mira las formas
+     ABREVIADAS, `animation:` y `transition:`. Las nueve coreografías de la cinta
+     no la usan: el mixin coreografia() emite `animation-name` y
+     `animation-timing-function` por separado, a propósito, porque la duración la
+     pone el JS. Sin esta segunda comprobación, la regla dura del proyecto dejaba
+     de mirar precisamente las animaciones más nuevas — y no habría fallado, que
+     es lo peor: habría seguido en verde midiendo cada vez menos. */
+  suavesLargas: (css) => [...css.matchAll(/animation-timing-function:\s*([^;}]+)/g)]
+    .map((m) => m[1].trim())
+    .filter((v) => !/steps\(/.test(v) && !/^(inherit|initial|unset)\b/.test(v)),
+
+  /* Fotogramas que no dispara nadie. Una animación muerta no da ningún error:
+     simplemente no se ve, y nadie se entera de que se quedó a medio cablear. Es
+     lo que les pasó a las cinco que se retiraron en 1.7.0 —bloque-estalla,
+     bloque-agrieta, veta-sube, brillo-cofre, bloque-raro—, diseñadas y nunca
+     conectadas, y que estuvieron ahí versión tras versión sin que nada avisara. */
+  fotogramasHuerfanos: (css) => {
+    const declarados = [...css.matchAll(/@keyframes\s+([A-Za-z0-9_-]+)/g)].map((m) => m[1]);
+    const sinKeyframes = css.replace(/@keyframes\s+[A-Za-z0-9_-]+\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, '');
+    return declarados.filter((n) => {
+      const usos = new RegExp('(?:animation|animation-name):[^;}]*\\b' + n + '\\b');
+      return !usos.test(sinKeyframes);
+    });
+  },
 };
 
 const M = JSON.parse(leer(D('manifiesto.json')));
@@ -239,6 +264,15 @@ if (!HAY_DIST) {
   const suaves = ESTILO.suaves(css);
   juzgar(!suaves.length, 'ningún movimiento suave: transiciones y animaciones con steps()',
     'hay movimiento sin steps()', suaves.join('\n'));
+
+  const suavesLargas = ESTILO.suavesLargas(css);
+  juzgar(!suavesLargas.length,
+    'tampoco en forma larga: animation-timing-function siempre con steps()',
+    'hay animation-timing-function sin steps()', suavesLargas.join('\n'));
+
+  const huerfanos = ESTILO.fotogramasHuerfanos(css);
+  juzgar(!huerfanos.length, 'toda animación declarada la dispara alguna regla',
+    'hay @keyframes que no usa nadie', huerfanos.join(', '));
 
   /* Las MISMAS reglas sobre la fuente y EN POSITIVO. Los tres greps de arriba
      miran el resultado y dicen «no hay ninguna»; estos miran la fuente y dicen

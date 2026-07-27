@@ -174,6 +174,8 @@ CB.partida.iniciar = function (opciones) {
     luces: luces,
     antiazar: CB.antiazar.nuevoEstado(),
     escalera: CB.escalera.nuevoContador(),
+    /* Escalón 4: el nivel que se cuela por delante del guion, una sola vez. */
+    prerrequisitoPendiente: null,
     colaRepaso: CB.leitner.nuevaCola(),
     itemsServidos: [],
     servidosSet: {},
@@ -228,7 +230,19 @@ CB.partida.servirItem = function () {
 
   /* Reinserción de un ítem fallado, con OTROS números del mismo tipo */
   var reinsertado = CB.leitner.tocaReinsertar(e.colaRepaso, e.indice);
-  var nivelId = reinsertado || e.guion[e.indice];
+
+  /* ESCALÓN 4 de la escalera anti-frustración: un ítem del prerrequisito ya
+     dominado, por delante del guion y una sola vez. Se consume aquí porque este
+     es el único sitio que decide qué nivel toca. */
+  var delPrerrequisito = false;
+  var nivelId;
+  if (e.prerrequisitoPendiente) {
+    nivelId = e.prerrequisitoPendiente;
+    e.prerrequisitoPendiente = null;
+    delPrerrequisito = true;
+  } else {
+    nivelId = reinsertado || e.guion[e.indice];
+  }
   var nivel = CB.catalogo.get(nivelId);
   if (!nivel) { e.indice++; CB.partida.servirItem(); return; }
 
@@ -268,6 +282,15 @@ CB.partida.servirItem = function () {
   CB.ui.pintarBioma(e.mundo.bioma, e.indice / Math.max(1, e.guion.length));
   CB.partida.pintarRespuesta(item);
   CB.a11y.anunciar(item.consigna || item.enunciado || '');
+
+  /* Se dice DESPUÉS de pintar, porque servirItem empieza ocultando el mensaje:
+     ponerlo antes equivalía a no ponerlo. Y se dice, en vez de cambiar el nivel
+     en silencio, porque un niño que ve aparecer de golpe algo mucho más fácil
+     sin explicación concluye que el juego se ha estropeado o que le está dando
+     lástima. Se cuenta que es a propósito y que se vuelve. */
+  if (delPrerrequisito) {
+    CB.ui.mensaje('Vamos a por uno más fácil de este mismo tema. Luego volvemos.', 'animo');
+  }
 };
 
 /* Elige y monta el componente de respuesta */
@@ -465,8 +488,10 @@ CB.partida.tiempoAgotado = function () {
   CB.ui.mensaje(CB.mensajes.animo({
     perfil: CB.perfil, destreza: e.itemActual.destreza, rng: e.rng
   }), 'animo');
+  CB.ui.cinta.mostrar('posa', CB.mensajes.grito('animo', { perfil: CB.perfil, rng: e.rng }));
   CB.ui.personaje('rocarr', 'pista');
-  setTimeout(function () { CB.partida.siguiente(); }, 2200);
+  setTimeout(function () { CB.partida.siguiente(); },
+             CB.ui.cinta.espera('posa', 2200));
 };
 
 /* ── Responder ──────────────────────────────────────────────────────────── */
@@ -556,18 +581,33 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
 
   var vetaNueva = CB.partida.actualizarDestreza(item, nivel, true);
 
-  var msg = CB.mensajes.acierto({
+  var ctxMsg = {
     perfil: perfil, destreza: item.destreza, rng: e.rng,
     reparacion: e.intento === 2, superacion: e.intento === 2,
     racha: e.rachaPrimerIntento, vetaNueva: vetaNueva,
     lento: punt.mTiempo < 1.0, intento: e.intento
-  });
+  };
+  var msg = CB.mensajes.acierto(ctxMsg);
+  /* El mensaje entero se queda QUIETO aquí. Es donde va la frase de
+     procedimiento, que es la única parte que enseña algo y que hay que poder
+     leer con calma: no cabe en una cinta que cruza en menos de dos segundos. */
   CB.ui.mensaje(msg, 'acierto');
   CB.ui.personaje('cubi', 'acierto');
   if (e.rachaPrimerIntento >= 3) CB.ui.personaje('chispa', 'racha');
 
-  CB.audio.sfx('acierto');
-  if (bono > 0) CB.audio.sfx('gema');
+  /* Y la cinta se lleva el grito. La FORMA dice qué ha pasado: no se sortea.
+     Las cuatro categorías ya las calculaba CB.mensajes.categoriaAcierto() desde
+     el primer día —superación, descubrimiento, esfuerzo, procedimiento—; aquí
+     solo se les pone cuerpo. Encima va el bloque raro, que es 1 de cada 20 y se
+     lleva la coreografía que casi nunca se ve. */
+  var coreo = item.esBloqueRaro
+    ? 'veta-madre'
+    : CB.ui.cinta.POR_CATEGORIA[CB.mensajes.categoriaAcierto(ctxMsg)];
+  CB.ui.cinta.mostrar(coreo, CB.mensajes.grito('acierto', { perfil: perfil, rng: e.rng }));
+
+  /* El sonido lo pone la cinta: cada coreografía trae el suyo, y por eso una
+     superación no suena igual que un acierto de todos los días. */
+  if (bono > 0 && coreo !== 'cascada') CB.audio.sfx('gema');
   CB.ui.particulasDe(document.getElementById('item-enunciado'), 'var(--deco-hierba)');
 
   /* Bloque raro: cromo garantizado. Es la sorpresa que hace que merezca la pena
@@ -584,7 +624,10 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   CB.partida.comprobarLogros(item);
   CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
 
-  setTimeout(function () { CB.partida.siguiente(); }, 1600);
+  /* NUNCA menos de los 1600 ms de siempre: la espera se estira si la coreografía
+     es larga, pero no se encoge nunca. Acortarla recortaría tiempo de lectura. */
+  setTimeout(function () { CB.partida.siguiente(); },
+             CB.ui.cinta.espera(coreo, 1600));
 };
 
 /* ── Fallo ──────────────────────────────────────────────────────────────── */
@@ -610,6 +653,10 @@ CB.partida.trasFallo = function (item, nivel, extra) {
        Documento 5), y esa regla hay que contarla en el momento en que importa,
        no dejarla escrita en un documento que el niño no lee. */
     CB.ui.mensaje('Esta no suma gemas. Te queda otro intento. ' + pista, 'animo');
+    /* La cinta del ánimo es la más corta y la más quieta de las nueve, y va en
+       tono piedra: se posa, no estalla. Un cartel de fiesta encima de un fallo
+       se lee como burla, y lo que importa está escrito debajo. */
+    CB.ui.cinta.mostrar('posa', CB.mensajes.grito('animo', { perfil: perfil, rng: e.rng }));
     CB.ui.personaje('rocarr', 'pista');
     CB.audio.sfx('rocarr');
     setTimeout(function () {
@@ -645,18 +692,18 @@ CB.partida.trasFallo = function (item, nivel, extra) {
        que no se usaba. Se pedía además ANTES de registrar el fallo, con lo que
        el escalón que devolvía iba siempre uno por detrás.
 
-       El escalón 4 («volvemos un paso atrás al prerrequisito») sigue sin tener
-       implementación; ahora al menos se ve, en vez de esconderse en un `else if`
-       que saltaba de 2 a 4. Queda anotado como pendiente, no como resuelto. */
-    var esc = CB.escalera.siguienteEscalon(
-      CB.escalera.fallosDe(e.escalera, item.destreza), 2);
-
-    if (esc.accion === 'enPausa') {
-      /* Escalón 5: se retira el concepto SIN DECIRLE NADA AL NIÑO. */
-      CB.escalera.pausarConcepto(perfil, item.nivelId);
-    } else if (esc.accion === 'bajarD_opciones' && perfil.niveles[item.nivelId]) {
-      perfil.niveles[item.nivelId].D = esc.D;
-    }
+       EL ESCALÓN 4 YA ESTÁ. Estuvo declarado y sin implementación desde la
+       primera versión: la escalera decía «al cuarto fallo seguido de un
+       concepto, volvemos un paso atrás al prerrequisito», CB.grafo tenía escrita
+       y documentada la función que lo resuelve —prerrequisitoDominado(), con un
+       comentario que dice literalmente «para el escalón 4»— y no la llamaba
+       nadie. Un agujero de los que no fallan: el juego seguía preguntando lo
+       mismo que el niño no entendía, cuatro veces, cinco, y de ahí saltaba a
+       retirarle el concepto. Reconstruir desde abajo es §12.5 del plan. */
+    CB.partida.aplicarEscalon(
+      CB.escalera.siguienteEscalon(
+        CB.escalera.fallosDe(e.escalera, item.destreza), 2),
+      item, perfil, e);
 
     CB.pantallas.ir('p-partida');
     if (CB.vidas.agotadas(e.luces)) { CB.partida.finalizar('luces'); return; }
@@ -683,6 +730,45 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     }
     CB.partida.siguiente();
   });
+};
+
+/**
+ * Lo que la escalera manda hacer, aplicado. Devuelve la acción realmente
+ * ejecutada, o null si no se hizo nada.
+ *
+ * ESTÁ EXTRAÍDO A PROPÓSITO. Mientras vivía dentro del callback de la tarjeta de
+ * reparación, la única forma de comprobar que el escalón 4 funciona era leer el
+ * código, y leer el código es exactamente como el escalón 4 pasó varias
+ * versiones declarado y sin implementar sin que nada se pusiera rojo.
+ */
+CB.partida.aplicarEscalon = function (esc, item, perfil, e) {
+  if (!esc || !item || !perfil || !e) return null;
+
+  if (esc.accion === 'enPausa') {
+    /* Escalón 5: se retira el concepto SIN DECIRLE NADA AL NIÑO. */
+    CB.escalera.pausarConcepto(perfil, item.nivelId);
+    return 'enPausa';
+  }
+
+  if (esc.accion === 'prerrequisito') {
+    /* Escalón 4. Si no hay ningún prerrequisito dominado —pasa en los niveles
+       que abren un bloque, que por definición no tienen ninguno— no se hace nada
+       y el fallo siguiente cae en el escalón 5, que es lo que ocurría antes de
+       implementar esto. Degradar así es lo correcto: nunca inventarse un nivel
+       que el niño no haya superado ya, porque entonces «volvemos un paso atrás»
+       sería mentira y le pondría delante algo aún más difícil. */
+    var previo = CB.grafo.prerrequisitoDominado(item.nivelId, perfil);
+    if (!previo) return null;
+    e.prerrequisitoPendiente = previo;
+    return 'prerrequisito';
+  }
+
+  if (esc.accion === 'bajarD_opciones' && perfil.niveles[item.nivelId]) {
+    perfil.niveles[item.nivelId].D = esc.D;
+    return 'bajarD_opciones';
+  }
+
+  return null;
 };
 
 /* ── Azar ───────────────────────────────────────────────────────────────── */
@@ -803,18 +889,24 @@ CB.partida.aplicarLogros = function (nuevos) {
   var e = CB.partida.estado, i, l, r;
   for (i = 0; i < (nuevos || []).length; i++) {
     l = nuevos[i];
-    if (!l.luz) { CB.a11y.anunciar('Logro: ' + l.nombre); continue; }
+    /* Un logro sin luz solo se anunciaba a los lectores de pantalla: quien ve
+       la pantalla no se enteraba de nada. Ahora la cinta lo dice. */
+    if (!l.luz) {
+      CB.a11y.anunciar('Logro: ' + l.nombre);
+      CB.ui.cinta.mostrar('estalla', '¡Logro!');
+      continue;
+    }
 
     r = CB.vidas.conceder(e.luces, l.id, CB.perfil, e.modo);
     if (r.aplicada) {
       CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
       CB.ui.encenderLuz(e.luces.luces - 1);
       CB.ui.mensaje('¡Luz extra! ' + l.nombre, 'acierto');
-      CB.audio.sfx('luzExtra');
+      CB.ui.cinta.mostrar('estalla', '¡Luz extra!');
       CB.a11y.anunciar('Luz extra por ' + l.nombre);
     } else if (r.guardada) {
       CB.ui.mensaje('Guardas 1 luz para la próxima expedición.', 'acierto');
-      CB.audio.sfx('luzExtra');
+      CB.ui.cinta.mostrar('estalla', '¡Luz guardada!');
     }
   }
 };
@@ -827,7 +919,8 @@ CB.partida.darCromo = function () {
   if (!posibles.length) return;
   var c = CB.util.elegir(e.rng, posibles);
   perfil.cromos.push(c);
-  CB.audio.sfx('cofre');
+  /* El sonido lo pone la cinta 'veta-madre', que ya suena a cofre. Sonaba dos
+     veces seguidas y se oía como un eco. */
   CB.a11y.anunciar('Bloque raro: has encontrado el cromo de ' + c);
   var nuevos = CB.logros.comprobar('cromo', {
     perfil: perfil, modo: e.modo, hoyISO: CB.util.hoyISO()

@@ -2163,3 +2163,186 @@ algo del bundle recién construido en lugar de suponer que la recarga lo trajo.
 | Casos de la autoprueba | 16 | 16 |
 | Fallos registrados | E1–E39 | **E1–E46** |
 | `while` sin tope en `src/` | 1 | **0** |
+
+---
+
+# Ronda 11 · Celebrar sin cansar — versión 1.8.0 (27 de julio de 2026)
+
+Petición del usuario, en dos tiempos. Primero: *«genera un plan exacto y preciso para
+mejorar el juego… muy educativo, pero muy divertido y fácil de jugar (que no es lo mismo
+que fácil de resolver). Me gusta mucho el efecto visual del "Hurry up", haz lo mismo con
+todos los mensajes de felicitación o de ánimo. Crea tests para controlar errores antiguos
+y nuevos.»* Y después, una precisión que cambió el diseño entero: *«no tienen que tener
+exactamente el mismo formato que el "Hurry up" para no hacer monótonos los mensajes, al
+contrario, tienen que sorprender.»*
+
+## Nota de método: la auditoría multiagente no se pudo hacer
+
+Se lanzó un workflow de cinco lentes —pedagogía, diversión, facilidad, cintas y pruebas—
+con crítica adversaria por lente. **Murió entero: los seis agentes fallaron por límite
+semanal de uso y el diario no guardó ni un resultado parcial.** Lo que hay en
+`docs/plan-mejoras-1.8.0.md` y lo que se ha implementado sale de una lectura directa del
+código.
+
+Se anota porque cambia lo que se puede afirmar: **las fases de la cinta, el escalón 4 y
+las pruebas están apoyadas línea a línea**; las de diversión y fricción quedaron como
+direcciones con menos evidencia y **no se han implementado**. Cuando haya cuota, esas dos
+lentes merecen lanzarse antes de tocar nada más.
+
+## D-R11-1 · El repertorio, y por qué no es un efecto repetido
+
+La primera versión del plan proponía llevar *el mismo* efecto del «Hurry up» a las
+felicitaciones. Está mal, y el usuario lo señaló antes de que se escribiera una línea: un
+niño acierta entre veinte y treinta veces por sesión. Un efecto idéntico **deja de
+celebrar al tercero** y pasa a ser una espera con adorno.
+
+La regla que ordena la tabla es la contraria de la intuitiva: **el espectáculo es
+inversamente proporcional a la frecuencia**. Lo que se ve veinte veces por sesión es lo
+más corto (`cinta-sello`, 900 ms, un sello que se estampa sin desplazarse); lo que casi no
+pasa puede pararlo todo (`cinta-bandera`, 1800 ms, cuatro veces en la vida de un perfil).
+
+Tres capas contra la monotonía, y hacen falta las tres:
+
+1. **Significado.** La forma dice algo verdadero. Las cuatro categorías de acierto ya
+   estaban calculadas en `CB.mensajes.categoriaAcierto()` desde el primer día —superación,
+   descubrimiento, esfuerzo, procedimiento— y no se veían por ningún sitio. Se les pone
+   cuerpo, no se inventa señal nueva.
+2. **Novedad.** El grito sale de una bolsa barajada: `CB.mensajes.sacarDeBolsa()`, el mismo
+   mecanismo que ya impedía repetir mensaje. No se añadió nada; se reutilizó.
+3. **Rareza.** `cinta-veta-madre` sale con el bloque raro, 1 de cada 20. Sin algo que casi
+   nunca se ve no hay sorpresa: hay rotación. Y el bloque raro llevaba desde siempre dando
+   un cromo **sin que se notara nada**.
+
+## D-R11-2 · El grito va en la cinta; el procedimiento, no
+
+Decisión que estuvo a punto de salir al revés. Los mensajes de acierto de la categoría A
+son `'¡Muy bien! {proc}'`, y `{proc}` es una frase larga: «Has pedido prestada una decena y
+la has deshecho bien». **Esa frase es la única parte del mensaje que enseña algo**, y no se
+lee de refilón mientras cruza la pantalla en 900 ms.
+
+Así que se parte: la cinta lleva un **grito corto de material nuevo** (24 + 12 cadenas de
+≤ 16 caracteres en `CB.datos.MENSAJES.GRITOS`), y el mensaje entero se queda quieto en
+`#item-mensaje` como hasta ahora. **Ninguna de las 84 + 48 plantillas se ha tocado**, y por
+tanto ninguna prueba de `casos-mensajes.js` se rompió.
+
+Se descartó la alternativa —cortar el mensaje por el primer `!`— porque la categoría B son
+frases de una pieza («¡Lo has vuelto a intentar y ha salido!», 37 caracteres) y no tienen
+por dónde partirse. Una heurística que funciona en una categoría de cuatro es la tercera
+familia de fallo de este proyecto.
+
+Los gritos de ánimo van **sin exclamación** y en otro registro: detrás de un fallo, un
+cartel gritando se lee como burla. Y pasan por las mismas dos listas negras que los 132
+mensajes (E53), porque un criterio aplicado en un sitio de dos es exactamente E44.
+
+## D-R11-3 · Un nodo, y ningún número duplicado
+
+`.aviso-prisa` → `.cinta--prisa`; `#aviso-prisa` → `#cinta`. **Un solo nodo por pantalla.**
+No es ahorro: dos cintas superpuestas son ilegibles, y mientras hubiera un nodo por aviso,
+que no coincidieran dependía de la disciplina de quien escribe. Ahora es imposible por
+construcción. `CB.ui.cinta.nodoDe()` resuelve la de la pantalla visible en cada llamada, y
+no la cachea: la partida y el jefe tienen la suya, y cachear la primera dejaba al jefe
+escribiendo en un nodo oculto de otra pantalla.
+
+Y muere `CB.ui.reloj.MS_CARTEL = 1900`, que valía eso «porque es exactamente lo que dura
+`prisa-cruza`» —copiado a ojo, con un comentario avisando de que si divergían el cartel
+desaparecía a media pantalla—. Con nueve coreografías habrían sido nueve copias.
+
+**El reparto nuevo: el CSS es dueño de la forma, el JS es dueño del tiempo.** El mixin
+`coreografia()` emite `animation-name`, `animation-timing-function: steps(n, end)` y
+`animation-fill-mode`, y **no acepta duración**; la pone `CB.ui.cinta.COREOGRAFIAS`. Ningún
+número vive en dos sitios, así que no hay nada que sincronizar.
+
+El parpadeo del «Hurry up!» se movió al hijo `.cinta__texto`. Si siguiera en la cinta
+habría que declarar dos animaciones en la misma propiedad, y entonces la duración que
+escribe el JS afectaría también al parpadeo. En el hijo, sus 300 ms viven solo en el CSS.
+
+## D-R11-4 · El escalón 4: cuatro versiones declarado y sin implementar
+
+La escalera anti-frustración declara **cinco** escalones en `2A-escalera.js`. El cuarto
+—«volvemos un paso atrás al prerrequisito»— no se aplicaba. `CB.grafo.prerrequisitoDominado()`
+estaba escrita, probada por `casos-motor.js` y documentada *«para el escalón 4 de la
+escalera»*… y **no la llamaba nadie**. El juego seguía preguntando lo que el niño no
+entendía y de ahí saltaba a retirarle el concepto.
+
+Es la primera de las tres familias que ya se cobraron siete fallos en verde en la ronda 10:
+**una función que nadie llama no falla, simplemente no ocurre.**
+
+Dos decisiones dentro de la corrección:
+
+- **Se dice.** «Vamos a por uno más fácil de este mismo tema. Luego volvemos.» Cambiar el
+  nivel en silencio hace que un niño que ve aparecer algo mucho más fácil concluya que el
+  juego se ha estropeado o que le está dando lástima. Y se dice **después** de pintar,
+  porque `servirItem()` empieza ocultando el mensaje: ponerlo antes era no ponerlo.
+- **Degrada, no inventa.** Sin ningún prerrequisito dominado no se hace nada y el fallo
+  siguiente cae en el escalón 5, como antes. Inventar un nivel no superado convertiría
+  «volvemos un paso atrás» en mentira y le pondría delante algo aún más difícil.
+
+Y se extrae `CB.partida.aplicarEscalon()`. Mientras la decisión vivía dentro del callback
+de la tarjeta de reparación, **la única forma de comprobarla era leer el código**, que es
+exactamente como el escalón 4 pasó cuatro versiones sin que nada se pusiera rojo.
+
+## D-R11-5 · Lo que se descartó, y por qué
+
+- **Ocultar los diez logros «reservados a la versión 2».** El plan lo daba por un problema
+  visible —«un niño ve diez huecos inalcanzables»—. Al comprobarlo: `CB.logros.LISTA` no la
+  lee ninguna pantalla, solo `24-logros.js` internamente. No hay nada que ocultar. La
+  premisa era falsa y la corrección habría sido humo.
+- **Las fases de diversión y fricción.** Sin la auditoría multiagente, la evidencia no da
+  para tocarlas. Quedan escritas en el plan, sin implementar y dichas como tales.
+
+## D-R11-6 · Los guardianes, y los dos que nacieron rotos
+
+Nueve nuevos, E47-E55, y **los nueve validados sembrando el fallo** en `src/`,
+reconstruyendo y comprobando que se ponía rojo el que debía. Dos no lo hicieron:
+
+- **E51 estaba en verde con el fallo dentro.** Comprobaba las clases y el valor de
+  `_salida`, y las dos cosas sobreviven a quitar la cancelación: reasignar `className`
+  repone las clases igual, y `_salida` cambia igual al programar el segundo temporizador.
+  El fallo real —el temporizador de la primera cinta sigue vivo y esconde la segunda a
+  media animación— solo se ve **espiando `clearTimeout`**. Y el doble se afirma instalado,
+  por lo que se aprendió con `window.caches`.
+- **E55 se puso rojo contra código correcto**, porque copié el umbral de la escalera (4)
+  en vez de preguntárselo (es 3). Ahora lo busca recorriendo `siguienteEscalon()`. Escribir
+  el número dos veces es literalmente E43.
+
+Dos comprobaciones mecánicas nuevas en `auditar.mjs`, y **la primera tapa un agujero que
+abrió esta misma versión**:
+
+- **`animation-timing-function` en forma larga.** El grep de la regla dura solo miraba
+  `animation:` abreviado. El mixin `coreografia()` emite longhands, así que la regla del
+  proyecto habría dejado de mirar precisamente las nueve animaciones más nuevas — **en
+  verde**. Lección general: al escribir un grep de regla dura, preguntarse qué *forma* de
+  la propiedad se está mirando; el punto ciego es siempre la que no se pensó.
+- **`@keyframes` que no dispara nadie.** Una animación muerta no da error: no se ve. Es lo
+  que les pasó a las cinco retiradas en 1.7.0, ahí versión tras versión.
+
+Las dos, validadas sembrando la violación.
+
+## D-R11-7 · Dos trampas de medición nuevas, las dos propias
+
+Ninguna era del código; las dos hacían que la comprobación midiera otra cosa:
+
+- **Filtrar `CB.pruebas.suites` con la autoejecución en marcha.** La página corre sola al
+  cargar. Truncar el array a mitad de carrera deja al ejecutor sin suites, y **imprime un
+  resumen verde de un subconjunto**: 248/0 en vez de 489/0, sin que nada avise. Hay que
+  esperar al sufijo `· NNNN ms`.
+- **Medir una animación en una pestaña de segundo plano.** Chrome la estrangula:
+  `getAnimations()[0].currentTime` se queda clavado en 0 con `playState: 'running'`, y toda
+  medida de opacidad o de posición sale del fotograma 0. La forma fiable es **mover la
+  animación a mano** (`pause()` y asignar `currentTime`), que además es determinista. Así
+  se comprobó que ninguna de las nueve coreografías llega al teclado: la más baja es
+  `sube`, con el borde inferior en 522 px contra un teclado que empieza en 555.
+
+Y una tercera, que es la de siempre: congelar la animación **no congela el temporizador de
+salida**. La cinta se escondía sola entre dos llamadas y la primera captura salió sin ella.
+
+## Estado al cerrar 1.8.0
+
+| | 1.7.1 | 1.8.0 |
+|---|---|---|
+| Comprobaciones de la suite | 443 | **489** en dos suites |
+| Comprobaciones de la auditoría | 56 | **58** |
+| Fallos registrados | E1–E46 | **E1–E55** |
+| Coreografías de la cinta | 1 | **9** |
+| Efectos de sonido | 12 | 12 |
+| Escalones de la escalera implementados | 4 de 5 | **5 de 5** |

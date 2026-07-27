@@ -12,14 +12,14 @@
 /* z-index 0, no -1: con -1 el cielo se pinta DETRÁS del fondo del body y no se
    ve nunca. El contenido de la pantalla sube a 1. */
 .cielo { position: absolute; inset: 0; z-index: 0; background: var(--cielo-0); }
-/* El .aviso-prisa se excluye de las dos reglas: es lo ÚNICO que va superpuesto
-   sobre la zona de juego en vez de dentro del flujo. Sin excluirlo, el
+/* La .cinta se excluye de las dos reglas: es lo ÚNICO que va superpuesto sobre
+   la zona de juego en vez de dentro del flujo. Sin excluirla, el
    `position: relative` de aquí le ganaba a su `position: absolute` por orden de
    cascada (misma especificidad, este fichero va después), su `top: 38%` pasaba
    a ser un desplazamiento relativo y el cartel aparecía 250 px por debajo del
    borde inferior de la pantalla. Es decir: no se veía, y nada fallaba. */
-.pantalla > *:not(.cielo):not(.aviso-prisa) { position: relative; z-index: 1; }
-.zona-juego > *:not(.cielo):not(.aviso-prisa) { position: relative; z-index: 1; }
+.pantalla > *:not(.cielo):not(.cinta) { position: relative; z-index: 1; }
+.zona-juego > *:not(.cielo):not(.cinta) { position: relative; z-index: 1; }
 @for $i from 0 through 5 { .cielo--#{$i} { background: var(--cielo-#{$i}); } }
 
 /* ── CAPA 2 — mejora progresiva, solo donde de verdad está soportada ────── */

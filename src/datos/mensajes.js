@@ -326,6 +326,34 @@ CB.datos.MENSAJES.animo = []
   .concat(CB.datos.MENSAJES.animo_P1)
   .concat(CB.datos.MENSAJES.animo_P2);
 
+/* ── GRITOS: lo que va escrito en la cinta ──────────────────────────────────
+   La cinta cruza la pantalla en menos de dos segundos, así que solo cabe —y
+   solo se lee— algo muy corto. El mensaje entero sigue apareciendo QUIETO en
+   #item-mensaje, que es donde vive la carga educativa: «Has pedido prestada una
+   decena y la has deshecho bien» no se puede leer de refilón, y esa frase es la
+   única parte del mensaje que de verdad enseña algo.
+
+   Por eso el grito es material NUEVO y no un trozo recortado del mensaje. Las
+   84 plantillas de acierto y las 48 de ánimo no se tocan.
+
+   Los de ánimo van SIN exclamación y en otro registro: detrás de un fallo, un
+   cartel gritando se lee como burla. Se les aplican las mismas dos listas
+   negras que a todo lo demás (casos-mensajes.js, M5 y M6). */
+CB.datos.MENSAJES.GRITOS = {
+  acierto: [
+    '¡Toma!', '¡Eso es!', '¡Ahí está!', '¡Bloque!', '¡Clavado!', '¡Se abre!',
+    '¡Justo!', '¡Muy bien!', '¡Cae!', '¡Exacto!', '¡Buen pico!', '¡Adelante!',
+    '¡Limpio!', '¡Así se cava!', '¡Perfecto!', '¡Sigue!', '¡Correcto!',
+    '¡Bien visto!', '¡Vamos!', '¡Otra veta!', '¡Chispa!', '¡Buen golpe!',
+    '¡Ya está!', '¡Cristal!'
+  ],
+  animo: [
+    'Casi', 'Otra vez', 'Mira aquí', 'Con calma', 'Ya casi', 'Vuelve a mirar',
+    'Sin prisa', 'Un paso más', 'Prueba otra', 'Respira', 'Tú puedes',
+    'Vamos allá'
+  ]
+};
+
 /* Listas negras: viven aquí para que casos-mensajes.js y casos-motes las
    compartan sin duplicar el criterio en dos sitios. */
 CB.datos.MENSAJES.NEGRA_PERSONA = [
