@@ -79,6 +79,7 @@ $RECYCLE.BIN/
 __pycache__/
 *.py[cod]
 .server.pid
+.claude/*.lock
 *.log
 
 # ── Copias y temporales del propio trabajo ─────────────────────────────────
