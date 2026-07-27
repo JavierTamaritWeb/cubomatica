@@ -209,28 +209,46 @@ CB.adaptativo.reglaSimple = function (nivelEstado) {
 
 /* ── Dificultad interna D del nivel (§8.2) ─────────────────────────────────
    Sube tras 3 aciertos consecutivos A PRIMER INTENTO; baja tras 2 fallos.
-   D es interno al nivel y NO cambia el rango declarado en el catálogo. */
+   D es interno al nivel y NO cambia el rango declarado en el catálogo.
+
+   LOS CONTADORES NO PUEDEN EMPEZAR POR GUION BAJO. Se llamaban `_racha` y
+   `_fallos`, y CB.almacen.sanear() descarta por diseño toda clave que empiece
+   por `_` —«campos internos, no se guardan»—, así que se borraban en cada
+   guardado mientras que `D` sí se guardaba. El resultado era un trinquete en una
+   sola dirección:
+
+     · para SUBIR hacen falta 3 aciertos seguidos del MISMO nivel, y una partida
+       sirve como mucho 3 ítems del mismo nivel (CB.partida.MAX_REPETICIONES).
+       O sea: exigía un pleno de 3 sobre 3 dentro de una única sesión, porque al
+       día siguiente la racha volvía a cero.
+     · para BAJAR bastan 2 fallos, y además CB.partida.trasFallo pone D = 1 a la
+       segunda caída del concepto. Eso sí persiste, porque vive en `D`.
+
+   Es decir: la dificultad podía bajar para siempre y casi nunca subir. Un niño
+   que mejora se quedaba con los ítems fáciles de su peor día. Con nombres sin
+   guion bajo, los contadores sobreviven al guardado y la regla hace lo que dice.
+   No hace falta migración: ausentes valen 0, que es como empezaban. */
 CB.adaptativo.actualizarD = function (nivelEstado, correcto, primerIntento) {
   nivelEstado.D = nivelEstado.D || 2;
-  nivelEstado._racha = nivelEstado._racha || 0;
-  nivelEstado._fallos = nivelEstado._fallos || 0;
+  nivelEstado.rachaD = nivelEstado.rachaD || 0;
+  nivelEstado.fallosD = nivelEstado.fallosD || 0;
 
   if (correcto && primerIntento) {
-    nivelEstado._racha++;
-    nivelEstado._fallos = 0;
-    if (nivelEstado._racha >= 3 && nivelEstado.D < 3) {
+    nivelEstado.rachaD++;
+    nivelEstado.fallosD = 0;
+    if (nivelEstado.rachaD >= 3 && nivelEstado.D < 3) {
       nivelEstado.D++;
-      nivelEstado._racha = 0;
+      nivelEstado.rachaD = 0;
     }
   } else if (!correcto) {
-    nivelEstado._fallos++;
-    nivelEstado._racha = 0;
-    if (nivelEstado._fallos >= 2 && nivelEstado.D > 1) {
+    nivelEstado.fallosD++;
+    nivelEstado.rachaD = 0;
+    if (nivelEstado.fallosD >= 2 && nivelEstado.D > 1) {
       nivelEstado.D--;
-      nivelEstado._fallos = 0;
+      nivelEstado.fallosD = 0;
     }
   } else {
-    nivelEstado._racha = 0;
+    nivelEstado.rachaD = 0;
   }
   return nivelEstado.D;
 };

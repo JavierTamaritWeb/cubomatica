@@ -120,10 +120,19 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     'dos mundos nunca comparten música: cambiar de mundo se oye',
     repesMundo.join(', '));
 
-  /* claveDePantalla resuelve el mundo en curso */
+  /* claveDePantalla resuelve el mundo en curso.
+
+     EL ESTADO SE MONTA CON LA FORMA QUE ESCRIBE iniciar(), no con la que le
+     venga bien al test. Esta comprobación llevaba desde 1.0.0 construyendo
+     `{mundoId: m.id}`, que es una forma que CB.partida.iniciar() no produce
+     jamás —el estado guarda `mundo`, el objeto— y que estaba copiada de la
+     línea de 07-musica.js que tenía el fallo. Test e implementación se daban la
+     razón el uno al otro mientras tres de las cuatro pistas de mundo no sonaban
+     nunca. El guardián E42 de casos-regresiones.js ata la forma al iniciar()
+     de verdad; aquí basta con no volver a inventársela. */
   var estadoPrevio = CB.partida.estado;
   var bien = CB.MUNDOS.every(function (m) {
-    CB.partida.estado = { mundoId: m.id };
+    CB.partida.estado = { mundo: CB.catalogo.getMundo(m.id) };
     return CB.musica.claveDePantalla('p-partida') === CB.musica.POR_BIOMA[m.bioma];
   });
   /* Y sin partida en curso no revienta: devuelve algo reproducible */

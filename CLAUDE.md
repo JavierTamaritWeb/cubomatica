@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Cubomática 1.7.0** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
+**Cubomática 1.7.1** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
 
 ## A build step, but the same target: double-click, no network
 
@@ -43,10 +43,19 @@ Both need `npm run build` first; without it they say so instead of hanging on "P
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **405 checks, 0 failures** (deterministic).
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **443 checks, 0 failures** (deterministic).
+- **Serve the test pages with `Cache-Control: no-store`.** Chrome will happily reuse a cached `dist/js/cubomatica.js` or `casos-*.js` across a reload, so a green summary can be measuring code from three edits ago — and the check count won't necessarily change, which is what makes it invisible. Before trusting a run, assert something about the bundle you just built (`/paso <= 20/.test(String(CB.jefes.opciones))`, a function that should now exist) rather than assuming the reload did it.
 - **Run it in a foreground tab.** Chrome throttles `setTimeout` in a background tab, and the suites are chained with `setTimeout(…, 0)`: backgrounded, a 10 s run stretches past 80 s or stalls outright. A partial `resumen` is easy to mistake for a finished one — the `· NNNN ms` suffix is only appended when the last suite ends, so a summary without it is still running.
 
-**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all thirty-nine found so far (E1-E39) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
+**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all forty-six found so far (E1-E46) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
+
+**Where the last seven came from, because none of them was a typo.** E40-E46 were all green under 56 audit checks, 405 suite checks and a clean class cross-check. Three families, and each one is a place worth looking first:
+
+- **A function nobody calls.** `CB.partida.marcarLectura()` was correct, documented, and only invoked from `responder()` — the instant of answering — so every word problem recorded rt = 0, which handed out the maximum speed bonus and made the anti-guess detector flag slow readers. Nothing fails when a function is never reached.
+- **A property that doesn't exist.** `CB.musica.claveDePantalla()` read `estado.mundoId`; `iniciar()` writes `estado.mundo`. `undefined` fell through to the fallback, so three of the four world themes never played. In a codebase with no types and no modules, a misspelled property read is silent by construction — grep cross-module `.estado.` accesses when in doubt.
+- **A rule applied in one place out of three.** The "one answer per attempt" latch existed only in `CB.partida.responder`; the boss fight and the calibration each had the identical hole (5 taps = 5 blocks; 5 taps = 5 correct out of 4 items, which sets the child's trimester ceiling). When a fix's comment explains a general hazard, search for the other sites that share it.
+
+Two more mechanical checks worth keeping: every `while` in `src/` must have a bound (`42-jefes.js` had the only one that didn't, and it hung the tab in 22.9 % of one boss's fights), and `CB.almacen.sanear()` drops every key starting with `_`, so **no `_`-prefixed field may hold state that needs to survive a save** — that is what made difficulty `D` a one-way ratchet.
 
 `auditar.mjs` block 8 runs `herramientas/cruzar-clases.mjs` — a zero-dependency Node cross-check of every CSS class against HTML and JS, in both directions. It is the only thing that can see a half-finished rename: a class renamed in the CSS and not in the JS throws no error, it just renders unstyled. It reads the real files on purpose; the browser suite mounts reduced mock sections, so half the game's classes would look unused there.
 
@@ -104,8 +113,10 @@ Changing any of these numbers means changing the test that asserts it, on purpos
 - **Zero has many spellings in CSS**, and the hard-rule regexes knew one. `border-radius: 0.5rem` slipped past the filter that forgives zero, because `0.5rem` *starts* with `0`; `box-shadow: 0 0 4px` slipped past a regex demanding `px` on the offsets; `transition: opacity 90ms` slipped past a search for `ease` — CSS's **default timing function is `ease`**, so a smooth transition need never write the word. Read declaration by declaration and layer by layer, and prefer asserting the one permitted form (`steps(`) over enumerating the forbidden ones.
 - **`window.caches = doble` does nothing.** It is getter-only, so in sloppy mode the assignment is silently dropped and your test measures the real CacheStorage. Use `Object.defineProperty` (it *is* configurable), restore the saved **descriptor**, and assert the double actually installed.
 - **A suite may return a promise and the runner awaits it** (`ejecutor.js`). Before that it called `s.fn()` and moved on in the same turn, so every assertion about async work was written as "if it hasn't arrived yet, pass" — which passes always.
+- **`CB.componentes.montar()` blocks synchronously and unblocks in a timer**, even with `bloqueoMs: 0`. Type a digit on the line after building a keypad and `pulsa()` takes its early return, so the visor stays empty — and "the first Enter must not answer" then passes because there was nothing to answer. Await the unblock, then assert the digit actually landed before testing anything downstream of it.
+- **Don't construct a module's input by hand when a real function produces it.** `casos-musica.js` built `{mundoId: m.id}` — a shape `CB.partida.iniciar()` never emits — copied from the very line that had the bug, so test and code agreed with each other for the whole life of the project while three of the four world themes never played. Build the state with `iniciar()` and ask the module about *that* object.
 
-**Reading a function's source (`fn.toString().indexOf(…)`) is only valid for string literals and property names.** Terser preserves those (`mangle.properties` is forbidden — it would rewrite the localStorage keys of every saved profile). It does not preserve variable names, spacing or quote style. The dangerous case is a *negative* assertion: `indexOf("crear('h3'") === -1` passed for years and then passed for the wrong reason, because terser writes double quotes. Assert behaviour instead.
+**Reading a function's source (`fn.toString().indexOf(…)`) is only valid for string literals and property names.** Terser preserves those (`mangle.properties` is forbidden — it would rewrite the localStorage keys of every saved profile). It does not preserve variable names, spacing or quote style. The dangerous case is a *negative* assertion: `indexOf("crear('h3'") === -1` passed for years and then passed for the wrong reason, because terser writes double quotes. Assert behaviour instead. And `toString()` **includes comments** in the readable bundle but not in the minified one, so `!/mundoId/.test(String(fn))` went red against correct code the moment the fix's own comment explained what `mundoId` used to be — a negative source assertion that disagrees between the two test pages is the same trap wearing a different hat.
 - **The version string**: `CB.VERSION` in `js/00-nucleo.js` is the single source. `README.md`, `CHANGELOG.md` and `LEEME.txt` repeat it and `auditar.mjs` fails if they drift. Bump the major only when the saved-profile format changes, because that forces a migration in `01-almacen.js`.
 
 `js/17-catalogo.js` is the single source of truth for the 92 levels and 4 worlds and is explicitly a contract file.

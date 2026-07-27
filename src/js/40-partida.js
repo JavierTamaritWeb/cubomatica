@@ -278,6 +278,10 @@ CB.partida.pintarRespuesta = function (item) {
      ítem nuevo (desde servirItem) como el segundo intento tras un fallo. */
   e.respondido = false;
 
+  /* El oyente que arranca el cronómetro de los problemas en el primer toque.
+     Se pide en cada ítem y se instala una sola vez: el contenedor es permanente. */
+  CB.componentes.conectarLectura(CB.componentes.contenedor());
+
   var efectos = CB.antiazar.consumir(e.antiazar);
   CB.componentes._confirmacionPendiente = efectos.confirmacionDoble;
   var bloqueo = Math.max(CB.componentes.MS_CONSTRUCCION, efectos.bloqueoMs || 0);
@@ -401,10 +405,35 @@ CB.partida.pararCronometro = function () {
   CB.ui.reloj.parar();
 };
 
-/* El primer toque de un problema arranca el cronómetro de puntuación. */
+/* El primer toque de un problema arranca el cronómetro de puntuación.
+   ────────────────────────────────────────────────────────────────────────────
+   ESTA FUNCIÓN EXISTÍA Y NO LA LLAMABA NADIE. El único sitio que la invocaba era
+   `responder()`, o sea el instante EXACTO en que el niño contesta: `t0` se ponía
+   a `ahora()` y el rt que se medía a renglón seguido era 0 ms. Medido en
+   navegador: 3.743 ms reales de lectura y razonamiento → rt registrado 0.
+
+   Lo que eso rompía, y ninguna de las 405 comprobaciones lo veía:
+
+     · el multiplicador de tiempo salía siempre 1,4 —el tope— y con él las 3
+       gemas de bono por rapidez, en TODOS los problemas de enunciado, tardara
+       lo que tardara. La familia que más cuesta era la que más premiaba.
+     · el informe del adulto daba 0 ms de tiempo medio en los 20 subtipos.
+     · y lo peor: en el antiazar, rt = 0 dispara S1 (< 700 ms) siempre. Tres
+       problemas fallados seguidos disparan además S3 (tres fallos de menos de
+       2 s), y dos señales son azar. Es decir, el niño que lee despacio y falla
+       tres problemas seguidos —justo el que más ayuda necesita— quedaba marcado
+       como que responde al tuntún. Con el rt de verdad: cero señales.
+
+   Ahora la llama `CB.componentes.conectarLectura()` desde el contenedor de
+   respuesta, que es donde ocurre el primer toque REAL. Se comprueba `subtipo`
+   aquí dentro y no en quien llama, para que ningún sitio nuevo pueda pisar el
+   `t0` de una operación corriente: en esas el cronómetro arranca al mostrarlas y
+   mover `t0` al primer dígito regalaría el tiempo de pensarlo. */
 CB.partida.marcarLectura = function () {
   var e = CB.partida.estado;
   if (!e || e.lecturaHecha) return;
+  if (!e.itemActual || !e.itemActual.subtipo) return;   // solo los problemas
+  if (CB.partida.bloqueado) return;                     // los 800 ms no se cobran
   e.lecturaHecha = true;
   e.t0 = CB.util.ahora();
 };
@@ -468,7 +497,14 @@ CB.partida.responder = function (valor, origen, extra) {
   var item = e.itemActual;
   var nivel = CB.catalogo.get(item.nivelId);
 
-  if (item.subtipo && !e.lecturaHecha) CB.partida.marcarLectura();
+  /* Red de seguridad: si nadie tocó nada antes de contestar —un formato que no
+     pase por el contenedor de respuesta, o una vía de teclado futura— se mide
+     desde que se MOSTRÓ el enunciado. Mide de más, porque incluye la lectura,
+     pero medir de más es un error que se ve; medir cero es el que no se ve. */
+  if (item.subtipo && !e.lecturaHecha) {
+    e.lecturaHecha = true;
+    e.t0 = e.tLectura0 || CB.util.ahora();
+  }
   var rt = CB.util.rt(e.t0 || CB.util.ahora());
 
   /* Corrección */
@@ -556,8 +592,6 @@ CB.partida.trasFallo = function (item, nivel, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
 
   CB.distractores.registrar(perfil, item, Number(item.valorDado));
-  var fallosConcepto = CB.escalera.fallosDe(e.escalera, item.destreza);
-  var esc = CB.escalera.siguienteEscalon(fallosConcepto, e.intento);
 
   CB.audio.sfx('fallo');
   /* UNA SOLA CONSECUENCIA VISIBLE: no cae la gema y el marcador se queda quieto
@@ -603,13 +637,25 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     }
     CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
 
-    /* Escalones 3, 4 y 5 según los fallos acumulados de ESE concepto. */
-    var fc = CB.escalera.fallosDe(e.escalera, item.destreza);
-    if (fc >= 4) {
+    /* Escalones 3, 4 y 5 según los fallos acumulados de ESE concepto.
+       LA DECISIÓN LA TOMA CB.escalera, no este fichero. Antes se llamaba a
+       siguienteEscalon() al entrar en trasFallo, se guardaba en una variable
+       `esc` que no leía nadie, y aquí abajo se volvían a escribir los umbrales a
+       mano. Dos implementaciones de la misma escalera, y solo una probada: la
+       que no se usaba. Se pedía además ANTES de registrar el fallo, con lo que
+       el escalón que devolvía iba siempre uno por detrás.
+
+       El escalón 4 («volvemos un paso atrás al prerrequisito») sigue sin tener
+       implementación; ahora al menos se ve, en vez de esconderse en un `else if`
+       que saltaba de 2 a 4. Queda anotado como pendiente, no como resuelto. */
+    var esc = CB.escalera.siguienteEscalon(
+      CB.escalera.fallosDe(e.escalera, item.destreza), 2);
+
+    if (esc.accion === 'enPausa') {
       /* Escalón 5: se retira el concepto SIN DECIRLE NADA AL NIÑO. */
       CB.escalera.pausarConcepto(perfil, item.nivelId);
-    } else if (fc === 2 && perfil.niveles[item.nivelId]) {
-      perfil.niveles[item.nivelId].D = 1;
+    } else if (esc.accion === 'bajarD_opciones' && perfil.niveles[item.nivelId]) {
+      perfil.niveles[item.nivelId].D = esc.D;
     }
 
     CB.pantallas.ir('p-partida');
@@ -1142,11 +1188,33 @@ CB.partida.sincronizarSonido = function () {
   }
 };
 
+/* SUBE POR EL ÁRBOL, COMO CB.pantallas.conectar. Los cuatro botones de la barra
+   llevan dos <span> dentro —el icono y el rótulo, que existen porque E15/E16
+   exigen palabra visible en todo botón de barra—, así que el ev.target de un
+   toque sobre el emoji o sobre la palabra es el span, no el botón, y el span no
+   tiene data-accion. Leerlo directamente de ev.target dejaba Pista, Pausa,
+   Sonido y Salir sin responder salvo que se acertara en el reborde de padding.
+
+   Es un fallo que se prueba y no se ve: en el navegador el botón se hunde igual
+   —eso es CSS, :active— y no hay ningún error. Lo mismo que 31-pantallas.js ya
+   había resuelto para data-ir con este mismo bucle, y con este mismo comentario.
+
+   La resolución vive en su propia función y no dentro del oyente a propósito:
+   así se puede comprobar sin instalar un oyente de documento en la suite, que
+   además se quedaría puesto y contaría doble en la segunda ejecución. */
+CB.partida.accionDe = function (nodo) {
+  var n = 0, a = null;
+  while (nodo && nodo !== document.body && n < 4) {
+    if (nodo.getAttribute) a = nodo.getAttribute('data-accion');
+    if (a) return a;
+    nodo = nodo.parentNode; n++;
+  }
+  return null;
+};
+
 CB.partida.conectarBarra = function () {
   document.addEventListener('click', function (ev) {
-    var b = ev.target;
-    if (!b || !b.getAttribute) return;
-    var a = b.getAttribute('data-accion');
+    var a = CB.partida.accionDe(ev.target);
     if (!a) return;
 
     /* Ya no hay botón «Leer»: se retiró a petición. accionLeer() sigue viva

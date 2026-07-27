@@ -1281,7 +1281,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.7.0';
+CB.VERSION = '1.7.1';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -3177,10 +3177,25 @@ CB.musica.claveDePantalla = function (idPantalla) {
   if (v !== '@mundo') return (v === undefined) ? null : v;
 
   /* En partida, la música la fija el bioma del mundo: cambiar de mundo se oye
-     antes de leerse. */
-  var mundoId = (CB.partida && CB.partida.estado) ? CB.partida.estado.mundoId : null;
-  var mundo = mundoId ? CB.catalogo.getMundo(mundoId) : null;
-  var clave = mundo ? CB.musica.POR_BIOMA[mundo.bioma] : null;
+     antes de leerse.
+
+     SE LEE `estado.mundo`, QUE ES LO QUE ESCRIBE CB.partida.iniciar(). Antes
+     leía `estado.mundoId`, que no existe en ninguna parte del proyecto: el
+     estado guarda el OBJETO de mundo, no su id. `mundoId` es el nombre del
+     parámetro de iniciar({mundoId:…}), y ahí se quedó.
+
+     La consecuencia era muda y completa: undefined → getMundo(null) → null →
+     el respaldo. Tres de las cuatro pistas de mundo —bosque, río y mina— no han
+     sonado jamás, y toda expedición sonaba a pradera. No hay error, no hay
+     silencio, no hay nada que mirar: suena música, solo que siempre la misma.
+
+     El test lo daba por bueno porque construía el estado a mano con la forma
+     equivocada, `{mundoId: m.id}`, copiada de esta misma línea. Un test escrito
+     contra la implementación en vez de contra la conducta se pone de acuerdo con
+     el fallo. El guardián E42 de casos-regresiones.js parte del estado que crea
+     iniciar() de verdad, que es lo único que no se puede inventar. */
+  var mundo = (CB.partida && CB.partida.estado) ? CB.partida.estado.mundo : null;
+  var clave = (mundo && mundo.bioma) ? CB.musica.POR_BIOMA[mundo.bioma] : null;
   return clave || 'mundoPradera';
 };
 
@@ -6633,28 +6648,46 @@ CB.adaptativo.reglaSimple = function (nivelEstado) {
 
 /* ── Dificultad interna D del nivel (§8.2) ─────────────────────────────────
    Sube tras 3 aciertos consecutivos A PRIMER INTENTO; baja tras 2 fallos.
-   D es interno al nivel y NO cambia el rango declarado en el catálogo. */
+   D es interno al nivel y NO cambia el rango declarado en el catálogo.
+
+   LOS CONTADORES NO PUEDEN EMPEZAR POR GUION BAJO. Se llamaban `_racha` y
+   `_fallos`, y CB.almacen.sanear() descarta por diseño toda clave que empiece
+   por `_` —«campos internos, no se guardan»—, así que se borraban en cada
+   guardado mientras que `D` sí se guardaba. El resultado era un trinquete en una
+   sola dirección:
+
+     · para SUBIR hacen falta 3 aciertos seguidos del MISMO nivel, y una partida
+       sirve como mucho 3 ítems del mismo nivel (CB.partida.MAX_REPETICIONES).
+       O sea: exigía un pleno de 3 sobre 3 dentro de una única sesión, porque al
+       día siguiente la racha volvía a cero.
+     · para BAJAR bastan 2 fallos, y además CB.partida.trasFallo pone D = 1 a la
+       segunda caída del concepto. Eso sí persiste, porque vive en `D`.
+
+   Es decir: la dificultad podía bajar para siempre y casi nunca subir. Un niño
+   que mejora se quedaba con los ítems fáciles de su peor día. Con nombres sin
+   guion bajo, los contadores sobreviven al guardado y la regla hace lo que dice.
+   No hace falta migración: ausentes valen 0, que es como empezaban. */
 CB.adaptativo.actualizarD = function (nivelEstado, correcto, primerIntento) {
   nivelEstado.D = nivelEstado.D || 2;
-  nivelEstado._racha = nivelEstado._racha || 0;
-  nivelEstado._fallos = nivelEstado._fallos || 0;
+  nivelEstado.rachaD = nivelEstado.rachaD || 0;
+  nivelEstado.fallosD = nivelEstado.fallosD || 0;
 
   if (correcto && primerIntento) {
-    nivelEstado._racha++;
-    nivelEstado._fallos = 0;
-    if (nivelEstado._racha >= 3 && nivelEstado.D < 3) {
+    nivelEstado.rachaD++;
+    nivelEstado.fallosD = 0;
+    if (nivelEstado.rachaD >= 3 && nivelEstado.D < 3) {
       nivelEstado.D++;
-      nivelEstado._racha = 0;
+      nivelEstado.rachaD = 0;
     }
   } else if (!correcto) {
-    nivelEstado._fallos++;
-    nivelEstado._racha = 0;
-    if (nivelEstado._fallos >= 2 && nivelEstado.D > 1) {
+    nivelEstado.fallosD++;
+    nivelEstado.rachaD = 0;
+    if (nivelEstado.fallosD >= 2 && nivelEstado.D > 1) {
       nivelEstado.D--;
-      nivelEstado._fallos = 0;
+      nivelEstado.fallosD = 0;
     }
   } else {
-    nivelEstado._racha = 0;
+    nivelEstado.rachaD = 0;
   }
   return nivelEstado.D;
 };
@@ -8685,6 +8718,30 @@ CB.componentes.conectarToc = function (contenedor) {
   });
 };
 
+/* ── El primer toque real de un problema de enunciado ───────────────────────
+   En los PROBLEMA_* el cronómetro de puntuación no arranca al mostrar el
+   enunciado: arrancar ahí puntúa la velocidad lectora y no la competencia
+   matemática (§11.4). Arranca en el primer toque, y ESTE es el sitio donde ese
+   toque se puede ver una sola vez para los siete formatos.
+
+   Va sobre el contenedor de respuesta y no sobre el documento a propósito: así
+   el altavoz, la pista y la pausa —que están en la barra, fuera— no cuentan como
+   empezar a pensar. Pedir que te lo lean otra vez sigue siendo leer.
+
+   Mismo cerrojo por atributo que conectarToc(), y por el mismo motivo: el
+   contenedor es un nodo PERMANENTE del index.html que se vacía y se rellena en
+   cada ítem, así que sin marca acumularía un oyente por ítem servido. */
+CB.componentes.conectarLectura = function (contenedor) {
+  if (!contenedor || contenedor.getAttribute('data-lectura') === 'si') return;
+  contenedor.setAttribute('data-lectura', 'si');
+
+  var arranca = function () {
+    if (CB.partida && CB.partida.marcarLectura) CB.partida.marcarLectura();
+  };
+  contenedor.addEventListener('pointerdown', arranca);
+  contenedor.addEventListener('keydown', arranca);
+};
+
 /* ── Confirmación de doble toque, tras detectar azar (§12.3) ────────────── */
 CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
   if (!CB.componentes._confirmacionPendiente) { alConfirmar(); return; }
@@ -8744,12 +8801,14 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     CB.audio.sfx('picar');
   }
 
+  var botonOK = null;
   for (i = 0; i < teclas.length; i++) {
     (function (t) {
       var b = CB.ui.boton(t, t === 'OK' ? 'btn-bloque--primario' : '', function () {
         pulsa(t, b);
       }, { tecla: t === '⌫' ? 'borrar' : (t === 'OK' ? 'ok' : t) });
       b.setAttribute('aria-label', t === '⌫' ? 'Borrar' : (t === 'OK' ? 'Confirmar' : t));
+      if (t === 'OK') botonOK = b;
       teclado.appendChild(b);
     })(teclas[i]);
   }
@@ -8764,10 +8823,14 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     tecla: function (k) {
       if (/^[0-9]$/.test(k)) { pulsa(k, null); return true; }
       if (k === 'Backspace' || k === 'Delete') { pulsa('⌫', null); return true; }
-      if (k === 'Enter') {
-        if (CB.componentes._valor.length) alResponder(parseInt(CB.componentes._valor, 10), 'teclado');
-        return true;
-      }
+      /* Enter PASA POR pulsa('OK'), no por alResponder directo. Iba por su
+         cuenta y se saltaba pedirConfirmacion(), así que la confirmación de dos
+         toques que impone el antiazar tras una detección solo se le aplicaba a
+         quien juega tocando: con teclado, Enter contestaba a la primera. Un
+         antiazar que se desactiva cambiando de dispositivo de entrada no es un
+         antiazar, y F8 pide una partida entera solo con teclado —lo que no pide
+         es que el teclado tenga reglas distintas. */
+      if (k === 'Enter') { pulsa('OK', botonOK); return true; }
       return false;
     }
   };
@@ -9411,6 +9474,10 @@ CB.partida.pintarRespuesta = function (item) {
      ítem nuevo (desde servirItem) como el segundo intento tras un fallo. */
   e.respondido = false;
 
+  /* El oyente que arranca el cronómetro de los problemas en el primer toque.
+     Se pide en cada ítem y se instala una sola vez: el contenedor es permanente. */
+  CB.componentes.conectarLectura(CB.componentes.contenedor());
+
   var efectos = CB.antiazar.consumir(e.antiazar);
   CB.componentes._confirmacionPendiente = efectos.confirmacionDoble;
   var bloqueo = Math.max(CB.componentes.MS_CONSTRUCCION, efectos.bloqueoMs || 0);
@@ -9534,10 +9601,35 @@ CB.partida.pararCronometro = function () {
   CB.ui.reloj.parar();
 };
 
-/* El primer toque de un problema arranca el cronómetro de puntuación. */
+/* El primer toque de un problema arranca el cronómetro de puntuación.
+   ────────────────────────────────────────────────────────────────────────────
+   ESTA FUNCIÓN EXISTÍA Y NO LA LLAMABA NADIE. El único sitio que la invocaba era
+   `responder()`, o sea el instante EXACTO en que el niño contesta: `t0` se ponía
+   a `ahora()` y el rt que se medía a renglón seguido era 0 ms. Medido en
+   navegador: 3.743 ms reales de lectura y razonamiento → rt registrado 0.
+
+   Lo que eso rompía, y ninguna de las 405 comprobaciones lo veía:
+
+     · el multiplicador de tiempo salía siempre 1,4 —el tope— y con él las 3
+       gemas de bono por rapidez, en TODOS los problemas de enunciado, tardara
+       lo que tardara. La familia que más cuesta era la que más premiaba.
+     · el informe del adulto daba 0 ms de tiempo medio en los 20 subtipos.
+     · y lo peor: en el antiazar, rt = 0 dispara S1 (< 700 ms) siempre. Tres
+       problemas fallados seguidos disparan además S3 (tres fallos de menos de
+       2 s), y dos señales son azar. Es decir, el niño que lee despacio y falla
+       tres problemas seguidos —justo el que más ayuda necesita— quedaba marcado
+       como que responde al tuntún. Con el rt de verdad: cero señales.
+
+   Ahora la llama `CB.componentes.conectarLectura()` desde el contenedor de
+   respuesta, que es donde ocurre el primer toque REAL. Se comprueba `subtipo`
+   aquí dentro y no en quien llama, para que ningún sitio nuevo pueda pisar el
+   `t0` de una operación corriente: en esas el cronómetro arranca al mostrarlas y
+   mover `t0` al primer dígito regalaría el tiempo de pensarlo. */
 CB.partida.marcarLectura = function () {
   var e = CB.partida.estado;
   if (!e || e.lecturaHecha) return;
+  if (!e.itemActual || !e.itemActual.subtipo) return;   // solo los problemas
+  if (CB.partida.bloqueado) return;                     // los 800 ms no se cobran
   e.lecturaHecha = true;
   e.t0 = CB.util.ahora();
 };
@@ -9601,7 +9693,14 @@ CB.partida.responder = function (valor, origen, extra) {
   var item = e.itemActual;
   var nivel = CB.catalogo.get(item.nivelId);
 
-  if (item.subtipo && !e.lecturaHecha) CB.partida.marcarLectura();
+  /* Red de seguridad: si nadie tocó nada antes de contestar —un formato que no
+     pase por el contenedor de respuesta, o una vía de teclado futura— se mide
+     desde que se MOSTRÓ el enunciado. Mide de más, porque incluye la lectura,
+     pero medir de más es un error que se ve; medir cero es el que no se ve. */
+  if (item.subtipo && !e.lecturaHecha) {
+    e.lecturaHecha = true;
+    e.t0 = e.tLectura0 || CB.util.ahora();
+  }
   var rt = CB.util.rt(e.t0 || CB.util.ahora());
 
   /* Corrección */
@@ -9689,8 +9788,6 @@ CB.partida.trasFallo = function (item, nivel, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
 
   CB.distractores.registrar(perfil, item, Number(item.valorDado));
-  var fallosConcepto = CB.escalera.fallosDe(e.escalera, item.destreza);
-  var esc = CB.escalera.siguienteEscalon(fallosConcepto, e.intento);
 
   CB.audio.sfx('fallo');
   /* UNA SOLA CONSECUENCIA VISIBLE: no cae la gema y el marcador se queda quieto
@@ -9736,13 +9833,25 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     }
     CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
 
-    /* Escalones 3, 4 y 5 según los fallos acumulados de ESE concepto. */
-    var fc = CB.escalera.fallosDe(e.escalera, item.destreza);
-    if (fc >= 4) {
+    /* Escalones 3, 4 y 5 según los fallos acumulados de ESE concepto.
+       LA DECISIÓN LA TOMA CB.escalera, no este fichero. Antes se llamaba a
+       siguienteEscalon() al entrar en trasFallo, se guardaba en una variable
+       `esc` que no leía nadie, y aquí abajo se volvían a escribir los umbrales a
+       mano. Dos implementaciones de la misma escalera, y solo una probada: la
+       que no se usaba. Se pedía además ANTES de registrar el fallo, con lo que
+       el escalón que devolvía iba siempre uno por detrás.
+
+       El escalón 4 («volvemos un paso atrás al prerrequisito») sigue sin tener
+       implementación; ahora al menos se ve, en vez de esconderse en un `else if`
+       que saltaba de 2 a 4. Queda anotado como pendiente, no como resuelto. */
+    var esc = CB.escalera.siguienteEscalon(
+      CB.escalera.fallosDe(e.escalera, item.destreza), 2);
+
+    if (esc.accion === 'enPausa') {
       /* Escalón 5: se retira el concepto SIN DECIRLE NADA AL NIÑO. */
       CB.escalera.pausarConcepto(perfil, item.nivelId);
-    } else if (fc === 2 && perfil.niveles[item.nivelId]) {
-      perfil.niveles[item.nivelId].D = 1;
+    } else if (esc.accion === 'bajarD_opciones' && perfil.niveles[item.nivelId]) {
+      perfil.niveles[item.nivelId].D = esc.D;
     }
 
     CB.pantallas.ir('p-partida');
@@ -10275,11 +10384,33 @@ CB.partida.sincronizarSonido = function () {
   }
 };
 
+/* SUBE POR EL ÁRBOL, COMO CB.pantallas.conectar. Los cuatro botones de la barra
+   llevan dos <span> dentro —el icono y el rótulo, que existen porque E15/E16
+   exigen palabra visible en todo botón de barra—, así que el ev.target de un
+   toque sobre el emoji o sobre la palabra es el span, no el botón, y el span no
+   tiene data-accion. Leerlo directamente de ev.target dejaba Pista, Pausa,
+   Sonido y Salir sin responder salvo que se acertara en el reborde de padding.
+
+   Es un fallo que se prueba y no se ve: en el navegador el botón se hunde igual
+   —eso es CSS, :active— y no hay ningún error. Lo mismo que 31-pantallas.js ya
+   había resuelto para data-ir con este mismo bucle, y con este mismo comentario.
+
+   La resolución vive en su propia función y no dentro del oyente a propósito:
+   así se puede comprobar sin instalar un oyente de documento en la suite, que
+   además se quedaría puesto y contaría doble en la segunda ejecución. */
+CB.partida.accionDe = function (nodo) {
+  var n = 0, a = null;
+  while (nodo && nodo !== document.body && n < 4) {
+    if (nodo.getAttribute) a = nodo.getAttribute('data-accion');
+    if (a) return a;
+    nodo = nodo.parentNode; n++;
+  }
+  return null;
+};
+
 CB.partida.conectarBarra = function () {
   document.addEventListener('click', function (ev) {
-    var b = ev.target;
-    if (!b || !b.getAttribute) return;
-    var a = b.getAttribute('data-accion');
+    var a = CB.partida.accionDe(ev.target);
     if (!a) return;
 
     /* Ya no hay botón «Leer»: se retiró a petición. accionLeer() sigue viva
@@ -11118,6 +11249,7 @@ CB.jefes.iniciar = function (mundoId) {
   CB.jefes.estado = {
     mundo: mundo, jefe: mundo.jefe, def: def,
     bloques: CB.jefes.BLOQUES, turno: 0, sinFallos: true,
+    respondido: false,
     rng: CB.util.mulberry32(CB.util.hash32(perfil.id + mundoId + CB.util.hoyISO()))
   };
 
@@ -11158,6 +11290,7 @@ CB.jefes.turno = function () {
     return;
   }
   e.turno++;
+  e.respondido = false;          // se abre el cerrojo del turno nuevo
 
   var enun = document.getElementById('jefe-enunciado');
   var opc = document.getElementById('jefe-opciones');
@@ -11229,19 +11362,42 @@ CB.jefes.prepararRamas = function (e, opc) {
   return objetivo;
 };
 
+/* EL RELLENO TIENE QUE AVANZAR SIEMPRE. La versión anterior calculaba el
+   candidato como `correcta + lista.length` DENTRO del bucle: si ese número ya
+   estaba en la lista no se añadía nada, la longitud no cambiaba, y la siguiente
+   vuelta calculaba exactamente el mismo candidato. Bucle infinito, pestaña
+   colgada, y el niño pierde la partida entera sin un solo error en consola.
+
+   No era teórico ni raro: pasa siempre que un distractor coincide con otro y la
+   lista se queda en tres. Barrido exhaustivo del espacio real de la mecánica
+   «reflejo» de Cristalina: 1,29 % de los turnos, es decir el 22,9 % de los
+   combates de veinte turnos. Y como el rng va sembrado con perfil+mundo+fecha,
+   al niño al que le toca le vuelve a tocar cada vez que lo reintenta ese día.
+
+   Ahora el candidato depende de un contador propio que sube en cada vuelta, con
+   tope explícito además: el desplazamiento es la garantía, el tope es el
+   cinturón. Si aun así no se llegara a cuatro, se sirven las que haya —tres
+   opciones son un turno raro; una pestaña colgada es una partida perdida. */
 CB.jefes.opciones = function (cont, correcta, distractores) {
   var e = CB.jefes.estado;
   var lista = [{ v: correcta, ok: true }];
-  distractores.forEach(function (d) {
-    if (d !== correcta && d >= 0 && d <= 999 &&
-        !lista.some(function (x) { return x.v === d; })) {
-      lista.push({ v: d, ok: false });
-    }
-  });
-  while (lista.length < 4) {
-    var d2 = correcta + lista.length;
-    if (!lista.some(function (x) { return x.v === d2; })) lista.push({ v: d2, ok: false });
+
+  function anadir(v) {
+    if (v === correcta || !(v >= 0) || v > 999) return false;
+    if (lista.some(function (x) { return x.v === v; })) return false;
+    lista.push({ v: v, ok: false });
+    return true;
   }
+
+  distractores.forEach(anadir);
+
+  var paso = 1;
+  while (lista.length < 4 && paso <= 20) {
+    anadir(correcta + paso);
+    if (lista.length < 4) anadir(correcta - paso);
+    paso++;
+  }
+
   CB.util.barajar(lista, e.rng).forEach(function (o) {
     cont.appendChild(CB.ui.boton(String(o.v), '', function () {
       CB.jefes.responder(o.ok);
@@ -11249,9 +11405,20 @@ CB.jefes.opciones = function (cont, correcta, distractores) {
   });
 };
 
+/* UNA RESPUESTA POR TURNO, igual que en la partida (ver el cerrojo `respondido`
+   de CB.partida.responder y el porqué largo que lleva al lado). Aquí faltaba, y
+   el jefe es donde más se nota: los cuatro botones siguen en pantalla los 900 ms
+   que dura la animación de los bloques y NO se deshabilitan, así que ocho toques
+   rápidos en la opción correcta tiraban los ocho bloques de la armadura y el
+   combate se acababa antes del primer turno. Medido: 5 toques, 5 bloques.
+
+   Y no era solo el atajo. Cada toque encolaba otro setTimeout(turno, 900), de
+   modo que el enunciado se repintaba encima de sí mismo y el contador de turnos
+   avanzaba de cinco en cinco hacia el tope de veinte. */
 CB.jefes.responder = function (correcto) {
   var e = CB.jefes.estado;
-  if (!e) return;
+  if (!e || e.respondido) return;
+  e.respondido = true;
 
   if (correcto) {
     e.bloques--;
@@ -11823,7 +11990,21 @@ CB.calibracion.servir = function () {
   CB.voz.leer(it.consigna);
   CB.a11y.anunciar(it.consigna);
 
+  /* UNA RESPUESTA POR PREGUNTA. Es el mismo cerrojo que CB.partida.responder, y
+     faltaba justo donde más caro sale: los botones siguen vivos los 1.300 ms que
+     dura el mensaje, así que machacar el botón —que es exactamente lo que hace
+     un niño de 7 años cuando la respuesta le sale sola— contaba un acierto por
+     toque. Medido: cinco toques en la primera pregunta dan CINCO aciertos sobre
+     cuatro ítems.
+
+     Y esos cuatro aciertos son lo único que decide `trimestreDeducido`, es decir
+     el techo de números de todo el juego a partir de ahí. Un niño que empieza en
+     el primer trimestre acababa colocado en el tercero por pulsar dos veces. */
+  var contestada = false;
+
   function responder(valor) {
+    if (contestada) return;
+    contestada = true;
     var ok = Number(valor) === it.respuesta;
     if (ok) CB.calibracion.aciertos++;
     /* Sin cronómetro, sin luces, sin puntuación: esto no parece un test. */

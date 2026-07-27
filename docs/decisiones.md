@@ -2056,3 +2056,110 @@ código que nadie ha visto funcionar.
 | Fallos registrados | E1–E36 | **E1–E39** |
 | Ficheros de herramientas | 4 | **2** |
 | Referencias colgando en `dist/` | 2 | **0** |
+
+---
+
+## Ronda 10 · Segunda auditoría severa — versión 1.7.1 (26-27 de julio de 2026)
+
+**Por qué 1.7.1 y no 1.8.0 ni 2.0.0.** La tercera cifra: no entra ninguna
+capacidad nueva, solo se corrige lo que ya decía que hacía. La primera queda
+donde está porque **el formato del perfil guardado no cambia**: E45 añade
+`rachaD` y `fallosD` a `perfil.niveles[*]`, y un perfil que no los traiga vale 0
+—que es exactamente con lo que empezaban—, así que no hay migración que escribir
+en `01-almacen.js`. Añadir campos con valor por defecto nunca la exige; lo que la
+exigiría es cambiarles el significado a los que ya existen.
+
+Segunda pasada del mismo encargo, leyendo esta vez el **motor y el bucle de
+juego** en lugar de las herramientas. Siete fallos, y ninguno de ellos era un
+descuido de escritura: los siete estaban en verde bajo 56 comprobaciones de
+auditoría, 405 de suite y un cruce de clases limpio.
+
+### Los tres sitios donde estaban, que es lo aprovechable
+
+**1. Una función que no llama nadie.** `CB.partida.marcarLectura()` llevaba desde
+1.0.0 escrita, comentada y correcta, y su único invocador era `responder()` — el
+instante exacto de contestar. Todos los problemas de enunciado registraban rt = 0
+(medido: 3.743 ms reales → 0 ms). Consecuencias en tres sistemas a la vez:
+multiplicador de tiempo al tope y 3 gemas de bono en cada problema; 0 ms en los
+20 subtipos del informe del adulto; y, en el antiazar, S1 disparada siempre, de
+modo que al tercer problema fallado seguido entraba también S3 y **el niño que
+lee despacio quedaba marcado como que responde al azar**.
+
+*Por qué no se veía*: en un proyecto sin módulos, una función que no se llama no
+produce error, ni aviso, ni cobertura roja. Simplemente no ocurre.
+
+**2. Una propiedad que no existe.** `CB.musica.claveDePantalla()` leía
+`CB.partida.estado.mundoId`; el estado que monta `iniciar()` guarda `mundo`, el
+objeto. `mundoId` es el nombre del **parámetro** de `iniciar({mundoId:…})`.
+Resultado: bosque, río y mina no sonaron jamás.
+
+*Por qué no se veía*: leer una propiedad mal escrita en JavaScript devuelve
+`undefined`, y aquí `undefined` caía en un respaldo razonable. **Y su prueba lo
+consagraba**: `casos-musica.js` construía a mano `{mundoId: m.id}`, una forma que
+`iniciar()` no emite nunca, copiada de la propia línea con el fallo. Un test
+escrito mirando la implementación acaba de acuerdo con ella. La regla que queda:
+*cuando existe una función que produce la entrada, no se construye a mano*.
+
+**3. Una regla aplicada en un sitio de tres.** El cerrojo de «una respuesta por
+intento» lo puso E11 en `CB.partida.responder`, con un comentario largo
+explicando el peligro general. Los otros dos sitios donde se contesta se quedaron
+sin él: en el jefe, cinco toques = cinco bloques (ocho lo derriban antes del
+segundo turno); en la calibración, cinco toques = cinco aciertos sobre cuatro
+ítems, y esos cuatro aciertos son lo **único** que fija `trimestreDeducido`, es
+decir el techo de números de todo el juego a partir de ese momento. La regla que
+queda: *cuando el comentario de un arreglo explica un peligro general, hay que
+buscar los demás sitios que lo comparten*.
+
+Lo mismo, en pequeño, con E46: la confirmación doble del antiazar se aplicaba al
+toque y no a Enter.
+
+### Dos comprobaciones mecánicas que salen de aquí
+
+- **Todo `while` de `src/` lleva tope.** `42-jefes.js` tenía el único que no, y
+  colgaba la pestaña en el 22,9 % de los combates contra Cristalina —barrido
+  exhaustivo del espacio real, 1,29 % de los turnos—. Como el rng va sembrado con
+  perfil + mundo + fecha, al niño al que le toca le vuelve a tocar cada intento
+  de ese día.
+- **Ningún campo con guion bajo puede llevar estado que deba sobrevivir a un
+  guardado.** `CB.almacen.sanear()` los descarta por diseño, y así se llamaban
+  los contadores que hacen SUBIR la dificultad `D` — que por tanto solo sabía
+  bajar, porque bajar sí persistía en `D`.
+
+### Y dos guardianes nuevos que nacieron en falso verde
+
+Se rehicieron antes de darlos por buenos, y las dos causas son de las que
+repiten:
+
+- una afirmación **sobre el texto fuente** de una función (`!/mundoId/.test(…)`)
+  se puso roja contra código correcto en cuanto el comentario del propio arreglo
+  explicó qué era `mundoId`. `toString()` incluye los comentarios en el bundle
+  legible y no en el minificado: una afirmación negativa sobre el fuente que
+  discrepa entre las dos páginas de prueba es la misma trampa de siempre.
+- otro tecleaba una cifra en el turno siguiente a montar el teclado, con el
+  bloqueo de construcción todavía echado: la cifra no entraba, y «con
+  confirmación pendiente el primer Enter no contesta» pasaba **porque no había
+  nada que contestar**.
+
+Los siete guardianes se validaron **volviendo a meter cada fallo** en las fuentes
+y comprobando que el suyo —y solo el suyo— se pone rojo. E40 se barrió aparte, en
+Node y contra el bundle ya construido (7.290 turnos de la mecánica que colgaba),
+porque su modo de fallo es colgarse y una suite colgada no es una suite roja.
+
+### Nota de método: la caché del navegador
+
+Durante esta ronda una ejecución dio «405 comprobaciones, 0 fallos» **sobre un
+fichero de pruebas de hace tres cambios**: Chrome reutilizó tanto el bundle como
+los `casos-*.js` a través de una recarga normal, y el número de comprobaciones no
+cambió, que es justo lo que lo hace invisible. Las páginas de prueba se sirven
+ahora con `Cache-Control: no-store`, y antes de fiarse de un verde se comprueba
+algo del bundle recién construido en lugar de suponer que la recarga lo trajo.
+
+#### Estado final
+
+| | tras la 9.ª ronda | tras la 10.ª |
+|---|---|---|
+| Comprobaciones de la suite | 405 | **443** en dos suites |
+| Comprobaciones de la auditoría | 56 | 56 |
+| Casos de la autoprueba | 16 | 16 |
+| Fallos registrados | E1–E39 | **E1–E46** |
+| `while` sin tope en `src/` | 1 | **0** |

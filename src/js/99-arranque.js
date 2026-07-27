@@ -72,7 +72,21 @@ CB.calibracion.servir = function () {
   CB.voz.leer(it.consigna);
   CB.a11y.anunciar(it.consigna);
 
+  /* UNA RESPUESTA POR PREGUNTA. Es el mismo cerrojo que CB.partida.responder, y
+     faltaba justo donde más caro sale: los botones siguen vivos los 1.300 ms que
+     dura el mensaje, así que machacar el botón —que es exactamente lo que hace
+     un niño de 7 años cuando la respuesta le sale sola— contaba un acierto por
+     toque. Medido: cinco toques en la primera pregunta dan CINCO aciertos sobre
+     cuatro ítems.
+
+     Y esos cuatro aciertos son lo único que decide `trimestreDeducido`, es decir
+     el techo de números de todo el juego a partir de ahí. Un niño que empieza en
+     el primer trimestre acababa colocado en el tercero por pulsar dos veces. */
+  var contestada = false;
+
   function responder(valor) {
+    if (contestada) return;
+    contestada = true;
     var ok = Number(valor) === it.respuesta;
     if (ok) CB.calibracion.aciertos++;
     /* Sin cronómetro, sin luces, sin puntuación: esto no parece un test. */

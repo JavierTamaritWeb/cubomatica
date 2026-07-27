@@ -91,6 +91,30 @@ CB.componentes.conectarToc = function (contenedor) {
   });
 };
 
+/* ── El primer toque real de un problema de enunciado ───────────────────────
+   En los PROBLEMA_* el cronómetro de puntuación no arranca al mostrar el
+   enunciado: arrancar ahí puntúa la velocidad lectora y no la competencia
+   matemática (§11.4). Arranca en el primer toque, y ESTE es el sitio donde ese
+   toque se puede ver una sola vez para los siete formatos.
+
+   Va sobre el contenedor de respuesta y no sobre el documento a propósito: así
+   el altavoz, la pista y la pausa —que están en la barra, fuera— no cuentan como
+   empezar a pensar. Pedir que te lo lean otra vez sigue siendo leer.
+
+   Mismo cerrojo por atributo que conectarToc(), y por el mismo motivo: el
+   contenedor es un nodo PERMANENTE del index.html que se vacía y se rellena en
+   cada ítem, así que sin marca acumularía un oyente por ítem servido. */
+CB.componentes.conectarLectura = function (contenedor) {
+  if (!contenedor || contenedor.getAttribute('data-lectura') === 'si') return;
+  contenedor.setAttribute('data-lectura', 'si');
+
+  var arranca = function () {
+    if (CB.partida && CB.partida.marcarLectura) CB.partida.marcarLectura();
+  };
+  contenedor.addEventListener('pointerdown', arranca);
+  contenedor.addEventListener('keydown', arranca);
+};
+
 /* ── Confirmación de doble toque, tras detectar azar (§12.3) ────────────── */
 CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
   if (!CB.componentes._confirmacionPendiente) { alConfirmar(); return; }
@@ -150,12 +174,14 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     CB.audio.sfx('picar');
   }
 
+  var botonOK = null;
   for (i = 0; i < teclas.length; i++) {
     (function (t) {
       var b = CB.ui.boton(t, t === 'OK' ? 'btn-bloque--primario' : '', function () {
         pulsa(t, b);
       }, { tecla: t === '⌫' ? 'borrar' : (t === 'OK' ? 'ok' : t) });
       b.setAttribute('aria-label', t === '⌫' ? 'Borrar' : (t === 'OK' ? 'Confirmar' : t));
+      if (t === 'OK') botonOK = b;
       teclado.appendChild(b);
     })(teclas[i]);
   }
@@ -170,10 +196,14 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     tecla: function (k) {
       if (/^[0-9]$/.test(k)) { pulsa(k, null); return true; }
       if (k === 'Backspace' || k === 'Delete') { pulsa('⌫', null); return true; }
-      if (k === 'Enter') {
-        if (CB.componentes._valor.length) alResponder(parseInt(CB.componentes._valor, 10), 'teclado');
-        return true;
-      }
+      /* Enter PASA POR pulsa('OK'), no por alResponder directo. Iba por su
+         cuenta y se saltaba pedirConfirmacion(), así que la confirmación de dos
+         toques que impone el antiazar tras una detección solo se le aplicaba a
+         quien juega tocando: con teclado, Enter contestaba a la primera. Un
+         antiazar que se desactiva cambiando de dispositivo de entrada no es un
+         antiazar, y F8 pide una partida entera solo con teclado —lo que no pide
+         es que el teclado tenga reglas distintas. */
+      if (k === 'Enter') { pulsa('OK', botonOK); return true; }
       return false;
     }
   };

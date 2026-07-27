@@ -55,6 +55,7 @@ CB.jefes.iniciar = function (mundoId) {
   CB.jefes.estado = {
     mundo: mundo, jefe: mundo.jefe, def: def,
     bloques: CB.jefes.BLOQUES, turno: 0, sinFallos: true,
+    respondido: false,
     rng: CB.util.mulberry32(CB.util.hash32(perfil.id + mundoId + CB.util.hoyISO()))
   };
 
@@ -95,6 +96,7 @@ CB.jefes.turno = function () {
     return;
   }
   e.turno++;
+  e.respondido = false;          // se abre el cerrojo del turno nuevo
 
   var enun = document.getElementById('jefe-enunciado');
   var opc = document.getElementById('jefe-opciones');
@@ -166,19 +168,42 @@ CB.jefes.prepararRamas = function (e, opc) {
   return objetivo;
 };
 
+/* EL RELLENO TIENE QUE AVANZAR SIEMPRE. La versión anterior calculaba el
+   candidato como `correcta + lista.length` DENTRO del bucle: si ese número ya
+   estaba en la lista no se añadía nada, la longitud no cambiaba, y la siguiente
+   vuelta calculaba exactamente el mismo candidato. Bucle infinito, pestaña
+   colgada, y el niño pierde la partida entera sin un solo error en consola.
+
+   No era teórico ni raro: pasa siempre que un distractor coincide con otro y la
+   lista se queda en tres. Barrido exhaustivo del espacio real de la mecánica
+   «reflejo» de Cristalina: 1,29 % de los turnos, es decir el 22,9 % de los
+   combates de veinte turnos. Y como el rng va sembrado con perfil+mundo+fecha,
+   al niño al que le toca le vuelve a tocar cada vez que lo reintenta ese día.
+
+   Ahora el candidato depende de un contador propio que sube en cada vuelta, con
+   tope explícito además: el desplazamiento es la garantía, el tope es el
+   cinturón. Si aun así no se llegara a cuatro, se sirven las que haya —tres
+   opciones son un turno raro; una pestaña colgada es una partida perdida. */
 CB.jefes.opciones = function (cont, correcta, distractores) {
   var e = CB.jefes.estado;
   var lista = [{ v: correcta, ok: true }];
-  distractores.forEach(function (d) {
-    if (d !== correcta && d >= 0 && d <= 999 &&
-        !lista.some(function (x) { return x.v === d; })) {
-      lista.push({ v: d, ok: false });
-    }
-  });
-  while (lista.length < 4) {
-    var d2 = correcta + lista.length;
-    if (!lista.some(function (x) { return x.v === d2; })) lista.push({ v: d2, ok: false });
+
+  function anadir(v) {
+    if (v === correcta || !(v >= 0) || v > 999) return false;
+    if (lista.some(function (x) { return x.v === v; })) return false;
+    lista.push({ v: v, ok: false });
+    return true;
   }
+
+  distractores.forEach(anadir);
+
+  var paso = 1;
+  while (lista.length < 4 && paso <= 20) {
+    anadir(correcta + paso);
+    if (lista.length < 4) anadir(correcta - paso);
+    paso++;
+  }
+
   CB.util.barajar(lista, e.rng).forEach(function (o) {
     cont.appendChild(CB.ui.boton(String(o.v), '', function () {
       CB.jefes.responder(o.ok);
@@ -186,9 +211,20 @@ CB.jefes.opciones = function (cont, correcta, distractores) {
   });
 };
 
+/* UNA RESPUESTA POR TURNO, igual que en la partida (ver el cerrojo `respondido`
+   de CB.partida.responder y el porqué largo que lleva al lado). Aquí faltaba, y
+   el jefe es donde más se nota: los cuatro botones siguen en pantalla los 900 ms
+   que dura la animación de los bloques y NO se deshabilitan, así que ocho toques
+   rápidos en la opción correcta tiraban los ocho bloques de la armadura y el
+   combate se acababa antes del primer turno. Medido: 5 toques, 5 bloques.
+
+   Y no era solo el atajo. Cada toque encolaba otro setTimeout(turno, 900), de
+   modo que el enunciado se repintaba encima de sí mismo y el contador de turnos
+   avanzaba de cinco en cinco hacia el tope de veinte. */
 CB.jefes.responder = function (correcto) {
   var e = CB.jefes.estado;
-  if (!e) return;
+  if (!e || e.respondido) return;
+  e.respondido = true;
 
   if (correcto) {
     e.bloques--;

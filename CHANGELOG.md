@@ -12,6 +12,107 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.7.1] — 2026-07-27
+
+**Solo correcciones.** La tercera cifra, y no la segunda, porque no entra nada
+nuevo; y no la primera, porque el formato del perfil guardado no cambia: E45
+**añade** dos campos a `perfil.niveles[*]` (`rachaD` y `fallosD`) y un perfil que
+no los traiga vale 0, que es como empezaban. Ningún niño necesita migración.
+
+### Décima ronda: **segunda auditoría severa** (26 y 27 de julio)
+
+Segunda pasada de búsqueda de fallos, esta vez leyendo el motor y el bucle de
+juego línea a línea en vez de las herramientas. Salieron **siete**, y los siete
+estaban en verde: 56 comprobaciones de auditoría, 405 de suite y cero clases
+descuadradas, todas correctas y ninguna mirando hacia donde estaba el problema.
+
+**El que cuelga la pestaña**
+
+- **E40 · bucle infinito en el combate contra Cristalina.** `CB.jefes.opciones()`
+  completa hasta cuatro botones cuando los distractores propuestos no llegan, y
+  calculaba el candidato como `correcta + lista.length` **dentro** del `while`:
+  si ese número ya estaba en la lista no se añadía nada, la longitud no cambiaba
+  y la vuelta siguiente calculaba exactamente el mismo candidato. Barrido
+  exhaustivo del espacio real de la mecánica «reflejo»: **1,29 % de los turnos,
+  es decir el 22,9 % de los combates**. Y como el rng va sembrado con
+  perfil + mundo + fecha, al niño al que le toca le vuelve a tocar cada vez que
+  lo reintenta ese día: «se cuelga en Cristalina», todos los días, hasta mañana.
+  Sin error en consola y sin nada que mirar. Es el único `while` del proyecto que
+  no llevaba tope.
+
+**Lo que falseaba la medida**
+
+- **E41 · todos los problemas de enunciado medían 0 ms.**
+  `CB.partida.marcarLectura()` existía, estaba bien escrita y **no la llamaba
+  nadie** salvo `responder()`, o sea el instante exacto de contestar. Medido en
+  navegador: 3.743 ms reales de lectura y razonamiento → rt registrado **0**. Con
+  eso, el multiplicador de tiempo salía siempre 1,4 —el tope— y con él las 3
+  gemas de bono por rapidez en **todos** los problemas, tardara lo que tardara: la
+  familia que más cuesta era la que más premiaba. El informe del adulto daba 0 ms
+  en los 20 subtipos. Y en el antiazar, rt = 0 dispara S1 siempre, así que tres
+  problemas fallados seguidos añadían S3 y **el niño que lee despacio quedaba
+  marcado como que responde al tuntún** — con el rt de verdad, cero señales.
+- **E45 · la dificultad interna `D` solo sabía bajar.** `CB.almacen.sanear()`
+  descarta por diseño toda clave que empiece por `_`, y los contadores de
+  `actualizarD` se llamaban `_racha` y `_fallos`: se borraban en cada guardado
+  mientras que `D` sí se guardaba. Subir exigía tres aciertos seguidos del mismo
+  nivel **dentro de una sola sesión** (y una partida sirve como mucho tres ítems
+  del mismo nivel); bajar bastaban dos fallos, y además persistía. Un niño que
+  mejora se quedaba con los ítems fáciles de su peor día.
+
+**Lo que no respondía**
+
+- **E42 · tres de las cuatro pistas de mundo no sonaron nunca.**
+  `claveDePantalla()` leía `CB.partida.estado.mundoId`; el estado que monta
+  `iniciar()` guarda `mundo`, el objeto. `mundoId` es el nombre del *parámetro*
+  de `iniciar({mundoId:…})`, y ahí se quedó. Bosque, río y mina no sonaron jamás
+  y toda expedición sonaba a pradera: no hay error, no hay silencio, suena
+  música, solo que siempre la misma. **Su test lo daba por bueno porque construía
+  el estado a mano con la forma equivocada, copiada de la línea del fallo.**
+- **E43 · la barra de partida solo respondía en el borde.** `conectarBarra` leía
+  `data-accion` de `ev.target`, y los cuatro botones llevan dentro los dos
+  `<span>` que exigen E15/E16 (icono y palabra visible). El toque cae en el span,
+  que no tiene el atributo. Pista, Pausa, Sonido y Salir no hacían nada salvo que
+  se acertara en los pocos píxeles de padding — y el botón se hunde igual, porque
+  eso es CSS. `31-pantallas.js` ya subía por el árbol para `data-ir` desde 1.0.0.
+
+**Reglas que solo se aplicaban a la mitad**
+
+- **E44 · el cerrojo de una respuesta solo estaba en la partida.** E11 lo arregló
+  en `CB.partida.responder` y dejó escrito el porqué; los otros dos sitios donde
+  se contesta se quedaron sin él. En el jefe los botones viven los 900 ms de la
+  animación: **cinco toques, cinco bloques**, y ocho derriban al jefe entero antes
+  del segundo turno. En la calibración viven los 1.300 ms del mensaje: **cinco
+  toques dan cinco aciertos sobre cuatro ítems**, y esos cuatro aciertos son lo
+  único que fija `trimestreDeducido`, o sea el techo de números de todo el juego.
+- **E46 · Enter se saltaba la confirmación doble del antiazar.** La rama de Enter
+  llamaba a `alResponder` directamente en vez de pasar por `pulsa('OK')`, que es
+  quien consulta `pedirConfirmacion()`. La medida se le aplicaba a quien juega
+  tocando y no a quien juega con teclado. F8 pide poder jugar una partida entera
+  solo con teclado; lo que no pide es que el teclado tenga otras reglas.
+
+**Además**
+
+- `CB.partida.accionDe()` sale del oyente de la barra y pasa a ser función propia:
+  se puede comprobar sin instalar un oyente de documento en la suite, que además
+  se quedaría puesto y contaría doble en la segunda ejecución.
+- `trasFallo` calculaba `CB.escalera.siguienteEscalon()` en una variable que no
+  leía nadie y volvía a escribir los umbrales a mano más abajo — dos
+  implementaciones de la misma escalera, y probada solo la que no se usaba. Ahora
+  decide `CB.escalera`. El escalón 4 sigue sin implementación, pero ahora se ve.
+- Suite: **405 → 443** comprobaciones. Los siete guardianes se validaron
+  **volviendo a meter cada fallo** y comprobando que el suyo se pone rojo; E40 se
+  barrió aparte, en Node y contra el bundle construido, porque su modo de fallo
+  es colgarse y una suite colgada no es roja.
+- Dos de los guardianes nuevos nacieron en falso verde y hubo que rehacerlos: uno
+  afirmaba sobre el **texto fuente** de una función y su propio comentario nuevo
+  contenía la palabra buscada; el otro tecleaba antes de que expirase el bloqueo
+  de construcción, así que «el primer Enter no contesta» pasaba porque no había
+  nada escrito. Los dos son la misma lección que este proyecto lleva tres rondas
+  aprendiendo, ahora también dentro de las pruebas.
+
+---
+
 ## [1.7.0] — 2026-07-26
 
 ### Novena ronda: **limpieza y auditoría severa** (26 de julio)

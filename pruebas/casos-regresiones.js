@@ -64,6 +64,33 @@
          cuarta vez, y era la copia que nadie miraba
      E39 Las tres reglas duras de estilo tenían cuatro huecos:      auditar.mjs
          cero sin unidad, inset, rem, y la función por defecto
+     E40 El relleno de opciones del jefe no avanzaba: bucle         AQUÍ
+         infinito y pestaña colgada en el 22,9 % de los combates
+     E41 El cronómetro de los problemas de enunciado arrancaba      AQUÍ
+         al contestar, así que todos medían 0 ms
+     E42 La música de mundo leía estado.mundoId, que no existe:     AQUÍ
+         bosque, río y mina no sonaron nunca
+     E43 La barra de partida leía data-accion de ev.target y los    AQUÍ
+         botones llevan spans dentro: solo respondía el borde
+     E44 El cerrojo de una respuesta solo estaba en la partida:     AQUÍ
+         el jefe caía en 8 toques y la calibración daba 5 de 4
+     E45 sanear() borra los campos con guion bajo, y así se         AQUÍ
+         llamaban los contadores que hacen SUBIR la dificultad
+     E46 Enter contestaba sin pasar por la confirmación doble       AQUÍ
+         del antiazar: la regla no valía con teclado
+
+   E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
+   perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
+   buenas, la suite 405 sin un fallo, y el cruce de clases cero. Ninguno de los
+   siete es un descuido de escritura; los siete son cosas que nadie había
+   mirado, porque todo lo que sí se mira estaba bien.
+
+   Y dos de ellos enseñan lo mismo desde lados distintos: E42 tenía un test que
+   construía a mano la forma equivocada del estado —copiada de la línea con el
+   fallo—, y E41 tenía una función correcta a la que no llamaba nadie. Un test
+   escrito mirando la implementación acaba de acuerdo con ella; una función sin
+   llamador no falla, simplemente no ocurre. Las dos cosas se ven igual desde
+   fuera: verde.
 
    E14-E17 salieron de MIRAR UNA CAPTURA, no de ejecutar pruebas, y es la
    lección más cara de todas: cinco rondas de auditoría comprobaron el DOM, la
@@ -836,4 +863,496 @@ CB.pruebas.suite('E38 · la lista de música tiene un solo dueño', function () 
   var fuenteOffline = String(CB.offline.urlesPistas) + String(CB.offline.descargarMusica);
   t.ok(fuenteOffline.indexOf('.mp3') === -1,
     'E38 · ningún nombre de mp3 escrito a mano en el código sin conexión');
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E40 · El relleno de opciones del jefe no avanzaba
+   ══════════════════════════════════════════════════════════════════════════
+   CB.jefes.opciones() completa hasta cuatro botones cuando los distractores
+   propuestos no llegan. El candidato se calculaba como `correcta +
+   lista.length` DENTRO del while: si ese número ya estaba en la lista no se
+   añadía nada, la longitud no cambiaba, y la vuelta siguiente calculaba
+   exactamente el mismo candidato. Bucle infinito sin salida.
+
+   No es un caso de laboratorio. Barrido exhaustivo del espacio real de la
+   mecánica «reflejo» de Cristalina (a de 5 a 40, b de 1 a a, sobra de 1 a 9):
+   1,29 % de los turnos, o sea el 22,9 % de los combates de veinte turnos. Y
+   como el rng va sembrado con perfil + mundo + fecha, el niño al que le toca lo
+   reproduce igual cada vez que lo reintenta ese día: «se cuelga en Cristalina»,
+   todos los días, hasta mañana.
+
+   Se prueba la conducta, no la forma: se piden opciones para los casos que
+   colgaban y se comprueba que vuelven. Si no volvieran, esta suite no daría
+   rojo — se quedaría colgada, que es exactamente el fallo. */
+CB.pruebas.suite('E40 · el jefe siempre puede completar sus opciones', function () {
+  var t = CB.pruebas;
+
+  var previo = CB.jefes.estado;
+  CB.jefes.estado = { rng: CB.util.mulberry32(99) };
+
+  /* Los tres casos con nombre y apellidos que colgaban, de la mecánica reflejo:
+     correcta = a − b, distractores = [a + b, a − b + sobra, a − sobra]. */
+  var colgaban = [
+    { a: 5, b: 3, sobra: 3 },
+    { a: 6, b: 6, sobra: 3 },
+    { a: 7, b: 6, sobra: 3 }
+  ];
+  var todosVuelven = true, todosCuatro = true, todosDistintos = true;
+
+  colgaban.forEach(function (c) {
+    var cont = document.createElement('div');
+    var correcta = c.a - c.b;
+    CB.jefes.opciones(cont, correcta, [c.a + c.b, correcta + c.sobra, c.a - c.sobra]);
+    var vals = [].slice.call(cont.querySelectorAll('button')).map(function (b) {
+      return Number(b.textContent);
+    });
+    if (!vals.length) todosVuelven = false;
+    if (vals.length !== 4) todosCuatro = false;
+    vals.forEach(function (v, i) { if (vals.indexOf(v) !== i) todosDistintos = false; });
+  });
+
+  t.ok(todosVuelven, 'E40 · los casos que colgaban devuelven opciones');
+  t.ok(todosCuatro, 'E40 · devuelven cuatro, no tres');
+  t.ok(todosDistintos, 'E40 · sin valores repetidos entre los cuatro botones');
+
+  /* Barrido completo de las tres mecánicas que pasan por opciones(). En modo
+     largo se recorre entero; en modo rápido, uno de cada cuatro. */
+  var salto = CB.pruebas.modoLargo ? 1 : 4;
+  var fallos = [], a, b, sobra;
+  for (a = 5; a <= 40; a += salto) {
+    for (b = 1; b <= a; b += salto) {
+      for (sobra = 1; sobra <= 9; sobra++) {
+        var cont2 = document.createElement('div');
+        CB.jefes.opciones(cont2, a - b, [a + b, a - b + sobra, a - sobra]);
+        if (cont2.querySelectorAll('button').length !== 4) {
+          fallos.push(a + ',' + b + ',' + sobra);
+        }
+      }
+    }
+  }
+  t.ok(fallos.length === 0,
+    'E40 · el barrido de la mecánica reflejo da cuatro opciones siempre',
+    fallos.slice(0, 5).join(' · '));
+
+  /* Y la garantía estructural: el candidato de relleno no puede volver a ser el
+     mismo dos vueltas seguidas. Se comprueba sobre la conducta con una llamada
+     que fuerza el relleno desde una sola opción válida. */
+  var cont3 = document.createElement('div');
+  CB.jefes.opciones(cont3, 0, [0, 0, 0]);        // todos los distractores inválidos
+  t.igual(cont3.querySelectorAll('button').length, 4,
+    'E40 · con los tres distractores inservibles también salen cuatro');
+  var negativos = [].slice.call(cont3.querySelectorAll('button')).filter(function (b) {
+    return Number(b.textContent) < 0;
+  });
+  t.igual(negativos.length, 0, 'E40 · el relleno nunca propone un número negativo');
+
+  CB.jefes.estado = previo;
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E41 · Los problemas de enunciado medían 0 ms
+   ══════════════════════════════════════════════════════════════════════════
+   CB.partida.marcarLectura() existía, estaba bien escrita y documentada, y no
+   la llamaba NADIE salvo responder() — es decir, el instante exacto de
+   contestar. `t0` se ponía a ahora() y el rt que se calculaba en la línea
+   siguiente era 0. Medido en navegador: 3.743 ms reales, rt registrado 0.
+
+   Lo que rompía: multiplicador de tiempo 1,4 (el tope) y 3 gemas de bono por
+   rapidez en todos los problemas; 0 ms en el informe del adulto; y en el
+   antiazar, rt = 0 dispara S1 siempre, de modo que tres problemas fallados
+   seguidos añadían S3 y el niño que lee despacio quedaba marcado como que
+   responde al tuntún.
+
+   Se prueba lo único que importa: que un problema contestado después de
+   esperar de verdad registra un rt distinto de cero. */
+CB.pruebas.suite('E41 · el cronómetro de los problemas mide el tiempo real', function () {
+  var t = CB.pruebas;
+
+  t.ok(/subtipo/.test(String(CB.partida.marcarLectura)),
+    'E41 · marcarLectura solo toca el reloj de los problemas');
+  t.ok(typeof CB.componentes.conectarLectura === 'function',
+    'E41 · existe el enganche del primer toque en el contenedor de respuesta');
+
+  /* El enganche se instala UNA vez por contenedor, como el del «toc». */
+  var caja = document.createElement('div');
+  var oyentes = 0;
+  var addOriginal = caja.addEventListener;
+  caja.addEventListener = function () { oyentes++; return addOriginal.apply(caja, arguments); };
+  CB.componentes.conectarLectura(caja);
+  CB.componentes.conectarLectura(caja);
+  CB.componentes.conectarLectura(caja);
+  t.igual(oyentes, 2, 'E41 · tres llamadas dejan un solo par de oyentes, no seis');
+
+  /* Y la conducta. Se monta el estado mínimo y se marca la lectura como haría
+     un toque en el contenedor; luego se comprueba que el rt sale del reloj y no
+     de cero. No hace falta esperar: basta con que t0 quede en el pasado. */
+  var previo = CB.partida.estado;
+  var bloqueoPrevio = CB.partida.bloqueado;
+  CB.partida.bloqueado = false;
+
+  CB.partida.estado = {
+    itemActual: { subtipo: 'CAMBIO_1', destreza: 'problemas_cambio' },
+    lecturaHecha: false, t0: 0, tLectura0: 0
+  };
+  CB.partida.marcarLectura();
+  t.ok(CB.partida.estado.lecturaHecha === true && CB.partida.estado.t0 > 0,
+    'E41 · el primer toque de un problema fija t0');
+
+  var t0Problema = CB.partida.estado.t0;
+  CB.partida.marcarLectura();
+  t.igual(CB.partida.estado.t0, t0Problema,
+    'E41 · el segundo toque NO reinicia el reloj: se mediría de menos');
+
+  /* La otra mitad de la regla: en una operación corriente el reloj lo pone
+     iniciarCronometro al mostrarla, y el primer dígito no debe moverlo. */
+  CB.partida.estado = {
+    itemActual: { subtipo: null, destreza: 'suma_llevada' },
+    lecturaHecha: false, t0: 12345, tLectura0: 0
+  };
+  CB.partida.marcarLectura();
+  t.igual(CB.partida.estado.t0, 12345,
+    'E41 · en una operación el primer toque no toca t0: regalaría el tiempo de pensarla');
+
+  /* Y durante los 800 ms de construcción no se cobra nada. */
+  CB.partida.bloqueado = true;
+  CB.partida.estado = {
+    itemActual: { subtipo: 'CAMBIO_1', destreza: 'problemas_cambio' },
+    lecturaHecha: false, t0: 0, tLectura0: 0
+  };
+  CB.partida.marcarLectura();
+  t.ok(CB.partida.estado.lecturaHecha === false,
+    'E41 · un toque durante la construcción no arranca el reloj');
+
+  CB.partida.bloqueado = bloqueoPrevio;
+  CB.partida.estado = previo;
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E42 · La música de mundo leía una propiedad inexistente
+   ══════════════════════════════════════════════════════════════════════════
+   claveDePantalla() leía CB.partida.estado.mundoId. El estado que construye
+   CB.partida.iniciar() no tiene `mundoId`: tiene `mundo`, el objeto entero.
+   `mundoId` es el nombre del PARÁMETRO de iniciar({mundoId:…}), y de ahí se
+   copió. Resultado: undefined → null → respaldo, y bosque, río y mina no
+   sonaron nunca. Toda expedición sonaba a pradera.
+
+   El guardián no vuelve a inventarse la forma del estado —eso es justo lo que
+   hacía el test que lo daba por bueno—: la saca de las claves que escribe
+   iniciar() y comprueba que la propiedad que lee la música está entre ellas. */
+CB.pruebas.suite('E42 · la música lee el estado que existe de verdad', function () {
+  var t = CB.pruebas;
+
+  var previoEstado = CB.partida.estado;
+  var previoPerfil = CB.perfil;
+  var previaPantalla = CB.pantallas.actual;
+  CB.perfil = CB.pruebas.perfilNuevo();
+
+  /* NO SE CONSTRUYE EL ESTADO A MANO. Ese era el fallo del test viejo: se
+     inventaba `{mundoId: m.id}` copiándolo de la línea que tenía el error, y así
+     test e implementación se daban la razón mutuamente mientras tres pistas no
+     sonaban. Aquí la partida la monta CB.partida.iniciar(), que es la única
+     autoridad sobre la forma del estado, y se le pregunta a la música por ESE
+     objeto. Si mañana alguien renombra el campo, este guardián se entera. */
+  var mal = [], pistas = [];
+  CB.MUNDOS.forEach(function (m) {
+    var e = CB.partida.iniciar({ mundoId: m.id, modo: 'expedicion' });
+    if (!e) { mal.push(m.id + ': iniciar() no montó partida'); return; }
+    var dio = CB.musica.claveDePantalla('p-partida');
+    var toca = CB.musica.POR_BIOMA[m.bioma];
+    pistas.push(dio);
+    if (dio !== toca) mal.push(m.id + ' (' + m.bioma + ') dio ' + dio + ' en vez de ' + toca);
+    CB.partida.pararCronometro();
+    CB.partida.estado = null;
+  });
+
+  t.ok(mal.length === 0,
+    'E42 · con el estado que monta iniciar(), los 4 mundos suenan cada uno con su pista',
+    mal.join(' · '));
+
+  /* Lo que delataba el fallo a simple vista: tres mundos distintos dando la
+     misma pista. Cuatro biomas, cuatro pistas, sin repetir ninguna. */
+  var distintas = pistas.filter(function (p, i) { return pistas.indexOf(p) === i; });
+  t.igual(distintas.length, 4, 'E42 · cuatro mundos, cuatro pistas distintas', pistas.join(', '));
+
+  /* Y sin partida en curso sigue devolviendo algo reproducible. */
+  CB.partida.estado = null;
+  t.ok(!!CB.musica.PISTAS[CB.musica.claveDePantalla('p-partida')],
+    'E42 · sin partida en curso devuelve una pista válida, no undefined');
+
+  CB.partida.estado = previoEstado;
+  CB.perfil = previoPerfil;
+  CB.pantallas.actual = previaPantalla;
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E43 · La barra de partida solo respondía en el borde
+   ══════════════════════════════════════════════════════════════════════════
+   conectarBarra leía data-accion directamente de ev.target. Los cuatro botones
+   de la barra llevan dentro <span class="btn-bloque__ico"> y <span
+   class="btn-bloque__rotulo"> —existen porque E15/E16 exigen palabra visible en
+   todo botón de barra—, así que un toque sobre el emoji o sobre la palabra tenía
+   como target el span, que no lleva el atributo. Pista, Pausa, Sonido y Salir
+   no hacían nada salvo que se acertara en los pocos píxeles de padding.
+
+   Se ve peor que un botón muerto: el botón se hunde igual, porque eso es CSS.
+   31-pantallas.js ya subía por el árbol para data-ir desde 1.0.0. */
+CB.pruebas.suite('E43 · la barra responde tocando el icono y el rótulo', function () {
+  var t = CB.pruebas;
+
+  /* Se monta el botón EXACTAMENTE como lo escribe index.html: el atributo en el
+     <button> y dos <span> dentro, que son los que recibe de verdad el toque. */
+  var boton = document.createElement('button');
+  boton.type = 'button';
+  boton.className = 'btn-bloque btn-bloque--rotulado';
+  boton.setAttribute('data-accion', 'pista');
+  var ico = CB.ui.crear('span', 'btn-bloque__ico', 'P');
+  var rot = CB.ui.crear('span', 'btn-bloque__rotulo', 'Pista');
+  boton.appendChild(ico);
+  boton.appendChild(rot);
+  document.body.appendChild(boton);
+
+  /* Se comprueba el resolutor, no el oyente. Instalar conectarBarra() aquí
+     dejaría un oyente de documento puesto para siempre y la segunda ejecución
+     de la suite contaría el doble —y «las pruebas no son deterministas» es la
+     conclusión más cara posible, como dice ejecutor.js. */
+  t.igual(CB.partida.accionDe(ico), 'pista',
+    'E43 · tocar el icono de dentro del botón resuelve la acción');
+  t.igual(CB.partida.accionDe(rot), 'pista',
+    'E43 · tocar el rótulo también');
+  t.igual(CB.partida.accionDe(boton), 'pista',
+    'E43 · y el botón entero sigue funcionando');
+
+  /* No sube indefinidamente: un nodo suelto fuera de cualquier botón no dispara
+     nada, y el tope de cuatro niveles se respeta. */
+  var suelto = CB.ui.crear('div', null, 'nada');
+  document.body.appendChild(suelto);
+  t.igual(CB.partida.accionDe(suelto), null,
+    'E43 · un nodo sin botón encima no resuelve ninguna acción');
+
+  var hondo = boton, i;
+  for (i = 0; i < 5; i++) {
+    var capa = CB.ui.crear('span');
+    hondo.appendChild(capa);
+    hondo = capa;
+  }
+  t.igual(CB.partida.accionDe(hondo), null,
+    'E43 · a más de cuatro niveles deja de subir, como en CB.pantallas.conectar');
+
+  /* Y que el oyente use el resolutor, no una copia del bucle. */
+  t.ok(/accionDe/.test(String(CB.partida.conectarBarra)),
+    'E43 · conectarBarra resuelve con accionDe, sin repetir el recorrido');
+
+  document.body.removeChild(boton);
+  document.body.removeChild(suelto);
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E44 · El cerrojo de una respuesta solo estaba en la partida
+   ══════════════════════════════════════════════════════════════════════════
+   E11 arregló esto en CB.partida.responder y dejó allí escrito el porqué
+   entero: los botones no se deshabilitan al responder, siguen en pantalla
+   mientras se lee el mensaje, y machacarlos —que es lo que hace un niño de 7
+   años cuando la respuesta le sale sola— registraba una respuesta por toque.
+
+   Los otros dos sitios donde se contesta se quedaron sin él:
+
+     · el jefe: los cuatro botones viven los 900 ms de la animación. Medido,
+       5 toques = 5 bloques. Ocho toques derriban al jefe entero antes del
+       segundo turno, y cada toque encolaba además otro turno.
+     · la calibración: los botones viven los 1.300 ms del mensaje. Medido,
+       5 toques en la primera pregunta = 5 aciertos sobre 4 ítems. Y esos cuatro
+       aciertos son lo ÚNICO que fija trimestreDeducido, o sea el techo de
+       números de todo el juego: un niño de primer trimestre acababa colocado en
+       el tercero por pulsar dos veces. */
+CB.pruebas.suite('E44 · una respuesta por turno también en jefes y calibración', function () {
+  var t = CB.pruebas;
+
+  /* ── El jefe ── */
+  var previoJefe = CB.jefes.estado;
+  CB.jefes.estado = {
+    mundo: CB.catalogo.getMundo('M1'), jefe: 'Tronquete',
+    def: CB.jefes.DEFINICION.Tronquete, bloques: 8, turno: 1,
+    sinFallos: true, respondido: false, rng: CB.util.mulberry32(4)
+  };
+  var antes = CB.jefes.estado.bloques;
+  var i;
+  for (i = 0; i < 5; i++) CB.jefes.responder(true);
+  t.igual(CB.jefes.estado.bloques, antes - 1,
+    'E44 · cinco toques en la opción correcta tiran UN bloque, no cinco');
+
+  CB.jefes.estado.respondido = false;          // como haría el turno siguiente
+  for (i = 0; i < 4; i++) CB.jefes.responder(false);
+  t.igual(CB.jefes.estado.bloques, antes,
+    'E44 · y cuatro toques en una equivocada reponen UNO, no cuatro');
+  CB.jefes.estado = previoJefe;
+
+  /* ── La calibración ── */
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  var bloqueoPrevio = CB.partida.bloqueado;
+
+  CB.perfil = CB.pruebas.perfilNuevo();
+  CB.perfil.calibrado = false;
+  CB.calibracion.indice = 0;
+  CB.calibracion.aciertos = 0;
+  CB.pantallas.actual = 'p-calibracion';
+  CB.calibracion.servir();
+  /* Se levanta a mano el bloqueo de construcción y se fija la confirmación: lo
+     que se prueba aquí es el cerrojo de una respuesta, no esos dos. Dejarlos al
+     azar haría que el guardián pasara por el motivo equivocado. */
+  var confPrevia = CB.componentes._confirmacionPendiente;
+  CB.componentes._confirmacionPendiente = false;
+  CB.partida.bloqueado = false;
+
+  var correcta = CB.calibracion.ITEMS[0].respuesta;
+  var botones = [].slice.call(document.querySelectorAll('#cal-respuesta button'));
+  var bOK = botones.filter(function (b) { return b.textContent === String(correcta); })[0];
+
+  if (!bOK) {
+    t.saltar('E44 · la calibración no admite toques repetidos',
+             'la maqueta no monta #cal-respuesta');
+  } else {
+    bOK.disabled = false;
+    for (i = 0; i < 5; i++) { bOK.disabled = false; bOK.click(); }
+    t.igual(CB.calibracion.aciertos, 1,
+      'E44 · cinco toques en la misma respuesta cuentan UN acierto');
+    t.igual(CB.calibracion.indice, 1,
+      'E44 · y avanzan UNA pregunta, no cinco');
+    t.ok(CB.calibracion.aciertos <= CB.calibracion.ITEMS.length,
+      'E44 · nunca hay más aciertos que preguntas: es lo que fija el trimestre');
+  }
+
+  CB.componentes._confirmacionPendiente = confPrevia;
+  CB.partida.bloqueado = bloqueoPrevio;
+  CB.pantallas.actual = pantallaPrevia;
+  CB.perfil = perfilPrevio;
+  CB.calibracion.indice = 0;
+  CB.calibracion.aciertos = 0;
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E45 · La dificultad D solo sabía bajar
+   ══════════════════════════════════════════════════════════════════════════
+   CB.almacen.sanear() descarta por diseño toda clave que empiece por `_`
+   —«campos internos, no se guardan»— y los contadores de actualizarD se
+   llamaban `_racha` y `_fallos`. Se borraban en cada guardado; `D`, no.
+
+   El trinquete resultante: SUBIR exigía 3 aciertos seguidos del mismo nivel, y
+   una partida sirve como mucho 3 ítems del mismo nivel
+   (CB.partida.MAX_REPETICIONES), o sea un pleno dentro de una única sesión
+   porque al día siguiente la racha volvía a cero. BAJAR bastaban 2 fallos, y
+   además trasFallo pone D = 1 a la segunda caída del concepto — y eso sí
+   persistía. La dificultad podía caer para siempre y casi nunca subir. */
+CB.pruebas.suite('E45 · los contadores de dificultad sobreviven al guardado', function () {
+  var t = CB.pruebas;
+
+  var nivel = { n: 0, aciertos: 0, caja: 1, D: 2, ultimoISO: null, enPausa: false };
+  CB.adaptativo.actualizarD(nivel, true, true);
+  CB.adaptativo.actualizarD(nivel, true, true);
+
+  var guardado = CB.almacen.sanear({ niveles: { X: nivel } }).niveles.X;
+  t.ok(guardado.rachaD === 2,
+    'E45 · la racha de aciertos llega entera a lo que se escribe en disco',
+    JSON.stringify(guardado));
+
+  /* La prueba que de verdad ata el fallo: dos sesiones. Se acierta dos veces,
+     se guarda, se relee, y el tercer acierto tiene que subir la dificultad. */
+  var releido = JSON.parse(JSON.stringify(guardado));
+  CB.adaptativo.actualizarD(releido, true, true);
+  t.igual(releido.D, 3,
+    'E45 · el tercer acierto sube D aunque haya un guardado por medio');
+
+  /* Y la simetría: bajar sigue funcionando igual y tampoco se pierde. */
+  var baja = { D: 3 };
+  CB.adaptativo.actualizarD(baja, false, false);
+  var bajaGuardada = JSON.parse(JSON.stringify(CB.almacen.sanear(baja)));
+  CB.adaptativo.actualizarD(bajaGuardada, false, false);
+  t.igual(bajaGuardada.D, 2, 'E45 · dos fallos con guardado por medio bajan D');
+
+  /* Ningún campo con guion bajo puede volver a llevar estado que haga falta. */
+  var conGuion = Object.keys(nivel).filter(function (k) { return k.charAt(0) === '_'; });
+  t.igual(conGuion.length, 0,
+    'E45 · actualizarD no deja ningún campo que sanear() vaya a tirar',
+    conGuion.join(', '));
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E46 · Enter se saltaba la confirmación del antiazar
+   ══════════════════════════════════════════════════════════════════════════
+   En tecladoBloques, la rama de Enter llamaba a alResponder directamente en vez
+   de pasar por pulsa('OK'), que es quien consulta pedirConfirmacion(). Tras una
+   detección de azar, la confirmación de dos toques se le aplicaba a quien juega
+   tocando y no a quien juega con teclado. F8 pide que se pueda jugar una partida
+   entera solo con teclado; lo que no pide es que el teclado tenga otras reglas. */
+/* LA SUITE DEVUELVE UNA PROMESA, y no por gusto. CB.componentes.montar() pone
+   CB.partida.bloqueado a true de forma SÍNCRONA y lo suelta en un setTimeout,
+   también con bloqueoMs 0. La primera versión de este guardián escribía la cifra
+   inmediatamente después de montar el teclado, con el bloqueo todavía echado:
+   pulsa() se iba por el return, el visor quedaba vacío, y «con confirmación
+   pendiente el primer Enter no contesta» salía en verde porque no había nada que
+   contestar. Verde por no haber llegado a probar nada, que es el verde que este
+   proyecto lleva tres rondas persiguiendo. Ahora se espera a que el bloqueo se
+   levante de verdad antes de tocar una tecla. */
+CB.pruebas.suite('E46 · Enter pasa por la misma confirmación que el toque', function () {
+  var t = CB.pruebas;
+
+  var pantallaPrevia = CB.pantallas.actual;
+  var bloqueoPrevio = CB.partida.bloqueado;
+  var confPrevia = CB.componentes._confirmacionPendiente;
+  CB.pantallas.actual = 'p-partida';
+
+  function desbloqueado() {
+    return new Promise(function (listo) {
+      var t0 = CB.util.ahora();
+      (function espera() {
+        if (!CB.partida.bloqueado || CB.util.ahora() - t0 > 4000) { listo(); return; }
+        setTimeout(espera, 10);
+      })();
+    });
+  }
+
+  var respuestas = [];
+  var comp = CB.componentes.tecladoBloques(
+    { respuesta: 7 },
+    function (v) { respuestas.push(v); },
+    { bloqueoMs: 0 }
+  );
+
+  return desbloqueado().then(function () {
+    t.ok(CB.partida.bloqueado === false,
+      'E46 · el bloqueo de construcción se ha levantado antes de teclear');
+
+    CB.componentes._confirmacionPendiente = true;   // como tras detectar azar
+    comp.tecla('4');
+    t.igual(CB.componentes._valor, '4',
+      'E46 · la cifra ha entrado de verdad: sin esto lo demás no prueba nada');
+
+    comp.tecla('Enter');
+    t.igual(respuestas.length, 0,
+      'E46 · con confirmación pendiente, el primer Enter no contesta');
+    comp.tecla('Enter');
+    t.igual(respuestas.length, 1,
+      'E46 · el segundo Enter sí, igual que el segundo toque');
+    t.igual(respuestas[0], 4, 'E46 · y contesta el valor escrito');
+
+    /* Sin confirmación pendiente, Enter contesta a la primera, como siempre. */
+    CB.componentes._confirmacionPendiente = false;
+    respuestas.length = 0;
+    var comp2 = CB.componentes.tecladoBloques(
+      { respuesta: 9 },
+      function (v) { respuestas.push(v); },
+      { bloqueoMs: 0 }
+    );
+    return desbloqueado().then(function () {
+      comp2.tecla('9');
+      comp2.tecla('Enter');
+      t.igual(respuestas.length, 1,
+        'E46 · sin confirmación pendiente, Enter contesta directo');
+      t.igual(respuestas[0], 9, 'E46 · y con el valor correcto');
+
+      CB.componentes._confirmacionPendiente = confPrevia;
+      CB.partida.bloqueado = bloqueoPrevio;
+      CB.pantallas.actual = pantallaPrevia;
+    });
+  });
 });

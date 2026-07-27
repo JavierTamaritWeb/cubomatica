@@ -427,10 +427,25 @@ CB.musica.claveDePantalla = function (idPantalla) {
   if (v !== '@mundo') return (v === undefined) ? null : v;
 
   /* En partida, la música la fija el bioma del mundo: cambiar de mundo se oye
-     antes de leerse. */
-  var mundoId = (CB.partida && CB.partida.estado) ? CB.partida.estado.mundoId : null;
-  var mundo = mundoId ? CB.catalogo.getMundo(mundoId) : null;
-  var clave = mundo ? CB.musica.POR_BIOMA[mundo.bioma] : null;
+     antes de leerse.
+
+     SE LEE `estado.mundo`, QUE ES LO QUE ESCRIBE CB.partida.iniciar(). Antes
+     leía `estado.mundoId`, que no existe en ninguna parte del proyecto: el
+     estado guarda el OBJETO de mundo, no su id. `mundoId` es el nombre del
+     parámetro de iniciar({mundoId:…}), y ahí se quedó.
+
+     La consecuencia era muda y completa: undefined → getMundo(null) → null →
+     el respaldo. Tres de las cuatro pistas de mundo —bosque, río y mina— no han
+     sonado jamás, y toda expedición sonaba a pradera. No hay error, no hay
+     silencio, no hay nada que mirar: suena música, solo que siempre la misma.
+
+     El test lo daba por bueno porque construía el estado a mano con la forma
+     equivocada, `{mundoId: m.id}`, copiada de esta misma línea. Un test escrito
+     contra la implementación en vez de contra la conducta se pone de acuerdo con
+     el fallo. El guardián E42 de casos-regresiones.js parte del estado que crea
+     iniciar() de verdad, que es lo único que no se puede inventar. */
+  var mundo = (CB.partida && CB.partida.estado) ? CB.partida.estado.mundo : null;
+  var clave = (mundo && mundo.bioma) ? CB.musica.POR_BIOMA[mundo.bioma] : null;
   return clave || 'mundoPradera';
 };
 
