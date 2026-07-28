@@ -12,6 +12,86 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.9.0] — 2026-07-28
+
+**Segunda cifra: entran tres capacidades.** El perfil guardado no cambia de forma
+incompatible —`componentesVistos` ya existía en el esqueleto desde la primera
+versión, sin que nadie lo escribiera— así que no hay migración.
+
+Es la **fase 6** del plan que devolvieron las dos lentes que faltaban
+(`docs/plan-mejoras-1.8.0.md`): tres funciones escritas, documentadas y que no
+llamaba nadie. Ninguna era un error de lógica. La familia de E41 y E55, y van cinco.
+
+### `atras()` no limpiaba nada
+
+`ir()` ejecuta el manejador de salida de la pantalla que deja; `atras()` no lo hacía
+en ningún punto. Solo hay dos registrados —apagar los temporizadores de la tarjeta de
+reparación y parar el reloj de la partida— así que **la mitad de las salidas del juego
+no limpiaban**.
+
+El síntoma no era un error: era el salvavidas de la reparación poniéndose a leer los
+tres pasos en voz alta, a los 25 segundos, **encima de otra pantalla**. Y Escape en la
+reparación llevaba al mapa dejando la expedición viva detrás; ahora pausa, como en la
+partida.
+
+### Los siete componentes se presentan la primera vez que se ven
+
+`CB.componentes.PRESENTACION` tenía las siete frases escritas —«Toca la moneda de 2
+euros», «¿Cuál pesa más? 8 y 5»— con sus dos funciones de apoyo, y **cero referencias
+fuera de su propio fichero**. `componentesVistos` se declaraba en el perfil, se
+reparaba en la migración y estaba en los campos permitidos; no lo escribía nadie. Un
+niño veía la balanza por primera vez sin una sola frase que le dijera qué hacer,
+teniéndola escrita.
+
+Se marca **donde se monta cada componente**, no adivinando desde `item.formato`: las
+claves son nombres de función (`ordenarFila`, `selectorSigno`) y el formato dice otra
+cosa (`ordenar`, `signo`), y además el componente real depende de condiciones de
+ejecución. Resolverlo por el formato habría dado `undefined` en casi todos los casos
+sin fallar — la familia de E42.
+
+Las presentaciones se pintan con un tipo de mensaje **neutro** nuevo. Con el par del
+fallo, que fue lo primero que se probó, estrenar una pantalla parecía una reprimenda.
+
+### El enunciado se lee solo, y antes no
+
+`docs/decisiones.md` y un comentario de `src/index.html` daban por vivo que «la
+consigna se lee sola al aparecer». **Era falso desde la primera versión**: lo único que
+había era una llamada a la región viva, que es texto para un lector de pantalla, no
+voz. La única puerta era la tecla L, en un juego cuyo aparato objetivo declarado es un
+iPad.
+
+Ahora se lee, con tres condiciones y las tres importan: solo problemas de enunciado,
+solo con el ajuste encendido y solo si hay voz española instalada. **No se usa
+`leerOGuiar`**, que cae en `lecturaGuiada` y esa no mira `CB.voz.activa`: sería audio
+que arranca solo y no se puede apagar, WCAG 2.2 1.4.2. Y en un Chromebook sin voz
+española iría a 1000 ms por palabra —25 s de resaltado con el reloj corriendo— y todos
+los problemas se agotarían por tiempo. El cronómetro se para mientras lee.
+
+Además, un altavoz **dentro del enunciado**, donde está lo que hay que oír. No vuelve
+a la barra: de ahí se retiró a petición expresa. Llama a una variante que **no levanta
+el bloqueo antiazar**, porque un altavoz encima de la pregunta se roza sin querer y ese
+roce anularía de un toque la única protección contra responder al tuntún.
+
+### Pruebas: 520 → 548
+
+**E59**, **E60** y **E61**. El plan los llamaba E56-E58, pero esos números se los llevó
+1.8.1 mientras el plan esperaba; se numeran por orden de escritura.
+
+Sembrados los tres fallos, **E60 no se puso rojo**: comprobaba las dos funciones
+sueltas, que llevaban años siendo correctas, y no el conducto que faltaba. Es
+literalmente lo que el plan había anticipado. Reescrito para servir un ítem de verdad y
+mirar la pantalla, caza la siembra.
+
+Y dos correcciones de las propias pruebas, las dos por medir lo que no era:
+
+- **E61 pasaba en vacío.** Forzaba `estado.itemActual` a mano y luego llamaba a
+  `servirItem()`, que genera el suyo desde el guion — y el mundo M1 no sirve problemas
+  de enunciado. No se leía nada por no haber problema, no por tener la voz apagada.
+- **E60 se ponía rojo contra código correcto**, porque `CB.partida.iniciar()` ya sirve
+  el primer ítem y la llamada extra a `servirItem()` medía la pantalla ya limpiada.
+
+---
+
 ## [1.8.1] — 2026-07-28
 
 **Tercera cifra: esto corrige 1.8.0, no añade nada.** El formato del perfil no cambia

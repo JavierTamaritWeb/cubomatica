@@ -107,6 +107,19 @@ CB.pantallas.ir = function (id, props) {
 /* Vuelve a la pantalla anterior; si no hay, al mapa (o a la portada si aún no
    hay perfil activo). Nunca deja al niño en un callejón sin salida. */
 CB.pantallas.atras = function () {
+  /* EL MANEJADOR DE SALIDA, QUE AQUÍ NO SE EJECUTABA. ir() sí lo llama (arriba),
+     atras() no lo hacía en ningún punto, y solo hay dos registrados: el de
+     p-reparacion, que apaga los temporizadores de la tarjeta, y el de p-partida,
+     que para el reloj. Es decir, la mitad de las salidas del juego no limpiaban
+     nada, y el síntoma no era un error sino un salvavidas que a los 25 s se
+     ponía a leer los tres pasos de una reparación ENCIMA DE OTRA PANTALLA.
+
+     Va lo PRIMERO de todo, antes de calcular el destino: estas tres líneas leen
+     CB.pantallas.actual y unas líneas más abajo atras() lo reescribe. */
+  if (CB.pantallas.actual && CB.pantallas.alSalir[CB.pantallas.actual]) {
+    try { CB.pantallas.alSalir[CB.pantallas.actual](); } catch (e) { }
+  }
+
   var anterior = CB.pantallas.pila.pop();
   var destino = anterior || (CB.perfil ? 'p-mapa' : 'p-portada');
   /* No se vuelve nunca a una pantalla de flujo: se sale de ellas hacia delante */
@@ -181,7 +194,12 @@ CB.pantallas.conectar = function () {
   document.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Escape') return;
     if (CB.pantallas.SIN_SALIR.indexOf(CB.pantallas.actual) !== -1) return;
-    if (CB.pantallas.actual === 'p-partida') {
+    /* La reparación se comporta como la partida: PAUSA, no retroceso. Escape ahí
+       llevaba al mapa —atras() remapea p-reparacion a p-mapa— dejando
+       CB.partida.estado vivo detrás, es decir, con una expedición a medias y
+       ninguna forma evidente de volver a ella. Pausar es lo que ya existe para
+       ese caso y no obliga a inventar una pantalla nueva. */
+    if (CB.pantallas.actual === 'p-partida' || CB.pantallas.actual === 'p-reparacion') {
       if (CB.partida && CB.partida.pausar) CB.partida.pausar();
       return;
     }

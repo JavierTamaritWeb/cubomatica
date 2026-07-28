@@ -199,10 +199,17 @@
            «Pista» o «Pausa» están dentro de lo que lee un niño de 2.º. El
            aria-label conserva la frase larga para los lectores de pantalla.
 
-           NO hay botón de «Leer en voz alta»: se retiró a petición expresa. La
-           lectura del enunciado sigue existiendo con la tecla L (CB.a11y.MAPA)
-           y la consigna se lee sola al aparecer, así que un niño que aún no lee
-           con soltura no se queda sin ella. -->
+           NO hay botón de «Leer en voz alta» EN LA BARRA: se retiró a petición
+           expresa y no vuelve. La lectura sigue existiendo por tres caminos: la
+           tecla L (CB.a11y.MAPA), el altavoz que va DENTRO del propio enunciado
+           —donde se lee, no en la barra—, y la lectura automática del enunciado
+           al aparecer.
+
+           ESTE COMENTARIO DECÍA QUE «la consigna se lee sola al aparecer» Y ERA
+           FALSO desde la primera versión: lo único que había era una llamada a
+           la región viva, que es texto para un lector de pantalla, no voz. Se
+           conectó de verdad en 1.9.0, solo para problemas de enunciado, solo con
+           el ajuste encendido y solo si hay voz española instalada. -->
       <button class="btn-bloque btn-bloque--rotulado" data-accion="pista" aria-label="Pista"><span class="btn-bloque__ico" aria-hidden="true">💡</span><span class="btn-bloque__rotulo">Pista</span></button>
     </div>
     <div class="barra-herramientas__grupo">

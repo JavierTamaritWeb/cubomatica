@@ -574,9 +574,17 @@
 }
 .mensaje-resultado[data-tipo="acierto"] { background: var(--ok-fondo);  color: var(--ok-texto); }
 .mensaje-resultado[data-tipo="animo"]   { background: var(--mal-fondo); color: var(--mal-texto); }
+/* «aviso» es NEUTRO, y hace falta que lo sea: lo usa la presentación de cada
+   componente la primera vez que se ve —«Toca la moneda de 2 euros»— y eso no es
+   ni un acierto ni un error. Pintarlo con el par del fallo, que es lo primero
+   que se probó, lo convertía en una reprimenda por estrenar una pantalla.
+   Reutiliza el par del panel, ya medido en casos-contraste.js: cero pares
+   nuevos que verificar. */
+.mensaje-resultado[data-tipo="aviso"]   { background: var(--bg-texto-panel); color: var(--texto-principal); }
 /* Nunca solo color: cada tipo lleva además su marca de forma */
 .mensaje-resultado[data-tipo="acierto"]::before { content: "\25C6\00A0"; }
 .mensaje-resultado[data-tipo="animo"]::before   { content: "\25A0\00A0"; }
+.mensaje-resultado[data-tipo="aviso"]::before   { content: "\25B6\00A0"; }
 
 /* ── Partículas (pool de 24 divs, §14.5) ────────────────────────────────── */
 .particula {
@@ -605,4 +613,17 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/* ── El altavoz del enunciado ───────────────────────────────────────────────
+   Va dentro del panel del problema, no en la barra: P3 retiró el de la barra a
+   petición expresa y esto no lo devuelve. Aquí está donde se lee, que es donde
+   se busca. Conserva el lado táctil mínimo de 64 px como todo lo demás. */
+.enunciado__altavoz {
+  display: block;
+  margin: var(--e3) auto 0;
+  font-size: 20px;
+  font-family: var(--fuente-lectura);
+  width: auto;
+  padding: 0 var(--e3);
 }

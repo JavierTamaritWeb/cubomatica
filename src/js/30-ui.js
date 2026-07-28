@@ -103,6 +103,15 @@ CB.ui.pintarItem = function (item) {
       caja.appendChild(p);
     }
     cont.appendChild(caja);
+    /* El altavoz va DENTRO del enunciado, donde está lo que hay que oír, y no
+       en la barra: P3 retiró el de la barra a petición expresa y esto no lo
+       devuelve. Llama a accionLeerSuave, que no levanta el bloqueo antiazar.
+       Solo en problemas: en «6 − 3» no hay nada que leer. */
+    var altavoz = CB.ui.boton('🔊 Leer', 'btn-bloque--icono enunciado__altavoz', function () {
+      if (CB.partida && CB.partida.accionLeerSuave) CB.partida.accionLeerSuave();
+    });
+    altavoz.setAttribute('aria-label', 'Leer el problema en voz alta');
+    cont.appendChild(altavoz);
     return;
   }
 

@@ -1918,3 +1918,245 @@ CB.pruebas.suite('E58 · el ánimo no se celebra', function () {
   t.igual(CB.mensajes.grito.length, 1,
     'E58 · grito() ya solo recibe el contexto, sin tipo');
 });
+
+/* ══ E59-E61 · Fase 6 del plan: tres conductos que no estaban conectados ═════
+
+   Ninguno de los tres es un error de lógica. Las funciones estaban escritas, bien
+   escritas y documentadas; lo que faltaba era que alguien las llamara. Es la
+   familia de E41 (marcarLectura) y de E55 (el escalón 4), y van cinco.
+
+   NUMERACIÓN: el plan los llamaba E56-E58, pero esos números se los llevó 1.8.1
+   mientras el plan esperaba. Se numeran de corrido por orden de escritura, que es
+   la única regla que no se desincroniza.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E59 · atras() también ejecuta el manejador de salida', function () {
+  var t = CB.pruebas;
+  var pantallaPrevia = CB.pantallas.actual;
+  var pilaPrevia = CB.pantallas.pila.slice();
+
+  /* ir() lo ejecutaba y atras() no, así que la mitad de las salidas del juego no
+     limpiaban nada. El síntoma no era un error: era el salvavidas de la tarjeta
+     de reparación poniéndose a leer los tres pasos, a los 25 s, encima de otra
+     pantalla. */
+  var llamados = [];
+  var salirPrevio = CB.pantallas.alSalir['p-mapa'];
+  CB.pantallas.alSalir['p-mapa'] = function () { llamados.push('p-mapa'); };
+
+  CB.pantallas.ir('p-mapa');
+  /* SE AFIRMA EL ESTADO PREVIO. Sin esto, «no se llamó» pasaría también si nunca
+     hubiéramos llegado a p-mapa, que es la vacuidad que dejó a E46 sin valor. */
+  t.igual(CB.pantallas.actual, 'p-mapa', 'E59 · estamos en el mapa antes de salir');
+  t.igual(llamados.length, 0, 'E59 · y su manejador aún no se ha ejecutado');
+
+  CB.pantallas.atras();
+  t.igual(llamados.length, 1, 'E59 · atras() ejecuta el alSalir de la pantalla que deja');
+
+  /* Y con el caso real: los temporizadores de la reparación. */
+  if (CB.pantallas.alSalir['p-reparacion']) {
+    CB.pantallas.ir('p-reparacion');
+    CB.ui._timersReparacion = { salvavidas: setTimeout(function () {}, 60000),
+                                reloj: setInterval(function () {}, 60000) };
+    t.ok(CB.ui._timersReparacion !== null,
+      'E59 · la reparación tiene temporizadores vivos antes de salir');
+    CB.pantallas.atras();
+    t.igual(CB.ui._timersReparacion, null,
+      'E59 · y salir con atras() los apaga, no los deja corriendo');
+  }
+
+  if (salirPrevio) CB.pantallas.alSalir['p-mapa'] = salirPrevio;
+  else delete CB.pantallas.alSalir['p-mapa'];
+  CB.pantallas.pila = pilaPrevia;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+CB.pruebas.suite('E60 · cada componente se presenta la primera vez que se ve', function () {
+  var t = CB.pruebas;
+  var P = CB.componentes.PRESENTACION;
+  var claves = Object.keys(P);
+
+  t.igual(claves.length, 7, 'E60 · están las siete frases de presentación');
+
+  /* Toda clave tiene que ser un componente que EXISTE. Las claves son nombres de
+     función —'ordenarFila', 'selectorSigno'— y NO coinciden con los valores de
+     item.formato, que son 'ordenar' y 'signo'. Resolver la frase desde el formato
+     habría devuelto undefined en casi todos los casos sin fallar: la familia de
+     E42. Este aserto es lo que impide que alguien lo «simplifique» así. */
+  var inexistentes = claves.filter(function (k) {
+    return typeof CB.componentes[k] !== 'function';
+  });
+  t.igual(inexistentes.length, 0,
+    'E60 · toda frase corresponde a un componente que existe', inexistentes.join(', '));
+
+  var vacias = claves.filter(function (k) { return !P[k] || !P[k].length; });
+  t.igual(vacias.length, 0, 'E60 · ninguna frase está vacía', vacias.join(', '));
+
+  /* El ciclo completo sobre un perfil de verdad. */
+  var perfil = CB.pruebas.perfilNuevo();
+  t.ok(CB.componentes.necesitaPresentacion(perfil, 'balanza'),
+    'E60 · un perfil nuevo no ha visto la balanza');
+
+  CB.componentes.marcarVisto(perfil, 'balanza');
+  t.ok(!CB.componentes.necesitaPresentacion(perfil, 'balanza'),
+    'E60 · y después de verla, no se vuelve a presentar');
+  t.ok(perfil.componentesVistos.indexOf('balanza') !== -1,
+    'E60 · queda anotado en el perfil');
+
+  /* Marcar dos veces no duplica: el campo se guarda y crecería sin freno. */
+  CB.componentes.marcarVisto(perfil, 'balanza');
+  t.igual(perfil.componentesVistos.filter(function (x) { return x === 'balanza'; }).length, 1,
+    'E60 · marcar dos veces no duplica la entrada');
+
+  /* Y sobrevive al guardado: sin guion bajo delante, como manda sanear(). */
+  var saneado = CB.almacen.sanear(JSON.parse(JSON.stringify(perfil)));
+  t.ok(saneado.componentesVistos && saneado.componentesVistos.indexOf('balanza') !== -1,
+    'E60 · la lista sobrevive a sanear()');
+
+  /* ── Y AHORA EL CONDUCTO, QUE ES LO QUE FALTABA ──────────────────────────
+     Todo lo de arriba comprueba las dos funciones sueltas, y las dos funciones
+     sueltas llevaban años siendo correctas: lo que no existía era la llamada.
+     Sembrando el fallo —quitar la comprobación de necesitaPresentacion y dejar
+     solo marcarVisto— este guardián seguía EN VERDE. Es exactamente la debilidad
+     que el propio plan anunciaba: «un guardián que solo comprueba la primera vez
+     pasa en verde con la función a medio conectar».
+
+     Así que se sirve un ítem de verdad y se mira la pantalla. */
+  var perfilPrevio = CB.perfil;
+  var limpio = CB.pruebas.perfilNuevo();
+  CB.perfil = limpio;
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  var nodo = document.getElementById('item-mensaje');
+
+  if (t.ok(!!(estado && nodo), 'E60 · hay partida y nodo de mensaje')) {
+    estado.proximoDescanso = 99;
+    /* NO se llama a servirItem() aquí: CB.partida.iniciar() YA sirvió el primer
+       ítem. Llamarlo otra vez servía el SEGUNDO, cuyo primer gesto es ocultar el
+       mensaje, y entonces esto medía la pantalla después de haberla limpiado. La
+       primera versión de este bloque lo hacía y se ponía roja contra código
+       correcto. Se le pregunta al estado en el que iniciar() lo dejó. */
+    var primera = nodo.textContent;
+    var vistosTrasUna = limpio.componentesVistos.slice();
+
+    t.ok(vistosTrasUna.length > 0,
+      'E60 · servir el primer ítem anota el componente en el perfil',
+      JSON.stringify(vistosTrasUna));
+    t.ok(primera && primera.length > 0,
+      'E60 · y pinta su frase de presentación', primera);
+    t.ok(claves.indexOf(vistosTrasUna[0]) !== -1,
+      'E60 · lo anotado es una clave real de PRESENTACION', vistosTrasUna[0]);
+
+    /* Y LA SEGUNDA VEZ NO SE REPITE. Esta es la mitad que caza el conducto a
+       medias: si se marca sin comprobar, la frase vuelve a salir en cada ítem. */
+    CB.partida.servirItem();
+    t.ok(nodo.textContent !== primera || nodo.hidden,
+      'E60 · el mismo componente no se vuelve a presentar en el ítem siguiente',
+      'sigue diciendo: ' + nodo.textContent);
+  }
+
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+});
+
+CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', function () {
+  var t = CB.pruebas;
+
+  /* SE INSTALAN DOBLES CON defineProperty y se restauran POR DESCRIPTOR. La
+     asignación directa se cae en silencio si la propiedad no es escribible, y
+     entonces esto mediría la función de verdad, es decir, nada. Es la lección de
+     window.caches. */
+  var descLeer = Object.getOwnPropertyDescriptor(CB.voz, 'leer');
+  var descGuiada = Object.getOwnPropertyDescriptor(CB.voz, 'lecturaGuiada');
+  var descDisp = Object.getOwnPropertyDescriptor(CB.voz, 'disponible');
+  var activaPrevia = CB.voz.activa;
+
+  var leidos = [], guiados = [];
+  Object.defineProperty(CB.voz, 'leer', {
+    configurable: true, writable: true,
+    value: function (texto, alTerminar) { leidos.push(texto); if (alTerminar) alTerminar(); return true; }
+  });
+  Object.defineProperty(CB.voz, 'lecturaGuiada', {
+    configurable: true, writable: true,
+    value: function (texto) { guiados.push(texto); }
+  });
+  Object.defineProperty(CB.voz, 'disponible', {
+    configurable: true, writable: true, value: function () { return true; }
+  });
+
+  /* Que los dobles se instalaran se AFIRMA, no se supone. */
+  t.ok(CB.voz.leer !== (descLeer && descLeer.value),
+    'E61 · el doble de CB.voz.leer se ha instalado de verdad');
+
+  var perfilPrevio = CB.perfil;
+  var perfil = CB.pruebas.perfilNuevo();
+  CB.perfil = perfil;
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+
+  /* SE SIRVE UN PROBLEMA DE VERDAD. La primera versión de este guardián escribía
+     estado.itemActual a mano y llamaba a servirItem(), que genera el suyo propio
+     desde el guion — y el mundo M1 no sirve problemas de enunciado. Resultado: no
+     se leía nada, y la mitad A pasaba en VERDE por no haber servido ningún
+     problema, no por tener la voz apagada. Vacuidad de manual, y la cazó la mitad
+     B al ponerse roja. Ahora el guion se fuerza a un nivel de problemas real y se
+     AFIRMA que lo servido trae subtipo antes de medir nada. */
+  var idProblema = null;
+  var ids = CB.catalogo.ids(), k, niv;
+  for (k = 0; k < ids.length; k++) {
+    niv = CB.catalogo.get(ids[k]);
+    if (niv && /^problemas_/.test(niv.destreza || '')) { idProblema = ids[k]; break; }
+  }
+  if (!t.ok(!!idProblema, 'E61 · el catálogo tiene niveles de problemas')) {
+    if (descLeer) Object.defineProperty(CB.voz, 'leer', descLeer);
+    if (descGuiada) Object.defineProperty(CB.voz, 'lecturaGuiada', descGuiada);
+    if (descDisp) Object.defineProperty(CB.voz, 'disponible', descDisp);
+    CB.voz.activa = activaPrevia;
+    CB.partida.estado = null;
+    CB.perfil = perfilPrevio;
+    return;
+  }
+
+  function servirProblema() {
+    estado.guion = [idProblema, idProblema, idProblema];
+    estado.indice = 0;
+    estado.proximoDescanso = 99;
+    CB.partida.servirItem();
+    return !!(estado.itemActual && estado.itemActual.subtipo);
+  }
+
+  /* MITAD A · con la voz apagada NO se lee nada, por ninguna de las dos vías. */
+  CB.voz.activa = false;
+  leidos.length = 0; guiados.length = 0;
+  var servido = servirProblema();
+  t.ok(servido, 'E61 · se ha servido un problema de enunciado de verdad');
+  t.igual(leidos.length, 0, 'E61 · con «leer en voz alta» apagado, nadie lee');
+  t.igual(guiados.length, 0, 'E61 · ni por la lectura guiada, que no mira ese ajuste');
+
+  /* MITAD B · con la voz encendida sí, y con el reloj parado mientras lee. */
+  CB.voz.activa = true;
+  leidos.length = 0;
+  var paradas = 0;
+  var pararPrevio = CB.partida.pararCronometro;
+  CB.partida.pararCronometro = function () { paradas++; return pararPrevio.apply(this, arguments); };
+  servirProblema();
+  CB.partida.pararCronometro = pararPrevio;
+
+  t.ok(leidos.length > 0, 'E61 · con la voz encendida, el problema se lee solo');
+  t.ok(paradas > 0, 'E61 · y el cronómetro se para mientras lee');
+  t.ok(leidos.length === 0 || (leidos[0] || '').length > 0,
+    'E61 · y lo que se lee no está vacío');
+
+  /* Y el altavoz del enunciado existe y NO levanta el bloqueo antiazar. */
+  t.ok(typeof CB.partida.accionLeerSuave === 'function',
+    'E61 · hay una lectura que no levanta el bloqueo');
+  CB.partida.bloqueado = true;
+  CB.partida.accionLeerSuave();
+  t.igual(CB.partida.bloqueado, true,
+    'E61 · el altavoz del enunciado no anula el bloqueo antiazar de un roce');
+  CB.partida.bloqueado = false;
+
+  if (descLeer) Object.defineProperty(CB.voz, 'leer', descLeer);
+  if (descGuiada) Object.defineProperty(CB.voz, 'lecturaGuiada', descGuiada);
+  if (descDisp) Object.defineProperty(CB.voz, 'disponible', descDisp);
+  CB.voz.activa = activaPrevia;
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+});

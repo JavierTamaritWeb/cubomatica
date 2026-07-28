@@ -2431,3 +2431,100 @@ comprobaciones rojas repartidas entre los tres.
 | Vehículos de celebración | 1 (nueve recorridos) | **6** |
 | Coreografías de cinta | 9 | **3** |
 | Efectos de sonido | 12 | 12 |
+
+---
+
+# Ronda 13 · Fase 6 del plan: tres conductos sin conectar — versión 1.9.0 (28 de julio de 2026)
+
+Primera fase ejecutada del plan que devolvieron las dos lentes que faltaban. Las tres
+correcciones son de la misma familia —E41, E55 y ahora estas— y ya van cinco: **una
+función escrita, documentada y correcta a la que no llama nadie no falla; simplemente no
+ocurre**.
+
+## D-R13-1 · `atras()` y `ir()` hacían cosas distintas
+
+`ir()` ejecutaba el manejador de salida; `atras()` no. Con solo dos manejadores
+registrados, eso significaba que la mitad de las salidas del juego no limpiaban nada. El
+síntoma tampoco era un error: era el salvavidas de la tarjeta de reparación leyendo los
+tres pasos, veinticinco segundos después, sobre otra pantalla.
+
+**La lección general, que vale más que el arreglo:** cuando dos funciones son caminos
+alternativos para lo mismo —entrar y salir de una pantalla—, la regla que aplica una tiene
+que aplicarla la otra. Es la tercera familia de la ronda 10 (E44: el cerrojo de una
+respuesta estaba en la partida y faltaba en el jefe y en la calibración) vista desde otro
+lado.
+
+Y de paso se cerró el efecto colateral que se ve al leerlo: Escape en la reparación
+llevaba al mapa con `CB.partida.estado` vivo detrás. Ahora pausa, como en la partida. Se
+eligió pausar antes que meter `p-reparacion` en `SIN_SALIR` porque no inventa pantallas.
+
+## D-R13-2 · Marcar donde se monta, no adivinar por el formato
+
+Las siete frases de presentación existían desde el principio. El plan proponía resolverlas
+desde `item.formato`, y **eso habría estado mal**: las claves de `PRESENTACION` son nombres
+de componente (`ordenarFila`, `selectorSigno`) y `item.formato` trae otros (`ordenar`,
+`signo`). Un `PRESENTACION[formato]` habría devuelto `undefined` en cuatro de siete casos
+sin fallar nunca: la familia de E42 exacta.
+
+Además el componente real no se deduce del formato: un problema monta `selectorDatos` o
+`tecladoBloques` según el trimestre, y `opciones4` cae a teclado si los distractores no dan
+para cuatro. Así que se marca **en los nueve sitios donde se monta**, que son nueve líneas
+de una línea cada una, y `presentar()` se niega a pintar una clave que no conozca.
+
+**Tipo de mensaje neutro.** El plan decía de usar `'animo'`. Se probó y estaba mal: ese par
+de colores es el del fallo, y estrenar una balanza quedaba como una reprimenda. Nace
+`data-tipo="aviso"` reutilizando el par del panel, ya medido en `casos-contraste.js`: cero
+pares nuevos que verificar.
+
+## D-R13-3 · Leer en voz alta: lo que NO se hizo es la mitad de la decisión
+
+La documentación llevaba desde la primera versión afirmando que «la consigna se lee sola al
+aparecer». Era falso: solo había una llamada a la región viva.
+
+Lo que **no** se ha hecho, y por qué, importa tanto como lo que sí:
+
+- **No se usa `CB.voz.leerOGuiar`.** Cae en `lecturaGuiada`, y esa función **no comprueba
+  `CB.voz.activa`** —solo lo hace `leer`—. Sería audio que arranca solo y no se puede
+  apagar desde los ajustes: WCAG 2.2 1.4.2 incumplido, en material escolar sujeto a la
+  norma.
+- **No se lee sin voz española instalada.** La guiada va a 1000 ms por palabra: veinticinco
+  segundos de resaltado con el cronómetro corriendo, y todos los problemas se agotarían por
+  tiempo en un Chromebook.
+- **No se leen las operaciones.** Decir «seis menos tres» en voz alta no ayuda a nadie y
+  alarga cada ítem.
+- **El altavoz no vuelve a la barra.** De ahí se retiró a petición expresa (P3). Va dentro
+  del enunciado, que es donde está lo que hay que oír, y llama a una variante que **no
+  levanta el bloqueo antiazar**: un altavoz encima de la pregunta se roza sin querer, y ese
+  roce anularía de un toque la única protección contra responder al tuntún.
+
+## D-R13-4 · Un guardián que no cazó su siembra, y dos que medían otra cosa
+
+De los tres guardianes nuevos, **E60 no se puso rojo al sembrar el fallo**. Comprobaba
+`necesitaPresentacion` y `marcarVisto` por separado —dos funciones que llevaban años siendo
+correctas— y no el conducto, que era lo que faltaba. El propio plan lo había anticipado con
+esta frase: *«un guardián que solo comprueba la primera vez pasa en verde con la función a
+medio conectar»*. Pasó exactamente eso.
+
+Y dos veces se midió lo que no era:
+
+- **E61 pasaba en vacío.** Escribía `estado.itemActual` a mano y luego llamaba a
+  `servirItem()`, que genera el suyo propio desde el guion — y el mundo M1 no sirve
+  problemas de enunciado. La mitad A daba verde por no haber servido ningún problema, no
+  por tener la voz apagada. Lo delató la mitad B al ponerse roja.
+- **E60 se puso rojo contra código correcto**, porque `CB.partida.iniciar()` **ya sirve el
+  primer ítem**, y la llamada extra a `servirItem()` estaba midiendo la pantalla después de
+  que el segundo ítem la limpiara.
+
+Las dos son la misma equivocación con dos caras: **construir el escenario a mano en vez de
+dejar que lo produzca la función real, y no preguntarle luego a esa función en qué estado
+lo dejó.**
+
+## Estado al cerrar 1.9.0
+
+| | 1.8.1 | 1.9.0 |
+|---|---|---|
+| Comprobaciones de la suite | 520 | **548** |
+| Comprobaciones de la auditoría | 58 | 58 |
+| Fallos registrados | E1–E58 | **E1–E61** |
+| Fases del plan ejecutadas | 0 de 10 | **1 de 10** (fase 6) |
+| Componentes que se presentan | 0 de 7 | **7 de 7** |

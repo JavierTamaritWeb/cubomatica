@@ -283,6 +283,34 @@ CB.partida.servirItem = function () {
   CB.partida.pintarRespuesta(item);
   CB.a11y.anunciar(item.consigna || item.enunciado || '');
 
+  /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la
+     primera versión sin que ocurriera: aquí solo había una llamada a la región
+     viva, que es texto para un lector de pantalla, no voz. Un niño de 7 años que
+     apenas lee se quedaba con el enunciado delante y nada que lo dijera, salvo
+     que supiera pulsar la tecla L.
+
+     TRES CONDICIONES, y las tres importan:
+
+     · Solo los problemas de enunciado (item.subtipo). Leer «6 − 3» en voz alta
+       no ayuda a nadie y alarga cada ítem sin motivo.
+     · Solo con el ajuste encendido. CB.voz.leer lo comprueba, pero se comprueba
+       también AQUÍ porque la alternativa —CB.voz.leerOGuiar— cae en
+       lecturaGuiada, que NO mira CB.voz.activa: sería audio que arranca solo y
+       no se puede apagar, es decir, WCAG 2.2 1.4.2 incumplido.
+     · Solo con voz de verdad disponible. En un Chromebook sin voz española la
+       lectura guiada va a 1000 ms por palabra: veinticinco segundos de resaltado
+       con el cronómetro corriendo, y todos los problemas se agotarían por tiempo.
+
+     El cronómetro se para mientras lee y se reanuda al terminar. Si la voz no
+     llega a salir, CB.voz.leer llama igualmente a alTerminar, así que el reloj
+     vuelve a arrancar en el peor caso. */
+  if (item.subtipo && CB.voz.activa && CB.voz.disponible()) {
+    CB.partida.pararCronometro();
+    CB.voz.leer(item.enunciado || item.consigna || '', function () {
+      CB.partida.iniciarCronometro(true);
+    });
+  }
+
   /* Se dice DESPUÉS de pintar, porque servirItem empieza ocultando el mensaje:
      ponerlo antes equivalía a no ponerlo. Y se dice, en vez de cambiar el nivel
      en silencio, porque un niño que ve aparecer de golpe algo mucho más fácil
@@ -311,6 +339,33 @@ CB.partida.pintarRespuesta = function (item) {
 
   function responder(valor, origen, extra) { CB.partida.responder(valor, origen, extra); }
 
+  /* LA PRESENTACIÓN DE CADA COMPONENTE, LA PRIMERA VEZ QUE SE VE (§7.3).
+     Las siete frases llevaban escritas desde la primera versión, con sus dos
+     funciones de apoyo, y NO LAS LLAMABA NADIE: `componentesVistos` se declaraba
+     en el esqueleto del perfil, se reparaba en la migración y estaba en los
+     campos permitidos, pero no lo escribía nunca nadie. Un niño veía la balanza
+     por primera vez sin una sola frase que le dijera qué hacer, teniéndola
+     escrita. Es la familia de E41.
+
+     Se marca DONDE SE MONTA cada componente, no adivinando desde item.formato:
+     los nombres no coinciden —el formato dice 'ordenar' y el componente se llama
+     'ordenarFila'— y además el componente real depende de condiciones de
+     ejecución (un problema monta selectorDatos o tecladoBloques según el
+     trimestre). Resolverlo por el formato habría dado `undefined` en casi todos
+     los casos, sin fallar: la familia de E42.
+
+     Solo en el PRIMER intento: en el segundo ya hay un mensaje en pantalla
+     —«Esta no suma gemas. Te queda otro intento»— y taparlo con una instrucción
+     sería peor que no presentar nada. */
+  function presentar(tipo) {
+    if (e.intento !== 1) return;
+    var frase = CB.componentes.PRESENTACION[tipo];
+    if (!frase) return;                  // clave desconocida: nunca un mensaje vacío
+    if (!CB.componentes.necesitaPresentacion(perfil, tipo)) return;
+    CB.componentes.marcarVisto(perfil, tipo);
+    CB.ui.mensaje(frase, 'aviso');
+  }
+
   var formato = item.formato;
 
   /* Los problemas SIEMPRE con teclado en primer intento (§9.5): con 2 datos y
@@ -318,8 +373,10 @@ CB.partida.pintarRespuesta = function (item) {
      validez diagnóstica de la matriz de 20 subtipos. */
   if (item.subtipo) {
     if (perfil.trimestreDeducido >= 2 || item.datoSobrante) {
+      presentar('selectorDatos');
       CB.componentes.selectorDatos(item, responder, { bloqueoMs: bloqueo });
     } else {
+      presentar('tecladoBloques');
       CB.componentes.tecladoBloques(item, responder, { bloqueoMs: bloqueo });
     }
     CB.partida.iniciarCronometro(true);
@@ -338,6 +395,7 @@ CB.partida.pintarRespuesta = function (item) {
     } else {
       var d = CB.distractores.para(item, e.rng);
       if (d.formato === 'teclado') {
+        presentar('tecladoBloques');
         CB.componentes.tecladoBloques(item, responder, { bloqueoMs: bloqueo });
         CB.partida.iniciarCronometro(false);
         return;
@@ -350,16 +408,22 @@ CB.partida.pintarRespuesta = function (item) {
         opciones = CB.util.barajar(opciones, e.rng);
       }
     }
+    presentar('opciones4');
     CB.componentes.opciones4(item, opciones, responder, { bloqueoMs: bloqueo });
   } else if (formato === 'balanza') {
+    presentar('balanza');
     CB.componentes.balanza(item, responder, { bloqueoMs: bloqueo });
   } else if (formato === 'ordenar') {
+    presentar('ordenarFila');
     CB.componentes.ordenarFila(item, responder, { bloqueoMs: bloqueo });
   } else if (formato === 'monedas') {
+    presentar('monedas');
     CB.componentes.monedas(item, responder, { bloqueoMs: bloqueo });
   } else if (formato === 'signo') {
+    presentar('selectorSigno');
     CB.componentes.selectorSigno(item, responder, { bloqueoMs: bloqueo });
   } else {
+    presentar('tecladoBloques');
     CB.componentes.tecladoBloques(item, responder, { bloqueoMs: bloqueo });
   }
 
@@ -1218,6 +1282,26 @@ CB.partida.nombreDestreza = function (slug) {
 };
 
 /* ── Acciones de la barra de herramientas ───────────────────────────────── */
+/**
+ * Como accionLeer, pero SIN levantar el bloqueo de construcción.
+ * Es la que usa el altavoz que va dentro del enunciado, y la diferencia no es
+ * cosmética: accionLeer pone CB.partida.bloqueado = false a propósito —quien
+ * pulsa el altavoz de la barra ya ha invertido tiempo en el ítem—, pero un
+ * altavoz que está justo encima de la pregunta se roza sin querer, y ese roce
+ * anularía de un toque el bloqueo antiazar de 1200 ms. El niño se quedaría sin
+ * la única protección que hay contra responder al tuntún, sin enterarse.
+ */
+CB.partida.accionLeerSuave = function () {
+  var e = CB.partida.estado;
+  if (!e || !e.itemActual) return;
+  var texto = e.itemActual.enunciado || e.itemActual.consigna || '';
+  CB.partida.pararCronometro();
+  CB.voz.leerOGuiar(texto, CB.ui.resaltarPalabra, function () {
+    CB.ui.resaltarLinea(-1);
+    CB.partida.iniciarCronometro(!!e.itemActual.subtipo);
+  });
+};
+
 CB.partida.accionLeer = function () {
   var e = CB.partida.estado;
 
