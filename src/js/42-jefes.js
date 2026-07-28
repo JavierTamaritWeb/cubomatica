@@ -265,7 +265,7 @@ CB.jefes.terminar = function (porBloques) {
 
   /* La cinta más larga del juego, y puede permitírselo: se ve cuatro veces en
      toda la vida de un perfil, una por mundo. Trae su propio sonido. */
-  CB.ui.cinta.mostrar('bandera', '¡Paso abierto!');
+  CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
   CB.almacen.guardarPerfil(perfil);
 
   var enun = document.getElementById('jefe-enunciado');

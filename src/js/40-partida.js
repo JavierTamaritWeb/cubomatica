@@ -488,10 +488,8 @@ CB.partida.tiempoAgotado = function () {
   CB.ui.mensaje(CB.mensajes.animo({
     perfil: CB.perfil, destreza: e.itemActual.destreza, rng: e.rng
   }), 'animo');
-  CB.ui.cinta.mostrar('posa', CB.mensajes.grito('animo', { perfil: CB.perfil, rng: e.rng }));
-  CB.ui.personaje('rocarr', 'pista');
-  setTimeout(function () { CB.partida.siguiente(); },
-             CB.ui.cinta.espera('posa', 2200));
+  CB.ui.festejo.mostrar('animo');
+  setTimeout(function () { CB.partida.siguiente(); }, 2200);
 };
 
 /* ── Responder ──────────────────────────────────────────────────────────── */
@@ -595,19 +593,22 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   CB.ui.personaje('cubi', 'acierto');
   if (e.rachaPrimerIntento >= 3) CB.ui.personaje('chispa', 'racha');
 
-  /* Y la cinta se lleva el grito. La FORMA dice qué ha pasado: no se sortea.
-     Las cuatro categorías ya las calculaba CB.mensajes.categoriaAcierto() desde
-     el primer día —superación, descubrimiento, esfuerzo, procedimiento—; aquí
-     solo se les pone cuerpo. Encima va el bloque raro, que es 1 de cada 20 y se
-     lleva la coreografía que casi nunca se ve. */
-  var coreo = item.esBloqueRaro
-    ? 'veta-madre'
-    : CB.ui.cinta.POR_CATEGORIA[CB.mensajes.categoriaAcierto(ctxMsg)];
-  CB.ui.cinta.mostrar(coreo, CB.mensajes.grito('acierto', { perfil: perfil, rng: e.rng }));
+  /* Y la celebración. Lo que cambia entre una y otra es el VEHÍCULO —una
+     insignia, una criatura, una cinta, un cartel, un temblor—, no el recorrido
+     de un mismo cartel: la forma es lo que se reconoce sin leer. Las cuatro
+     categorías ya las calculaba CB.mensajes.categoriaAcierto() desde el primer
+     día; aquí solo se les pone cuerpo. Encima va el bloque raro, que es 1 de
+     cada 20 y se lleva lo que casi nunca se ve. */
+  var festejo = item.esBloqueRaro
+    ? 'raro'
+    : CB.ui.festejo.POR_CATEGORIA[CB.mensajes.categoriaAcierto(ctxMsg)];
+  CB.ui.festejo.mostrar(festejo,
+    CB.mensajes.grito({ perfil: perfil, rng: e.rng }),
+    { bono: bono });
 
-  /* El sonido lo pone la cinta: cada coreografía trae el suyo, y por eso una
+  /* El sonido lo pone el festejo: cada uno trae el suyo, y por eso una
      superación no suena igual que un acierto de todos los días. */
-  if (bono > 0 && coreo !== 'cascada') CB.audio.sfx('gema');
+  if (bono > 0 && festejo !== 'hallazgo') CB.audio.sfx('gema');
   CB.ui.particulasDe(document.getElementById('item-enunciado'), 'var(--deco-hierba)');
 
   /* Bloque raro: cromo garantizado. Es la sorpresa que hace que merezca la pena
@@ -627,7 +628,7 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   /* NUNCA menos de los 1600 ms de siempre: la espera se estira si la coreografía
      es larga, pero no se encoge nunca. Acortarla recortaría tiempo de lectura. */
   setTimeout(function () { CB.partida.siguiente(); },
-             CB.ui.cinta.espera(coreo, 1600));
+             CB.ui.festejo.espera(festejo, 1600));
 };
 
 /* ── Fallo ──────────────────────────────────────────────────────────────── */
@@ -653,11 +654,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
        Documento 5), y esa regla hay que contarla en el momento en que importa,
        no dejarla escrita en un documento que el niño no lee. */
     CB.ui.mensaje('Esta no suma gemas. Te queda otro intento. ' + pista, 'animo');
-    /* La cinta del ánimo es la más corta y la más quieta de las nueve, y va en
-       tono piedra: se posa, no estalla. Un cartel de fiesta encima de un fallo
-       se lee como burla, y lo que importa está escrito debajo. */
-    CB.ui.cinta.mostrar('posa', CB.mensajes.grito('animo', { perfil: perfil, rng: e.rng }));
-    CB.ui.personaje('rocarr', 'pista');
+    CB.ui.festejo.mostrar('animo');
     CB.audio.sfx('rocarr');
     setTimeout(function () {
       CB.ui.ocultarMensaje();
@@ -893,7 +890,7 @@ CB.partida.aplicarLogros = function (nuevos) {
        la pantalla no se enteraba de nada. Ahora la cinta lo dice. */
     if (!l.luz) {
       CB.a11y.anunciar('Logro: ' + l.nombre);
-      CB.ui.cinta.mostrar('estalla', '¡Logro!');
+      CB.ui.festejo.mostrar('logro', '¡Logro! ' + l.nombre);
       continue;
     }
 
@@ -902,11 +899,11 @@ CB.partida.aplicarLogros = function (nuevos) {
       CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
       CB.ui.encenderLuz(e.luces.luces - 1);
       CB.ui.mensaje('¡Luz extra! ' + l.nombre, 'acierto');
-      CB.ui.cinta.mostrar('estalla', '¡Luz extra!');
+      CB.ui.festejo.mostrar('logro', '¡Luz extra!');
       CB.a11y.anunciar('Luz extra por ' + l.nombre);
     } else if (r.guardada) {
       CB.ui.mensaje('Guardas 1 luz para la próxima expedición.', 'acierto');
-      CB.ui.cinta.mostrar('estalla', '¡Luz guardada!');
+      CB.ui.festejo.mostrar('logro', '¡Luz guardada!');
     }
   }
 };

@@ -159,7 +159,10 @@
       <span id="hud-segundos" class="reloj__cifra">30</span>
     </div>
 
-    <div class="gemas"><span class="gemas__icono" aria-hidden="true"></span><span id="hud-gemas">0</span></div>
+    <!-- La insignia «+1» brota aquí, junto al contador. Es la celebración del
+         acierto de todos los días: la más frecuente y por eso la más pequeña.
+         aria-hidden porque la ganancia ya se anuncia por la región viva. -->
+    <div class="gemas"><span class="gemas__icono" aria-hidden="true"></span><span id="hud-gemas">0</span><span id="insignia-gemas" class="insignia" aria-hidden="true" hidden></span></div>
   </div>
 
   <div class="zona-juego bioma bioma--pradera" id="zona-juego">
@@ -183,6 +186,11 @@
          «Hurry up!» hasta la felicitación. aria-hidden porque lo que dice ya se
          ha anunciado por la región viva, en español y una sola vez. -->
     <div id="cinta" class="cinta" aria-hidden="true" hidden><span class="cinta__texto"></span></div>
+
+    <!-- El cartel del logro y de la luz extra. NO es una franja: es un panel
+         centrado con bisel, y esa diferencia de forma es justo lo que hace que
+         no se confunda con la cinta de un vistazo. -->
+    <div id="cartel-festejo" class="cartel" aria-hidden="true" hidden></div>
   </div>
 
   <div class="barra-herramientas">

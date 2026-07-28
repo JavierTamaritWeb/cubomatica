@@ -4,14 +4,14 @@
     "src/scss/_00-fuentes.scss": "aa93cbff2a9c2950c537ff8324616ddd9d0b270a",
     "src/scss/_01-variables.scss": "ba3f1cff3ac161969b311a1b2060b5e7d433359f",
     "src/scss/_02-base.scss": "ca9e0c0d27438c588bdfef6ed828574e4683945a",
-    "src/scss/_03-componentes.scss": "6e065db4f3157b5a7a30c567357c3173567d2d73",
+    "src/scss/_03-componentes.scss": "b3954191ee2f2c46ef94ec2f2b41f38f067ccc27",
     "src/scss/_04-pantallas.scss": "c50e31241acab89336204ea15793734508bcd5f4",
-    "src/scss/_05-animaciones.scss": "f52fcd7c4950ee2a93a25e8bb93bbee564c7538a",
-    "src/scss/_06-biomas.scss": "3f3b7ff0dbce84f311763720124adbe614946583",
+    "src/scss/_05-animaciones.scss": "1a0f195f670b0371761a5d4d92f46b6b6e666c74",
+    "src/scss/_06-biomas.scss": "04087976fa9f259b1b1aed63da5ddee859209838",
     "src/scss/_07-adulto.scss": "1f574581a6d6bfb29f2c12ea6f53dd5b480f0ca8",
     "src/scss/_08-imprimir.scss": "2432db6715e609510672d600ac05f47c2abc28ef",
     "src/scss/_09-forzado.scss": "77b91d055ee4d477089d3f577e954ab9357cbd8f",
     "src/scss/cubomatica.scss": "ef7e5a5b49d407356ac37dc0bc17079f59693fd3",
-    "src/scss/_herramientas.scss": "391de3b826aa464a92555c56db3e4dc96eb2a62b"
+    "src/scss/_herramientas.scss": "d6f0368d447b53ae1be7e014440bb27fbbf740e1"
   }
 }

@@ -12,6 +12,76 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.8.1] — 2026-07-28
+
+**Tercera cifra: esto corrige 1.8.0, no añade nada.** El formato del perfil no cambia
+—`perfil.mensajes.gritos` pierde una bolsa que nunca llegó a llenarse— y no hay
+migración.
+
+### El fallo: nueve celebraciones que eran el mismo cartel
+
+1.8.0 dio a cada momento su propia coreografía: nueve recorridos distintos. Pero las
+nueve eran **la misma banda**: mismo ancho, mismo sitio, misma tipografía, mismo
+tamaño. Cambiar la trayectoria no cambia la forma, y la forma es lo que se reconoce.
+Un niño no veía nueve celebraciones; veía el mismo rectángulo entrando de nueve
+maneras, veinte veces por sesión. Que es exactamente lo que había que evitar.
+
+Y había una segunda capa, peor: el guardián E47 escrito en 1.8.0 decía «ningún
+modificador de cinta reposiciona el cartel». **La monotonía estaba blindada por una
+prueba.** Cuando una comprobación impide la corrección, la comprobación es parte del
+fallo.
+
+### La corrección: seis vehículos, no seis recorridos
+
+| Momento | Vehículo | ms |
+|---|---|---|
+| acierto normal (60 % de los casos) | **insignia**: «+1» junto al contador de gemas | 700 |
+| esfuerzo | **criatura**: Cubi salta | 1100 |
+| superación (acierta tras fallar) | **cinta** | 1300 |
+| racha, veta o mundo nuevo | **criatura**: Chispa gira + partículas | 1400 |
+| logro o luz extra | **cartel** centrado con bisel | 1600 |
+| jefe derrotado | **cinta** | 1800 |
+| bloque raro (1 de cada 20) | **sacudida** de la cantera entera | 1200 |
+| ánimo, tras fallar | **criatura**: Rocarr asiente. Sin cartel, sin grito | 1100 |
+
+La regla que ordenaba la tabla no cambia y ahora sí se cumple: **el espectáculo es
+inversamente proporcional a la frecuencia**. Lo que sale en seis de cada diez aciertos
+es un «+1» de un renglón que no tapa nada y no para nada. La banda queda para tres
+momentos, y por eso vuelve a significar algo.
+
+Sin efectos de sonido nuevos: siguen siendo doce.
+
+### Retirado
+
+- **Seis coreografías de cinta** (`sello`, `sube`, `cascada`, `estalla`, `veta-madre`,
+  `posa`) con sus `@keyframes`. No se «desactivan comentadas»: la comprobación de
+  animaciones huérfanas que nació en 1.8.0 no lo habría permitido, y hace bien.
+- **Los doce gritos de ánimo.** El ánimo dejó de tener cartel, así que no hay dónde
+  escribirlos, y un dato que no se pinta en ningún sitio acaba pareciendo que sí.
+  `CB.mensajes.grito()` deja de recibir el tipo: solo hay una bolsa.
+
+### Un fallo encontrado mirando la pantalla, con la suite en verde
+
+El cartel del logro salía a **887 px de altura, fuera de la vista**. Causa:
+`_06-biomas.scss` pone `position: relative` a todo hijo directo de `.zona-juego` que no
+esté en su lista de exclusiones, y gana por orden de cascada. Se añadió `.cinta` a esa
+lista en 1.8.0 y se olvidó `.cartel` en 1.8.1. Es **el mismo fallo que el comentario de
+ese fichero documenta desde 1.7.0**, cometido otra vez.
+
+Ninguna prueba lo veía. Ahora E47 compara la `position` **calculada** de los dos
+superpuestos, que es la única comprobación que lo caza. Y el cartel bajó del 30 % al
+12 % de altura porque a 30 rozaba la fila alta del teclado en una pantalla de 812 px:
+medido, no supuesto.
+
+### Pruebas: 489 → 520
+
+**E56** (las celebraciones no comparten vehículo, y la más frecuente es de las más
+cortas), **E57** (cada vehículo hace algo distinto y observable) y **E58** (el ánimo no
+se celebra). Validados sembrando el fallo original —devolver los ocho momentos a la
+cinta—: salen ocho comprobaciones rojas repartidas entre los tres.
+
+---
+
 ## [1.8.0] — 2026-07-27
 
 **Segunda cifra: entra capacidad nueva y el perfil guardado no cambia de forma

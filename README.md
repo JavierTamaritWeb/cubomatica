@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 1.8.0**
+**Versión 1.8.1**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.
@@ -179,7 +179,7 @@ La suite son **dos páginas**, y hay que mirar las dos:
   ponen rojas.
 
 Las dos necesitan `npm run build` antes; sin él lo dicen en vez de quedarse en
-blanco. Base actual: **489 comprobaciones, 0 fallos**.
+blanco. Base actual: **520 comprobaciones, 0 fallos**.
 
 Sírvelas con la caché desactivada. Una recarga normal de Chrome reutiliza tanto
 el bundle como los `casos-*.js`, y entonces el verde que sale mide el código de

@@ -582,40 +582,19 @@ CB.ui.barra = function (fraccion) {
    ────────────────────────────────────────────────────────────────────────── */
 CB.ui.cinta = { nodo: null, _salida: null, _clave: null };
 
-/* La regla que ordena la tabla: EL ESPECTÁCULO ES INVERSAMENTE PROPORCIONAL A
-   LA FRECUENCIA. 'sello' es el 60 % de los aciertos y es la más corta; las
-   largas se reservan para lo que casi no pasa. Un efecto único repetido treinta
-   veces por sesión no celebra: hace esperar.
+/* LA CINTA ES UN VEHÍCULO, NO EL SISTEMA DE CELEBRACIÓN. Quedan tres
+   coreografías, y las tres son de cosas que casi no pasan: el aviso de tiempo,
+   la superación y el jefe. Quién usa la cinta lo decide CB.ui.festejo.
 
-   Ni un efecto de sonido nuevo. Los doce de 04-audio.js son contrato. */
+   Eran nueve. La primera versión de 1.8.0 daba a cada momento su propio
+   recorrido —entrar por abajo, caer, estallar— pero TODAS eran la misma banda,
+   del mismo ancho, en el mismo sitio y con la misma letra. Visto en pantalla,
+   veinte veces por sesión, eso no es variedad: es el mismo rectángulo moviéndose
+   distinto. Lo que tiene que cambiar es el VEHÍCULO, no la trayectoria. */
 CB.ui.cinta.COREOGRAFIAS = {
-  'prisa':      { ms: 1900, sfx: 'prisa'      },
-  'sello':      { ms:  900, sfx: 'acierto'    },
-  'sube':       { ms: 1100, sfx: 'acierto'    },
-  'junta':      { ms: 1300, sfx: 'subirNivel' },
-  'cascada':    { ms: 1500, sfx: 'gema'       },
-  'estalla':    { ms: 1600, sfx: 'luzExtra'   },
-  'bandera':    { ms: 1800, sfx: 'cofre'      },
-  'veta-madre': { ms: 2000, sfx: 'cofre'      },
-  'posa':       { ms:  800, sfx: null         }
-};
-
-/* Las cuatro categorías de acierto de js/25-mensajes.js, cada una con su forma.
-   No se sortea la coreografía: acertar a la segunda después de haber fallado
-   (C) no es lo mismo que acertar a la primera (A), y la cinta lo dice sin que
-   nadie tenga que leer nada. */
-CB.ui.cinta.POR_CATEGORIA = { A: 'sello', B: 'sube', C: 'junta', D: 'cascada' };
-
-/**
- * Cuánto espera el juego antes de servir el ítem siguiente.
- * NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es
- * justo lo contrario de lo que se busca. Los 400 ms de propina son para leer lo
- * que queda escrito, no para ver el final de la animación.
- */
-CB.ui.cinta.espera = function (clave, minimoMs) {
-  var co = CB.ui.cinta.COREOGRAFIAS[clave];
-  var m = minimoMs || 0;
-  return co ? Math.max(m, co.ms + 400) : m;
+  'prisa':   { ms: 1900, sfx: 'prisa'      },
+  'junta':   { ms: 1300, sfx: 'subirNivel' },
+  'bandera': { ms: 1800, sfx: 'cofre'      }
 };
 
 /* La cinta de la pantalla que se está viendo. Se resuelve en cada llamada y no
@@ -665,6 +644,152 @@ CB.ui.cinta.ocultar = function () {
   if (!n) return;
   n.classList.remove('cinta--entra');
   n.hidden = true;
+};
+
+/* ── EL FESTEJO ─────────────────────────────────────────────────────────────
+   SEIS VEHÍCULOS, no seis recorridos. Esta es la corrección de la primera
+   versión de 1.8.0, y conviene que quede escrito por qué: allí cada momento
+   tenía su propia coreografía, pero todas eran la misma banda oscura, del mismo
+   ancho, en el mismo sitio y con la misma tipografía. Un niño no ve nueve
+   celebraciones distintas; ve el mismo rectángulo entrando de nueve maneras. A
+   la tercera vez ya no celebra nada.
+
+   Peor: al unificarlo todo en un nodo se escribió un guardián (E47) que PROHIBÍA
+   a cada modificador tocar la posición. Es decir, la monotonía estaba blindada
+   por una prueba. Ese guardián se reescribe: lo que hay que prohibir no es que
+   el cartel se mueva, es que invada la zona de respuesta.
+
+   La regla que ordena la tabla no cambia, y ahora sí se cumple de verdad: EL
+   ESPECTÁCULO ES INVERSAMENTE PROPORCIONAL A LA FRECUENCIA. Lo que sale en el
+   60 % de los aciertos es lo más pequeño que hay —un «+1» que brota junto al
+   contador de gemas— y ni siquiera usa la banda. La banda se reserva para lo
+   que casi no pasa.
+
+   Ni un efecto de sonido nuevo: los doce de 04-audio.js son contrato. */
+CB.ui.festejo = { _salida: null, _clave: null };
+
+CB.ui.festejo.CELEBRACIONES = {
+  /* El acierto de todos los días. Sin banda, sin texto grande, sin parar nada. */
+  normal:     { vehiculo: 'insignia', ms:  700, sfx: 'acierto' },
+  /* Le ha costado y lo ha sacado: Cubi salta. */
+  esfuerzo:   { vehiculo: 'criatura', ms: 1100, sfx: 'acierto',
+                quien: 'cubi', gesto: 'acierto' },
+  /* Acierta tras haber fallado. El acierto que más pesa: se lleva la banda. */
+  superacion: { vehiculo: 'cinta',    ms: 1300, sfx: 'subirNivel', coreo: 'junta' },
+  /* Racha, veta o mundo nuevo: Chispa gira y estalla el surtidor. */
+  hallazgo:   { vehiculo: 'criatura', ms: 1400, sfx: 'gema',
+                quien: 'chispa', gesto: 'racha', particulas: true },
+  /* Logro o luz extra: un cartel centrado con bisel, no una franja. */
+  logro:      { vehiculo: 'cartel',   ms: 1600, sfx: 'luzExtra' },
+  /* El jefe cede. Cuatro veces en la vida de un perfil. */
+  jefe:       { vehiculo: 'cinta',    ms: 1800, sfx: 'cofre', coreo: 'bandera' },
+  /* Bloque raro, 1 de cada 20: tiembla la cantera entera. */
+  raro:       { vehiculo: 'sacudida', ms: 1200, sfx: 'cofre', particulas: true },
+  /* Detrás de un fallo NO se celebra: se acompaña. Rocarr asiente despacio, que
+     es un gesto que ya existía y que un niño lee sin que nadie se lo explique.
+     Ni cartel ni banda ni grito: un rótulo de fiesta encima de un fallo se lee
+     como burla, y lo que importa está escrito debajo, quieto y legible. */
+  animo:      { vehiculo: 'criatura', ms: 1100, sfx: null,
+                quien: 'rocarr', gesto: 'pista' }
+};
+
+/* Las cuatro categorías de acierto de js/25-mensajes.js, cada una con su
+   celebración. No se sortea: acertar a la segunda después de haber fallado (C)
+   no es lo mismo que acertar a la primera (A). */
+CB.ui.festejo.POR_CATEGORIA = {
+  A: 'normal', B: 'esfuerzo', C: 'superacion', D: 'hallazgo'
+};
+
+/**
+ * Cuánto espera el juego antes de servir el ítem siguiente.
+ * NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es
+ * justo lo contrario de lo que se busca.
+ */
+CB.ui.festejo.espera = function (clave, minimoMs) {
+  var c = CB.ui.festejo.CELEBRACIONES[clave];
+  var m = minimoMs || 0;
+  return c ? Math.max(m, c.ms + 400) : m;
+};
+
+CB.ui.festejo.limpiar = function () {
+  var f = CB.ui.festejo;
+  if (f._salida) { clearTimeout(f._salida); f._salida = null; }
+  f._clave = null;
+  CB.ui.cinta.ocultar();
+  CB.ui.insignia(0);
+  CB.ui.cartel(null);
+  var z = document.getElementById('zona-juego');
+  if (z) z.classList.remove('zona-juego--sacude');
+};
+
+/**
+ * Celebra algo. `texto` es el grito corto; el mensaje entero sigue quieto en
+ * #item-mensaje, que es donde se puede leer.
+ * @param clave una de CELEBRACIONES
+ * @param texto grito corto (lo usan cinta y cartel; los demás vehículos no)
+ * @param extra {bono} gemas de rapidez, para la insignia
+ */
+CB.ui.festejo.mostrar = function (clave, texto, extra) {
+  var f = CB.ui.festejo;
+  var c = f.CELEBRACIONES[clave];
+  if (!c) return false;
+
+  CB.ui.festejo.limpiar();          // una celebración a la vez, siempre
+  f._clave = clave;
+  extra = extra || {};
+
+  if (c.vehiculo === 'cinta') {
+    CB.ui.cinta.mostrar(c.coreo, texto);
+    return true;                     // la cinta trae su propio sonido y salida
+  }
+
+  if (c.vehiculo === 'insignia') {
+    CB.ui.insignia(1 + (extra.bono || 0));
+  } else if (c.vehiculo === 'criatura') {
+    CB.ui.personaje(c.quien, c.gesto);
+  } else if (c.vehiculo === 'cartel') {
+    CB.ui.cartel(texto);
+  } else if (c.vehiculo === 'sacudida') {
+    var z = document.getElementById('zona-juego');
+    if (z) { void z.offsetWidth; z.classList.add('zona-juego--sacude'); }
+  }
+
+  if (c.particulas) {
+    CB.ui.particulasDe(document.getElementById('item-enunciado'),
+                       'var(--deco-cristal-cla)');
+  }
+  if (c.sfx) CB.audio.sfx(c.sfx);
+
+  if (c.ms > 0) {
+    f._salida = setTimeout(function () { CB.ui.festejo.limpiar(); }, c.ms);
+  }
+  return true;
+};
+
+/* «+1», «+3»: brota junto al contador de gemas y se apaga. Es el acierto de
+   todos los días, y por eso es lo más pequeño del juego. */
+CB.ui.insignia = function (n) {
+  var el = document.getElementById('insignia-gemas');
+  if (!el) return;
+  el.classList.remove('insignia--brota');
+  if (!(n > 0)) { el.hidden = true; return; }
+  el.textContent = '+' + n;
+  el.hidden = false;
+  void el.offsetWidth;
+  el.classList.add('insignia--brota');
+};
+
+/* Cartel centrado con bisel, para el logro y la luz extra. No es una franja:
+   esa es la diferencia con la cinta, y es la que se ve de un vistazo. */
+CB.ui.cartel = function (texto) {
+  var el = document.getElementById('cartel-festejo');
+  if (!el) return;
+  el.classList.remove('cartel--brota');
+  if (!texto) { el.hidden = true; return; }
+  el.textContent = String(texto);
+  el.hidden = false;
+  void el.offsetWidth;
+  el.classList.add('cartel--brota');
 };
 
 CB.ui.reloj = {

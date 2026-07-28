@@ -1412,31 +1412,29 @@ CB.pruebas._reglasCinta = function () {
   return { fotogramas: fotogramas, reglas: reglas };
 };
 
-CB.pruebas.suite('E47 · ninguna coreografía baja hasta el teclado', function () {
+CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', function () {
   var t = CB.pruebas;
   var c = CB.pruebas._reglasCinta();
 
-  /* Que la lectura del CSS haya funcionado se AFIRMA. Si document.styleSheets
-     no trajera nada, todo lo de abajo pasaría por vacuidad, que es como el
-     guardián de E46 estuvo pasando sin comprobar nada. */
-  t.ok(Object.keys(c.fotogramas).length >= 9,
+  /* Que la lectura del CSS haya funcionado se AFIRMA. Si document.styleSheets no
+     trajera nada, todo lo de abajo pasaría por vacuidad. */
+  t.ok(Object.keys(c.fotogramas).length >= 3,
     'E47 · se leen los fotogramas de la cinta del CSS cargado',
     'encontrados ' + Object.keys(c.fotogramas).length);
 
-  /* Ninguna regla de coreografía toca la posición: la fija .cinta y solo .cinta.
-     Un `top: 70%` en un modificador es exactamente cómo se vuelve a tapar el
-     teclado sin que ninguna animación tenga la culpa. */
-  var mueveElSitio = c.reglas.filter(function (r) {
-    if (!/\.cinta--/.test(r.selectorText)) return false;
-    var s = r.style;
-    return s.top || s.bottom || s.height || s.position;
-  }).map(function (r) { return r.selectorText; });
-  t.igual(mueveElSitio.length, 0,
-    'E47 · ningún modificador de cinta reposiciona el cartel');
+  /* ESTE GUARDIÁN NACIÓ AL REVÉS Y HAY QUE CONTARLO. Su primera versión decía
+     «ningún modificador de cinta reposiciona el cartel», y con eso dejó blindada
+     por prueba justo la monotonía que había que corregir: si nadie puede mover
+     nada, las nueve celebraciones son la misma banda en el mismo sitio, y la
+     variedad se queda en el recorrido, que es lo que menos se nota.
 
-  /* Y ningún fotograma VISIBLE lo empuja hacia abajo. Los que están fuera de
-     pantalla pueden: cinta-prisa empieza en translateY(340%) con opacity 0. */
-  var bajan = [];
+     Lo que hay que prohibir no es que un cartel se coloque distinto: es que
+     invada la zona con la que se contesta. Eso ya pasó una vez —el aviso de
+     prisa caía sobre la fila del ⌫, el 0 y el OK— y está contado en
+     _03-componentes.scss. Así que la regla pasa a ser de TERRITORIO. */
+  var TOPE = 45;          // % de altura por debajo del cual no baja nada visible
+
+  var invaden = [];
   Object.keys(c.fotogramas).forEach(function (nombre) {
     var kf = c.fotogramas[nombre], j, paso, m, y;
     for (j = 0; j < kf.cssRules.length; j++) {
@@ -1445,12 +1443,50 @@ CB.pruebas.suite('E47 · ninguna coreografía baja hasta el teclado', function (
       m = /translateY\(\s*(-?[\d.]+)%/.exec(paso.style.transform || '');
       if (!m) continue;
       y = parseFloat(m[1]);
-      if (y > 30) bajan.push(nombre + ' @' + paso.keyText + ' → ' + y + '%');
+      if (y > 30) invaden.push(nombre + ' @' + paso.keyText + ' → ' + y + '%');
     }
   });
-  t.igual(bajan.length, 0,
-    'E47 · ningún fotograma visible baja el cartel más de un 30 %',
-    bajan.join(' · '));
+  t.igual(invaden.length, 0,
+    'E47 · ningún fotograma visible empuja la cinta hacia el teclado',
+    invaden.join(' · '));
+
+  /* Y la regla de territorio sobre los dos carteles que se colocan: la cinta y
+     el cartel del logro. Ninguno puede declarar un `top` que los meta en la
+     mitad inferior. Que se coloquen DISTINTO es ahora deseable; lo que no pueden
+     es bajar. */
+  var arriba = [];
+  c.reglas.forEach(function (r) {
+    var top = r.style.top;
+    if (!top || top.indexOf('%') === -1) return;
+    if (parseFloat(top) > TOPE) arriba.push(r.selectorText + ' → top ' + top);
+  });
+  t.igual(arriba.length, 0,
+    'E47 · ningún cartel se declara por debajo del ' + TOPE + ' % de altura',
+    arriba.join(' · '));
+
+  /* Los dos que se superponen no interceptan toques, pase lo que pase. */
+  var pasan = ['cinta', 'cartel-festejo'].filter(function (id) {
+    var el = document.getElementById(id);
+    return el && getComputedStyle(el).pointerEvents !== 'none';
+  });
+  t.igual(pasan.length, 0,
+    'E47 · lo que se superpone deja pasar el toque', pasan.join(', '));
+
+  /* Y SIGUEN SIENDO ABSOLUTOS. Esto no es una comprobación de estilo: es la
+     única que ve el fallo que ya se ha cometido dos veces. _06-biomas.scss pone
+     `position: relative` a todo hijo directo de .pantalla y de .zona-juego que
+     no esté en su lista de exclusiones, y gana por orden de cascada. Un
+     superpuesto que se olvide de apuntarse ahí conserva su `top`, deja de ser
+     absoluto, y aparece cientos de píxeles por debajo del borde inferior: no se
+     ve, y NADA falla. Le pasó al aviso de prisa en 1.7.0 y al cartel del logro
+     en 1.8.1, con la suite entera en verde las dos veces. */
+  var relativos = ['cinta', 'cartel-festejo'].filter(function (id) {
+    var el = document.getElementById(id);
+    return el && getComputedStyle(el).position !== 'absolute';
+  });
+  t.igual(relativos.length, 0,
+    'E47 · los superpuestos siguen siendo absolutos: nadie los ha sacado del sitio',
+    relativos.join(', '));
 });
 
 CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
@@ -1458,7 +1494,7 @@ CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
   var c = CB.pruebas._reglasCinta();
   var tabla = Object.keys(CB.ui.cinta.COREOGRAFIAS);
 
-  t.igual(tabla.length, 9, 'E48 · la tabla declara las nueve coreografías');
+  t.igual(tabla.length, 3, 'E48 · la tabla declara las tres coreografías de cinta');
 
   /* Ida: toda clave de la tabla tiene sus fotogramas. */
   var sinFotogramas = tabla.filter(function (k) {
@@ -1532,10 +1568,34 @@ CB.pruebas.suite('E49-E50 · con el movimiento apagado la cinta se para pero se 
     if (cs.opacity !== '1') invisibles.push(k + ' → opacidad ' + cs.opacity);
   });
 
+  /* Y LOS OTROS VEHÍCULOS. Son elementos distintos, así que cada uno necesita su
+     entrada en $animados: es exactamente donde nació E25. La insignia y el
+     cartel tienen que quedarse quietos Y SEGUIR VIÉNDOSE; la sacudida es la
+     única cuya información está en el movimiento, y por eso su excepción le pone
+     un marco de oro en vez de dejarla en nada. */
+  [['insignia-gemas', 'insignia insignia--brota', true],
+   ['cartel-festejo', 'cartel cartel--brota', true],
+   ['zona-juego', 'zona-juego zona-juego--sacude', false]].forEach(function (v) {
+    var el = document.getElementById(v[0]);
+    if (!el) { moviendose.push(v[0] + ' → no está en la maqueta'); return; }
+    var clasesPrevias = el.className, ocultoPrevio = el.hidden;
+    el.className = v[1];
+    el.hidden = false;
+    var cs2 = getComputedStyle(el);
+    if (cs2.animationName !== 'none') moviendose.push(v[0] + ' → ' + cs2.animationName);
+    if (v[2] && cs2.opacity !== '1') invisibles.push(v[0] + ' → opacidad ' + cs2.opacity);
+    if (!v[2] && cs2.boxShadow === 'none') {
+      invisibles.push(v[0] + ' → sin marco: la sacudida desaparecería del todo');
+    }
+    el.className = clasesPrevias;
+    el.hidden = ocultoPrevio;
+  });
+
   t.igual(moviendose.length, 0,
-    'E49 · las nueve coreografías se paran con sin-movimiento', moviendose.join(' · '));
+    'E49 · todos los vehículos se paran con sin-movimiento', moviendose.join(' · '));
   t.igual(invisibles.length, 0,
-    'E50 · y las nueve siguen visibles con el movimiento apagado', invisibles.join(' · '));
+    'E50 · y ninguno pierde su información con el movimiento apagado',
+    invisibles.join(' · '));
 
   /* El parpadeo del texto del «Hurry up!» también se apaga. */
   var hijo = nodo.querySelector('.cinta__texto');
@@ -1572,9 +1632,9 @@ CB.pruebas.suite('E51 · dos cintas seguidas no se pisan', function () {
      clearTimeout de verdad, es decir, nada. Es lo que pasó con window.caches. */
   var dobleInstalado = (window.clearTimeout !== origClear);
 
-  CB.ui.cinta.mostrar('sello', '¡Toma!');
+  CB.ui.cinta.mostrar('junta', '¡Toma!');
   var primerTemporizador = CB.ui.cinta._salida;
-  CB.ui.cinta.mostrar('cascada', '¡Se abre!');
+  CB.ui.cinta.mostrar('bandera', '¡Se abre!');
   window.clearTimeout = origClear;
 
   t.ok(dobleInstalado, 'E51 · el doble de clearTimeout se ha instalado de verdad');
@@ -1582,9 +1642,9 @@ CB.pruebas.suite('E51 · dos cintas seguidas no se pisan', function () {
   t.ok(limpiados.indexOf(primerTemporizador) !== -1,
     'E51 · la segunda cancela el temporizador de la primera, no lo deja vivo',
     'cancelados: ' + limpiados.join(','));
-  t.ok(!nodo.classList.contains('cinta--sello'),
+  t.ok(!nodo.classList.contains('cinta--junta'),
     'E51 · la segunda borra la coreografía de la primera');
-  t.ok(nodo.classList.contains('cinta--cascada'), 'E51 · y pone la suya');
+  t.ok(nodo.classList.contains('cinta--bandera'), 'E51 · y pone la suya');
 
   /* Que solo quede UNA clase de coreografía. Dos a la vez darían dos
      animation-name y el navegador elegiría por orden de hoja, en silencio. */
@@ -1612,7 +1672,7 @@ CB.pruebas.suite('E52 · la bolsa de gritos sobrevive al guardado', function () 
 
   /* Se gastan varios gritos y se comprueba que la bolsa recuerda. */
   var rng = CB.util.mulberry32(7), i, vistos = [];
-  for (i = 0; i < 6; i++) vistos.push(CB.mensajes.grito('acierto', { perfil: perfil, rng: rng }));
+  for (i = 0; i < 6; i++) vistos.push(CB.mensajes.grito({ perfil: perfil, rng: rng }));
   t.ok(m.gritos.bolsaAcierto.length > 0, 'E52 · la bolsa guarda lo ya sacado');
 
   var antes = m.gritos.bolsaAcierto.slice();
@@ -1630,23 +1690,23 @@ CB.pruebas.suite('E52 · la bolsa de gritos sobrevive al guardado', function () 
 CB.pruebas.suite('E54 · el ítem siguiente no llega antes que la cinta', function () {
   var t = CB.pruebas;
   var cortas = [];
-  Object.keys(CB.ui.cinta.COREOGRAFIAS).forEach(function (k) {
-    var ms = CB.ui.cinta.COREOGRAFIAS[k].ms;
+  Object.keys(CB.ui.festejo.CELEBRACIONES).forEach(function (k) {
+    var ms = CB.ui.festejo.CELEBRACIONES[k].ms;
     /* Las dos esperas reales del juego: 1600 tras acertar, 2200 tras fallar. */
-    if (CB.ui.cinta.espera(k, 1600) < ms + 400) cortas.push(k + ' (acierto)');
-    if (CB.ui.cinta.espera(k, 2200) < ms + 400) cortas.push(k + ' (fallo)');
+    if (CB.ui.festejo.espera(k, 1600) < ms + 400) cortas.push(k + ' (acierto)');
+    if (CB.ui.festejo.espera(k, 2200) < ms + 400) cortas.push(k + ' (fallo)');
   });
   t.igual(cortas.length, 0,
-    'E54 · toda coreografía cabe entera en su espera', cortas.join(', '));
+    'E54 · toda celebración cabe entera en su espera', cortas.join(', '));
 
   /* Y la espera NUNCA se encoge por debajo de lo que había antes de las cintas:
      acortarla recortaría tiempo de lectura, que es lo contrario de lo que se
      busca. Con 'sello', que dura 900 ms, el máximo tiene que seguir siendo 1600. */
-  t.igual(CB.ui.cinta.espera('sello', 1600), 1600,
-    'E54 · una coreografía corta no acelera el juego');
-  t.igual(CB.ui.cinta.espera('veta-madre', 1600), 2400,
+  t.igual(CB.ui.festejo.espera('normal', 1600), 1600,
+    'E54 · la celebración más frecuente no acelera el juego');
+  t.igual(CB.ui.festejo.espera('jefe', 1600), 2200,
     'E54 · una larga sí estira la espera');
-  t.igual(CB.ui.cinta.espera('inventada', 1600), 1600,
+  t.igual(CB.ui.festejo.espera('inventada', 1600), 1600,
     'E54 · una clave que no existe deja la espera de siempre');
 });
 
@@ -1721,4 +1781,140 @@ CB.pruebas.suite('E55 · el escalón 4 lleva al prerrequisito, y alguien lo llam
   }
   CB.partida.estado = null;
   CB.perfil = perfilPrevio;
+});
+
+/* ══ E56-E58 · La variedad tiene que ser de VEHÍCULO ════════════════════════
+
+   E56 es el fallo que motivó todo esto, y es el más difícil de los que llevo
+   escritos porque no es un error de lógica: es un error de diseño que ninguna
+   prueba podía ver. La primera versión de 1.8.0 daba a cada momento su propia
+   coreografía —nueve recorridos distintos— pero las nueve eran la MISMA banda:
+   mismo ancho, mismo sitio, misma letra, mismo tamaño. Verde en todo, y en
+   pantalla el mismo rectángulo veinte veces por sesión.
+
+   Peor: el guardián E47 original decía «ningún modificador reposiciona el
+   cartel», con lo que la monotonía quedó blindada por una prueba. Cuando una
+   comprobación impide la corrección, la comprobación es parte del fallo.
+
+   Lo que se puede medir de esto, y por tanto lo que se mide: que las
+   celebraciones no compartan todas el mismo vehículo.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E56 · las celebraciones no son todas el mismo cartel', function () {
+  var t = CB.pruebas;
+  var C = CB.ui.festejo.CELEBRACIONES;
+  var claves = Object.keys(C);
+
+  t.ok(claves.length >= 8, 'E56 · hay celebraciones declaradas', String(claves.length));
+
+  var vehiculos = {};
+  claves.forEach(function (k) { vehiculos[C[k].vehiculo] = (vehiculos[C[k].vehiculo] || 0) + 1; });
+  var distintos = Object.keys(vehiculos);
+
+  /* El umbral no es decorativo: con menos de cuatro vehículos se vuelve a lo que
+     había —variar el recorrido de una misma pieza— y eso ya se probó que no se
+     nota. */
+  t.ok(distintos.length >= 4,
+    'E56 · las celebraciones usan al menos cuatro vehículos distintos',
+    distintos.join(', '));
+
+  /* Y NINGUNO acapara. Si la cinta vuelve a llevarse la mayoría, estamos otra
+     vez en el mismo sitio aunque la tabla declare cinco vehículos. */
+  var mayor = 0, cual = '';
+  distintos.forEach(function (v) { if (vehiculos[v] > mayor) { mayor = vehiculos[v]; cual = v; } });
+  t.ok(mayor <= Math.ceil(claves.length / 2),
+    'E56 · ningún vehículo se lleva más de la mitad de las celebraciones',
+    cual + ' aparece ' + mayor + ' de ' + claves.length);
+
+  /* LA REGLA DE ORO, y esta sí es de fondo: lo más frecuente tiene que ser lo
+     más corto. La categoría A es el 60 % de los aciertos; si su celebración dura
+     más que la del jefe, el juego se pasa la sesión esperando. */
+  var normal = C[CB.ui.festejo.POR_CATEGORIA.A];
+  t.ok(!!normal, 'E56 · la categoría A tiene celebración');
+  if (normal) {
+    var masLargas = claves.filter(function (k) { return C[k].ms > normal.ms; });
+    t.ok(masLargas.length >= claves.length - 2,
+      'E56 · la celebración más frecuente es de las más cortas que hay',
+      'solo ' + masLargas.length + ' de ' + claves.length + ' duran más');
+    t.ok(normal.vehiculo !== 'cinta',
+      'E56 · el acierto de todos los días NO usa la banda');
+  }
+
+  /* Las cuatro categorías de acierto tienen que existir en la tabla: un mapeo a
+     una clave inventada devolvería undefined y no se celebraría nada, en
+     silencio. Es la familia de E42. */
+  var huerfanas = ['A', 'B', 'C', 'D'].filter(function (cat) {
+    return !C[CB.ui.festejo.POR_CATEGORIA[cat]];
+  });
+  t.igual(huerfanas.length, 0,
+    'E56 · las cuatro categorías apuntan a celebraciones que existen',
+    huerfanas.join(', '));
+});
+
+CB.pruebas.suite('E57 · cada vehículo hace algo distinto y observable', function () {
+  var t = CB.pruebas;
+  var insignia = document.getElementById('insignia-gemas');
+  var cartel = document.getElementById('cartel-festejo');
+  var cinta = document.getElementById('cinta');
+  var zona = document.getElementById('zona-juego');
+
+  if (!t.ok(!!(insignia && cartel && cinta && zona),
+      'E57 · los cuatro nodos de celebración están en la maqueta')) return;
+
+  CB.ui.festejo.limpiar();
+
+  /* insignia: escribe el número y se ve */
+  CB.ui.festejo.mostrar('normal', '¡Toma!', { bono: 2 });
+  t.igual(insignia.hidden, false, 'E57 · el acierto normal enciende la insignia');
+  t.igual(insignia.textContent, '+3', 'E57 · y suma el bono de rapidez al bloque');
+  t.igual(cinta.hidden, true, 'E57 · sin tocar la cinta');
+  t.igual(cartel.hidden, true, 'E57 · ni el cartel');
+
+  /* cartel: el logro NO usa la banda */
+  CB.ui.festejo.mostrar('logro', '¡Luz extra!');
+  t.igual(cartel.hidden, false, 'E57 · el logro enciende el cartel');
+  t.igual(cinta.hidden, true, 'E57 · y el logro no usa la banda');
+  t.igual(insignia.hidden, true, 'E57 · y apaga la insignia anterior');
+
+  /* cinta: la superación sí */
+  CB.ui.festejo.mostrar('superacion', '¡Ahí está!');
+  t.igual(cinta.hidden, false, 'E57 · la superación sí usa la banda');
+  t.igual(cartel.hidden, true, 'E57 · y apaga el cartel anterior');
+
+  /* sacudida: sin cartel ninguno */
+  CB.ui.festejo.mostrar('raro', '¡Cristal!');
+  t.ok(zona.classList.contains('zona-juego--sacude'),
+    'E57 · el bloque raro sacude la cantera');
+  t.igual(cinta.hidden, true, 'E57 · y no pinta ninguna banda');
+
+  /* ánimo: NADA de fiesta */
+  CB.ui.festejo.mostrar('animo');
+  t.igual(cinta.hidden, true, 'E57 · el ánimo no pinta banda');
+  t.igual(cartel.hidden, true, 'E57 · ni cartel');
+  t.igual(insignia.hidden, true, 'E57 · ni insignia');
+  t.ok(!zona.classList.contains('zona-juego--sacude'),
+    'E57 · ni deja temblando la pantalla');
+
+  CB.ui.festejo.limpiar();
+  t.igual(CB.ui.festejo._salida, null, 'E57 · limpiar() no deja temporizadores');
+});
+
+CB.pruebas.suite('E58 · el ánimo no se celebra', function () {
+  var t = CB.pruebas;
+  var C = CB.ui.festejo.CELEBRACIONES;
+
+  /* Un fallo no puede sonar a fiesta. La regla se comprueba, no se confía: es de
+     las que se rompen sin querer el día que alguien copia una entrada de la
+     tabla para hacer otra. */
+  t.ok(!C.animo.sfx, 'E58 · el ánimo no trae efecto de sonido propio');
+  t.ok(C.animo.vehiculo !== 'cinta' && C.animo.vehiculo !== 'cartel',
+    'E58 · el ánimo no usa ni banda ni cartel', C.animo.vehiculo);
+  t.ok(!C.animo.particulas, 'E58 · ni surtidor de partículas');
+
+  /* Y no quedan gritos de ánimo: se retiraron cuando el ánimo dejó de tener
+     dónde escribirlos. Un dato sin sitio donde pintarse acaba pareciendo vivo. */
+  t.ok(!CB.datos.MENSAJES.GRITOS.animo,
+    'E58 · no quedan gritos de ánimo en los datos');
+  t.igual(CB.mensajes.grito.length, 1,
+    'E58 · grito() ya solo recibe el contexto, sin tipo');
 });

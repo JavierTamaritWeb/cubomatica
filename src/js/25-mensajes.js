@@ -44,7 +44,7 @@ CB.mensajes.nuevoEstado = function () {
        reiniciaría en cada guardado y el grito volvería a repetirse cada dos por
        tres sin que nada fallara. Es exactamente lo que le pasó a la dificultad D
        (E45), que era un trinquete de una sola dirección por este mismo motivo. */
-    gritos:  { bolsaAcierto: [], bolsaAnimo: [] }
+    gritos:  { bolsaAcierto: [] }
   };
 };
 
@@ -57,7 +57,7 @@ CB.mensajes.asegurar = function (perfil) {
   if (!m.animo.ultimos10)   m.animo.ultimos10 = [];
   /* Un perfil de 1.7.1 no la trae. Se crea aquí y por eso 1.8.0 no necesita
      migración en 01-almacen.js: la primera cifra de la versión se queda. */
-  if (!m.gritos)  m.gritos  = { bolsaAcierto: [], bolsaAnimo: [] };
+  if (!m.gritos)  m.gritos  = { bolsaAcierto: [] };
   return m;
 };
 
@@ -199,17 +199,14 @@ CB.mensajes.animo = function (ctx) {
  * monotonía: la primera es que la coreografía significa algo (js/30-ui.js) y la
  * tercera es que hay una que casi nunca sale.
  *
- * @param tipo 'acierto' | 'animo'
  * @param ctx {perfil, rng}
  */
-CB.mensajes.grito = function (tipo, ctx) {
+CB.mensajes.grito = function (ctx) {
   ctx = ctx || {};
   var perfil = ctx.perfil || {};
   var m = CB.mensajes.asegurar(perfil);
-  var esAnimo = (tipo === 'animo');
-  var lista = esAnimo ? CB.datos.MENSAJES.GRITOS.animo
-                      : CB.datos.MENSAJES.GRITOS.acierto;
-  var clave = esAnimo ? 'bolsaAnimo' : 'bolsaAcierto';
+  var lista = CB.datos.MENSAJES.GRITOS.acierto;
+  var clave = 'bolsaAcierto';
   var rng = ctx.rng || CB.util.mulberry32(CB.util.hash32(clave + lista.length));
 
   var idx = CB.mensajes.sacarDeBolsa(m.gritos, clave, lista.length, [], [], 0, rng);
@@ -226,7 +223,6 @@ CB.mensajes.contrato = function () {
     porCategoriaAcierto: [M.acierto_A.length, M.acierto_B.length,
                           M.acierto_C.length, M.acierto_D.length],
     porCategoriaAnimo: [M.animo_P1.length, M.animo_P2.length],
-    gritosAcierto: M.GRITOS.acierto.length,
-    gritosAnimo: M.GRITOS.animo.length
+    gritosAcierto: M.GRITOS.acierto.length
   };
 };

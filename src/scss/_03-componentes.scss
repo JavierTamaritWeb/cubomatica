@@ -280,24 +280,56 @@
 .cinta::before { content: "\25C6\00A0"; }
 .cinta.cinta--posa::before { content: "\25A0\00A0"; }
 
-/* ── Los nueve tonos ────────────────────────────────────────────────────────
-   Acompañan; no distinguen. Todos van sobre --bg-texto-oscuro y todos están
+/* Tres tonos para las tres coreografías que quedan. Acompañan; no distinguen:
+   lo que distingue es el VEHÍCULO. Los tres van sobre --bg-texto-oscuro y están
    muy por encima de 4,5:1, que es lo que exige la norma para texto grande. */
-.cinta--prisa       { color: var(--deco-oro-cla); }
-.cinta--sello       { color: var(--deco-hierba-cla); }
-.cinta--sube        { color: var(--deco-hierba-cla); }
-.cinta--junta       { color: var(--deco-cristal-cla); }
-.cinta--cascada     { color: var(--deco-oro-cla); }
-.cinta--estalla     { color: var(--blanco); }
-.cinta--bandera     { color: var(--deco-oro-cla); }
-.cinta--veta-madre  { color: var(--deco-cristal-cla); }
+.cinta--prisa    { color: var(--deco-oro-cla); }
+.cinta--junta    { color: var(--deco-cristal-cla); }
+.cinta--bandera  { color: var(--deco-oro-cla); }
 
-/* El ánimo baja el volumen: tono piedra, sin brillo y sin oro. Un cartel de
-   fiesta encima de un fallo es crueldad decorada. */
-.cinta--posa {
-  color: var(--deco-piedra-cla);
-  box-shadow: 0 -4px 0 0 var(--deco-piedra), 0 4px 0 0 var(--deco-piedra-osc);
+/* ── La insignia: «+1» junto al contador de gemas ───────────────────────────
+   La celebración del acierto de todos los días, que es el 60 % de los casos.
+   Es lo más pequeño del juego a propósito: lo que se ve veinte veces por sesión
+   no puede parar la pantalla. No tapa nada, no mueve nada y no espera a nadie.
+   ────────────────────────────────────────────────────────────────────────── */
+.insignia {
+  margin-left: var(--e2);
+  font-family: var(--fuente-pixel);
+  font-size: var(--tam-texto-min);
+  color: var(--deco-oro-cla);
+  text-shadow: 2px 2px 0 var(--sombra-honda);
 }
+
+/* ── El cartel: logro y luz extra ───────────────────────────────────────────
+   Un panel centrado con bisel, NO una franja de lado a lado. Esa diferencia de
+   forma es la que hace que no se confunda con la cinta de un vistazo, que es
+   justo lo que le faltaba a la primera versión: allí todo era la misma banda.
+
+   Se queda muy por encima de la zona de respuesta, como la cinta, y por la
+   misma razón: taparle a un niño el botón con el que contesta ya pasó una vez.
+   ────────────────────────────────────────────────────────────────────────── */
+.cartel {
+  position: absolute;
+  /* 12 %, no 30: a 30 el borde inferior llegaba a rozar la fila alta del
+     teclado en una pantalla de 812 px. Medido, no supuesto. Y de paso lo separa
+     más de la cinta, que cruza por el 38: dos siluetas a dos alturas distintas
+     se distinguen mejor que dos siluetas a la misma. */
+  left: 50%; top: 12%;
+  transform: translateX(-50%);
+  z-index: 630;
+  pointer-events: none;
+  max-width: 80%;
+  padding: var(--e3) var(--e4);
+  background: var(--bg-texto-panel);
+  color: var(--texto-principal);
+  @include bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel),
+                 var(--e2) var(--e2) 0 0 rgba(0, 0, 0, .45));
+  font-family: var(--fuente-pixel);
+  font-size: calc(var(--tam-texto-min) + 8px);
+  line-height: 1.2;
+  text-align: center;
+}
+.cartel::before { content: "\2726\00A0"; }
 
 /* ── Contador de gemas: solo sube, nunca es negativo ────────────────────── */
 .gemas {

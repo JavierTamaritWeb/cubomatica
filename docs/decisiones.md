@@ -2346,3 +2346,88 @@ salida**. La cinta se escondía sola entre dos llamadas y la primera captura sal
 | Coreografías de la cinta | 1 | **9** |
 | Efectos de sonido | 12 | 12 |
 | Escalones de la escalera implementados | 4 de 5 | **5 de 5** |
+
+---
+
+# Ronda 12 · La variedad estaba en el sitio equivocado — versión 1.8.1 (28 de julio de 2026)
+
+Corrección de 1.8.0, señalada por el usuario el mismo día: *«pero has hecho que los avisos
+tengan el mismo formato de "Hurry up", eso no es lo que pedí»*. Tenía razón.
+
+## D-R12-1 · Variar el recorrido no es variar la celebración
+
+1.8.0 dio a cada momento su propia coreografía —nueve recorridos— y se dio el trabajo por
+hecho. Pero las nueve eran **la misma banda**: mismo ancho, mismo sitio, misma tipografía,
+mismo tamaño. Lo único que cambiaba era por dónde entraba y por dónde salía.
+
+**La forma es lo que se reconoce; la trayectoria casi no se nota.** Un niño que acierta
+veinte veces por sesión ve el mismo rectángulo veinte veces, y que unas veces suba y otras
+caiga no lo convierte en veinte cosas distintas. El diagnóstico correcto es que había que
+cambiar el **vehículo**, no el camino.
+
+Ahora hay seis: insignia, criatura, cinta, cartel, sacudida y nada. La regla que ordenaba
+la tabla —el espectáculo es inversamente proporcional a la frecuencia— no cambia, pero
+hasta ahora no se cumplía de verdad: la celebración del 60 % de los casos era una banda a
+pantalla completa igual que las demás, solo que más corta. Ahora es un «+1» de un renglón
+junto al contador de gemas, que no tapa nada y no detiene nada.
+
+## D-R12-2 · Una prueba puede blindar el fallo
+
+El detalle que más conviene recordar de esta ronda. El guardián E47, escrito en 1.8.0 con
+buena intención, decía: *«ningún modificador de cinta reposiciona el cartel»*. Es decir,
+**la monotonía estaba sostenida por una prueba en verde**. Corregir el diseño exigía primero
+borrar el guardián que lo impedía.
+
+La regla que queda: **cuando una comprobación impide la corrección, la comprobación es parte
+del fallo.** E47 pasa de prohibir el movimiento a prohibir la invasión: lo que no se puede
+tolerar no es que un cartel se coloque distinto, es que se meta en la zona con la que el
+niño contesta.
+
+## D-R12-3 · El mismo fallo de posición, por tercera vez
+
+El cartel del logro salía a **887 px de altura, fuera de la pantalla**, con las 519
+comprobaciones en verde. Causa: `_06-biomas.scss` pone `position: relative` a todo hijo
+directo de `.zona-juego` que no esté en su lista de exclusiones, y gana por orden de
+cascada. En 1.7.0 le pasó al aviso de prisa; en 1.8.0 se añadió `.cinta` a la lista; en
+1.8.1 se añadió el cartel y se olvidó apuntarlo.
+
+**Lo cazó mirar la pantalla, no una prueba.** Es la lección E14-E17 otra vez, y van tres.
+
+Ahora E47 compara la `position` **calculada** de los superpuestos, que es lo único que ve
+este fallo: el elemento existe, tiene su texto, tiene su animación, y simplemente está
+donde nadie lo ve. Y el cartel bajó del 30 % al 12 % de altura porque a 30 rozaba la fila
+alta del teclado en una pantalla de 812 px — medido con `getBoundingClientRect()`, no
+estimado.
+
+## D-R12-4 · Lo que se retira, y por qué no se comenta
+
+Seis coreografías de cinta con sus `@keyframes`, y los doce gritos de ánimo. No se dejan
+comentadas: la comprobación de animaciones huérfanas que nació en 1.8.0 no lo habría
+permitido, y hace bien. Los gritos de ánimo se van porque el ánimo dejó de tener cartel y
+**no hay dónde escribirlos**; un dato que no se pinta en ningún sitio acaba pareciendo que
+sí. `CB.mensajes.grito()` deja de recibir el tipo.
+
+Detrás de un fallo no se celebra: se acompaña. El vehículo del ánimo es Rocarr asintiendo,
+un gesto que ya existía y que un niño lee sin que se lo expliquen.
+
+## D-R12-5 · Los guardianes de un fallo de diseño
+
+E56-E58, y son distintos de todos los anteriores porque el fallo que vigilan no es un error
+de lógica: es una decisión estética equivocada. Lo que se puede medir de eso —y por tanto
+lo que se mide— es la **diversidad de la tabla**: al menos cuatro vehículos distintos,
+ninguno con más de la mitad de las celebraciones, y la más frecuente entre las más cortas y
+sin usar la banda.
+
+Validados sembrando el fallo original —devolver los ocho momentos a la cinta—: ocho
+comprobaciones rojas repartidas entre los tres.
+
+## Estado al cerrar 1.8.1
+
+| | 1.8.0 | 1.8.1 |
+|---|---|---|
+| Comprobaciones de la suite | 489 | **520** |
+| Comprobaciones de la auditoría | 58 | 58 |
+| Fallos registrados | E1–E55 | **E1–E58** |
+| Vehículos de celebración | 1 (nueve recorridos) | **6** |
+| Coreografías de cinta | 9 | **3** |
+| Efectos de sonido | 12 | 12 |

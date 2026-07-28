@@ -777,9 +777,11 @@ CB.datos.MENSAJES.animo = []
    Por eso el grito es material NUEVO y no un trozo recortado del mensaje. Las
    84 plantillas de acierto y las 48 de ánimo no se tocan.
 
-   Los de ánimo van SIN exclamación y en otro registro: detrás de un fallo, un
-   cartel gritando se lee como burla. Se les aplican las mismas dos listas
-   negras que a todo lo demás (casos-mensajes.js, M5 y M6). */
+   SOLO HAY GRITOS DE ACIERTO. Los hubo de ánimo, y se retiran: detrás de un
+   fallo no se celebra, se acompaña, y el vehículo del ánimo pasó a ser Rocarr
+   asintiendo (js/30-ui.js). Sin cartel no hay dónde escribir un grito, y un dato
+   que no se pinta en ningún sitio acaba pareciendo que sí. Se les aplican las
+   mismas dos listas negras que a todo lo demás (casos-mensajes.js, M5 y M6). */
 CB.datos.MENSAJES.GRITOS = {
   acierto: [
     '¡Toma!', '¡Eso es!', '¡Ahí está!', '¡Bloque!', '¡Clavado!', '¡Se abre!',
@@ -787,11 +789,6 @@ CB.datos.MENSAJES.GRITOS = {
     '¡Limpio!', '¡Así se cava!', '¡Perfecto!', '¡Sigue!', '¡Correcto!',
     '¡Bien visto!', '¡Vamos!', '¡Otra veta!', '¡Chispa!', '¡Buen golpe!',
     '¡Ya está!', '¡Cristal!'
-  ],
-  animo: [
-    'Casi', 'Otra vez', 'Mira aquí', 'Con calma', 'Ya casi', 'Vuelve a mirar',
-    'Sin prisa', 'Un paso más', 'Prueba otra', 'Respira', 'Tú puedes',
-    'Vamos allá'
   ]
 };
 
@@ -1309,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.8.0';
+CB.VERSION = '1.8.1';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -6950,7 +6947,7 @@ CB.mensajes.nuevoEstado = function () {
        reiniciaría en cada guardado y el grito volvería a repetirse cada dos por
        tres sin que nada fallara. Es exactamente lo que le pasó a la dificultad D
        (E45), que era un trinquete de una sola dirección por este mismo motivo. */
-    gritos:  { bolsaAcierto: [], bolsaAnimo: [] }
+    gritos:  { bolsaAcierto: [] }
   };
 };
 
@@ -6963,7 +6960,7 @@ CB.mensajes.asegurar = function (perfil) {
   if (!m.animo.ultimos10)   m.animo.ultimos10 = [];
   /* Un perfil de 1.7.1 no la trae. Se crea aquí y por eso 1.8.0 no necesita
      migración en 01-almacen.js: la primera cifra de la versión se queda. */
-  if (!m.gritos)  m.gritos  = { bolsaAcierto: [], bolsaAnimo: [] };
+  if (!m.gritos)  m.gritos  = { bolsaAcierto: [] };
   return m;
 };
 
@@ -7105,17 +7102,14 @@ CB.mensajes.animo = function (ctx) {
  * monotonía: la primera es que la coreografía significa algo (js/30-ui.js) y la
  * tercera es que hay una que casi nunca sale.
  *
- * @param tipo 'acierto' | 'animo'
  * @param ctx {perfil, rng}
  */
-CB.mensajes.grito = function (tipo, ctx) {
+CB.mensajes.grito = function (ctx) {
   ctx = ctx || {};
   var perfil = ctx.perfil || {};
   var m = CB.mensajes.asegurar(perfil);
-  var esAnimo = (tipo === 'animo');
-  var lista = esAnimo ? CB.datos.MENSAJES.GRITOS.animo
-                      : CB.datos.MENSAJES.GRITOS.acierto;
-  var clave = esAnimo ? 'bolsaAnimo' : 'bolsaAcierto';
+  var lista = CB.datos.MENSAJES.GRITOS.acierto;
+  var clave = 'bolsaAcierto';
   var rng = ctx.rng || CB.util.mulberry32(CB.util.hash32(clave + lista.length));
 
   var idx = CB.mensajes.sacarDeBolsa(m.gritos, clave, lista.length, [], [], 0, rng);
@@ -7132,8 +7126,7 @@ CB.mensajes.contrato = function () {
     porCategoriaAcierto: [M.acierto_A.length, M.acierto_B.length,
                           M.acierto_C.length, M.acierto_D.length],
     porCategoriaAnimo: [M.animo_P1.length, M.animo_P2.length],
-    gritosAcierto: M.GRITOS.acierto.length,
-    gritosAnimo: M.GRITOS.animo.length
+    gritosAcierto: M.GRITOS.acierto.length
   };
 };
 
@@ -8382,40 +8375,19 @@ CB.ui.barra = function (fraccion) {
    ────────────────────────────────────────────────────────────────────────── */
 CB.ui.cinta = { nodo: null, _salida: null, _clave: null };
 
-/* La regla que ordena la tabla: EL ESPECTÁCULO ES INVERSAMENTE PROPORCIONAL A
-   LA FRECUENCIA. 'sello' es el 60 % de los aciertos y es la más corta; las
-   largas se reservan para lo que casi no pasa. Un efecto único repetido treinta
-   veces por sesión no celebra: hace esperar.
+/* LA CINTA ES UN VEHÍCULO, NO EL SISTEMA DE CELEBRACIÓN. Quedan tres
+   coreografías, y las tres son de cosas que casi no pasan: el aviso de tiempo,
+   la superación y el jefe. Quién usa la cinta lo decide CB.ui.festejo.
 
-   Ni un efecto de sonido nuevo. Los doce de 04-audio.js son contrato. */
+   Eran nueve. La primera versión de 1.8.0 daba a cada momento su propio
+   recorrido —entrar por abajo, caer, estallar— pero TODAS eran la misma banda,
+   del mismo ancho, en el mismo sitio y con la misma letra. Visto en pantalla,
+   veinte veces por sesión, eso no es variedad: es el mismo rectángulo moviéndose
+   distinto. Lo que tiene que cambiar es el VEHÍCULO, no la trayectoria. */
 CB.ui.cinta.COREOGRAFIAS = {
-  'prisa':      { ms: 1900, sfx: 'prisa'      },
-  'sello':      { ms:  900, sfx: 'acierto'    },
-  'sube':       { ms: 1100, sfx: 'acierto'    },
-  'junta':      { ms: 1300, sfx: 'subirNivel' },
-  'cascada':    { ms: 1500, sfx: 'gema'       },
-  'estalla':    { ms: 1600, sfx: 'luzExtra'   },
-  'bandera':    { ms: 1800, sfx: 'cofre'      },
-  'veta-madre': { ms: 2000, sfx: 'cofre'      },
-  'posa':       { ms:  800, sfx: null         }
-};
-
-/* Las cuatro categorías de acierto de js/25-mensajes.js, cada una con su forma.
-   No se sortea la coreografía: acertar a la segunda después de haber fallado
-   (C) no es lo mismo que acertar a la primera (A), y la cinta lo dice sin que
-   nadie tenga que leer nada. */
-CB.ui.cinta.POR_CATEGORIA = { A: 'sello', B: 'sube', C: 'junta', D: 'cascada' };
-
-/**
- * Cuánto espera el juego antes de servir el ítem siguiente.
- * NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es
- * justo lo contrario de lo que se busca. Los 400 ms de propina son para leer lo
- * que queda escrito, no para ver el final de la animación.
- */
-CB.ui.cinta.espera = function (clave, minimoMs) {
-  var co = CB.ui.cinta.COREOGRAFIAS[clave];
-  var m = minimoMs || 0;
-  return co ? Math.max(m, co.ms + 400) : m;
+  'prisa':   { ms: 1900, sfx: 'prisa'      },
+  'junta':   { ms: 1300, sfx: 'subirNivel' },
+  'bandera': { ms: 1800, sfx: 'cofre'      }
 };
 
 /* La cinta de la pantalla que se está viendo. Se resuelve en cada llamada y no
@@ -8465,6 +8437,152 @@ CB.ui.cinta.ocultar = function () {
   if (!n) return;
   n.classList.remove('cinta--entra');
   n.hidden = true;
+};
+
+/* ── EL FESTEJO ─────────────────────────────────────────────────────────────
+   SEIS VEHÍCULOS, no seis recorridos. Esta es la corrección de la primera
+   versión de 1.8.0, y conviene que quede escrito por qué: allí cada momento
+   tenía su propia coreografía, pero todas eran la misma banda oscura, del mismo
+   ancho, en el mismo sitio y con la misma tipografía. Un niño no ve nueve
+   celebraciones distintas; ve el mismo rectángulo entrando de nueve maneras. A
+   la tercera vez ya no celebra nada.
+
+   Peor: al unificarlo todo en un nodo se escribió un guardián (E47) que PROHIBÍA
+   a cada modificador tocar la posición. Es decir, la monotonía estaba blindada
+   por una prueba. Ese guardián se reescribe: lo que hay que prohibir no es que
+   el cartel se mueva, es que invada la zona de respuesta.
+
+   La regla que ordena la tabla no cambia, y ahora sí se cumple de verdad: EL
+   ESPECTÁCULO ES INVERSAMENTE PROPORCIONAL A LA FRECUENCIA. Lo que sale en el
+   60 % de los aciertos es lo más pequeño que hay —un «+1» que brota junto al
+   contador de gemas— y ni siquiera usa la banda. La banda se reserva para lo
+   que casi no pasa.
+
+   Ni un efecto de sonido nuevo: los doce de 04-audio.js son contrato. */
+CB.ui.festejo = { _salida: null, _clave: null };
+
+CB.ui.festejo.CELEBRACIONES = {
+  /* El acierto de todos los días. Sin banda, sin texto grande, sin parar nada. */
+  normal:     { vehiculo: 'insignia', ms:  700, sfx: 'acierto' },
+  /* Le ha costado y lo ha sacado: Cubi salta. */
+  esfuerzo:   { vehiculo: 'criatura', ms: 1100, sfx: 'acierto',
+                quien: 'cubi', gesto: 'acierto' },
+  /* Acierta tras haber fallado. El acierto que más pesa: se lleva la banda. */
+  superacion: { vehiculo: 'cinta',    ms: 1300, sfx: 'subirNivel', coreo: 'junta' },
+  /* Racha, veta o mundo nuevo: Chispa gira y estalla el surtidor. */
+  hallazgo:   { vehiculo: 'criatura', ms: 1400, sfx: 'gema',
+                quien: 'chispa', gesto: 'racha', particulas: true },
+  /* Logro o luz extra: un cartel centrado con bisel, no una franja. */
+  logro:      { vehiculo: 'cartel',   ms: 1600, sfx: 'luzExtra' },
+  /* El jefe cede. Cuatro veces en la vida de un perfil. */
+  jefe:       { vehiculo: 'cinta',    ms: 1800, sfx: 'cofre', coreo: 'bandera' },
+  /* Bloque raro, 1 de cada 20: tiembla la cantera entera. */
+  raro:       { vehiculo: 'sacudida', ms: 1200, sfx: 'cofre', particulas: true },
+  /* Detrás de un fallo NO se celebra: se acompaña. Rocarr asiente despacio, que
+     es un gesto que ya existía y que un niño lee sin que nadie se lo explique.
+     Ni cartel ni banda ni grito: un rótulo de fiesta encima de un fallo se lee
+     como burla, y lo que importa está escrito debajo, quieto y legible. */
+  animo:      { vehiculo: 'criatura', ms: 1100, sfx: null,
+                quien: 'rocarr', gesto: 'pista' }
+};
+
+/* Las cuatro categorías de acierto de js/25-mensajes.js, cada una con su
+   celebración. No se sortea: acertar a la segunda después de haber fallado (C)
+   no es lo mismo que acertar a la primera (A). */
+CB.ui.festejo.POR_CATEGORIA = {
+  A: 'normal', B: 'esfuerzo', C: 'superacion', D: 'hallazgo'
+};
+
+/**
+ * Cuánto espera el juego antes de servir el ítem siguiente.
+ * NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es
+ * justo lo contrario de lo que se busca.
+ */
+CB.ui.festejo.espera = function (clave, minimoMs) {
+  var c = CB.ui.festejo.CELEBRACIONES[clave];
+  var m = minimoMs || 0;
+  return c ? Math.max(m, c.ms + 400) : m;
+};
+
+CB.ui.festejo.limpiar = function () {
+  var f = CB.ui.festejo;
+  if (f._salida) { clearTimeout(f._salida); f._salida = null; }
+  f._clave = null;
+  CB.ui.cinta.ocultar();
+  CB.ui.insignia(0);
+  CB.ui.cartel(null);
+  var z = document.getElementById('zona-juego');
+  if (z) z.classList.remove('zona-juego--sacude');
+};
+
+/**
+ * Celebra algo. `texto` es el grito corto; el mensaje entero sigue quieto en
+ * #item-mensaje, que es donde se puede leer.
+ * @param clave una de CELEBRACIONES
+ * @param texto grito corto (lo usan cinta y cartel; los demás vehículos no)
+ * @param extra {bono} gemas de rapidez, para la insignia
+ */
+CB.ui.festejo.mostrar = function (clave, texto, extra) {
+  var f = CB.ui.festejo;
+  var c = f.CELEBRACIONES[clave];
+  if (!c) return false;
+
+  CB.ui.festejo.limpiar();          // una celebración a la vez, siempre
+  f._clave = clave;
+  extra = extra || {};
+
+  if (c.vehiculo === 'cinta') {
+    CB.ui.cinta.mostrar(c.coreo, texto);
+    return true;                     // la cinta trae su propio sonido y salida
+  }
+
+  if (c.vehiculo === 'insignia') {
+    CB.ui.insignia(1 + (extra.bono || 0));
+  } else if (c.vehiculo === 'criatura') {
+    CB.ui.personaje(c.quien, c.gesto);
+  } else if (c.vehiculo === 'cartel') {
+    CB.ui.cartel(texto);
+  } else if (c.vehiculo === 'sacudida') {
+    var z = document.getElementById('zona-juego');
+    if (z) { void z.offsetWidth; z.classList.add('zona-juego--sacude'); }
+  }
+
+  if (c.particulas) {
+    CB.ui.particulasDe(document.getElementById('item-enunciado'),
+                       'var(--deco-cristal-cla)');
+  }
+  if (c.sfx) CB.audio.sfx(c.sfx);
+
+  if (c.ms > 0) {
+    f._salida = setTimeout(function () { CB.ui.festejo.limpiar(); }, c.ms);
+  }
+  return true;
+};
+
+/* «+1», «+3»: brota junto al contador de gemas y se apaga. Es el acierto de
+   todos los días, y por eso es lo más pequeño del juego. */
+CB.ui.insignia = function (n) {
+  var el = document.getElementById('insignia-gemas');
+  if (!el) return;
+  el.classList.remove('insignia--brota');
+  if (!(n > 0)) { el.hidden = true; return; }
+  el.textContent = '+' + n;
+  el.hidden = false;
+  void el.offsetWidth;
+  el.classList.add('insignia--brota');
+};
+
+/* Cartel centrado con bisel, para el logro y la luz extra. No es una franja:
+   esa es la diferencia con la cinta, y es la que se ve de un vistazo. */
+CB.ui.cartel = function (texto) {
+  var el = document.getElementById('cartel-festejo');
+  if (!el) return;
+  el.classList.remove('cartel--brota');
+  if (!texto) { el.hidden = true; return; }
+  el.textContent = String(texto);
+  el.hidden = false;
+  void el.offsetWidth;
+  el.classList.add('cartel--brota');
 };
 
 CB.ui.reloj = {
@@ -9826,10 +9944,8 @@ CB.partida.tiempoAgotado = function () {
   CB.ui.mensaje(CB.mensajes.animo({
     perfil: CB.perfil, destreza: e.itemActual.destreza, rng: e.rng
   }), 'animo');
-  CB.ui.cinta.mostrar('posa', CB.mensajes.grito('animo', { perfil: CB.perfil, rng: e.rng }));
-  CB.ui.personaje('rocarr', 'pista');
-  setTimeout(function () { CB.partida.siguiente(); },
-             CB.ui.cinta.espera('posa', 2200));
+  CB.ui.festejo.mostrar('animo');
+  setTimeout(function () { CB.partida.siguiente(); }, 2200);
 };
 
 /* ── Responder ──────────────────────────────────────────────────────────── */
@@ -9933,19 +10049,22 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   CB.ui.personaje('cubi', 'acierto');
   if (e.rachaPrimerIntento >= 3) CB.ui.personaje('chispa', 'racha');
 
-  /* Y la cinta se lleva el grito. La FORMA dice qué ha pasado: no se sortea.
-     Las cuatro categorías ya las calculaba CB.mensajes.categoriaAcierto() desde
-     el primer día —superación, descubrimiento, esfuerzo, procedimiento—; aquí
-     solo se les pone cuerpo. Encima va el bloque raro, que es 1 de cada 20 y se
-     lleva la coreografía que casi nunca se ve. */
-  var coreo = item.esBloqueRaro
-    ? 'veta-madre'
-    : CB.ui.cinta.POR_CATEGORIA[CB.mensajes.categoriaAcierto(ctxMsg)];
-  CB.ui.cinta.mostrar(coreo, CB.mensajes.grito('acierto', { perfil: perfil, rng: e.rng }));
+  /* Y la celebración. Lo que cambia entre una y otra es el VEHÍCULO —una
+     insignia, una criatura, una cinta, un cartel, un temblor—, no el recorrido
+     de un mismo cartel: la forma es lo que se reconoce sin leer. Las cuatro
+     categorías ya las calculaba CB.mensajes.categoriaAcierto() desde el primer
+     día; aquí solo se les pone cuerpo. Encima va el bloque raro, que es 1 de
+     cada 20 y se lleva lo que casi nunca se ve. */
+  var festejo = item.esBloqueRaro
+    ? 'raro'
+    : CB.ui.festejo.POR_CATEGORIA[CB.mensajes.categoriaAcierto(ctxMsg)];
+  CB.ui.festejo.mostrar(festejo,
+    CB.mensajes.grito({ perfil: perfil, rng: e.rng }),
+    { bono: bono });
 
-  /* El sonido lo pone la cinta: cada coreografía trae el suyo, y por eso una
+  /* El sonido lo pone el festejo: cada uno trae el suyo, y por eso una
      superación no suena igual que un acierto de todos los días. */
-  if (bono > 0 && coreo !== 'cascada') CB.audio.sfx('gema');
+  if (bono > 0 && festejo !== 'hallazgo') CB.audio.sfx('gema');
   CB.ui.particulasDe(document.getElementById('item-enunciado'), 'var(--deco-hierba)');
 
   /* Bloque raro: cromo garantizado. Es la sorpresa que hace que merezca la pena
@@ -9965,7 +10084,7 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   /* NUNCA menos de los 1600 ms de siempre: la espera se estira si la coreografía
      es larga, pero no se encoge nunca. Acortarla recortaría tiempo de lectura. */
   setTimeout(function () { CB.partida.siguiente(); },
-             CB.ui.cinta.espera(coreo, 1600));
+             CB.ui.festejo.espera(festejo, 1600));
 };
 
 /* ── Fallo ──────────────────────────────────────────────────────────────── */
@@ -9991,11 +10110,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
        Documento 5), y esa regla hay que contarla en el momento en que importa,
        no dejarla escrita en un documento que el niño no lee. */
     CB.ui.mensaje('Esta no suma gemas. Te queda otro intento. ' + pista, 'animo');
-    /* La cinta del ánimo es la más corta y la más quieta de las nueve, y va en
-       tono piedra: se posa, no estalla. Un cartel de fiesta encima de un fallo
-       se lee como burla, y lo que importa está escrito debajo. */
-    CB.ui.cinta.mostrar('posa', CB.mensajes.grito('animo', { perfil: perfil, rng: e.rng }));
-    CB.ui.personaje('rocarr', 'pista');
+    CB.ui.festejo.mostrar('animo');
     CB.audio.sfx('rocarr');
     setTimeout(function () {
       CB.ui.ocultarMensaje();
@@ -10231,7 +10346,7 @@ CB.partida.aplicarLogros = function (nuevos) {
        la pantalla no se enteraba de nada. Ahora la cinta lo dice. */
     if (!l.luz) {
       CB.a11y.anunciar('Logro: ' + l.nombre);
-      CB.ui.cinta.mostrar('estalla', '¡Logro!');
+      CB.ui.festejo.mostrar('logro', '¡Logro! ' + l.nombre);
       continue;
     }
 
@@ -10240,11 +10355,11 @@ CB.partida.aplicarLogros = function (nuevos) {
       CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
       CB.ui.encenderLuz(e.luces.luces - 1);
       CB.ui.mensaje('¡Luz extra! ' + l.nombre, 'acierto');
-      CB.ui.cinta.mostrar('estalla', '¡Luz extra!');
+      CB.ui.festejo.mostrar('logro', '¡Luz extra!');
       CB.a11y.anunciar('Luz extra por ' + l.nombre);
     } else if (r.guardada) {
       CB.ui.mensaje('Guardas 1 luz para la próxima expedición.', 'acierto');
-      CB.ui.cinta.mostrar('estalla', '¡Luz guardada!');
+      CB.ui.festejo.mostrar('logro', '¡Luz guardada!');
     }
   }
 };
@@ -11694,7 +11809,7 @@ CB.jefes.terminar = function (porBloques) {
 
   /* La cinta más larga del juego, y puede permitírselo: se ve cuatro veces en
      toda la vida de un perfil, una por mundo. Trae su propio sonido. */
-  CB.ui.cinta.mostrar('bandera', '¡Paso abierto!');
+  CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
   CB.almacen.guardarPerfil(perfil);
 
   var enun = document.getElementById('jefe-enunciado');

@@ -202,4 +202,16 @@ $alturas: (alta: 900px, media: 780px, baja: 660px, corta: 600px, minima: 420px);
      clases, añadir uno y olvidarse de su excepción dejaba un mensaje invisible
      para quien juega con el movimiento apagado: el modo que más lo necesita. */
   #{$prefijo}.cinta.cinta--entra { transform: none; opacity: 1; }
+  /* Y lo mismo para los otros vehículos de celebración: el «+1» y el cartel se
+     quedan quietos, pero se VEN. */
+  #{$prefijo}.insignia.insignia--brota { transform: none; opacity: 1; }
+  #{$prefijo}.cartel.cartel--brota { transform: translateX(-50%); opacity: 1; }
+  /* La sacudida del bloque raro es la única cuya informacion ESTÁ en el
+     movimiento: sin temblor no queda nada que ver. Se sustituye por un marco de
+     oro, que es estático y dice lo mismo — «aquí ha pasado algo». Sin desenfoque
+     y sin radio, como todo. */
+  #{$prefijo}.zona-juego.zona-juego--sacude {
+    transform: none;
+    box-shadow: inset 0 0 0 8px var(--deco-oro);
+  }
 }

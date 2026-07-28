@@ -57,22 +57,21 @@ CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
      tercera familia de fallo de este proyecto (E44: el cerrojo de una respuesta
      por intento estaba en la partida y faltaba en el jefe y en la calibración). */
   var G = M.GRITOS;
-  t.ok(G && G.acierto.length >= 20 && G.animo.length >= 10,
+  t.ok(G && G.acierto.length >= 20,
     'E53 · hay gritos suficientes para que no se repitan en una sesión',
-    G ? G.acierto.length + '/' + G.animo.length : 'no existen');
+    G ? String(G.acierto.length) : 'no existen');
 
-  var largos = G.acierto.concat(G.animo).filter(function (g) { return g.length > 16; });
+  /* Solo hay gritos de acierto. Detrás de un fallo no se celebra: el vehículo
+     del ánimo es Rocarr asintiendo, y ahí no hay dónde escribir nada. Un dato
+     que no se pinta acaba pareciendo que sí, así que la lista se retiró. */
+  t.ok(!G.animo, 'E53 · no quedan gritos de ánimo huérfanos en los datos');
+
+  var largos = G.acierto.filter(function (g) { return g.length > 16; });
   t.ok(largos.length === 0,
     'E53 · ningún grito pasa de 16 caracteres: la cinta cruza en menos de 2 s',
     largos.join(' | '));
 
-  /* Los de ánimo van sin exclamación a propósito: detrás de un fallo, un cartel
-     gritando se lee como burla. */
-  var animoGritado = G.animo.filter(function (g) { return g.indexOf('!') !== -1; });
-  t.ok(animoGritado.length === 0,
-    'E53 · los gritos de ánimo no llevan exclamación', animoGritado.join(' | '));
-
-  todos = todos.concat(G.acierto).concat(G.animo);
+  todos = todos.concat(G.acierto);
 
   /* M5 — 0 elogios de PERSONA. El elogio de rasgo instala mentalidad fija:
      cada fallo posterior contradice la etiqueta. */

@@ -1139,46 +1139,66 @@ button:focus:not(:focus-visible) {
   content: "■ ";
 }
 
-/* ── Los nueve tonos ────────────────────────────────────────────────────────
-   Acompañan; no distinguen. Todos van sobre --bg-texto-oscuro y todos están
+/* Tres tonos para las tres coreografías que quedan. Acompañan; no distinguen:
+   lo que distingue es el VEHÍCULO. Los tres van sobre --bg-texto-oscuro y están
    muy por encima de 4,5:1, que es lo que exige la norma para texto grande. */
 .cinta--prisa {
   color: var(--deco-oro-cla);
-}
-
-.cinta--sello {
-  color: var(--deco-hierba-cla);
-}
-
-.cinta--sube {
-  color: var(--deco-hierba-cla);
 }
 
 .cinta--junta {
   color: var(--deco-cristal-cla);
 }
 
-.cinta--cascada {
-  color: var(--deco-oro-cla);
-}
-
-.cinta--estalla {
-  color: var(--blanco);
-}
-
 .cinta--bandera {
   color: var(--deco-oro-cla);
 }
 
-.cinta--veta-madre {
-  color: var(--deco-cristal-cla);
+/* ── La insignia: «+1» junto al contador de gemas ───────────────────────────
+   La celebración del acierto de todos los días, que es el 60 % de los casos.
+   Es lo más pequeño del juego a propósito: lo que se ve veinte veces por sesión
+   no puede parar la pantalla. No tapa nada, no mueve nada y no espera a nadie.
+   ────────────────────────────────────────────────────────────────────────── */
+.insignia {
+  margin-left: var(--e2);
+  font-family: var(--fuente-pixel);
+  font-size: var(--tam-texto-min);
+  color: var(--deco-oro-cla);
+  text-shadow: 2px 2px 0 var(--sombra-honda);
 }
 
-/* El ánimo baja el volumen: tono piedra, sin brillo y sin oro. Un cartel de
-   fiesta encima de un fallo es crueldad decorada. */
-.cinta--posa {
-  color: var(--deco-piedra-cla);
-  box-shadow: 0 -4px 0 0 var(--deco-piedra), 0 4px 0 0 var(--deco-piedra-osc);
+/* ── El cartel: logro y luz extra ───────────────────────────────────────────
+   Un panel centrado con bisel, NO una franja de lado a lado. Esa diferencia de
+   forma es la que hace que no se confunda con la cinta de un vistazo, que es
+   justo lo que le faltaba a la primera versión: allí todo era la misma banda.
+
+   Se queda muy por encima de la zona de respuesta, como la cinta, y por la
+   misma razón: taparle a un niño el botón con el que contesta ya pasó una vez.
+   ────────────────────────────────────────────────────────────────────────── */
+.cartel {
+  position: absolute;
+  /* 12 %, no 30: a 30 el borde inferior llegaba a rozar la fila alta del
+     teclado en una pantalla de 812 px. Medido, no supuesto. Y de paso lo separa
+     más de la cinta, que cruza por el 38: dos siluetas a dos alturas distintas
+     se distinguen mejor que dos siluetas a la misma. */
+  left: 50%;
+  top: 12%;
+  transform: translateX(-50%);
+  z-index: 630;
+  pointer-events: none;
+  max-width: 80%;
+  padding: var(--e3) var(--e4);
+  background: var(--bg-texto-panel);
+  color: var(--texto-principal);
+  box-shadow: inset var(--bisel) var(--bisel) 0 0 var(--blanco), inset calc(var(--bisel) * -1) calc(var(--bisel) * -1) 0 0 var(--btn-borde-sombra), var(--e2) var(--e2) 0 0 rgba(0, 0, 0, 0.45);
+  font-family: var(--fuente-pixel);
+  font-size: calc(var(--tam-texto-min) + 8px);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.cartel::before {
+  content: "✦ ";
 }
 
 /* ── Contador de gemas: solo sube, nunca es negativo ────────────────────── */
@@ -2461,24 +2481,26 @@ button:focus:not(:focus-visible) {
   animation: cifra-late 400ms steps(4, end) 1;
 }
 
-/* ── LAS NUEVE COREOGRAFÍAS DE LA CINTA ─────────────────────────────────────
-   El «Hurry up!» era una sola y gustó. Repetirla en cada acierto habría sido el
-   error: un niño acierta entre veinte y treinta veces por sesión, y un efecto
-   idéntico deja de celebrar nada al tercero — pasa a ser una espera con adorno.
+/* ── LAS CELEBRACIONES: SEIS VEHÍCULOS, NO SEIS RECORRIDOS ──────────────────
+   Aquí hubo nueve coreografías de cinta, una por momento, y estaba mal. Todas
+   eran la MISMA banda: mismo ancho, mismo sitio, misma letra, mismo tamaño. Un
+   niño no veía nueve celebraciones; veía el mismo rectángulo entrando de nueve
+   maneras, veinte veces por sesión. Cambiar la trayectoria no cambia la forma, y
+   la forma es lo que se reconoce.
 
-   De ahí la regla que ordena la tabla: EL ESPECTÁCULO ES INVERSAMENTE
-   PROPORCIONAL A LA FRECUENCIA. El acierto normal, que es el 60 % de los casos,
-   se lleva la más corta y la más limpia (900 ms, un sello que se estampa sin
-   moverse del sitio). Las largas se reservan para lo que casi no pasa: ganarle
-   al jefe, una luz extra, el bloque raro de uno entre veinte.
+   Ahora lo que cambia es el VEHÍCULO. La cinta se queda en tres momentos —el
+   aviso de tiempo, la superación y el jefe— y el resto usa otra cosa: una
+   insignia junto al contador, una criatura que reacciona, un cartel centrado con
+   bisel, o la cantera entera temblando. Se distinguen sin leer nada.
 
-   Y la forma DICE algo verdadero. No se sortea: acertar a la segunda después de
-   haber fallado no es lo mismo que acertar a la primera, y las categorías que lo
-   distinguen ya existían en js/25-mensajes.js desde el primer día. Aquí solo se
-   les pone cuerpo.
+   La regla que ordena la tabla no cambia, y ahora sí se cumple: EL ESPECTÁCULO
+   ES INVERSAMENTE PROPORCIONAL A LA FRECUENCIA. Lo que sale en el 60 % de los
+   aciertos es un «+1» de un renglón junto a las gemas. La banda se reserva.
 
-   NINGUNA LLEVA DURACIÓN. La pone js/30-ui.js desde CB.ui.cinta.COREOGRAFIAS,
-   vía el mixin coreografia(). Ver el porqué en _herramientas.scss.
+   NINGUNA COREOGRAFÍA DE CINTA LLEVA DURACIÓN: la pone js/30-ui.js. Las de los
+   demás vehículos sí la llevan aquí, porque su temporizador no lo controla la
+   tabla de la cinta sino CB.ui.festejo, que lee su propio `ms`. Es la excepción
+   y por eso está dicha.
    ────────────────────────────────────────────────────────────────────────── */
 /* 1 · PRISA — «Hurry up!», el único que no celebra nada: avisa. Entra por debajo
    del borde inferior, se pasa de largo, rebota, se queda quieto un segundo en el
@@ -2547,73 +2569,6 @@ button:focus:not(:focus-visible) {
   animation: cinta-arde 300ms steps(3, end) 6;
 }
 
-/* 2 · SELLO — el acierto de todos los días, categoría A. No se desplaza: cae de
-   golpe sobre el sitio y se estampa, con un solo rebote. Corta a propósito. */
-@keyframes cinta-sello {
-  0% {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-  30% {
-    transform: scale(0.88);
-    opacity: 1;
-  }
-  45% {
-    transform: scale(1.08);
-    opacity: 1;
-  }
-  60% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  88% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
-}
-.cinta--sello.cinta--entra {
-  animation-name: cinta-sello;
-  animation-timing-function: steps(6, end);
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-/* 3 · SUBE — categoría B, el esfuerzo: «te ha costado y ha salido». Sube desde
-   abajo y SE QUEDA. No cruza como la de prisa: llega y se planta, que es
-   justo lo que celebra. */
-@keyframes cinta-sube {
-  0% {
-    transform: translateY(260%);
-    opacity: 0;
-  }
-  25% {
-    transform: translateY(-8%);
-    opacity: 1;
-  }
-  45% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  88% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-}
-.cinta--sube.cinta--entra {
-  animation-name: cinta-sube;
-  animation-timing-function: steps(8, end);
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
 /* 4 · JUNTA — categoría C, la superación: acierta tras haber fallado o tras una
    tarjeta de reparación. Es el acierto que más pesa de todos, y por eso tiene la
    única forma que no existe en ningún otro sitio del juego: dos mitades que
@@ -2658,91 +2613,6 @@ button:focus:not(:focus-visible) {
   animation-fill-mode: forwards;
 }
 
-/* 5 · CASCADA — categoría D, el descubrimiento: racha de tres, veta nueva o
-   mundo nuevo. Cae desde arriba con dos rebotes. Es la contraria de la de
-   prisa, y esa oposición es intencionada: una anuncia que se acaba el tiempo,
-   la otra que se ha abierto algo. */
-@keyframes cinta-cascada {
-  0% {
-    transform: translateY(-320%) scale(0.7);
-    opacity: 0;
-  }
-  20% {
-    transform: translateY(12%) scale(1.18);
-    opacity: 1;
-  }
-  32% {
-    transform: translateY(-6%) scale(0.96);
-    opacity: 1;
-  }
-  42% {
-    transform: translateY(4%) scale(1.04);
-    opacity: 1;
-  }
-  52% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  90% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 0;
-  }
-}
-.cinta--cascada.cinta--entra {
-  animation-name: cinta-cascada;
-  animation-timing-function: steps(12, end);
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-/* 6 · ESTALLA — logro desbloqueado o luz extra. Del centro hacia fuera, con
-   tres sobreimpulsos. Es la única que empieza en escala 0: no viene de ningún
-   sitio, aparece. */
-@keyframes cinta-estalla {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  16% {
-    transform: scale(1.35);
-    opacity: 1;
-  }
-  28% {
-    transform: scale(0.92);
-    opacity: 1;
-  }
-  40% {
-    transform: scale(1.14);
-    opacity: 1;
-  }
-  52% {
-    transform: scale(0.98);
-    opacity: 1;
-  }
-  62% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  90% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
-}
-.cinta--estalla.cinta--entra {
-  animation-name: cinta-estalla;
-  animation-timing-function: steps(12, end);
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
 /* 7 · BANDERA — el jefe cede y el mundo queda cerrado. Se despliega a lo ancho,
    como una tela que se estira desde el centro. Se ve una vez por mundo: cuatro
    veces en toda la vida de un perfil, y por eso puede permitirse ser la más
@@ -2780,91 +2650,98 @@ button:focus:not(:focus-visible) {
   animation-fill-mode: forwards;
 }
 
-/* 8 · VETA MADRE — LA RARA. Sale con el bloque raro: uno de cada veinte, que ya
-   estaba en el juego (PROB_BLOQUE_RARO, js/40-partida.js) dando un cromo sin que
-   se notara nada. La sorpresa necesita que exista algo que casi nunca se ve; sin
-   eso no hay sorpresa, hay rotación. Es la más lenta y la de más pasos: temblor
-   de piedra, la cinta se abre desde una rendija y se queda. */
-@keyframes cinta-veta-madre {
+/* ── VEHÍCULO 2 · LA INSIGNIA ───────────────────────────────────────────────
+   El acierto de todos los días. Brota del contador de gemas, sube un poco y se
+   apaga. Cinco pasos y 700 ms: lo justo para verlo, no lo bastante para
+   esperarlo. Es la celebración más frecuente del juego y la más pequeña, que es
+   exactamente el orden correcto. */
+@keyframes insignia-brota {
   0% {
-    transform: scaleY(0.06) translateX(0);
+    transform: translateY(6px) scale(0.6);
     opacity: 0;
   }
-  10% {
-    transform: scaleY(0.06) translateX(-4px);
+  25% {
+    transform: translateY(-4px) scale(1.25);
     opacity: 1;
   }
-  16% {
-    transform: scaleY(0.06) translateX(4px);
+  45% {
+    transform: translateY(-6px) scale(1);
     opacity: 1;
   }
-  22% {
-    transform: scaleY(0.06) translateX(-3px);
-    opacity: 1;
-  }
-  30% {
-    transform: scaleY(1.22) translateX(0);
-    opacity: 1;
-  }
-  40% {
-    transform: scaleY(0.94) translateX(0);
-    opacity: 1;
-  }
-  48% {
-    transform: scaleY(1.06) translateX(0);
-    opacity: 1;
-  }
-  56% {
-    transform: scaleY(1) translateX(0);
-    opacity: 1;
-  }
-  92% {
-    transform: scaleY(1) translateX(0);
+  75% {
+    transform: translateY(-8px) scale(1);
     opacity: 1;
   }
   100% {
-    transform: scaleY(1) translateX(0);
+    transform: translateY(-14px) scale(1);
     opacity: 0;
   }
 }
-.cinta--veta-madre.cinta--entra {
-  animation-name: cinta-veta-madre;
-  animation-timing-function: steps(16, end);
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
+.insignia.insignia--brota {
+  animation: insignia-brota 700ms steps(5, end) 1 forwards;
 }
 
-/* 9 · POSA — el ánimo, detrás de un fallo. Es la más corta y la más quieta de
-   todas, y va en tono piedra: baja un poco y se posa. Nada de rebotes, nada de
-   oro, nada de estallidos. Un cartel de fiesta encima de un fallo se lee como
-   burla, y el mensaje que hay debajo es el que importa. */
-@keyframes cinta-posa {
+/* ── VEHÍCULO 4 · EL CARTEL ─────────────────────────────────────────────────
+   Logro y luz extra. Crece desde el centro con un rebote. No cruza, no barre:
+   aparece donde está y se queda. Es un panel, no una franja, y esa diferencia de
+   silueta es la que hace que no se confunda con la cinta. */
+@keyframes cartel-brota {
   0% {
-    transform: translateY(-70%);
+    transform: translateX(-50%) scale(0.2);
     opacity: 0;
   }
+  20% {
+    transform: translateX(-50%) scale(1.18);
+    opacity: 1;
+  }
   35% {
-    transform: translateY(6%);
+    transform: translateX(-50%) scale(0.94);
     opacity: 1;
   }
-  55% {
-    transform: translateY(0);
+  50% {
+    transform: translateX(-50%) scale(1);
     opacity: 1;
   }
-  90% {
-    transform: translateY(0);
+  88% {
+    transform: translateX(-50%) scale(1);
     opacity: 1;
   }
   100% {
-    transform: translateY(0);
+    transform: translateX(-50%) scale(1);
     opacity: 0;
   }
 }
-.cinta--posa.cinta--entra {
-  animation-name: cinta-posa;
-  animation-timing-function: steps(6, end);
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
+.cartel.cartel--brota {
+  animation: cartel-brota 1600ms steps(10, end) 1 forwards;
+}
+
+/* ── VEHÍCULO 5 · LA SACUDIDA ───────────────────────────────────────────────
+   El bloque raro, uno de cada veinte. No hay cartel ninguno: tiembla la cantera
+   entera. Es lo más distinto que puede hacer esta pantalla sin añadir un nodo, y
+   por eso se reserva a lo más raro. Seis píxeles, no un terremoto: el suelo de
+   la retícula es de cuatro. */
+@keyframes zona-sacude {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(-6px, 2px);
+  }
+  30% {
+    transform: translate(6px, -2px);
+  }
+  45% {
+    transform: translate(-4px, -2px);
+  }
+  60% {
+    transform: translate(4px, 2px);
+  }
+  80% {
+    transform: translate(-2px, 0);
+  }
+}
+.zona-juego.zona-juego--sacude {
+  animation: zona-sacude 1200ms steps(12, end) 1;
 }
 
 /* ── Movimiento reducido: SIEMPRE al final del fichero ──────────────────────
@@ -2885,7 +2762,7 @@ button:focus:not(:focus-visible) {
    sigue valiendo si mañana esto se escribe de otra manera.
    ────────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .particula.particula--viva, .criatura--flota, .criatura--saltito, .criatura--asiente, .criatura--gotea, .criatura--gira, .nube, .veta--musgo, .btn-bloque--monta, .btn-bloque--destello, .reloj__arena.reloj__arena--voltea, .reloj .reloj__chorro, .reloj--prisa .reloj__arena, .reloj__cifra.reloj__cifra--late, .cinta.cinta--entra, .cinta--prisa.cinta--entra .cinta__texto {
+  .particula.particula--viva, .criatura--flota, .criatura--saltito, .criatura--asiente, .criatura--gotea, .criatura--gira, .nube, .veta--musgo, .btn-bloque--monta, .btn-bloque--destello, .reloj__arena.reloj__arena--voltea, .reloj .reloj__chorro, .reloj--prisa .reloj__arena, .reloj__cifra.reloj__cifra--late, .cinta.cinta--entra, .cinta--prisa.cinta--entra .cinta__texto, .insignia.insignia--brota, .cartel.cartel--brota, .zona-juego.zona-juego--sacude {
     animation: none !important;
   }
   /* Sin animación, los botones aparecerían grises y cambiarían de color de golpe */
@@ -2908,8 +2785,26 @@ button:focus:not(:focus-visible) {
     transform: none;
     opacity: 1;
   }
+  /* Y lo mismo para los otros vehículos de celebración: el «+1» y el cartel se
+     quedan quietos, pero se VEN. */
+  .insignia.insignia--brota {
+    transform: none;
+    opacity: 1;
+  }
+  .cartel.cartel--brota {
+    transform: translateX(-50%);
+    opacity: 1;
+  }
+  /* La sacudida del bloque raro es la única cuya informacion ESTÁ en el
+     movimiento: sin temblor no queda nada que ver. Se sustituye por un marco de
+     oro, que es estático y dice lo mismo — «aquí ha pasado algo». Sin desenfoque
+     y sin radio, como todo. */
+  .zona-juego.zona-juego--sacude {
+    transform: none;
+    box-shadow: inset 0 0 0 8px var(--deco-oro);
+  }
 }
-:root.sin-movimiento .particula.particula--viva, :root.sin-movimiento .criatura--flota, :root.sin-movimiento .criatura--saltito, :root.sin-movimiento .criatura--asiente, :root.sin-movimiento .criatura--gotea, :root.sin-movimiento .criatura--gira, :root.sin-movimiento .nube, :root.sin-movimiento .veta--musgo, :root.sin-movimiento .btn-bloque--monta, :root.sin-movimiento .btn-bloque--destello, :root.sin-movimiento .reloj__arena.reloj__arena--voltea, :root.sin-movimiento .reloj .reloj__chorro, :root.sin-movimiento .reloj--prisa .reloj__arena, :root.sin-movimiento .reloj__cifra.reloj__cifra--late, :root.sin-movimiento .cinta.cinta--entra, :root.sin-movimiento .cinta--prisa.cinta--entra .cinta__texto {
+:root.sin-movimiento .particula.particula--viva, :root.sin-movimiento .criatura--flota, :root.sin-movimiento .criatura--saltito, :root.sin-movimiento .criatura--asiente, :root.sin-movimiento .criatura--gotea, :root.sin-movimiento .criatura--gira, :root.sin-movimiento .nube, :root.sin-movimiento .veta--musgo, :root.sin-movimiento .btn-bloque--monta, :root.sin-movimiento .btn-bloque--destello, :root.sin-movimiento .reloj__arena.reloj__arena--voltea, :root.sin-movimiento .reloj .reloj__chorro, :root.sin-movimiento .reloj--prisa .reloj__arena, :root.sin-movimiento .reloj__cifra.reloj__cifra--late, :root.sin-movimiento .cinta.cinta--entra, :root.sin-movimiento .cinta--prisa.cinta--entra .cinta__texto, :root.sin-movimiento .insignia.insignia--brota, :root.sin-movimiento .cartel.cartel--brota, :root.sin-movimiento .zona-juego.zona-juego--sacude {
   animation: none !important;
 }
 
@@ -2934,6 +2829,27 @@ button:focus:not(:focus-visible) {
 :root.sin-movimiento .cinta.cinta--entra {
   transform: none;
   opacity: 1;
+}
+
+/* Y lo mismo para los otros vehículos de celebración: el «+1» y el cartel se
+   quedan quietos, pero se VEN. */
+:root.sin-movimiento .insignia.insignia--brota {
+  transform: none;
+  opacity: 1;
+}
+
+:root.sin-movimiento .cartel.cartel--brota {
+  transform: translateX(-50%);
+  opacity: 1;
+}
+
+/* La sacudida del bloque raro es la única cuya informacion ESTÁ en el
+   movimiento: sin temblor no queda nada que ver. Se sustituye por un marco de
+   oro, que es estático y dice lo mismo — «aquí ha pasado algo». Sin desenfoque
+   y sin radio, como todo. */
+:root.sin-movimiento .zona-juego.zona-juego--sacude {
+  transform: none;
+  box-shadow: inset 0 0 0 8px var(--deco-oro);
 }
 
 /* ============================================================================
@@ -2983,18 +2899,26 @@ button:focus:not(:focus-visible) {
   background: var(--cielo-0);
 }
 
-/* La .cinta se excluye de las dos reglas: es lo ÚNICO que va superpuesto sobre
-   la zona de juego en vez de dentro del flujo. Sin excluirla, el
-   `position: relative` de aquí le ganaba a su `position: absolute` por orden de
-   cascada (misma especificidad, este fichero va después), su `top: 38%` pasaba
-   a ser un desplazamiento relativo y el cartel aparecía 250 px por debajo del
-   borde inferior de la pantalla. Es decir: no se veía, y nada fallaba. */
-.pantalla > *:not(.cielo):not(.cinta) {
+/* La .cinta y el .cartel se excluyen de las dos reglas: son lo ÚNICO que va
+   superpuesto sobre la zona de juego en vez de dentro del flujo. Sin excluirlos,
+   el `position: relative` de aquí le gana a su `position: absolute` por orden de
+   cascada (misma especificidad, este fichero va después), su `top` pasa a ser un
+   desplazamiento relativo y el cartel aparece cientos de píxeles por debajo del
+   borde inferior de la pantalla. Es decir: no se ve, y nada falla.
+
+   ESTO SE VOLVIÓ A ROMPER al añadir el cartel en 1.8.1: se le puso `absolute` y
+   se olvidó apuntarlo aquí, y quedó a 887 px de altura, fuera de la vista, con
+   la suite entera en verde. Lo cazó mirar la pantalla, no una prueba — que es la
+   lección E14-E17 otra vez. Ahora hay guardián (E47) que compara la `position`
+   calculada, así que la lista de exclusiones no puede volver a quedarse corta en
+   silencio. Quien añada un tercer superpuesto tiene que apuntarlo en LOS DOS
+   selectores de aquí abajo. */
+.pantalla > *:not(.cielo):not(.cinta):not(.cartel) {
   position: relative;
   z-index: 1;
 }
 
-.zona-juego > *:not(.cielo):not(.cinta) {
+.zona-juego > *:not(.cielo):not(.cinta):not(.cartel) {
   position: relative;
   z-index: 1;
 }

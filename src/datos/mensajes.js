@@ -336,9 +336,11 @@ CB.datos.MENSAJES.animo = []
    Por eso el grito es material NUEVO y no un trozo recortado del mensaje. Las
    84 plantillas de acierto y las 48 de ánimo no se tocan.
 
-   Los de ánimo van SIN exclamación y en otro registro: detrás de un fallo, un
-   cartel gritando se lee como burla. Se les aplican las mismas dos listas
-   negras que a todo lo demás (casos-mensajes.js, M5 y M6). */
+   SOLO HAY GRITOS DE ACIERTO. Los hubo de ánimo, y se retiran: detrás de un
+   fallo no se celebra, se acompaña, y el vehículo del ánimo pasó a ser Rocarr
+   asintiendo (js/30-ui.js). Sin cartel no hay dónde escribir un grito, y un dato
+   que no se pinta en ningún sitio acaba pareciendo que sí. Se les aplican las
+   mismas dos listas negras que a todo lo demás (casos-mensajes.js, M5 y M6). */
 CB.datos.MENSAJES.GRITOS = {
   acierto: [
     '¡Toma!', '¡Eso es!', '¡Ahí está!', '¡Bloque!', '¡Clavado!', '¡Se abre!',
@@ -346,11 +348,6 @@ CB.datos.MENSAJES.GRITOS = {
     '¡Limpio!', '¡Así se cava!', '¡Perfecto!', '¡Sigue!', '¡Correcto!',
     '¡Bien visto!', '¡Vamos!', '¡Otra veta!', '¡Chispa!', '¡Buen golpe!',
     '¡Ya está!', '¡Cristal!'
-  ],
-  animo: [
-    'Casi', 'Otra vez', 'Mira aquí', 'Con calma', 'Ya casi', 'Vuelve a mirar',
-    'Sin prisa', 'Un paso más', 'Prueba otra', 'Respira', 'Tú puedes',
-    'Vamos allá'
   ]
 };
 
