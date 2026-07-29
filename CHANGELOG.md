@@ -12,6 +12,77 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.14.0] — 2026-07-29
+
+**Segunda cifra: el combate del jefe gana lo que no tenía.** Fase 12 del plan. El perfil
+guardado no cambia.
+
+Ocho turnos en los que acertar hacía bajar un bloque, sonar y tirar partículas. **Nada
+más.**
+
+### Al acertar, silencio; al fallar, voz
+
+El único anuncio de todo el combate era el del fallo. Para un lector de pantalla eso es el
+reparto exactamente al revés: se calla lo que sale bien y se dice lo que sale mal. Ahora
+cada acierto anuncia «Ese bloque cae. Quedan N.» — «cae», nunca «daño»: aquí no se hace
+daño a nadie.
+
+### El intro del jefe no lo leía nadie
+
+Los cuatro `intro` —«Tronquete tiene cuatro ramas. Elige cuál talas primero.»— llevaban
+escritos desde siempre y no se pintaban en ningún sitio. Van a `#jefe-aviso` y **no** a
+`#jefe-enunciado`: `iniciar()` llama a `turno()` en su última línea y `turno()` empieza
+vaciando el enunciado, así que ahí el intro habría durado cero milisegundos.
+
+### Una cinta por combate, y en el sitio justo
+
+Cuando la armadura se parte por la mitad. **Una vez, no cada turno** —el espectáculo es
+inversamente proporcional a la frecuencia— y no en el último bloque, que cancelaría la
+`'bandera'` del final. La espera del turno siguiente la manda la tabla del festejo y no un
+900 copiado a mano: sin eso el cartel seguiría en pantalla mientras aparece la pregunta
+nueva.
+
+**Descartado**: el distintivo «sin un fallo» encendido durante el combate. Es la racha que
+se pierde, patrón oscuro que este proyecto declara prohibido, y contradice la regla del
+propio jefe: aquí no se puede perder nada.
+
+### `jefeSinFallos` era una escritura muerta
+
+Se escribía en el combate, se declaraba en tres sitios del esqueleto del perfil y **no lo
+leía nadie en todo el proyecto**. Se lee ahora en la tarjeta del mundo, como recuerdo
+retrospectivo: «cerrado sin un fallo». No se enseña durante el combate, así que no fabrica
+miedo.
+
+### La victoria sonaba a jefe
+
+`terminar()` **no cambia de pantalla**: pinta la victoria encima de `p-jefe`. Como la
+música la manda el bus y el bus solo habla al cambiar de pantalla, seguía sonando el tema
+del peligro en el único instante que el juego se reserva para pararlo todo — cuatro veces
+en la vida de un perfil.
+
+Es **la única excepción del juego** a que la música la mande el bus, y va anotada como tal
+en la tabla de `07-musica.js`, en `CLAUDE.md` y en `docs/decisiones.md`. Si no, el próximo
+que lea la tabla la creerá completa. El siguiente cambio de pantalla repone el tema solo.
+
+### Pruebas: 658 → 673
+
+**E77**, **E78** y **E79**, los tres con el estado construido por `CB.jefes.iniciar()` de
+verdad — este proyecto ya se comió una vez el fabricar la forma del estado a mano.
+
+E78 se puso rojo contra código correcto: `responder()` programa `turno()` con `setTimeout`
+y `terminar()` solo se llama desde `turno()`, así que un bucle síncrono de respuestas baja
+los bloques a cero y **no termina nunca el combate**. Ahora conduce el turno a mano.
+
+### Nota de método
+
+El tiempo de la suite cayó de 56 s a 905 ms **con más comprobaciones**, y eso no se dio por
+bueno: se comprobó que las 55 suites registradas eran las 55 renderizadas y los 673 casos,
+los 673. Los 56 s eran la pestaña **en segundo plano**, con Chrome estrangulando los
+`setTimeout` que encadenan las suites. Es la trampa que este proyecto ya tenía documentada,
+vista por primera vez desde el otro lado.
+
+---
+
 ## [1.13.0] — 2026-07-29
 
 **Segunda cifra: el perfil gana una clave aditiva.** Fase 11 del plan. `asegurar()` la

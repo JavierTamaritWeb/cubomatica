@@ -43,12 +43,12 @@ Both need `npm run build` first; without it they say so instead of hanging on "P
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **658 checks, 0 failures** (deterministic).
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **673 checks, 0 failures** (deterministic).
 - **The page auto-runs on load.** Filtering `CB.pruebas.suites` while that run is in flight truncates the list *mid-race*: the runner stops early and prints a green summary for a subset — 248/0 instead of 489. Wait for the `· NNNN ms` suffix before touching the array.
 - **Serve the test pages with `Cache-Control: no-store`.** Chrome will happily reuse a cached `dist/js/cubomatica.js` or `casos-*.js` across a reload, so a green summary can be measuring code from three edits ago — and the check count won't necessarily change, which is what makes it invisible. Before trusting a run, assert something about the bundle you just built (`/paso <= 20/.test(String(CB.jefes.opciones))`, a function that should now exist) rather than assuming the reload did it.
 - **Run it in a foreground tab.** Chrome throttles `setTimeout` in a background tab, and the suites are chained with `setTimeout(…, 0)`: backgrounded, a 10 s run stretches past 80 s or stalls outright. A partial `resumen` is easy to mistake for a finished one — the `· NNNN ms` suffix is only appended when the last suite ends, so a summary without it is still running.
 
-**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all seventy-six found so far (E1-E76) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
+**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all seventy-nine found so far (E1-E79) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
 
 **Celebration is a table of vehicles, not a table of trajectories** (`CB.ui.festejo.CELEBRACIONES`, 1.8.1). 1.8.0 shipped nine choreographies that were all the same band — same width, same place, same type — and varying the path does not vary what a child recognises. Worse, the E47 guard written alongside it forbade any modifier from repositioning the band, so the monotony was *held in place by a test*. When a check blocks the fix, the check is part of the bug. The rule that orders the table only works once the vehicle differs: spectacle is inversely proportional to frequency, so the 60 %-case is a one-line `+1` beside the gem counter and the band is reserved for three rare moments.
 
@@ -143,7 +143,7 @@ Changing any of these numbers means changing the test that asserts it, on purpos
 
 `js/04-audio.js` synthesises 12 SFX through Web Audio. `js/07-musica.js` plays 9 MP3s through `<audio>` elements, because putting a file into an `AudioContext` needs `decodeAudioData()` on an `ArrayBuffer` — i.e. `fetch()` — which `file://` blocks. The two paths never meet, so **`CB.audio.silenciar()` reaches the music by hand**; that call is the only seam and must stay.
 
-Music is driven off `CB.bus.emitir('pantalla', id)`, emitted by `CB.pantallas.ir()`, `atras()` and `fallo()`. All 17 screens are in `CB.musica.PANTALLAS`, `null` meaning deliberate silence, so adding a screen and forgetting the music is a test failure rather than a silence nobody notices.
+Music is driven off `CB.bus.emitir('pantalla', id)`, emitted by `CB.pantallas.ir()`, `atras()` and `fallo()` — with **one deliberate exception**: `CB.jefes.terminar()` calls `CB.musica.poner('victoria')` directly, because it paints the victory *on top of* `p-jefe` without changing screen, so the bus never fires and the boss theme would keep playing through the one moment the game reserves for stopping everything. It is annotated in the table in `07-musica.js` and in `docs/decisiones.md`; the next screen change restores the theme by itself. All 17 screens are in `CB.musica.PANTALLAS`, `null` meaning deliberate silence, so adding a screen and forgetting the music is a test failure rather than a silence nobody notices.
 
 ## Accessibility constraints that are legal, not preferences
 

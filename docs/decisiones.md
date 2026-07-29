@@ -2901,3 +2901,62 @@ ya funcionaba.
 | Fallos registrados | E1–E73 | **E1–E76** |
 | Fases del plan ejecutadas | 5 de 10 | **6 de 10** (6 a 11) |
 | Textos que prometen de más | 3 | **0** |
+
+---
+
+# Ronda 19 · Fase 12 del plan: el jefe — versión 1.14.0 (29 de julio de 2026)
+
+## D-R19-1 · La única excepción a que la música la mande el bus
+
+`CB.jefes.terminar()` llama a `CB.musica.poner('victoria')` directamente. Es el único sitio
+del juego donde la música no viene de `CB.bus.emitir('pantalla', …)`, y se hace a propósito:
+`terminar()` **no cambia de pantalla**, pinta la victoria encima de `p-jefe`, así que el bus
+no llega a hablar y el tema del jefe seguiría sonando mientras el mundo se cierra.
+
+Está anotado en tres sitios —la tabla de `07-musica.js`, `CLAUDE.md` y aquí— y el motivo de
+anotarlo tres veces es concreto: **una tabla que se lee como completa y no lo es miente más
+que no tenerla**. `CB.musica.PANTALLAS` sigue con sus 17 entradas y el contrato de
+`casos-musica.js` intacto; lo que cambia es que ya no es la única fuente.
+
+## D-R19-2 · Lo que se descartó, y no por barato
+
+El distintivo «sin un fallo» encendido durante el combate se descartó **aunque era trivial
+de implementar**. Es literalmente la racha que se pierde: un contador que solo puede ir a
+peor, mirándose durante ocho turnos. Este proyecto lo tiene declarado como patrón oscuro
+prohibido, y además contradice la regla escrita en la cabecera del propio fichero del jefe:
+aquí no se puede perder nada.
+
+Se queda como **recuerdo retrospectivo** en la tarjeta del mundo. La misma información,
+después, sin fabricar miedo mientras se juega.
+
+## D-R19-3 · Un guardián rojo contra código correcto, por asincronía
+
+E78 falló al primer intento. `CB.jefes.responder()` programa `turno()` con `setTimeout`, y
+`terminar()` —que es quien escribe `jefeSinFallos`— **solo se llama desde `turno()`**. Un
+bucle síncrono de ocho respuestas baja los bloques a cero y no termina el combate jamás.
+
+Es una variante nueva del error de montaje: no es que el escenario tenga la forma
+equivocada, es que **el escenario no llega a completarse** porque el código real avanza por
+temporizador y la prueba va por bucle. Se conduce el turno a mano, que es lo que haría el
+temporizador.
+
+## D-R19-4 · Un verde que había que explicar antes de creérselo
+
+La suite pasó de 56 s a **905 ms con más comprobaciones**. Un salto así es sospechoso por
+definición, y la regla de esta casa es no dar por bueno un verde sin saber qué lo produjo.
+
+No era un atajo ni una suite perdida: 55 registradas, 55 renderizadas, 673 casos. Los 56 s
+eran **la pestaña en segundo plano**, con Chrome estrangulando a un tic por segundo los
+`setTimeout(…, 0)` que encadenan las suites — la trampa que `CLAUDE.md` ya documentaba, vista
+por primera vez desde el lado contrario: no una suite que se cuelga, sino una que parecía
+tardar y no tardaba.
+
+## Estado al cerrar 1.14.0
+
+| | 1.13.0 | 1.14.0 |
+|---|---|---|
+| Comprobaciones de la suite | 658 | **673** |
+| Fallos registrados | E1–E76 | **E1–E79** |
+| Fases del plan ejecutadas | 6 de 10 | **7 de 10** (6 a 12) |
+| Anuncios en el combate del jefe | solo el fallo | **acierto y fallo** |
+| Escrituras muertas en el perfil | 1 (`jefeSinFallos`) | **0** |

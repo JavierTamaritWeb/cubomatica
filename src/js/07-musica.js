@@ -59,7 +59,14 @@ CB.musica.PISTAS = {
    null  = silencio deliberado.
    La ausencia de una pantalla en esta tabla NO ocurre: están las 17, para que
    añadir una pantalla nueva y olvidarse de la música sea un fallo de prueba y
-   no un silencio que nadie note. 'p-partida' se resuelve por el mundo. */
+   no un silencio que nadie note. 'p-partida' se resuelve por el mundo.
+
+   HAY UNA EXCEPCIÓN, Y SOLO UNA. CB.jefes.terminar() llama a poner('victoria')
+   por su cuenta, sin pasar por el bus, porque NO cambia de pantalla: pinta la
+   victoria encima de p-jefe, y sin esa línea la música seguiría diciendo que hay
+   peligro justo cuando el mundo se cierra. Se anota aquí para que quien lea esta
+   tabla no la crea completa: lo es para el bus, no para todo el juego. La
+   decisión está en docs/decisiones.md. */
 CB.musica.PANTALLAS = {
   'p-portada':     'temaPrincipal',
   'p-perfiles':    'temaPrincipal',

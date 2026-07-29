@@ -64,8 +64,16 @@ CB.jefes.iniciar = function (mundoId) {
   if (n) n.textContent = mundo.jefe;
   var c = document.getElementById('jefe-criatura');
   if (c) c.textContent = def.icono;
+  /* EL INTRO DEL JEFE, que llevaba escrito desde siempre y no lo leía nadie. Va
+     en #jefe-aviso y NO en #jefe-enunciado: turno() se llama en la línea de
+     abajo y empieza vaciando el enunciado, así que ahí el intro habría durado
+     cero milisegundos. Es la familia E41 con una vuelta de tuerca: la función se
+     llamaba, el dato existía, y lo borraba el paso siguiente. */
   var av = document.getElementById('jefe-aviso');
-  if (av) av.textContent = 'Aquí no se apagan luces. Aquí solo se cavan bloques.';
+  if (av) {
+    av.textContent = (def && def.intro ? def.intro + ' ' : '') +
+                     'Aquí no se apagan luces. Aquí solo se cavan bloques.';
+  }
 
   CB.jefes.pintarArmadura();
   CB.jefes.turno();
@@ -226,10 +234,20 @@ CB.jefes.responder = function (correcto) {
   if (!e || e.respondido) return;
   e.respondido = true;
 
+  var mitad = false;
   if (correcto) {
     e.bloques--;
     CB.audio.sfx('picar');
     CB.ui.particulasDe(document.getElementById('jefe-armadura'), 'var(--deco-piedra)');
+    /* SIMETRÍA. El único anuncio del combate era el del fallo: para un lector de
+       pantalla, silencio al acertar y voz al fallar — el reparto exactamente al
+       revés. «Cae», nunca «daño»: aquí no se hace daño a nadie. */
+    CB.a11y.anunciar('Ese bloque cae. Quedan ' + e.bloques + '.');
+    /* UNA cinta por combate, cuando la armadura se parte por la mitad. Una vez y
+       no cada turno: el espectáculo es inversamente proporcional a la frecuencia.
+       Y no en el último bloque, que cancelaría la 'bandera' del final. */
+    mitad = (e.bloques === Math.floor(CB.jefes.BLOQUES / 2));
+    if (mitad) CB.ui.festejo.mostrar('superacion', '¡A la mitad!');
   } else {
     /* El fallo REPARA un bloque: alarga el combate, nunca lo pierde.
        CB.vidas.fallo() devuelve luces SIN CAMBIO en modo jefe. */
@@ -239,7 +257,11 @@ CB.jefes.responder = function (correcto) {
     CB.a11y.anunciar('Ese bloque vuelve a su sitio. Sigue intentándolo.');
   }
   CB.jefes.pintarArmadura();
-  setTimeout(function () { CB.jefes.turno(); }, 900);
+  /* La espera la manda la tabla del festejo, no un 900 copiado a mano: sin esto
+     el cartel de la mitad seguiría en pantalla mientras aparece la pregunta
+     nueva, porque el turno se repinta exactamente a los 900 ms. */
+  setTimeout(function () { CB.jefes.turno(); },
+             mitad ? CB.ui.festejo.espera('superacion', 900) : 900);
 };
 
 CB.jefes.terminar = function (porBloques) {
@@ -266,6 +288,15 @@ CB.jefes.terminar = function (porBloques) {
   /* La cinta más larga del juego, y puede permitírselo: se ve cuatro veces en
      toda la vida de un perfil, una por mundo. Trae su propio sonido. */
   CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
+  /* LA ÚNICA MÚSICA DEL JUEGO QUE NO MANDA EL BUS, y está anotada como excepción
+     en la tabla de 07-musica.js y en docs/decisiones.md. terminar() NO cambia de
+     pantalla: pinta la victoria encima de p-jefe, así que sin esta línea la
+     música seguiría diciendo que hay peligro en el único instante que el juego se
+     reserva para pararlo todo — cuatro veces en la vida de un perfil.
+
+     Va DESPUÉS de la cinta, que dispara su propio sfx('cofre'). El siguiente
+     emit del bus —«Volver al mapa»— repone el tema solo. */
+  CB.musica.poner('victoria');
   CB.almacen.guardarPerfil(perfil);
 
   var enun = document.getElementById('jefe-enunciado');

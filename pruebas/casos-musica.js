@@ -317,3 +317,48 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   CB.voz.cancelar();
   t.ok(CB.musica.agachada === false, 'cancelar la voz devuelve la música a su nivel');
 });
+
+/* ── E79 · La victoria del jefe suena a victoria ─────────────────────────────
+   CB.jefes.terminar() NO cambia de pantalla: pinta la victoria encima de p-jefe.
+   Como la música la manda el bus y el bus solo habla al cambiar de pantalla,
+   seguía sonando el tema del jefe en el único instante que el juego se reserva
+   para pararlo todo — cuatro veces en la vida de un perfil.
+
+   EL ESTADO SE CONSTRUYE CON CB.jefes.iniciar() DE VERDAD. Este fichero ya se
+   equivocó una vez fabricando a mano la forma del estado, y estuvo años de
+   acuerdo con el fallo que tenía que denunciar mientras tres de los cuatro temas
+   de mundo no sonaban nunca. No se vuelve a construir nada a mano aquí. */
+CB.pruebas.suite('E79 · al ganar al jefe, la música cambia a victoria', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  var perfil = CB.pruebas.perfilNuevo();
+  CB.perfil = perfil;
+
+  var puestas = [];
+  var ponerPrevio = CB.musica.poner;
+  CB.musica.poner = function (clave) { puestas.push(clave); return true; };
+
+  var e = CB.jefes.iniciar('M1');
+  if (!t.ok(!!e, 'E79 · el combate arranca con iniciar() de verdad')) {
+    CB.musica.poner = ponerPrevio; CB.perfil = perfilPrevio; return;
+  }
+  t.ok(!!e.mundo && !!e.mundo.bioma,
+    'E79 · y el estado trae el mundo real, no una forma fabricada a mano',
+    e.mundo ? e.mundo.id : 'sin mundo');
+
+  puestas.length = 0;
+  CB.jefes.terminar(true);
+  t.ok(puestas.indexOf('victoria') !== -1,
+    'E79 · terminar() pone la música de victoria', puestas.join(',') || 'ninguna');
+
+  /* Y el bus repone el tema al salir: la excepción es puntual, no permanente. */
+  CB.musica.poner = ponerPrevio;
+  CB.pantallas.ir('p-mapa');
+  t.igual(CB.musica.claveDePantalla('p-mapa'), 'temaPrincipal',
+    'E79 · y volver al mapa devuelve el tema principal');
+
+  CB.jefes.estado = null;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});

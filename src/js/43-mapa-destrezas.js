@@ -169,6 +169,15 @@ CB.mapaDestrezas.pintarMundos = function () {
         tarjeta.appendChild(CB.ui.boton(m.jefeIcono + ' Reto: ' + m.jefe, 'btn-bloque--ancho',
           function () { CB.jefes.iniciar(m.id); }));
       }
+
+      /* jefeSinFallos SE ESCRIBÍA Y NO LO LEÍA NADIE en todo el proyecto. Se lee
+         aquí, y solo aquí: es un RECUERDO retrospectivo, no una apuesta. Durante
+         el combate no se enseña, porque un distintivo que se puede perder es la
+         racha que se pierde, patrón oscuro que este proyecto declara prohibido —y
+         que además contradice la regla del jefe: aquí no se puede perder nada. */
+      if (estado.jefeSinFallos) {
+        tarjeta.appendChild(CB.ui.crear('span', 'distintivo', 'cerrado sin un fallo'));
+      }
     } else {
       tarjeta.appendChild(CB.ui.crear('p', 'texto-menor',
         'Se abre al cavar más vetas del mundo anterior.'));

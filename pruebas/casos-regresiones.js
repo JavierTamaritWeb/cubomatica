@@ -127,6 +127,10 @@
          distinto del que pinta el musgo en la Cantera
      E76 los cinco descansos se sorteaban CON reemplazo pese al     AQUÍ
          comentario que decía «en bolsa para que no se repitan»
+     E77 en el jefe solo se anunciaba el fallo: al acertar,        AQUÍ
+         silencio, y el intro del jefe no lo leía nadie
+     E78 jefeSinFallos se escribía y no lo leía nadie              AQUÍ
+     E79 la victoria del jefe sonaba a jefe                        casos-musica.js
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -2982,4 +2986,117 @@ CB.pruebas.suite('E76 · los cinco descansos no se repiten, y sobreviven al guar
 
   CB.partida.estado = null;
   CB.perfil = perfilPrevio;
+});
+
+/* ══ E77-E79 · Fase 12: ocho turnos sin celebrar nada ═══════════════════════ */
+
+CB.pruebas.suite('E77 · el jefe anuncia también los aciertos, y se presenta', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  var perfil = CB.pruebas.perfilNuevo();
+  CB.perfil = perfil;
+
+  var anuncios = [], cintas = [];
+  var anunciarPrevio = CB.a11y.anunciar;
+  var mostrarPrevio = CB.ui.festejo.mostrar;
+  CB.a11y.anunciar = function (txt) { anuncios.push(String(txt)); };
+  CB.ui.festejo.mostrar = function (clave, txt) { cintas.push(clave); return true; };
+
+  /* El estado lo construye CB.jefes.iniciar() de verdad. */
+  var e = CB.jefes.iniciar('M1');
+  if (!t.ok(!!e, 'E77 · el combate arranca')) {
+    CB.a11y.anunciar = anunciarPrevio; CB.ui.festejo.mostrar = mostrarPrevio;
+    CB.perfil = perfilPrevio; return;
+  }
+
+  /* EL INTRO SE COMPRUEBA DESPUÉS DE QUE turno() HAYA CORRIDO —iniciar() lo llama
+     en su última línea—, que es donde está la trampa: puesto en #jefe-enunciado,
+     turno() lo vacía y el intro dura cero milisegundos. */
+  var aviso = document.getElementById('jefe-aviso');
+  t.ok(!!aviso && aviso.textContent.indexOf(e.def.intro) !== -1,
+    'E77 · el intro del jefe sobrevive al primer turno',
+    aviso ? aviso.textContent : 'sin nodo');
+
+  /* Ocho aciertos: ocho anuncios con la cuenta correcta. */
+  anuncios.length = 0; cintas.length = 0;
+  var i, bloquesEsperados = [];
+  for (i = 0; i < CB.jefes.BLOQUES; i++) {
+    e.respondido = false;
+    CB.jefes.responder(true);
+    bloquesEsperados.push(CB.jefes.BLOQUES - 1 - i);
+  }
+
+  var conCuenta = anuncios.filter(function (a) { return /Ese bloque cae/.test(a); });
+  t.igual(conCuenta.length, CB.jefes.BLOQUES,
+    'E77 · cada acierto se anuncia, no solo los fallos', anuncios.join(' | '));
+  t.ok(conCuenta[0].indexOf(String(bloquesEsperados[0])) !== -1,
+    'E77 · y con la cuenta de bloques que queda', conCuenta[0]);
+  t.ok(anuncios.every(function (a) { return a.indexOf('daño') === -1; }),
+    'E77 · sin la palabra «daño»: aquí no se hace daño a nadie');
+
+  /* UNA cinta en todo el combate, no ocho. */
+  var deMitad = cintas.filter(function (c) { return c === 'superacion'; });
+  t.igual(deMitad.length, 1,
+    'E77 · la cinta de la mitad sale UNA vez por combate', cintas.join(','));
+
+  CB.a11y.anunciar = anunciarPrevio;
+  CB.ui.festejo.mostrar = mostrarPrevio;
+  CB.jefes.estado = null;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+CB.pruebas.suite('E78 · «cerrado sin un fallo» se lee de verdad', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+
+  function combate(fallar) {
+    var perfil = CB.pruebas.perfilNuevo();
+    CB.perfil = perfil;
+    /* M1 al 60 % para que la tarjeta muestre el reto y su distintivo. */
+    var nucleares = CB.catalogo.nuclearesDe('M1'), k;
+    for (k = 0; k < nucleares.length; k++) {
+      perfil.niveles[nucleares[k]] = { n: 10, aciertos: 10, caja: 3, D: 2,
+                                       ultimoISO: CB.util.hoyISO(), enPausa: false };
+    }
+    var e = CB.jefes.iniciar('M1');
+    if (!e) return null;
+    /* SE JUEGA DE VERDAD con responder(), no fijando el campo a mano: si se
+       fijara, el guardián nunca vería que responder dejó de ponerlo a false. */
+    /* SE CONDUCE EL TURNO A MANO. responder() programa turno() con setTimeout, y
+       terminar() solo se llama desde turno(): un bucle síncrono de responder()
+       baja los bloques a cero y NO TERMINA NUNCA el combate, así que
+       jefeSinFallos no llega a escribirse. La primera versión de este guardián
+       se puso roja por eso, contra código correcto. */
+    if (fallar) { CB.jefes.responder(false); CB.jefes.turno(); }
+    var i;
+    for (i = 0; i < 40 && CB.jefes.estado; i++) {
+      CB.jefes.responder(true);
+      CB.jefes.turno();
+    }
+    CB.jefes.estado = null;
+    return perfil;
+  }
+
+  var limpio = combate(false);
+  if (!t.ok(!!limpio, 'E78 · el combate limpio se juega')) { CB.perfil = perfilPrevio; return; }
+  t.igual(limpio.mundos.M1.jefeSinFallos, true, 'E78 · sin fallos queda anotado');
+  CB.perfil = limpio;
+  CB.mapaDestrezas.pintarMundos();
+  var textoLimpio = (document.getElementById('rejilla-mundos') || {}).textContent || '';
+  t.ok(/sin un fallo/.test(textoLimpio),
+    'E78 · y la tarjeta del mundo lo dice', textoLimpio.slice(0, 120));
+
+  var conFallo = combate(true);
+  t.igual(conFallo.mundos.M1.jefeSinFallos, false, 'E78 · con un fallo NO queda anotado');
+  CB.perfil = conFallo;
+  CB.mapaDestrezas.pintarMundos();
+  var textoFallo = (document.getElementById('rejilla-mundos') || {}).textContent || '';
+  t.ok(!/sin un fallo/.test(textoFallo),
+    'E78 · y la tarjeta no lo pone', textoFallo.slice(0, 120));
+
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
 });
