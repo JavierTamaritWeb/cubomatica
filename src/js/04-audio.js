@@ -99,7 +99,7 @@ CB.audio.ruido = function (cuando, duracion, frecFiltro, ganancia) {
   } catch (e) { }
 };
 
-/* ── Los 12 efectos ─────────────────────────────────────────────────────── */
+/* ── Los 13 efectos ─────────────────────────────────────────────────────── */
 CB.audio.EFECTOS = {
 
   acierto: function () {
@@ -132,6 +132,25 @@ CB.audio.EFECTOS = {
 
   /* «Toc» de madera del toque prematuro durante los 800 ms de construcción. */
   toc: function () { CB.audio.ruido(0, 0.05, 380, 0.22); },
+
+  /* ── EL CLIC DE PULSAR, y es el decimotercero ──────────────────────────────
+     Se pedía que todos los botones sonaran al pulsarse. Hasta ahora sonaba lo
+     que PASA —el acierto, el fallo, la gema, la luz— pero no el acto de tocar,
+     así que un botón de navegación, uno de ajustes o el de pausa se pulsaban en
+     silencio y no había forma de saber si el toque había entrado.
+
+     Este es el sonido más frecuente del juego con diferencia, y por eso es el
+     más corto y el más flojo de los trece: 35 ms y ganancia 0,12, contra los
+     0,22 del «toc». Un clic que se oye tanto como una celebración deja de ser
+     información y pasa a ser ruido — la misma regla que ordena las
+     celebraciones, aplicada al sonido.
+
+     Y suena DISTINTO del «toc»: el «toc» es ruido filtrado grave —«aún no»— y
+     esto es una nota corta y clara —«sí»—. Que se distingan importa: son las dos
+     respuestas posibles a la misma acción. */
+  pulsar: function () {
+    CB.audio.nota(CB.audio.NOTAS.do5, 0, 0.035, 'square', 0.12);
+  },
 
   gema: function () {
     CB.audio.nota(CB.audio.NOTAS.la5, 0, 0.07, 'sine', 0.18);

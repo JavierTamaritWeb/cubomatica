@@ -15,6 +15,7 @@ const { src, dest, series, parallel, watch } = require('gulp');
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
+const http = require('node:http');   /* solo para el servidor de pruebas de `gulp dev` */
 
 const concat = require('gulp-concat');
 /* gulp-sass no trae compilador: hay que pasárselo. sass-embedded es dart-sass
@@ -306,11 +307,120 @@ async function sw() {
   console.log('  sw: version ' + version + ', huella ' + huella);
 }
 
+/* ── LOS DOS SERVIDORES DE DESARROLLO, Y POR QUE SON DOS ─────────────────────
+
+   8080 · EL JUEGO, con recarga en vivo. Lo sirve browser-sync desde dist/ e
+          inyecta su cliente en el HTML para poder recargar solo.
+
+   8081 · LAS PRUEBAS, sin tocar nada. Un servidor estatico de veinte lineas
+          sobre la raiz del repositorio, para que /pruebas/pruebas.html encuentre
+          su ../dist/js/cubomatica.js.
+
+   Podrian ser uno, y se intento: browser-sync inyecta su cliente como un <script>
+   mas en CADA html que sirve, y `casos-carga.js` comprueba —con razon— que la
+   pagina de pruebas cargue UN SOLO guion, el bundle de dist/ y nada mas. Con la
+   inyeccion puesta, la suite decia «obtenido 2, esperado 1» y señalaba a
+   browser-sync-client.js. Su `snippetOptions.blacklist` deberia excluir una ruta;
+   con este browser-sync apaga la inyeccion ENTERA, y entonces lo que se pierde es
+   la recarga del juego, que es justo lo que se venia a ganar.
+
+   Asi que la comprobacion se queda como esta —el dia que alguien vuelva a partir
+   el juego en 45 <script> sueltos tiene que ponerse rojo— y lo que se separa son
+   los servidores. Cada uno hace una cosa y ninguno estorba al otro.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* SIN CACHE, Y NO ES PARANOIA. Chrome reutiliza alegremente un
+   `dist/js/cubomatica.js` de hace tres ediciones: la pagina recarga, el numero de
+   comprobaciones no cambia, y lo verde que sale mide codigo viejo. Es el modo de
+   fallo mas caro que tiene este proyecto, porque no se distingue de funcionar. */
+function sinCache(req, res, siguiente) {
+  res.setHeader('Cache-Control', 'no-store, must-revalidate');
+  siguiente();
+}
+
+/* ── EL SERVICE WORKER, DESARMADO EN DESARROLLO ──────────────────────────────
+   Este es EL motivo por el que `npm run dev` podia recompilar, recargar y seguir
+   enseñando el bundle anterior. `dist/index.html` registra un service worker que
+   cachea el armazon con politica cache-first (js/45-offline.js): en cuanto se
+   instala una vez, deja de importar lo que diga el servidor, sirve su copia.
+   Guardas, gulp recompila, browser-sync recarga, y en pantalla no cambia nada.
+   Es la version local del riesgo R7 —«el SW sirve una version vieja para
+   siempre»— que el plan preveia para un aula de 25 aparatos.
+
+   La respuesta es un sw.js que se suicida: se instala, borra TODAS las caches, se
+   da de baja y renavega las pestañas abiertas. La primera carga tras arrancar
+   `npm run dev` limpia lo que hubiera registrado, y a partir de ahi manda el
+   servidor.
+
+   PARA PROBAR EL SERVICE WORKER DE VERDAD: `CON_SW=1 npm run dev`. Sin esa
+   salida no se podria comprobar el modo sin conexion, que es una funcion
+   entregada y hay que poder mirarla. */
+const SW_SUICIDA = [
+  "self.addEventListener('install', function () { self.skipWaiting(); });",
+  "self.addEventListener('activate', function (ev) {",
+  "  ev.waitUntil(caches.keys()",
+  "    .then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); })",
+  "    .then(function () { return self.registration.unregister(); })",
+  "    .then(function () { return self.clients.matchAll(); })",
+  "    .then(function (cs) { cs.forEach(function (c) { c.navigate(c.url); }); }));",
+  "});",
+].join('\n');
+
+function swDesarmado(req, res, siguiente) {
+  if (process.env.CON_SW === '1') return siguiente();
+  if (req.url.split('?')[0] !== '/sw.js') return siguiente();
+  res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(SW_SUICIDA);
+}
+
+const TIPOS_DEV = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
+  '.md': 'text/plain; charset=utf-8',
+  '.mp3': 'audio/mpeg',
+  '.webmanifest': 'application/manifest+json',
+};
+
+/* El servidor de las pruebas. Sin dependencias y sin inyectar nada: lo que llega
+   al navegador es exactamente el fichero del disco. */
+function servidorPruebas(cb) {
+  const raiz = path.resolve('.');
+  http.createServer((req, res) => {
+    const rel = decodeURIComponent(req.url.split('?')[0]);
+    const f = path.join(raiz, rel);
+    if (!f.startsWith(raiz) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('no existe: ' + rel);
+      return;
+    }
+    res.writeHead(200, {
+      'Content-Type': TIPOS_DEV[path.extname(f)] || 'application/octet-stream',
+      'Cache-Control': 'no-store, must-revalidate',
+    });
+    fs.createReadStream(f).pipe(res);
+  }).listen(8081, cb);
+}
+
 function servidor(cb) {
   navegador.init({
-    server: { baseDir: RUTAS.salida },
+    server: { baseDir: RUTAS.salida, middleware: [sinCache, swDesarmado] },
     open: false, notify: false, ghostMode: false, port: 8080,
   });
+  console.log('');
+  console.log('  juego (recarga sola):  http://localhost:8080/');
+  console.log('  pruebas:               http://localhost:8081/pruebas/pruebas.html');
+  console.log('  pruebas minificadas:   http://localhost:8081/pruebas/pruebas-min.html');
+  console.log('  las dos paginas de prueba se recargan a mano (F5): no se les');
+  console.log('  inyecta nada, para que sigan cargando un solo guion y nada mas.');
+  if (process.env.CON_SW === '1') {
+    console.log('  CON_SW=1: el service worker REAL esta activo; los cambios pueden');
+    console.log('            tardar en verse porque su cache manda sobre el servidor.');
+  }
+  console.log('');
   cb();
 }
 
@@ -324,6 +434,14 @@ function vigilar(cb) {
   watch(RUTAS.estilos, recarga(series(estilos, sw, huellas)));
   watch(RUTAS.guiones, recarga(series(guiones, sw)));
   watch([RUTAS.html, FUENTE + '/sw.plantilla.js'], recarga(series(html, sw)));
+  /* Las pruebas NO se compilan: los casos-*.js y las dos paginas se sirven tal
+     cual desde la raiz. No hay nada que reconstruir, solo que recargar — y sin
+     esto habia que darle a F5 a mano despues de cada guardado, que es la razon
+     por la que se acababa mirando una suite de hace dos ediciones. */
+  watch(['pruebas/*.js', 'pruebas/*.html'], (f) => {
+    console.log('  pruebas: cambio detectado — recarga la pestaña de 8081 (F5)');
+    f();
+  });
   cb();
 }
 
@@ -333,7 +451,7 @@ const guiones = parallel(guionesDev, guionesMin);
 /* html va DESPUES del resto: en la fase 8 el service worker necesita el HTML, el
    CSS y el JS ya escritos en disco para calcular la huella sha1 del armazon. */
 const build = series(limpiar, parallel(estilos, guiones, estaticos), html, sw, huellas);
-const dev = series(build, parallel(servidor, vigilar));
+const dev = series(build, parallel(servidor, servidorPruebas, vigilar));
 
 exports.limpiar = limpiar;
 exports.estilos = estilos;

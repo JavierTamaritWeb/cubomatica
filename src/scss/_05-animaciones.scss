@@ -225,6 +225,36 @@
 
 
 
+/* 5 · SUBE — se ha terminado una veta y empieza otra. Sube UN PELDAÑO cada vez,
+   y se para en cada uno: tres plataformas visibles, no un deslizamiento. Esa es
+   toda la idea de la forma —subir un escalón— y es lo que la distingue de
+   `prisa`, que también va de abajo arriba pero de un tirón y sin pararse.
+
+   No lleva rebote ni cambio de escala: no está celebrando un acierto, está
+   diciendo dónde estamos. La fiesta del acierto ya ha pasado hace un segundo y
+   media, y dos fiestas seguidas no son el doble de fiesta. */
+/* LOS TRES PELDAÑOS CABEN EN 28 %, y no es una elección estética: por debajo del
+   30 % de la altura empieza la zona con la que se contesta, y E47 prohíbe que
+   ningún fotograma VISIBLE baje de ahí. La primera versión de esta coreografía
+   entraba desde el 180 % y se paraba en el 120 y en el 60 —es decir, se sentaba
+   encima del teclado durante más de medio segundo—, y el guardián la paró antes
+   de que llegara a la pantalla. El tramo que sí baja del tope es el 0 %, que va
+   con opacidad 0: por debajo de la zona de respuesta solo se puede estar
+   invisible. */
+@keyframes cinta-sube {
+  0%   { transform: translateY(56%); opacity: 0; }
+  12%  { transform: translateY(28%); opacity: 1; }
+  28%  { transform: translateY(28%); opacity: 1; }
+  44%  { transform: translateY(14%); opacity: 1; }
+  60%  { transform: translateY(14%); opacity: 1; }
+  74%  { transform: translateY(0);   opacity: 1; }
+  94%  { transform: translateY(0);   opacity: 1; }
+  100% { transform: translateY(0);   opacity: 0; }
+}
+.cinta--sube.cinta--entra { @include coreografia('cinta-sube', 12); }
+
+
+
 /* 7 · BANDERA — el jefe cede y el mundo queda cerrado. Se despliega a lo ancho,
    como una tela que se estira desde el centro. Se ve una vez por mundo: cuatro
    veces en toda la vida de un perfil, y por eso puede permitirse ser la más
@@ -238,6 +268,21 @@
   100% { transform: scaleX(1) scaleY(1);   opacity: 0; }
 }
 .cinta--bandera.cinta--entra { @include coreografia('cinta-bandera', 14); }
+
+/* ── LA CIFRA DEL MARCADOR ──────────────────────────────────────────────────
+   Acompaña a la cuenta de js/30-ui.js: mientras el número sube de uno en uno, la
+   cifra da un salto y vuelve. Cuatro pasos, 400 ms — más corto que la cuenta, a
+   propósito: lo que tiene que durar es el número cambiando, no el brinco.
+
+   No cambia de color: el marcador está sobre --bg-texto-oscuro y cualquier tono
+   nuevo sería un par de contraste que nadie ha medido. La señal es de forma. */
+@keyframes cifra-sube {
+  0%   { transform: translateY(0) scale(1); }
+  30%  { transform: translateY(-4px) scale(1.35); }
+  60%  { transform: translateY(-2px) scale(1.12); }
+  100% { transform: translateY(0) scale(1); }
+}
+.cifra-viva.cifra-viva--sube { @include animar('cifra-sube', 400ms, 4, 1); }
 
 /* ── VEHÍCULO 2 · LA INSIGNIA ───────────────────────────────────────────────
    El acierto de todos los días. Brota del contador de gemas, sube un poco y se
@@ -306,11 +351,16 @@ $animados:
   '.nube', '.veta--musgo', '.btn-bloque--monta', '.btn-bloque--destello',
   '.reloj__arena.reloj__arena--voltea', '.reloj .reloj__chorro', '.reloj--prisa .reloj__arena',
   '.reloj__cifra.reloj__cifra--late',
-  /* UNA entrada cubre las tres coreografías de cinta: todas se disparan con la
-     misma clase. Los otros vehículos sí necesitan la suya, porque son elementos
-     distintos; olvidarse de apuntar uno aquí es exactamente cómo nació E25. */
+  /* UNA entrada cubre las cuatro coreografías de cinta: todas se disparan con la
+     misma clase, y por eso añadir la cuarta (`sube`, 1.18.0) no ha hecho falta
+     tocar esta lista. Los otros vehículos sí necesitan la suya, porque son
+     elementos distintos; olvidarse de apuntar uno aquí es cómo nació E25. */
   '.cinta.cinta--entra', '.cinta--prisa.cinta--entra .cinta__texto',
   '.insignia.insignia--brota', '.cartel.cartel--brota',
+  /* El salto de la cifra se apaga; la cifra NO. Con el movimiento apagado,
+     js/30-ui.js escribe directamente el número final en vez de contarlo, así que
+     la puntuación sigue estando entera: se quita el movimiento, no el dato. */
+  '.cifra-viva.cifra-viva--sube',
   '.zona-juego.zona-juego--sacude';
 
 @media (prefers-reduced-motion: reduce) {

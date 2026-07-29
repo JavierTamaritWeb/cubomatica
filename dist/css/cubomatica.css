@@ -1247,6 +1247,12 @@ button:focus:not(:focus-visible) {
   animation: parpadeo-gris 200ms steps(2, end) 1;
 }
 
+/* La cifra que sube. `inline-block` no es cosmético: un <span> en flujo de línea
+   ignora `transform`, así que sin esto el salto no se ve y nada falla. */
+.cifra-viva {
+  display: inline-block;
+}
+
 @keyframes parpadeo-gris {
   0%, 100% {
     opacity: 1;
@@ -1300,6 +1306,22 @@ button:focus:not(:focus-visible) {
     grid-template-columns: repeat(4, var(--lado));
   }
 }
+/* ── Cuando las opciones SON piezas de dinero ───────────────────────────────
+   La pregunta de reconocer una moneda o un billete pinta las cuatro opciones con
+   la forma que tienen —el cuadrado de oro y el rectángulo verde—, y esas formas
+   traen su propio tamaño: 72×72 y 128×64. Las columnas de --lado-respuesta valen
+   64 px en la pantalla más estrecha, así que un billete desbordaría su celda.
+   Aquí el ancho lo manda el contenido.
+
+   VA DESPUÉS DE LAS DOS CONSULTAS DE ARRIBA A PROPÓSITO: las dos reescriben
+   `grid-template-columns` de `.rejilla-respuestas` y tienen la misma
+   especificidad que esta, así que lo único que decide es el orden. Con las
+   piezas se queda en dos columnas también en apaisado y en el portátil, porque
+   cuatro billetes en fila no caben en ninguna de las dos. */
+.rejilla-respuestas--dinero {
+  grid-template-columns: repeat(2, auto);
+}
+
 /* ── Teclado de bloques 3×4 ─────────────────────────────────────────────── */
 .teclado-bloques {
   display: grid;
@@ -1459,6 +1481,18 @@ button:focus:not(:focus-visible) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* EL DIBUJO SE ESTIRA A LA PIEZA, y el color plano se queda debajo: si
+     js/03-sprites.js no llegara a ejecutarse —o si el SVG no se pudiera
+     codificar— la pieza sigue teniendo su color y su tamaño, que ya la
+     distinguen. Misma red de seguridad que las ocho texturas del terreno.
+
+     La CIFRA no está en el dibujo: la escribe el DOM encima, para que crezca con
+     `letra-grande` y con `modo-proyeccion` y para que siga midiéndose en los
+     pares de contraste. Por eso el motivo del SVG deja libre la franja central,
+     que es donde cae el texto. */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
   font-family: var(--fuente-pixel);
   font-size: var(--tam-texto-min);
   color: var(--texto-principal);
@@ -1473,15 +1507,95 @@ button:focus:not(:focus-visible) {
   box-shadow: inset 6px 6px 0 0 var(--deco-oro-cla), inset -6px -6px 0 0 var(--deco-oro-osc);
 }
 
+/* ── LAS DOS MONEDAS SON BIMETÁLICAS, Y DEL REVÉS UNA DE OTRA ────────────────
+   Antes las dos eran el mismo cuadrado de oro con un número distinto dentro, así
+   que lo único que las diferenciaba era la cifra — y en la pregunta cuyo objeto
+   es reconocerlas, leer la cifra es justamente lo que no se quiere que baste.
+
+   Las de verdad se distinguen así: la de 1 € lleva el aro dorado y el centro
+   plateado; la de 2 €, el aro plateado y el centro dorado. Es la diferencia que
+   usa cualquiera para separarlas en la mano sin mirar el número, y aquí se
+   dibuja con un aro `inset` de desenfoque cero, que pasa la regla dura.
+
+   NO HAY IMÁGENES en el proyecto: la auditoría no admite un solo fichero
+   binario y todo se abre desde file://. Estas piezas se dibujan como se dibuja
+   el reloj de arena o el terreno. Y no son facsímiles de nada: son cuadrados de
+   colores con una cifra, no reproducciones de moneda. */
+.moneda[data-valor="1"] {
+  background-image: var(--pieza-1);
+  background-color: var(--deco-piedra-cla); /* centro plateado */
+  box-shadow: inset 6px 6px 0 0 var(--deco-oro-cla), inset -6px -6px 0 0 var(--deco-oro-osc), inset 0 0 0 14px var(--deco-oro); /* aro dorado */
+}
+
+.moneda[data-valor="2"] {
+  background-image: var(--pieza-2);
+  background-color: var(--deco-oro); /* centro dorado */
+  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-piedra-osc), inset 0 0 0 14px var(--deco-piedra-cla); /* aro plateado */
+}
+
 .moneda[data-material=cobre] {
   background: var(--deco-cobre);
   box-shadow: inset 6px 6px 0 0 var(--deco-cobre-cla), inset -6px -6px 0 0 var(--deco-cobre-osc);
 }
 
 .billete {
-  width: 128px;
+  width: 112px;
   height: 64px;
   background: var(--deco-hierba-cla);
+  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-hierba-osc);
+}
+
+/* ── CADA BILLETE, DE SU COLOR Y DE SU TAMAÑO ────────────────────────────────
+   Los cinco eran verdes y del mismo ancho: cinco rectángulos idénticos con un
+   número. Los de verdad se reconocen por el color antes que por la cifra —gris
+   el de 5, rojo el de 10, azul el de 20, naranja el de 50, verde el de 100— y
+   además crecen con el valor, que es una pista de tamaño que un niño de siete
+   años usa sin que nadie se la explique.
+
+   Cuatro de los cinco colores son los reales; el del 10 tira a cobre porque la
+   paleta de trece materiales no tiene un rojo y añadir uno reordenaría las 39
+   variables `--deco-*`, que son contrato.
+
+   NUNCA SOLO COLOR: cada billete lleva además su cifra escrita y su propio
+   ancho, así que quien no distinga los colores tiene otras dos señales. Los
+   cinco pares de contraste con --texto-principal están medidos en
+   casos-contraste.js, no supuestos.
+
+   Los anchos suben de ocho en ocho hasta 128, que es el tope: con dos columnas y
+   la retícula de las opciones, 128×2 + 16 de hueco caben en los 288 px útiles de
+   la pantalla más estrecha del proyecto. */
+.billete[data-valor="5"] {
+  width: 96px;
+  background-image: var(--pieza-5);
+  background-color: var(--deco-piedra-cla);
+  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-piedra-osc);
+}
+
+.billete[data-valor="10"] {
+  width: 104px;
+  background-image: var(--pieza-10);
+  background-color: var(--deco-cobre);
+  box-shadow: inset 6px 6px 0 0 var(--deco-cobre-cla), inset -6px -6px 0 0 var(--deco-cobre-osc);
+}
+
+.billete[data-valor="20"] {
+  width: 112px;
+  background-image: var(--pieza-20);
+  background-color: var(--deco-agua-cla);
+  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-agua-osc);
+}
+
+.billete[data-valor="50"] {
+  width: 120px;
+  background-image: var(--pieza-50);
+  background-color: var(--deco-brasa-cla);
+  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-brasa-osc);
+}
+
+.billete[data-valor="100"] {
+  width: 128px;
+  background-image: var(--pieza-100);
+  background-color: var(--deco-hierba-cla);
   box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-hierba-osc);
 }
 
@@ -1720,7 +1834,16 @@ button:focus:not(:focus-visible) {
   padding: var(--e3);
   font-size: var(--tam-texto-min);
   max-width: var(--ancho-lectura);
-  min-height: calc(var(--tam-texto-min) * 3);
+  /* TRES LÍNEAS, Y ANTES ERAN UNA. `box-sizing: border-box` es global, así que
+     los 60 px de `--tam-texto-min * 3` incluían los 32 de relleno: quedaban 28,
+     que es UNA línea. Y el `min-height` no solo es un suelo — bajo presión de
+     flex es también lo que permite que la caja se encoja hasta ahí, así que en
+     una ventana de portátil el mensaje se recortaba a la primera línea.
+
+     Lo que se perdía no era decoración: el mensaje de acierto lleva la frase de
+     procedimiento, que es la única parte que enseña algo. Se medía cuánto tiempo
+     hacía falta para leerla (1.15.0) sin comprobar que cupiera. */
+  min-height: calc(var(--tam-texto-min) * 3 + var(--e3) * 2);
 }
 
 .mensaje-resultado[data-tipo=acierto] {
@@ -1928,6 +2051,100 @@ button:focus:not(:focus-visible) {
   font-size: 34px;
 }
 
+/* ── EL RÓTULO DE VETA: en qué se está ──────────────────────────────────────
+   Una sola línea, y las dos partes se distinguen por FORMA, no por color: el
+   mundo va en versalitas espaciadas y pequeñas, la veta en la tipografía de
+   lectura al tamaño mínimo. Los dos colores son de los pares ya medidos sobre
+   fondo oscuro (--texto-claro y --texto-sec-claro), así que no aparece ningún
+   par de contraste nuevo que nadie haya verificado.
+
+   ALTURA: 20 px de texto + 2×4 de relleno = 28. Se paga de la zona superior,
+   nunca de la inferior, que es donde está el teclado; y por debajo de 660 px de
+   alto —donde la última fila del 3×4 va justa— el relleno vertical desaparece y
+   quedan 20. Medido en 1366×768 y en 1024×768, que son los dos aparatos reales
+   del aula. */
+.rotulo-veta {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: var(--e2);
+  margin: 0;
+  /* MEDIDO, Y NO SE VE EN LAS PRUEBAS. `_02-base.scss` limita TODO <p> a
+     --ancho-lectura (34ch) porque es la medida de lectura cómoda para un texto
+     corrido, y esto no es un texto corrido: es una banda. Sin esta línea el
+     rótulo mide 432 px en una ventana de 1170, la banda oscura se corta a media
+     pantalla y «Monedas y billetes: reconocerlos» se queda en «M.».
+
+     Y no salía rojo en ninguna prueba: la maqueta de pruebas vive dentro de un
+     <div hidden>, donde nada tiene caja y por tanto ningún ancho se puede medir.
+     Lo cazó mirar la pantalla, que es la lección E14-E17 otra vez. */
+  max-width: none;
+  padding: var(--e1) var(--e3);
+  background: var(--bg-texto-oscuro);
+  box-shadow: inset var(--bisel) 0 0 0 var(--deco-oro);
+  overflow: hidden;
+}
+
+/* POR DEBAJO DE 480 px EL MUNDO NO SE ESCONDE: SE APARTA. El nombre del mundo no
+   cabe ahí junto al de la veta, y el que contesta a la pregunta es el de la
+   veta. Pero con `display: none` el nombre del mundo saldría también del árbol
+   de accesibilidad, y entonces quien navega con lector de pantalla tendría MENOS
+   información en la pantalla estrecha que en la ancha. Se usan las mismas
+   declaraciones que `.solo-lectores`: sigue leyéndose, solo que no se ve.
+
+   La alternativa —un aria-label en el <p>— está descartada a propósito: ARIA
+   prohíbe nombrar un párrafo, y axe-core lo marca. */
+.rotulo-veta__mundo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (min-width: 480px) {
+  .rotulo-veta__mundo {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip: auto;
+    flex: 0 0 auto;
+    font-family: var(--fuente-pixel);
+    font-size: var(--tam-texto-min);
+    color: var(--texto-sec-claro);
+    letter-spacing: 1px;
+  }
+}
+/* La flecha va en ::after y no en el HTML porque es puntuación de la maqueta,
+   no contenido: un lector de pantalla lee «La Pradera de los Números Contar y
+   recontar» sin tropezarse con un símbolo que no sabe nombrar. */
+.rotulo-veta__mundo::after {
+  content: " ▸";
+}
+
+.rotulo-veta__mundo:empty {
+  display: none;
+}
+
+.rotulo-veta__nombre {
+  flex: 1 1 auto;
+  font-family: var(--fuente-lectura);
+  font-size: var(--tam-texto-min);
+  color: var(--texto-claro);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-height: 660px) {
+  .rotulo-veta {
+    padding: 0 var(--e3);
+  }
+}
 .zona-juego {
   flex: 1 1 auto;
   display: flex;
@@ -2819,6 +3036,63 @@ button:focus:not(:focus-visible) {
   animation-fill-mode: forwards;
 }
 
+/* 5 · SUBE — se ha terminado una veta y empieza otra. Sube UN PELDAÑO cada vez,
+   y se para en cada uno: tres plataformas visibles, no un deslizamiento. Esa es
+   toda la idea de la forma —subir un escalón— y es lo que la distingue de
+   `prisa`, que también va de abajo arriba pero de un tirón y sin pararse.
+
+   No lleva rebote ni cambio de escala: no está celebrando un acierto, está
+   diciendo dónde estamos. La fiesta del acierto ya ha pasado hace un segundo y
+   media, y dos fiestas seguidas no son el doble de fiesta. */
+/* LOS TRES PELDAÑOS CABEN EN 28 %, y no es una elección estética: por debajo del
+   30 % de la altura empieza la zona con la que se contesta, y E47 prohíbe que
+   ningún fotograma VISIBLE baje de ahí. La primera versión de esta coreografía
+   entraba desde el 180 % y se paraba en el 120 y en el 60 —es decir, se sentaba
+   encima del teclado durante más de medio segundo—, y el guardián la paró antes
+   de que llegara a la pantalla. El tramo que sí baja del tope es el 0 %, que va
+   con opacidad 0: por debajo de la zona de respuesta solo se puede estar
+   invisible. */
+@keyframes cinta-sube {
+  0% {
+    transform: translateY(56%);
+    opacity: 0;
+  }
+  12% {
+    transform: translateY(28%);
+    opacity: 1;
+  }
+  28% {
+    transform: translateY(28%);
+    opacity: 1;
+  }
+  44% {
+    transform: translateY(14%);
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(14%);
+    opacity: 1;
+  }
+  74% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  94% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+.cinta--sube.cinta--entra {
+  animation-name: cinta-sube;
+  animation-timing-function: steps(12, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
 /* 7 · BANDERA — el jefe cede y el mundo queda cerrado. Se despliega a lo ancho,
    como una tela que se estira desde el centro. Se ve una vez por mundo: cuatro
    veces en toda la vida de un perfil, y por eso puede permitirse ser la más
@@ -2854,6 +3128,31 @@ button:focus:not(:focus-visible) {
   animation-timing-function: steps(14, end);
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
+}
+
+/* ── LA CIFRA DEL MARCADOR ──────────────────────────────────────────────────
+   Acompaña a la cuenta de js/30-ui.js: mientras el número sube de uno en uno, la
+   cifra da un salto y vuelve. Cuatro pasos, 400 ms — más corto que la cuenta, a
+   propósito: lo que tiene que durar es el número cambiando, no el brinco.
+
+   No cambia de color: el marcador está sobre --bg-texto-oscuro y cualquier tono
+   nuevo sería un par de contraste que nadie ha medido. La señal es de forma. */
+@keyframes cifra-sube {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    transform: translateY(-4px) scale(1.35);
+  }
+  60% {
+    transform: translateY(-2px) scale(1.12);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+.cifra-viva.cifra-viva--sube {
+  animation: cifra-sube 400ms steps(4, end) 1;
 }
 
 /* ── VEHÍCULO 2 · LA INSIGNIA ───────────────────────────────────────────────
@@ -2968,7 +3267,7 @@ button:focus:not(:focus-visible) {
    sigue valiendo si mañana esto se escribe de otra manera.
    ────────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .particula.particula--viva, .criatura--flota, .criatura--saltito, .criatura--asiente, .criatura--gotea, .criatura--gira, .nube, .veta--musgo, .btn-bloque--monta, .btn-bloque--destello, .reloj__arena.reloj__arena--voltea, .reloj .reloj__chorro, .reloj--prisa .reloj__arena, .reloj__cifra.reloj__cifra--late, .cinta.cinta--entra, .cinta--prisa.cinta--entra .cinta__texto, .insignia.insignia--brota, .cartel.cartel--brota, .zona-juego.zona-juego--sacude {
+  .particula.particula--viva, .criatura--flota, .criatura--saltito, .criatura--asiente, .criatura--gotea, .criatura--gira, .nube, .veta--musgo, .btn-bloque--monta, .btn-bloque--destello, .reloj__arena.reloj__arena--voltea, .reloj .reloj__chorro, .reloj--prisa .reloj__arena, .reloj__cifra.reloj__cifra--late, .cinta.cinta--entra, .cinta--prisa.cinta--entra .cinta__texto, .insignia.insignia--brota, .cartel.cartel--brota, .cifra-viva.cifra-viva--sube, .zona-juego.zona-juego--sacude {
     animation: none !important;
   }
   /* Sin animación, los botones aparecerían grises y cambiarían de color de golpe */
@@ -3016,7 +3315,7 @@ button:focus:not(:focus-visible) {
     box-shadow: inset 0 0 0 8px var(--deco-oro);
   }
 }
-:root.sin-movimiento .particula.particula--viva, :root.sin-movimiento .criatura--flota, :root.sin-movimiento .criatura--saltito, :root.sin-movimiento .criatura--asiente, :root.sin-movimiento .criatura--gotea, :root.sin-movimiento .criatura--gira, :root.sin-movimiento .nube, :root.sin-movimiento .veta--musgo, :root.sin-movimiento .btn-bloque--monta, :root.sin-movimiento .btn-bloque--destello, :root.sin-movimiento .reloj__arena.reloj__arena--voltea, :root.sin-movimiento .reloj .reloj__chorro, :root.sin-movimiento .reloj--prisa .reloj__arena, :root.sin-movimiento .reloj__cifra.reloj__cifra--late, :root.sin-movimiento .cinta.cinta--entra, :root.sin-movimiento .cinta--prisa.cinta--entra .cinta__texto, :root.sin-movimiento .insignia.insignia--brota, :root.sin-movimiento .cartel.cartel--brota, :root.sin-movimiento .zona-juego.zona-juego--sacude {
+:root.sin-movimiento .particula.particula--viva, :root.sin-movimiento .criatura--flota, :root.sin-movimiento .criatura--saltito, :root.sin-movimiento .criatura--asiente, :root.sin-movimiento .criatura--gotea, :root.sin-movimiento .criatura--gira, :root.sin-movimiento .nube, :root.sin-movimiento .veta--musgo, :root.sin-movimiento .btn-bloque--monta, :root.sin-movimiento .btn-bloque--destello, :root.sin-movimiento .reloj__arena.reloj__arena--voltea, :root.sin-movimiento .reloj .reloj__chorro, :root.sin-movimiento .reloj--prisa .reloj__arena, :root.sin-movimiento .reloj__cifra.reloj__cifra--late, :root.sin-movimiento .cinta.cinta--entra, :root.sin-movimiento .cinta--prisa.cinta--entra .cinta__texto, :root.sin-movimiento .insignia.insignia--brota, :root.sin-movimiento .cartel.cartel--brota, :root.sin-movimiento .cifra-viva.cifra-viva--sube, :root.sin-movimiento .zona-juego.zona-juego--sacude {
   animation: none !important;
 }
 

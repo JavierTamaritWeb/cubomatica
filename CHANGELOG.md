@@ -12,6 +12,208 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.18.0] — 2026-07-29
+
+**Segunda cifra.** Dos cosas que se preguntaban y una que se cazó por el camino. El perfil
+guardado no cambia.
+
+### En el juego se sabe cuánto queda y no en qué se está
+
+El HUD contaba las luces, los bloques cavados y los segundos. En **qué** se está —qué se
+está practicando— no lo decía nadie. Una expedición encadena hasta veinte ítems de siete
+vetas distintas, **barajados**, y el nombre de la veta solo aparecía en la Cantera, dos
+pantallas atrás y antes de empezar. Visto desde la silla, la pregunta cambiaba de tema sin
+causa cada pocos ítems.
+
+Ahora hay un **rótulo de veta** bajo el HUD: el mundo en versalitas y el nombre de la veta
+en la tipografía de lectura. Se repinta en cada ítem. Por debajo de 480 px el nombre del
+mundo se aparta con las declaraciones de `.solo-lectores` —no con `display: none`— para que
+no salga del árbol de accesibilidad: quien usa lector de pantalla no puede tener **menos**
+información en la pantalla estrecha que en la ancha.
+
+### «¡Nivel superado!», y sin mentir
+
+Al cerrarse una veta y empezar otra, una **cinta** —el vehículo del «Hurry up!»— cruza con
+el grito `¡Nivel superado!`, y el mensaje quieto dice cuál se ha terminado y cuál empieza.
+Reparto de siempre: la cinta cruza en 1,4 s y ahí no cabe nada que haya que leer.
+
+Lo que costó trabajo no fue mostrarlo, fue que fuese **verdad**. Con el guion barajado, una
+veta que se deja atrás puede volver por tres caminos, y hay que descartar los tres:
+
+1. que le queden ítems por servir en el guion;
+2. que deba un repaso, porque un ítem fallado dos veces vuelve entre 3 y 5 ítems después;
+3. que se le agotara el tiempo — el único que **no deja rastro en ninguna cola**, y por eso
+   hay ahora un mapa de vetas sin cerrar.
+
+`quedanDeLaVeta()` cuenta **de más** a propósito: una reinserción consume el hueco de un
+ítem del guion, así que el número es un techo. De los dos errores posibles solo uno es
+aceptable — callarse una vez, nunca cantar «superado» y volver a servir esa veta tres ítems
+después.
+
+**El barajado no se toca.** Agrupar el guion por vetas habría hecho literal lo de «pasar de
+nivel», pero la práctica intercalada retiene mejor que la agrupada: eso es cambiar la
+pedagogía para que cuadre la maqueta.
+
+### «Toca la moneda de 2 euros» se acertaba buscando el 2
+
+`15-gen-dinero.js` abre diciendo que monedas y billetes son conjuntos separados y que «el
+juego los distingue siempre visual y verbalmente». Lo cumplía al pagar y al contar, donde la
+pieza se dibuja —el cuadrado de oro, el rectángulo verde—, y **no** lo cumplía en E1, que es
+la única pregunta cuyo objeto es distinguirlos: las cuatro opciones salían como cuatro
+botones de madera idénticos con un número dentro.
+
+Dicho al revés: se podía sacar el nivel entero sin haber mirado nunca una moneda. Ahora las
+opciones **son** las piezas, con su forma y su tamaño, y con el nombre completo —«la moneda
+de 2 euros»— como nombre accesible, no el «2 €» que llevan escrito.
+
+### Dos números con un nombre, en el propio guardián
+
+E47 declaraba `TOPE = 45` y comparaba contra un `30` escrito a mano unas líneas más arriba.
+Leído deprisa parece una constante muerta; unificarlo pone rojo el cartel del logro, que se
+declara al 38 % y ahí está bien. **Son dos reglas distintas**: un fotograma que se mueve no
+puede bajar del 30 % —taparía el teclado justo cuando se va a tocar—, una colocación fija
+puede llegar al 45 %. Ahora se llaman `TOPE_FOTOGRAMA` y `TOPE_COLOCACION`.
+
+Y E47 se ganó el sueldo por el camino: la primera versión de la coreografía `cinta-sube`
+entraba desde el 180 % y se paraba en el 120 y en el 60, es decir, se sentaba encima del
+teclado durante más de medio segundo. La paró antes de llegar a la pantalla.
+
+### Las siete piezas de dinero eran dos rectángulos
+
+Un cuadrado de oro para las dos monedas y un rectángulo verde para los cinco billetes: lo
+único que separaba una pieza de otra era la cifra escrita encima. Ahora se dibujan como lo
+que son.
+
+Las monedas son **bimetálicas y del revés una de otra**, igual que las de verdad: la de 1 €
+lleva el aro dorado y el centro plateado; la de 2 €, al contrario. Es la diferencia que usa
+cualquiera para separarlas en la mano sin mirar el número.
+
+Los billetes llevan **su color y su tamaño**: gris el de 5, cobre el de 10, azul el de 20,
+naranja el de 50, verde el de 100, y el ancho crece con el valor. Cuatro de los cinco colores
+son los reales; el del 10 tira a cobre porque la paleta de trece materiales no tiene un rojo y
+añadir uno reordenaría las 39 variables `--deco-*`, que son contrato.
+
+Y encima del color va el **dibujo**, a petición expresa: `js/03-sprites.js` genera las siete
+piezas en SVG y las publica como `--pieza-*`, exactamente igual que las ocho texturas del
+terreno. Las monedas llevan el aro bimetálico, las doce estrellas y la silueta del
+continente; los billetes, la ventana con arco, el corro de estrellas y la banda holográfica.
+
+**No hay ni un fichero de imagen** —la auditoría no admite un solo binario, porque `dist/` se
+abre con doble clic desde `file://` y una imagen suelta sería una petición de red que ahí no
+existe—: son 13 KB de SVG en `data:` URI, generados al arrancar. No son facsímiles de ningún
+billete, son dibujos.
+
+Tres cosas que no son de gusto:
+
+- **la cifra NO va dentro del SVG.** La sigue escribiendo el DOM encima, para que crezca con
+  `letra-grande` y con `modo-proyeccion` y para que siga midiéndose en los pares de contraste.
+  Un número dibujado dentro de la imagen no obedecería a los ajustes de accesibilidad;
+- por eso el motivo de cada pieza **deja libre la franja central**, y las estrellas de los
+  billetes van arriba a la derecha como en la bandera, no en corro alrededor del número;
+- **sin SVG se queda el color plano**, que es lo que ya distinguía las piezas. El dibujo
+  mejora el reconocimiento, no lo sostiene.
+
+Nunca solo color: cada pieza lleva su cifra, su propio ancho y su dibujo. Los siete pares de
+contraste están **medidos** en `casos-contraste.js`; el más justo es el del 10, con 4,7:1
+sobre un mínimo de 4,5.
+
+De paso, las tres copias de «crear una pieza» —opciones, pagar y contar— pasan a una:
+`CB.ui.pieza()`.
+
+### El marcador cambiaba de golpe
+
+Donde ponía 12 ponía 15 en el fotograma siguiente. Toda la ganancia se contaba **fuera** del
+número —la insignia «+1» que brota al lado, la hilera de «+2 por rapidez»— y el sitio donde
+de verdad vive la puntuación no se enteraba.
+
+Ahora sube de uno en uno, con tope de ocho pasos para que 40 gemas al final de la partida no
+sean cuatro segundos de espera, y la cifra da un salto de cuatro pasos mientras tanto. Tres
+reglas que no son de gusto:
+
+- **el último paso escribe el destino exacto**, nunca el acumulado de las divisiones;
+- **nunca cuenta hacia atrás** — empezar partida repinta el HUD con 0 mientras el nodo guarda
+  las de la anterior, y el marcador solo sube (§3.4);
+- **con el movimiento apagado se escribe el número entero**: se quita el movimiento, no el
+  dato.
+
+### El mensaje que enseña se recortaba a una línea
+
+`.mensaje-resultado` declaraba `min-height: --tam-texto-min * 3` — tres líneas — y daba una:
+`box-sizing: border-box` es global, así que los 60 px incluían los 32 de relleno. Y bajo
+presión de flex ese `min-height` no es solo un suelo, es también hasta dónde puede encogerse
+la caja, así que en una ventana de portátil el mensaje se quedaba en la primera línea.
+
+Lo que se perdía no era decoración: el mensaje de acierto lleva la frase de procedimiento,
+que es **la única parte que enseña algo**. En 1.15.0 se midió cuánto tiempo hacía falta para
+leerla sin comprobar que cupiera.
+
+Queda pendiente algo más grande y se deja escrito: en una ventana de 755 px de alto la zona
+superior son 135 px y el enunciado solo ya pide 147. El reparto vertical entero merece una
+revisión con medidas, y eso no se hace de paso.
+
+### Todos los botones suenan al pulsarse
+
+Sonaba lo que **pasa** —el acierto, el fallo, la gema, la luz que se apaga— pero no el acto de
+tocar. Un botón de navegación, uno de ajustes o el de pausa se pulsaban sin ninguna respuesta
+sonora, y en una pantalla táctil de aula eso es la mitad de la confirmación que hay.
+
+Nace el **decimotercer** efecto, `pulsar`. La tabla de doce era contrato y sube a trece a
+propósito, con su comprobación cambiada en el mismo commit. Es el sonido más frecuente del
+juego y por eso el más corto y el más flojo de los trece —35 ms y ganancia 0,12, contra los
+0,22 del «toc»—: la misma regla que ordena las celebraciones, aplicada al sonido.
+
+Un solo oyente delegado, en captura, porque la mitad de los botones los crea el JS en tiempo
+de ejecución. Tres excepciones, las tres porque ya suena algo: el botón deshabilitado (ahí
+manda el «toc» de construcción, que dice «aún no»), las monedas y billetes (traen su «gema»)
+y el propio botón de silenciar, que sonaría justo al pedir que no suene nada.
+
+Vive **fuera del `DOMContentLoaded`**, y eso es lo que lo hace comprobable: el arranque
+devuelve pronto cuando no hay `#btn-jugar` —así evitan las páginas de prueba echar a andar un
+juego— así que un oyente registrado ahí dentro no existiría en la suite y E91 habría medido
+el vacío.
+
+### `npm run dev` recompilaba y enseñaba lo de antes
+
+El watch ya existía. Lo que no funcionaba era verlo: `dist/index.html` registra un service
+worker con política **cache-first**, así que en cuanto se instala una vez deja de importar lo
+que diga el servidor. Guardabas, gulp recompilaba, browser-sync recargaba, y en pantalla no
+cambiaba nada. Es el riesgo R7 del plan —«el SW sirve una versión vieja para siempre»— en
+local.
+
+Ahora `gulp dev` sirve un `sw.js` **que se suicida**: se instala, borra todas las cachés, se
+da de baja y renavega las pestañas. Con `CON_SW=1 npm run dev` se sirve el real, que hace
+falta para poder mirar el modo sin conexión. Y todo va con `Cache-Control: no-store`, porque
+Chrome reutiliza alegremente un bundle de hace tres ediciones y eso no se distingue de
+funcionar.
+
+**Dos servidores, no uno.** 8080 el juego con recarga en vivo; 8081 las dos páginas de prueba,
+servidas tal cual. Se intentó con uno: browser-sync inyecta su cliente como un `<script>` más
+en cada HTML, y `casos-carga.js` comprueba —con razón— que la página de pruebas cargue **un
+solo guion**. Su `snippetOptions.blacklist` debería excluir una ruta; en esta versión apaga la
+inyección entera, y entonces lo que se pierde es la recarga del juego. La comprobación se
+queda como está y lo que se separa son los servidores.
+
+El watch cubre además `pruebas/*.js` y `pruebas/*.html`: no hay nada que recompilar, pero
+avisa por consola de que toca F5.
+
+### Guardianes
+
+**E85** el HUD no decía en qué veta se está · **E86** «Nivel superado» sin comprobar que no
+quedara nada · **E87** el tiempo agotado no deja deuda en ninguna cola · **E88** el rótulo
+pintado y fuera de la vista · **E89** reconocer una moneda enseñando un número · **E90** el
+marcador saltaba sin que se viera cambiar · **E91** los botones se pulsaban en silencio.
+
+E90 también nació roto, y de la misma familia que E88: miraba el contador en la línea
+siguiente a lanzar la cuenta y esperaba ver ya el destino. Una cuenta que acaba de empezar
+sigue valiendo 0. Lo que hay que mirar de una animación no es el valor inmediato: es **dónde
+aterriza**.
+
+E88 nació roto y conviene que quede escrito: pedía `offsetHeight > 0` sobre una maqueta que
+vive dentro de un `<div hidden>`, así que medía 0 para el rótulo, para el HUD y para la
+galería por igual. Es el mismo error que ya cazó a este proyecto con `transform`, que vale
+`none` en un elemento sin caja. Ahora destapa la maqueta, **afirma que destaparla ha servido
+de algo** y vuelve a taparla.
+
 ## [1.17.0] — 2026-07-29
 
 **Segunda cifra.** Fase 15 del plan, la última. El perfil guardado no cambia.

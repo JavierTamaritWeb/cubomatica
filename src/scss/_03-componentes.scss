@@ -344,6 +344,10 @@
               inset -6px -6px 0 0 var(--deco-cristal-osc);
 }
 .gemas.gemas--parpadeo { @include animar('parpadeo-gris', 200ms, 2, 1); }
+
+/* La cifra que sube. `inline-block` no es cosmético: un <span> en flujo de línea
+   ignora `transform`, así que sin esto el salto no se ve y nada falla. */
+.cifra-viva { display: inline-block; }
 @keyframes parpadeo-gris { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
 
 /* ── Hilera de bono retrospectivo: «+2 por rapidez» ─────────────────────── */
@@ -379,6 +383,20 @@
 @media (min-width: 1024px) and (min-height: 620px) {
   .rejilla-respuestas { grid-template-columns: repeat(4, var(--lado)); }
 }
+
+/* ── Cuando las opciones SON piezas de dinero ───────────────────────────────
+   La pregunta de reconocer una moneda o un billete pinta las cuatro opciones con
+   la forma que tienen —el cuadrado de oro y el rectángulo verde—, y esas formas
+   traen su propio tamaño: 72×72 y 128×64. Las columnas de --lado-respuesta valen
+   64 px en la pantalla más estrecha, así que un billete desbordaría su celda.
+   Aquí el ancho lo manda el contenido.
+
+   VA DESPUÉS DE LAS DOS CONSULTAS DE ARRIBA A PROPÓSITO: las dos reescriben
+   `grid-template-columns` de `.rejilla-respuestas` y tienen la misma
+   especificidad que esta, así que lo único que decide es el orden. Con las
+   piezas se queda en dos columnas también en apaisado y en el portátil, porque
+   cuatro billetes en fila no caben en ninguna de las dos. */
+.rejilla-respuestas--dinero { grid-template-columns: repeat(2, auto); }
 
 /* ── Teclado de bloques 3×4 ─────────────────────────────────────────────── */
 .teclado-bloques {
@@ -491,6 +509,18 @@
 
 .moneda, .billete {
   display: inline-flex; align-items: center; justify-content: center;
+  /* EL DIBUJO SE ESTIRA A LA PIEZA, y el color plano se queda debajo: si
+     js/03-sprites.js no llegara a ejecutarse —o si el SVG no se pudiera
+     codificar— la pieza sigue teniendo su color y su tamaño, que ya la
+     distinguen. Misma red de seguridad que las ocho texturas del terreno.
+
+     La CIFRA no está en el dibujo: la escribe el DOM encima, para que crezca con
+     `letra-grande` y con `modo-proyeccion` y para que siga midiéndose en los
+     pares de contraste. Por eso el motivo del SVG deja libre la franja central,
+     que es donde cae el texto. */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
   font-family: var(--fuente-pixel); font-size: var(--tam-texto-min);
   color: var(--texto-principal);
   /* Ancla la esquina donde va el contador de veces cogida. */
@@ -501,13 +531,95 @@
   box-shadow: inset 6px 6px 0 0 var(--deco-oro-cla),
               inset -6px -6px 0 0 var(--deco-oro-osc);
 }
+/* ── LAS DOS MONEDAS SON BIMETÁLICAS, Y DEL REVÉS UNA DE OTRA ────────────────
+   Antes las dos eran el mismo cuadrado de oro con un número distinto dentro, así
+   que lo único que las diferenciaba era la cifra — y en la pregunta cuyo objeto
+   es reconocerlas, leer la cifra es justamente lo que no se quiere que baste.
+
+   Las de verdad se distinguen así: la de 1 € lleva el aro dorado y el centro
+   plateado; la de 2 €, el aro plateado y el centro dorado. Es la diferencia que
+   usa cualquiera para separarlas en la mano sin mirar el número, y aquí se
+   dibuja con un aro `inset` de desenfoque cero, que pasa la regla dura.
+
+   NO HAY IMÁGENES en el proyecto: la auditoría no admite un solo fichero
+   binario y todo se abre desde file://. Estas piezas se dibujan como se dibuja
+   el reloj de arena o el terreno. Y no son facsímiles de nada: son cuadrados de
+   colores con una cifra, no reproducciones de moneda. */
+.moneda[data-valor="1"] {
+  background-image: var(--pieza-1);
+  background-color: var(--deco-piedra-cla);              /* centro plateado */
+  box-shadow: inset 6px 6px 0 0 var(--deco-oro-cla),
+              inset -6px -6px 0 0 var(--deco-oro-osc),
+              inset 0 0 0 14px var(--deco-oro);          /* aro dorado */
+}
+.moneda[data-valor="2"] {
+  background-image: var(--pieza-2);
+  background-color: var(--deco-oro);                     /* centro dorado */
+  box-shadow: inset 6px 6px 0 0 var(--blanco),
+              inset -6px -6px 0 0 var(--deco-piedra-osc),
+              inset 0 0 0 14px var(--deco-piedra-cla);   /* aro plateado */
+}
 .moneda[data-material="cobre"] {
   background: var(--deco-cobre);
   box-shadow: inset 6px 6px 0 0 var(--deco-cobre-cla),
               inset -6px -6px 0 0 var(--deco-cobre-osc);
 }
 .billete {
-  width: 128px; height: 64px; background: var(--deco-hierba-cla);
+  width: 112px; height: 64px; background: var(--deco-hierba-cla);
+  box-shadow: inset 6px 6px 0 0 var(--blanco),
+              inset -6px -6px 0 0 var(--deco-hierba-osc);
+}
+/* ── CADA BILLETE, DE SU COLOR Y DE SU TAMAÑO ────────────────────────────────
+   Los cinco eran verdes y del mismo ancho: cinco rectángulos idénticos con un
+   número. Los de verdad se reconocen por el color antes que por la cifra —gris
+   el de 5, rojo el de 10, azul el de 20, naranja el de 50, verde el de 100— y
+   además crecen con el valor, que es una pista de tamaño que un niño de siete
+   años usa sin que nadie se la explique.
+
+   Cuatro de los cinco colores son los reales; el del 10 tira a cobre porque la
+   paleta de trece materiales no tiene un rojo y añadir uno reordenaría las 39
+   variables `--deco-*`, que son contrato.
+
+   NUNCA SOLO COLOR: cada billete lleva además su cifra escrita y su propio
+   ancho, así que quien no distinga los colores tiene otras dos señales. Los
+   cinco pares de contraste con --texto-principal están medidos en
+   casos-contraste.js, no supuestos.
+
+   Los anchos suben de ocho en ocho hasta 128, que es el tope: con dos columnas y
+   la retícula de las opciones, 128×2 + 16 de hueco caben en los 288 px útiles de
+   la pantalla más estrecha del proyecto. */
+.billete[data-valor="5"] {
+  width: 96px;
+  background-image: var(--pieza-5);
+  background-color: var(--deco-piedra-cla);
+  box-shadow: inset 6px 6px 0 0 var(--blanco),
+              inset -6px -6px 0 0 var(--deco-piedra-osc);
+}
+.billete[data-valor="10"] {
+  width: 104px;
+  background-image: var(--pieza-10);
+  background-color: var(--deco-cobre);
+  box-shadow: inset 6px 6px 0 0 var(--deco-cobre-cla),
+              inset -6px -6px 0 0 var(--deco-cobre-osc);
+}
+.billete[data-valor="20"] {
+  width: 112px;
+  background-image: var(--pieza-20);
+  background-color: var(--deco-agua-cla);
+  box-shadow: inset 6px 6px 0 0 var(--blanco),
+              inset -6px -6px 0 0 var(--deco-agua-osc);
+}
+.billete[data-valor="50"] {
+  width: 120px;
+  background-image: var(--pieza-50);
+  background-color: var(--deco-brasa-cla);
+  box-shadow: inset 6px 6px 0 0 var(--blanco),
+              inset -6px -6px 0 0 var(--deco-brasa-osc);
+}
+.billete[data-valor="100"] {
+  width: 128px;
+  background-image: var(--pieza-100);
+  background-color: var(--deco-hierba-cla);
   box-shadow: inset 6px 6px 0 0 var(--blanco),
               inset -6px -6px 0 0 var(--deco-hierba-osc);
 }
@@ -639,7 +751,16 @@
   padding: var(--e3);
   font-size: var(--tam-texto-min);
   max-width: var(--ancho-lectura);
-  min-height: calc(var(--tam-texto-min) * 3);
+  /* TRES LÍNEAS, Y ANTES ERAN UNA. `box-sizing: border-box` es global, así que
+     los 60 px de `--tam-texto-min * 3` incluían los 32 de relleno: quedaban 28,
+     que es UNA línea. Y el `min-height` no solo es un suelo — bajo presión de
+     flex es también lo que permite que la caja se encoja hasta ahí, así que en
+     una ventana de portátil el mensaje se recortaba a la primera línea.
+
+     Lo que se perdía no era decoración: el mensaje de acierto lleva la frase de
+     procedimiento, que es la única parte que enseña algo. Se medía cuánto tiempo
+     hacía falta para leerla (1.15.0) sin comprobar que cupiera. */
+  min-height: calc(var(--tam-texto-min) * 3 + var(--e3) * 2);
 }
 .mensaje-resultado[data-tipo="acierto"] { background: var(--ok-fondo);  color: var(--ok-texto); }
 .mensaje-resultado[data-tipo="animo"]   { background: var(--mal-fondo); color: var(--mal-texto); }

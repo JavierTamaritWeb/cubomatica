@@ -238,18 +238,42 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
   CB.ui.vaciar(cont);
 
   var rej = CB.ui.crear('div', 'rejilla-respuestas');
+  /* Las columnas de la retícula miden --lado-respuesta, que en la pantalla más
+     estrecha son 64 px; un billete mide 128×64 y desbordaría su celda. Con las
+     piezas, el ancho de columna lo manda el contenido. */
+  if (item.piezasDinero) rej.classList.add('rejilla-respuestas--dinero');
   var i;
 
   for (i = 0; i < opcionesValores.length; i++) {
     (function (op, idx) {
-      var etiqueta = (op.texto != null) ? op.texto : String(op.valor);
-      var b = CB.ui.boton(etiqueta, '', function () {
+      var b;
+      function elegir() {
         if (CB.partida && CB.partida.bloqueado) return;
         CB.componentes.pedirConfirmacion(b, function () {
           alResponder(op.valor, 'opciones', { posicion: idx, codigoError: op.codigoError });
         });
-      }, { posicion: idx });
-      if (op.texto != null) b.style.fontSize = 'var(--tam-texto-min)';
+      }
+
+      /* PIEZAS DE DINERO: la opción se dibuja como la moneda o el billete que es,
+         con la misma forma que ya tienen en pagar y en contar —el cuadrado de oro
+         y el rectángulo verde—, no como un botón de madera con un número.
+
+         Las dos formas cumplen el suelo de 44 px de WCAG 2.5.8 por sí solas (72
+         y 128×64), así que no hace falta envolverlas en un botón: la pieza ES el
+         botón, igual que en el modo pagar. Y el nombre accesible es el de la
+         pieza entera —«la moneda de 2 euros»— y no el «2 €» que lleva escrito,
+         que es lo que hace que quien juega con lector de pantalla oiga la misma
+         pregunta que ve quien mira. */
+      if (item.piezasDinero) {
+        b = CB.ui.pieza('button', op.valor);
+        b.type = 'button';
+        b.setAttribute('data-posicion', idx);
+        b.addEventListener('click', elegir);
+      } else {
+        var etiqueta = (op.texto != null) ? op.texto : String(op.valor);
+        b = CB.ui.boton(etiqueta, '', elegir, { posicion: idx });
+        if (op.texto != null) b.style.fontSize = 'var(--tam-texto-min)';
+      }
       rej.appendChild(b);
     })(opcionesValores[i], i);
   }
@@ -464,10 +488,8 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
 
     var caja = CB.ui.crear('div', 'contenedor-dinero');
     item.disponibles.forEach(function (v, idx) {
-      var esMoneda = CB.gen.dinero.esMoneda(v);
-      var b = CB.ui.crear('button', esMoneda ? 'moneda' : 'billete', String(v) + ' €');
+      var b = CB.ui.pieza('button', v);
       b.type = 'button';
-      b.setAttribute('aria-label', CB.gen.dinero.nombre(v));
       b.setAttribute('data-posicion', idx);
       b.addEventListener('click', function () {
         if (CB.partida && CB.partida.bloqueado) return;
@@ -522,10 +544,7 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
   /* Modo «contar»: se muestran las piezas y se responde con teclado. */
   var muestra = CB.ui.crear('div', 'contenedor-dinero');
   (item.piezas || []).forEach(function (v) {
-    var esMoneda = CB.gen.dinero.esMoneda(v);
-    var p = CB.ui.crear('span', esMoneda ? 'moneda' : 'billete', String(v) + ' €');
-    p.setAttribute('aria-label', CB.gen.dinero.nombre(v));
-    muestra.appendChild(p);
+    muestra.appendChild(CB.ui.pieza('span', v));
   });
   var arriba = document.getElementById('item-enunciado');
   if (arriba) arriba.appendChild(muestra);

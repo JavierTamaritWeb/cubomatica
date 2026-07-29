@@ -3146,3 +3146,203 @@ Lo que queda fuera y sigue fuera: **F0.5** (pilotaje en papel con tres niños) y
 (calibración β con diez o quince). Ninguna de las dos se puede hacer con código, y los
 `betaBase` actuales siguen siendo una calibración razonada y no una medida. Conviene que la
 próxima persona que lea esto no lo confunda con trabajo pendiente de programar.
+
+---
+
+# Ronda 23 · Saber dónde estás — versión 1.18.0 (29 de julio de 2026)
+
+Dos cosas preguntadas desde la silla, no encontradas leyendo código: *«te pierdes fácilmente
+porque no sabes en qué nivel estás»* y *«cuando preguntas qué moneda es, pon la moneda»*. Las
+dos resultaron ser el mismo tipo de fallo: información que el juego tiene y no enseña.
+
+## D-R23-1 · El barajado no se toca
+
+La petición fue «cuando haya superado un nivel, un mensaje como el Hurry up que diga Nivel
+superado y a qué nivel vamos ahora». Debajo hay un modelo mental razonable: la expedición es
+una secuencia de niveles y se pasa de uno al siguiente.
+
+El juego no funciona así. `construirGuion()` termina con `CB.util.barajar(guion, rng)`, así
+que los ítems de una veta van **repartidos** por toda la expedición. La forma obvia de hacer
+literal lo de «pasar de nivel» sería agrupar el guion por vetas.
+
+**No se hace.** La práctica intercalada retiene mejor que la agrupada, y agrupar sería
+cambiar la pedagogía para que cuadre la maqueta. Lo que se arregla es lo que faltaba —decir
+en qué veta se está y cuándo se cierra— no lo que ya funcionaba.
+
+## D-R23-2 · «Superado» tiene que ser verdad, y hay tres caminos de vuelta
+
+Con el guion barajado, una veta que se deja atrás puede volver por tres sitios, y la frase
+solo es honesta si se descartan los tres:
+
+1. **quedan ítems suyos en el guion** — se cuentan;
+2. **debe un repaso** — un ítem fallado dos veces se reinserta entre 3 y 5 ítems después, y
+   eso vive en `colaRepaso`, así que se cuenta también;
+3. **se le agotó el tiempo** — y este **no deja rastro en ninguna cola**. Es el agujero que
+   los otros dos no tapan, y por eso existe `e.vetasSinCerrar`.
+
+`quedanDeLaVeta()` cuenta **de más** a propósito: una reinserción consume el hueco de un ítem
+del guion, así que el número es un techo, no una cifra exacta. De los dos errores posibles
+solo uno es aceptable — equivocarse por arriba es callarse una vez; equivocarse por abajo es
+cantar «superado» y volver a servir esa veta tres ítems después.
+
+Y se pregunta **al servir el ítem siguiente**, no al acertar el anterior: en el momento del
+acierto todavía no se sabe qué veta viene —una reinserción puede colarse por delante—, así
+que anunciarla entonces sería adivinar.
+
+## D-R23-3 · Apartar no es esconder
+
+Por debajo de 480 px el nombre del mundo no cabe junto al de la veta. La solución intuitiva
+—`display: none`— lo saca **también** del árbol de accesibilidad, y entonces quien navega con
+lector de pantalla tiene *menos* información en la pantalla estrecha que en la ancha. Se usan
+las declaraciones de `.solo-lectores`: sigue leyéndose, solo que no se ve.
+
+La otra alternativa, un `aria-label` en el `<p>`, está descartada: ARIA prohíbe nombrar un
+párrafo y axe lo marca.
+
+## D-R23-4 · El fichero decía la regla y el nivel no la cumplía
+
+La cabecera de `15-gen-dinero.js` lleva desde el primer día diciendo que monedas y billetes
+son conjuntos separados y que «el juego los distingue **siempre** visual y verbalmente». Se
+cumplía al pagar y al contar. No se cumplía en E1 —«toca la moneda de 2 euros»—, que es la
+única pregunta cuyo objeto es distinguirlos: las cuatro opciones eran cuatro botones de
+madera iguales con un número dentro.
+
+Leído al revés: se acertaba buscando el 2 del enunciado. Se podía sacar el nivel entero sin
+haber mirado nunca una moneda.
+
+Familia nueva y vale la pena nombrarla: **el fichero enuncia una regla que su propio código
+incumple en un sitio**. No es un dato que no se pinta (E70) ni una función que nadie llama
+(E41): es una invariante escrita en prosa, cumplida en dos de tres sitios, y sin nada que la
+comprobara. Cuando una cabecera diga «siempre», conviene ir a contar los sitios.
+
+## D-R23-5 · Dos números con un nombre no son un número duplicado
+
+E47 declaraba `TOPE = 45` y la comparación de arriba usaba un `30` escrito a mano. Leído
+deprisa: constante muerta y número duplicado, el patrón que este proyecto persigue desde
+`MS_CARTEL`. Se unificó en 30 y se puso roja la otra mitad del guardián, porque el cartel del
+logro se declara al 38 % y ahí está bien.
+
+Eran **dos reglas distintas**: un fotograma que se mueve no puede bajar del 30 % —taparía el
+teclado justo cuando se va a tocar—, una colocación fija puede llegar al 45 % porque se queda
+quieta. Lo único que sobraba era el nombre común. Ahora son `TOPE_FOTOGRAMA` y
+`TOPE_COLOCACION`.
+
+La lección es simétrica de la de `MS_CARTEL` y conviene tenerla al lado: **antes de unificar
+dos números iguales, comprobar que miden lo mismo**.
+
+## D-R23-6 · El guardián que medía el `hidden`
+
+E88 nació pidiendo `offsetHeight > 0` sobre el rótulo. Las diecisiete secciones de la maqueta
+de pruebas viven dentro de un `<div hidden>`, así que devolvía 0 — igual que para el HUD y
+para la galería. Es exactamente el error de `getComputedStyle().transform`, que vale `none`
+en un elemento sin caja: **una medida de maqueta hecha sobre un árbol oculto mide el
+`hidden`, no la maqueta**.
+
+Se destapa, se mide y se vuelve a tapar. Y se afirma que destapar ha servido de algo, porque
+la tentación evidente el día que esto se rompa es relajar la aserción a `>= 0`, que quedaría
+verde para siempre sin comprobar nada.
+
+## D-R23-7 · E47 se ganó el sueldo
+
+La primera versión de la coreografía `cinta-sube` entraba desde el 180 % y se paraba con
+opacidad 1 en el 120 y en el 60: se sentaba encima del teclado durante más de medio segundo.
+La paró un guardián escrito hace quince versiones para otro fallo, antes de que llegara a
+ninguna pantalla. Los tres peldaños caben ahora en el 28 %.
+
+## D-R23-8 · No hay imágenes, y no es una carencia
+
+Preguntado por qué las monedas no son fotos de monedas: **el proyecto no admite un solo
+fichero binario**. El bloque 4 de la auditoría falla ante cualquiera, y la razón es la de
+siempre —`dist/` se abre con doble clic desde `file://`, sin servidor y sin red—. Todo lo que
+se ve está dibujado: el reloj de arena, las gemas, el terreno, las texturas (que las genera
+`js/02-texturas.js` como data: URI al arrancar).
+
+Así que la pregunta útil no es «¿dónde están las imágenes?» sino «¿qué hace reconocible una
+moneda?». Y la respuesta no es el dibujo del anverso, que un niño de siete años no mira: es
+que la de 1 € tiene el aro dorado y el centro plateado y la de 2 € al revés, y que el billete
+de 20 es azul y más pequeño que el de 50, que es naranja. Eso se dibuja con `box-shadow`
+inset de desenfoque cero y cabe en la regla dura.
+
+Además, dibujarlas así **no reproduce** ningún billete: son cuadrados de colores con una
+cifra. Un facsímil de un billete de euro tiene reglas propias del BCE, y no hace falta
+entrar ahí para enseñar a distinguir cinco denominaciones.
+
+## D-R23-9 · Un `min-height` que era también un techo
+
+`.mensaje-resultado` pedía tres líneas —`--tam-texto-min * 3`— y daba una. Dos cosas a la
+vez, y las dos fáciles de no ver:
+
+1. `box-sizing: border-box` es global, así que esos 60 px incluían los 32 de relleno.
+2. En un contenedor flex bajo presión, `min-height` no es solo un suelo: es **hasta dónde se
+   deja encoger** la caja. Un valor pensado como mínimo funcionaba de máximo.
+
+Lo que se recortaba era la frase de procedimiento, que es la única parte del mensaje que
+enseña algo — y en 1.15.0 se midió cuánto tiempo hacía falta para leerla sin comprobar que
+cupiera. Medir el tiempo de lectura de un texto que no cabe es la misma familia que contar
+las gemas fuera del contador.
+
+**Queda pendiente y se deja escrito**: en una ventana de 755 px de alto la zona superior son
+135 px y el enunciado solo ya pide 147, así que el reparto vertical de `p-partida` merece una
+revisión con medidas en los diez tamaños de referencia. No se hace de paso, y no se disimula.
+
+## D-R23-10 · Las monedas dibujadas, a petición expresa
+
+Se dejó escrito arriba (D-R23-8) que el proyecto no admite imágenes y que la pieza se dibuja
+con CSS. Preguntado de nuevo y pedido expresamente que se vean las monedas reales, se hace —y
+la restricción de fondo no se rompe, porque nunca fue «no puede haber dibujos» sino **«no
+puede haber ficheros binarios»**.
+
+La salida es la que ya usaban las ocho texturas del terreno: se genera al arrancar y se
+publica como `data:` URI en una variable CSS. Aquí en SVG en vez de canvas, porque lo que hay
+que dibujar son círculos, estrellas y arcos. Trece kilobytes para las siete piezas.
+
+Lo único que hubo que decidir de verdad: **la cifra no va dentro del dibujo**. Un número
+grabado en el SVG no crece con `letra-grande`, no crece con `modo-proyeccion` y no aparece en
+ningún par de contraste medido — es decir, deja de obedecer a los tres ajustes de
+accesibilidad que este proyecto tiene la obligación legal de respetar. Así que el SVG trae el
+metal, el aro, las doce estrellas, el continente y la ventana con arco, y **deja libre la
+franja central** donde el DOM sigue escribiendo el número como texto de verdad. Por eso las
+estrellas de los billetes van arriba a la derecha, como en la bandera, y no en corro
+alrededor del centro: ahí taparían la cifra.
+
+Y se conserva el color plano debajo. Si `generarDinero()` no llegara a ejecutarse, las siete
+piezas siguen teniendo su color y su ancho, que ya las distinguen. El dibujo mejora el
+reconocimiento; no lo sostiene.
+
+## D-R23-11 · El decimotercer efecto de sonido
+
+La tabla de doce efectos era contrato y sube a trece. No se hace a la ligera: la regla del
+proyecto es que cambiar uno de estos números obliga a cambiar la comprobación que lo afirma,
+**a propósito y en el mismo commit**, y eso es exactamente lo que se ha hecho
+(`casos-reloj.js`).
+
+Se planteó reutilizar el «toc», que ya existe, y es peor: el «toc» significa «aún no» —suena
+cuando se toca durante los 800 ms de construcción— y usarlo también para «sí» borraría la
+única distinción sonora que hay entre las dos respuestas posibles al mismo gesto. Un sonido
+que significa dos cosas opuestas no significa ninguna.
+
+Y el clic es el más flojo y el más corto de los trece por la misma razón que el «+1» es la
+celebración más pequeña: **se oye cien veces por sesión**. El espectáculo es inversamente
+proporcional a la frecuencia, y eso vale para el oído igual que para la vista.
+
+## D-R23-12 · Por qué el modo desarrollo enseñaba lo de antes
+
+`npm run dev` ya tenía watch desde 1.7.0. Recompilaba bien y recargaba bien, y en pantalla no
+cambiaba nada — que es la peor forma de estar roto, porque parece que el cambio no funciona.
+
+La causa es el propio service worker del juego: `js/45-offline.js` lo registra bajo HTTP y
+cachea el armazón con política **cache-first**, así que una vez instalado deja de importar lo
+que responda el servidor. Es el riesgo R7 que el plan preveía para un aula de veinticinco
+Chromebooks, ocurriendo en la máquina de quien desarrolla.
+
+La salida es un `sw.js` de desarrollo que se da de baja a sí mismo y borra las cachés, más
+`Cache-Control: no-store` en todo. Y una salida de la salida: `CON_SW=1 npm run dev` sirve el
+real, porque el modo sin conexión es una función entregada y hay que poder mirarla.
+
+**Y son dos servidores, no uno.** browser-sync inyecta su cliente como un `<script>` más en
+cada HTML que sirve, y `casos-carga.js` comprueba que la página de pruebas cargue un solo
+guion. Esa comprobación tiene razón —el día que alguien vuelva a partir el juego en 45
+`<script>` sueltos tiene que ponerse roja— así que lo que se aparta es browser-sync, no la
+comprobación. 8080 el juego con recarga en vivo; 8081 las pruebas, servidas tal cual. Su
+`snippetOptions.blacklist` habría bastado en teoría; en esta versión apaga la inyección
+entera, y se comprobó antes de confiar en ella.

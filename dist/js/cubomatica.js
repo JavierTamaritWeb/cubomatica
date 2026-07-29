@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.17.0';
+CB.VERSION = '1.18.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -2282,6 +2282,135 @@ CB.sprites.precalentar = function () {
   return n;
 };
 
+/* ══ EL DINERO, DIBUJADO DE VERDAD ═══════════════════════════════════════════
+
+   Petición expresa: que las monedas y los billetes se vean como los de verdad y
+   no como rectángulos de colores.
+
+   NO HAY FICHEROS. El bloque 4 de la auditoría no admite un solo binario, porque
+   `dist/` se abre con doble clic desde file:// y una imagen suelta sería una
+   petición de red que ahí no existe. La salida es la misma que ya usan las ocho
+   texturas: se dibuja al arrancar y se publica como data: URI en una variable
+   CSS. Aquí en SVG en vez de canvas, porque lo que hay que dibujar son círculos,
+   estrellas y arcos y no ruido de 16×16.
+
+   TRES DECISIONES QUE NO SON DE GUSTO:
+
+   · LA CIFRA NO VA DENTRO DEL SVG. El dibujo trae el metal, el aro, las doce
+     estrellas y los arcos; el número lo sigue poniendo el DOM encima. Así crece
+     con `letra-grande` y con `modo-proyeccion`, sigue midiéndose en los pares de
+     contraste, y sigue estando si el SVG no llega a pintarse. Un número dibujado
+     dentro de la imagen sería un número que no obedece a los ajustes de
+     accesibilidad, que en material escolar no es un detalle.
+
+   · SIN CANVAS NI SVG SE QUEDA EL COLOR PLANO, que es lo que ya había: el
+     `background-color` de cada pieza sigue declarado en el CSS y el dibujo va
+     encima. Misma red de seguridad que las texturas.
+
+   · NO SON FACSÍMILES. Son dibujos: el metal, las doce estrellas de la Unión, la
+     silueta del continente y la ventana con arco que llevan los billetes. Ni se
+     copia un billete ni haría falta —lo que hay que aprender a distinguir es el
+     color, el tamaño y el metal, no el grabado—.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* [valor, metalAro, metalCentro] — el bimetal REAL, y del revés una de otra:
+   la de 1 € lleva el aro dorado y el centro plateado; la de 2 €, al contrario.
+   Es lo que permite separarlas en la mano sin leer el número. */
+CB.sprites.MONEDAS = [
+  [1, '#C9A227', '#C8CBD0'],
+  [2, '#C8CBD0', '#C9A227']
+];
+
+/* [valor, fondo, tinta] — el color de cada billete es el de verdad salvo el del
+   10, que en la paleta del juego tira a cobre porque no hay un rojo entre los
+   trece materiales y añadir uno reordenaría las 39 variables --deco-*. */
+CB.sprites.BILLETES = [
+  [5,   '#ADADAD', '#7A7A7A'],
+  [10,  '#C87137', '#8E4C21'],
+  [20,  '#5C9BE8', '#2A5CA8'],
+  [50,  '#F58B52', '#B84618'],
+  [100, '#7BC44A', '#3F7A1E']
+];
+
+/* Las doce estrellas de la Unión, colocadas en círculo. Se calculan porque
+   escribir doce pares de coordenadas a mano es doce sitios donde equivocarse. */
+CB.sprites.estrellasSVG = function (cx, cy, radio, tam, color) {
+  var s = '', i, a, x, y;
+  for (i = 0; i < 12; i++) {
+    a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+    x = cx + Math.cos(a) * radio;
+    y = cy + Math.sin(a) * radio;
+    s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
+         '" r="' + tam + '" fill="' + color + '"/>';
+  }
+  return s;
+};
+
+CB.sprites.svgMoneda = function (valor, aro, centro) {
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">';
+  s += '<circle cx="36" cy="36" r="35" fill="' + aro + '"/>';
+  /* El canto: un anillo más oscuro que hace que se lea como metal y no como un
+     disco de color. Sin desenfoque, como todo lo demás del juego. */
+  s += '<circle cx="36" cy="36" r="35" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2"/>';
+  s += CB.sprites.estrellasSVG(36, 36, 29, 1.6, 'rgba(0,0,0,.4)');
+  s += '<circle cx="36" cy="36" r="23" fill="' + centro + '"/>';
+  s += '<circle cx="36" cy="36" r="23" fill="none" stroke="rgba(0,0,0,.28)" stroke-width="1.5"/>';
+  /* La silueta del continente, muy esquemática: lo que tiene que leerse es «hay
+     un mapa», no la geografía. Va en la mitad de arriba para dejar libre la de
+     abajo, que es donde el DOM escribe la cifra. */
+  s += '<path fill="rgba(0,0,0,.22)" d="M23 22l4-5 5 1 3-4 6 1 4-3 5 2-2 5-5 1-3 4-6-1-4 3z"/>';
+  s += '</svg>';
+  return s;
+};
+
+CB.sprites.svgBillete = function (valor, fondo, tinta) {
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 64">';
+  s += '<rect width="128" height="64" fill="' + fondo + '"/>';
+  s += '<rect x="1.5" y="1.5" width="125" height="61" fill="none" stroke="' + tinta + '" stroke-width="2"/>';
+  /* La ventana con arco: el motivo que llevan todos los billetes de euro y que
+     los distingue de un rectángulo cualquiera. */
+  s += '<path fill="none" stroke="' + tinta + '" stroke-width="2" ' +
+       'd="M12 52V26a10 10 0 0 1 20 0v26"/>';
+  s += '<path fill="none" stroke="' + tinta + '" stroke-width="1.5" d="M22 20v32"/>';
+  /* La banda holográfica de la derecha. */
+  s += '<rect x="110" y="6" width="10" height="52" fill="rgba(255,255,255,.45)"/>';
+  /* Las doce estrellas van en corro arriba a la derecha, como en la bandera, y
+     NO alrededor del centro: ahí es donde el DOM escribe la cifra, y un corro de
+     estrellas por detrás del número lo vuelve ilegible. */
+  s += CB.sprites.estrellasSVG(88, 17, 9, 1.4, tinta);
+  s += '</svg>';
+  return s;
+};
+
+/* Publica las siete piezas como --pieza-N. El CSS las usa sin saber de dónde
+   vienen, exactamente igual que las --tex-*. */
+CB.sprites.generarDinero = function () {
+  if (typeof document === 'undefined' || !document.documentElement) return 0;
+  var raiz = document.documentElement, n = 0, i;
+
+  function poner(valor, svg) {
+    var url;
+    try {
+      url = 'data:image/svg+xml,' + encodeURIComponent(svg);
+    } catch (e) { return; }
+    CB.sprites.cache['pieza' + valor] = url;
+    raiz.style.setProperty('--pieza-' + valor, 'url("' + url + '")');
+    n++;
+  }
+
+  for (i = 0; i < CB.sprites.MONEDAS.length; i++) {
+    poner(CB.sprites.MONEDAS[i][0],
+          CB.sprites.svgMoneda(CB.sprites.MONEDAS[i][0],
+                               CB.sprites.MONEDAS[i][1], CB.sprites.MONEDAS[i][2]));
+  }
+  for (i = 0; i < CB.sprites.BILLETES.length; i++) {
+    poner(CB.sprites.BILLETES[i][0],
+          CB.sprites.svgBillete(CB.sprites.BILLETES[i][0],
+                                CB.sprites.BILLETES[i][1], CB.sprites.BILLETES[i][2]));
+  }
+  return n;
+};
+
 /* ============================================================================
    04-audio.js — 12 efectos sintetizados con Web Audio. CERO ficheros de sonido
    ----------------------------------------------------------------------------
@@ -2383,7 +2512,7 @@ CB.audio.ruido = function (cuando, duracion, frecFiltro, ganancia) {
   } catch (e) { }
 };
 
-/* ── Los 12 efectos ─────────────────────────────────────────────────────── */
+/* ── Los 13 efectos ─────────────────────────────────────────────────────── */
 CB.audio.EFECTOS = {
 
   acierto: function () {
@@ -2416,6 +2545,25 @@ CB.audio.EFECTOS = {
 
   /* «Toc» de madera del toque prematuro durante los 800 ms de construcción. */
   toc: function () { CB.audio.ruido(0, 0.05, 380, 0.22); },
+
+  /* ── EL CLIC DE PULSAR, y es el decimotercero ──────────────────────────────
+     Se pedía que todos los botones sonaran al pulsarse. Hasta ahora sonaba lo
+     que PASA —el acierto, el fallo, la gema, la luz— pero no el acto de tocar,
+     así que un botón de navegación, uno de ajustes o el de pausa se pulsaban en
+     silencio y no había forma de saber si el toque había entrado.
+
+     Este es el sonido más frecuente del juego con diferencia, y por eso es el
+     más corto y el más flojo de los trece: 35 ms y ganancia 0,12, contra los
+     0,22 del «toc». Un clic que se oye tanto como una celebración deja de ser
+     información y pasa a ser ruido — la misma regla que ordena las
+     celebraciones, aplicada al sonido.
+
+     Y suena DISTINTO del «toc»: el «toc» es ruido filtrado grave —«aún no»— y
+     esto es una nota corta y clara —«sí»—. Que se distingan importa: son las dos
+     respuestas posibles a la misma acción. */
+  pulsar: function () {
+    CB.audio.nota(CB.audio.NOTAS.do5, 0, 0.035, 'square', 0.12);
+  },
 
   gema: function () {
     CB.audio.nota(CB.audio.NOTAS.la5, 0, 0.07, 'sine', 0.18);
@@ -4925,6 +5073,17 @@ CB.gen.dinero.E1 = function (rng, D) {
   return {
     formato: 'opciones4',
     consigna: 'Toca ' + CB.gen.dinero.nombre(v) + '.',
+    /* LAS OPCIONES SE DIBUJAN COMO PIEZAS, NO COMO NÚMEROS. La cabecera de este
+       fichero dice que monedas y billetes son conjuntos separados y que «el juego
+       los distingue siempre visual y verbalmente», y en la única pregunta cuyo
+       objeto ES distinguirlos no se distinguían: las cuatro opciones salían como
+       cuatro botones de madera idénticos con un número dentro. Es decir, se
+       preguntaba «toca la moneda de 2 euros» y lo que había que reconocer era el
+       2, no la moneda — que se puede acertar sin saber lo que es una moneda.
+
+       La pieza dibujada ya existía y se usaba en pagar y en contar. Aquí faltaba,
+       que es justo donde hace falta. */
+    piezasDinero: true,
     respuesta: v,
     expr: 'reconocer' + v,
     diagnostico: false,
@@ -7930,7 +8089,7 @@ CB.ui.pintarHUD = function (estado) {
   }
   var g = document.getElementById('hud-gemas');
   /* El contador de gemas SOLO SUBE. Nunca baja, nunca es negativo (§3.4). */
-  if (g) g.textContent = String(Math.max(0, estado.gemas || 0));
+  if (g) CB.ui.contarHasta(g, Math.max(0, estado.gemas || 0));
 
   /* ── CUÁNTO QUEDA ─────────────────────────────────────────────────────────
      Lo único que codificaba el avance era el cielo, y el cielo es aria-hidden.
@@ -7960,6 +8119,114 @@ CB.ui.pintarHUD = function (estado) {
        porque CSS no sabe sumar. */
     gal.setAttribute('data-texto', hechos + '/' + estado.total);
   }
+};
+
+/* ── EN QUÉ VETA SE ESTÁ ────────────────────────────────────────────────────
+   El HUD sabía decir cuánto queda y no sabía decir en qué se está. Una
+   expedición encadena hasta veinte ítems de siete vetas distintas, barajadas
+   —el barajado es deliberado: la práctica intercalada retiene mejor que la
+   agrupada— y el nombre de la veta solo se veía en la Cantera, dos pantallas
+   atrás. Con esto, cambiar de veta deja de ser un cambio de pregunta sin causa.
+
+   SIN ARIA. Es texto de verdad y se lee solo; el nombre del mundo se aparta
+   visualmente por debajo de 480 px pero sigue en el árbol de accesibilidad. Un
+   aria-label sobre un <p> además está prohibido por ARIA y axe lo marca. */
+CB.ui.pintarVeta = function (nivel, mundo) {
+  var nombre = document.getElementById('hud-veta-nombre');
+  var mun = document.getElementById('hud-veta-mundo');
+  if (nombre) nombre.textContent = nivel ? nivel.nombre : '';
+  if (mun) mun.textContent = mundo ? mundo.nombre : '';
+};
+
+/* ── UNA PIEZA DE DINERO ────────────────────────────────────────────────────
+   Estaba escrita tres veces —en las opciones, en el modo pagar y en el modo
+   contar— y las tres iban a divergir en cuanto la pieza dejara de ser un
+   rectángulo de un solo color, que es exactamente lo que pasa aquí.
+
+   `data-valor` es lo que permite que el CSS dibuje CADA denominación como la que
+   es: el aro bimetálico invertido de las monedas de 1 y 2 €, y el color y el
+   tamaño reales de cada billete. No hay ni una imagen en el proyecto —la
+   auditoría no admite un solo fichero binario— así que la pieza se dibuja, igual
+   que el reloj de arena, las gemas y el terreno. */
+CB.ui.pieza = function (etiqueta, v) {
+  var el = CB.ui.crear(etiqueta, CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete',
+                       v + ' €');
+  el.setAttribute('data-valor', String(v));
+  el.setAttribute('aria-label', CB.gen.dinero.nombre(v));
+  return el;
+};
+
+/* ── LA CIFRA QUE SUBE ──────────────────────────────────────────────────────
+   El marcador cambiaba de golpe: donde ponía 12 ponía 15 en el fotograma
+   siguiente. Toda la ganancia se contaba fuera de él —la insignia «+1» que brota
+   al lado, la hilera de «+2 por rapidez»— y el número, que es el sitio donde de
+   verdad vive la puntuación, no se enteraba. Un cambio instantáneo entre dos
+   números de dos cifras no se ve: se descubre después, y entonces ya no se sabe
+   de dónde ha salido.
+
+   Sube DE UNO EN UNO, con tope de pasos. Contar 3 gemas de una en una es lo que
+   hace que se noten las tres; contar 40 así al final de la partida serían cuatro
+   segundos de espera, y por eso el salto se agranda cuando la diferencia es
+   grande. El último paso escribe el destino EXACTO, nunca el acumulado de las
+   divisiones: una cifra de puntuación que se quede en 39 porque el reparto no
+   era entero es peor que no animar nada.
+
+   NUNCA BAJA. Empezar una partida repinta el HUD con 0 gemas y el nodo aún
+   guarda las de la anterior; contar hacia atrás contradice de frente la regla de
+   que el marcador solo sube (§3.4). Si el destino es menor, se escribe y ya.
+
+   Y CON EL MOVIMIENTO APAGADO SE ESCRIBE EL NÚMERO FINAL, no se pierde nada: la
+   información es la cifra, el movimiento solo es la gracia. La clase
+   `sin-movimiento` de la raíz es la fuente única de ese ajuste —la pone
+   CB.a11y.aplicarAjustes juntando el ajuste del juego y el del sistema— así que
+   aquí se lee de ahí y no se vuelve a preguntar a matchMedia. */
+CB.ui.MS_PASO_CIFRA = 90;
+CB.ui.PASOS_CIFRA = 8;
+CB.ui._cuentas = {};
+
+CB.ui.sinMovimiento = function () {
+  return !!(document.documentElement &&
+            document.documentElement.classList.contains('sin-movimiento'));
+};
+
+CB.ui.contarHasta = function (nodo, destino) {
+  if (!nodo) return;
+  destino = Math.max(0, Math.round(Number(destino)) || 0);
+
+  var clave = nodo.id || 'cifra';
+  if (CB.ui._cuentas[clave]) {
+    clearInterval(CB.ui._cuentas[clave]);
+    CB.ui._cuentas[clave] = null;
+  }
+
+  var previo = parseInt(nodo.textContent, 10);
+  if (!isFinite(previo)) previo = destino;
+
+  if (destino <= previo) { nodo.textContent = String(destino); return; }
+
+  /* El salto de la cifra. Va aunque el movimiento esté apagado —el CSS lo anula
+     ahí— porque quitar la clase a mano sería una segunda lista que mantener. */
+  nodo.classList.remove('cifra-viva--sube');
+  void nodo.offsetWidth;
+  nodo.classList.add('cifra-viva--sube');
+
+  if (CB.ui.sinMovimiento()) { nodo.textContent = String(destino); return; }
+
+  var falta = destino - previo;
+  var pasos = Math.min(CB.ui.PASOS_CIFRA, falta);
+  var salto = Math.ceil(falta / pasos);
+  var valor = previo;
+
+  CB.ui._cuentas[clave] = setInterval(function () {
+    valor += salto;
+    if (valor >= destino) {
+      valor = destino;                       // el destino EXACTO, siempre
+      clearInterval(CB.ui._cuentas[clave]);
+      CB.ui._cuentas[clave] = null;
+      nodo.classList.remove('cifra-viva--sube');
+    }
+    nodo.textContent = String(valor);
+  }, CB.ui.MS_PASO_CIFRA);
 };
 
 CB.ui.parpadeoGris = function () {
@@ -8504,6 +8771,7 @@ CB.ui.cinta = { nodo: null, _salida: null, _clave: null };
 CB.ui.cinta.COREOGRAFIAS = {
   'prisa':   { ms: 1900, sfx: 'prisa'      },
   'junta':   { ms: 1300, sfx: 'subirNivel' },
+  'sube':    { ms: 1400, sfx: 'subirNivel' },
   'bandera': { ms: 1800, sfx: 'cofre'      }
 };
 
@@ -8591,6 +8859,11 @@ CB.ui.festejo.CELEBRACIONES = {
                 quien: 'chispa', gesto: 'racha', particulas: true },
   /* Logro o luz extra: un cartel centrado con bisel, no una franja. */
   logro:      { vehiculo: 'cartel',   ms: 1600, sfx: 'luzExtra' },
+  /* Se acaba una veta y empieza otra. Es lo único de esta tabla que NO celebra
+     un acierto: sitúa. Por eso la cinta sube en peldaños y no rebota, y por eso
+     va sola —la fiesta del acierto que la cerró ya ha pasado hace un segundo y
+     medio, y dos fiestas seguidas no son el doble de fiesta. */
+  vetaSuperada: { vehiculo: 'cinta',  ms: 1400, sfx: 'subirNivel', coreo: 'sube' },
   /* El jefe cede. Cuatro veces en la vida de un perfil. */
   jefe:       { vehiculo: 'cinta',    ms: 1800, sfx: 'cofre', coreo: 'bandera' },
   /* Bloque raro, 1 de cada 20: tiembla la cantera entera. */
@@ -9284,18 +9557,42 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
   CB.ui.vaciar(cont);
 
   var rej = CB.ui.crear('div', 'rejilla-respuestas');
+  /* Las columnas de la retícula miden --lado-respuesta, que en la pantalla más
+     estrecha son 64 px; un billete mide 128×64 y desbordaría su celda. Con las
+     piezas, el ancho de columna lo manda el contenido. */
+  if (item.piezasDinero) rej.classList.add('rejilla-respuestas--dinero');
   var i;
 
   for (i = 0; i < opcionesValores.length; i++) {
     (function (op, idx) {
-      var etiqueta = (op.texto != null) ? op.texto : String(op.valor);
-      var b = CB.ui.boton(etiqueta, '', function () {
+      var b;
+      function elegir() {
         if (CB.partida && CB.partida.bloqueado) return;
         CB.componentes.pedirConfirmacion(b, function () {
           alResponder(op.valor, 'opciones', { posicion: idx, codigoError: op.codigoError });
         });
-      }, { posicion: idx });
-      if (op.texto != null) b.style.fontSize = 'var(--tam-texto-min)';
+      }
+
+      /* PIEZAS DE DINERO: la opción se dibuja como la moneda o el billete que es,
+         con la misma forma que ya tienen en pagar y en contar —el cuadrado de oro
+         y el rectángulo verde—, no como un botón de madera con un número.
+
+         Las dos formas cumplen el suelo de 44 px de WCAG 2.5.8 por sí solas (72
+         y 128×64), así que no hace falta envolverlas en un botón: la pieza ES el
+         botón, igual que en el modo pagar. Y el nombre accesible es el de la
+         pieza entera —«la moneda de 2 euros»— y no el «2 €» que lleva escrito,
+         que es lo que hace que quien juega con lector de pantalla oiga la misma
+         pregunta que ve quien mira. */
+      if (item.piezasDinero) {
+        b = CB.ui.pieza('button', op.valor);
+        b.type = 'button';
+        b.setAttribute('data-posicion', idx);
+        b.addEventListener('click', elegir);
+      } else {
+        var etiqueta = (op.texto != null) ? op.texto : String(op.valor);
+        b = CB.ui.boton(etiqueta, '', elegir, { posicion: idx });
+        if (op.texto != null) b.style.fontSize = 'var(--tam-texto-min)';
+      }
       rej.appendChild(b);
     })(opcionesValores[i], i);
   }
@@ -9510,10 +9807,8 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
 
     var caja = CB.ui.crear('div', 'contenedor-dinero');
     item.disponibles.forEach(function (v, idx) {
-      var esMoneda = CB.gen.dinero.esMoneda(v);
-      var b = CB.ui.crear('button', esMoneda ? 'moneda' : 'billete', String(v) + ' €');
+      var b = CB.ui.pieza('button', v);
       b.type = 'button';
-      b.setAttribute('aria-label', CB.gen.dinero.nombre(v));
       b.setAttribute('data-posicion', idx);
       b.addEventListener('click', function () {
         if (CB.partida && CB.partida.bloqueado) return;
@@ -9568,10 +9863,7 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
   /* Modo «contar»: se muestran las piezas y se responde con teclado. */
   var muestra = CB.ui.crear('div', 'contenedor-dinero');
   (item.piezas || []).forEach(function (v) {
-    var esMoneda = CB.gen.dinero.esMoneda(v);
-    var p = CB.ui.crear('span', esMoneda ? 'moneda' : 'billete', String(v) + ' €');
-    p.setAttribute('aria-label', CB.gen.dinero.nombre(v));
-    muestra.appendChild(p);
+    muestra.appendChild(CB.ui.pieza('span', v));
   });
   var arriba = document.getElementById('item-enunciado');
   if (arriba) arriba.appendChild(muestra);
@@ -9940,6 +10232,13 @@ CB.partida.iniciar = function (opciones) {
     escalera: CB.escalera.nuevoContador(),
     /* Escalón 4: el nivel que se cuela por delante del guion, una sola vez. */
     prerrequisitoPendiente: null,
+    /* La veta del ítem ANTERIOR, para saber cuándo se cambia de veta. */
+    vetaPrevia: null,
+    /* Las vetas que se quedaron a medias sin dejar deuda en la cola de repaso.
+       Hoy solo hay una manera de que eso pase —que se agote el tiempo, que no
+       reinserta nada— y sin este mapa el juego cantaría «Nivel superado» de una
+       veta cuyo único ítem se quedó sin contestar. */
+    vetasSinCerrar: {},
     colaRepaso: CB.leitner.nuevaCola(),
     itemsServidos: [],
     servidosSet: {},
@@ -9972,6 +10271,55 @@ CB.partida.iniciar = function (opciones) {
                     indice: 0, total: CB.partida.estado.guion.length });
   CB.partida.servirItem();
   return CB.partida.estado;
+};
+
+/**
+ * Cuántos ítems de esta veta le quedan a la expedición: los del guion que aún no
+ * se han servido, más los que esperan en la cola de repaso por haberse fallado.
+ *
+ * CUENTA DE MÁS A PROPÓSITO. Una reinserción consume el hueco de un ítem del
+ * guion, así que este número es un techo, no una cifra exacta. Equivocarse por
+ * arriba significa callarse una vez; equivocarse por abajo significa cantar
+ * «Nivel superado» y volver a servir esa misma veta tres ítems después, que es
+ * mentirle a quien juega. De los dos errores posibles solo uno es aceptable.
+ */
+CB.partida.quedanDeLaVeta = function (e, nivelId) {
+  if (!e || !nivelId) return 0;
+  var n = 0, i;
+  for (i = e.indice; i < e.guion.length; i++) {
+    if (e.guion[i] === nivelId) n++;
+  }
+  for (i = 0; i < e.colaRepaso.length; i++) {
+    if (e.colaRepaso[i].nivelId === nivelId) n++;
+  }
+  return n;
+};
+
+/**
+ * ¿Se acaba de terminar una veta? Devuelve el nivel que queda atrás, o null.
+ *
+ * SUPERADA SIGNIFICA SUPERADA, y por eso hay tres condiciones y no una:
+ *   1. que la veta del ítem que llega sea otra distinta;
+ *   2. que a la anterior no le quede ni un ítem por delante —ni en el guion ni
+ *      en la cola de repaso, donde cae todo lo que se falla dos veces—;
+ *   3. que no se haya quedado a medias por tiempo agotado.
+ *
+ * La segunda es la que hace honesta a la frase: un ítem fallado vuelve, así que
+ * mientras se deba un repaso de esa veta no se ha superado nada. La tercera
+ * tapa el único agujero que deja la segunda, porque el tiempo agotado no
+ * reinserta.
+ *
+ * Se pregunta al SERVIR el ítem siguiente y no al acertar el anterior, y eso
+ * tampoco es casual: en el momento del acierto todavía no se sabe qué veta viene
+ * —una reinserción puede colarse por delante del guion—, así que anunciarla
+ * entonces sería adivinar. Aquí ya está decidida.
+ */
+CB.partida.vetaSuperada = function (nivelId) {
+  var e = CB.partida.estado;
+  if (!e || !e.vetaPrevia || e.vetaPrevia === nivelId) return null;
+  if (e.vetasSinCerrar[e.vetaPrevia]) return null;
+  if (CB.partida.quedanDeLaVeta(e, e.vetaPrevia) > 0) return null;
+  return CB.catalogo.get(e.vetaPrevia);
 };
 
 /* ── Servir un ítem ─────────────────────────────────────────────────────── */
@@ -10052,13 +10400,53 @@ CB.partida.servirItem = function () {
   CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
                     indice: e.indice, total: e.guion.length });
 
+  /* ── EN QUÉ VETA ESTAMOS ─────────────────────────────────────────────────
+     Se resuelve ANTES de mover e.vetaPrevia, que es lo que la pregunta compara.
+     El rótulo se repinta siempre; la cinta solo cuando de verdad se ha cerrado
+     una veta, que son tres o cuatro veces por expedición y no veinte. */
+  var superada = CB.partida.vetaSuperada(nivelId);
+  e.vetaPrevia = nivelId;
+  CB.ui.pintarVeta(nivel, e.mundo);
+
   CB.ui.pintarItem(item);
   CB.ui.pintarBioma(e.mundo.bioma, e.indice / Math.max(1, e.guion.length));
   CB.partida.pintarRespuesta(item);
+
+  /* ── «NIVEL SUPERADO» ────────────────────────────────────────────────────
+     La cinta lleva el grito corto y el mensaje quieto lleva las dos frases que
+     hay que poder leer: cuál se ha cerrado y cuál empieza. Es el mismo reparto
+     que el resto del juego —la cinta cruza en un segundo y medio y ahí no cabe
+     nada que haya que leer— y es lo que hace que decir a la vez «superado» y «a
+     dónde vamos» no obligue a elegir entre las dos.
+
+     Va ANTES del anuncio de la consigna a propósito: CB.ui.mensaje escribe en la
+     región viva, y en el mismo turno gana la última escritura. La última tiene
+     que ser la que dice qué hay que hacer ahora.
+
+     Y NO CUANDO ADEMÁS SE BAJA AL PRERREQUISITO: los dos escriben en el mismo
+     nodo y el último ganaría, así que el aviso del escalón 4 —que es el que hace
+     falta entender— se comería a este. No pueden coincidir, porque el escalón 4
+     llega detrás de cuatro fallos seguidos y una veta que debe un repaso nunca
+     está superada; pero eso es un razonamiento sobre el estado de otro fichero,
+     y de esos ya se ha caído alguno en este proyecto. */
+  var dicho = '';
+  if (superada && !delPrerrequisito) {
+    /* PRIMERO A DÓNDE VAMOS, y no es indiferente: la caja del mensaje garantiza
+       tres líneas y la veta con el nombre más largo del catálogo ocupa dos. Si
+       la frase de destino fuera la segunda, con dos nombres largos se quedaría
+       fuera justo la mitad que se ha pedido enseñar. La que puede recortarse es
+       la de despedida, que además ya la ha dicho la cinta. */
+    dicho = 'Ahora vas a: ' + nivel.nombre + '. Ya has terminado ' +
+            superada.nombre + '. ';
+    CB.ui.mensaje('Ahora vas a: ' + nivel.nombre + '. Ya has terminado ' +
+                  superada.nombre + '.', 'acierto');
+    CB.ui.festejo.mostrar('vetaSuperada', '¡Nivel superado!');
+  }
+
   /* UNA SOLA CADENA. CB.a11y.anunciar reescribe la región viva de una vez, así
      que dos anuncios en el mismo turno se tapan: el «Reto» tiene que ir dentro
      del mismo texto que la consigna, no en una llamada aparte. */
-  CB.a11y.anunciar((item.esRetoBonus ? 'Reto. ' : '') +
+  CB.a11y.anunciar(dicho + (item.esRetoBonus ? 'Reto. ' : '') +
                    (item.consigna || item.enunciado || ''));
 
   /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la
@@ -10309,6 +10697,13 @@ CB.partida.tiempoAgotado = function () {
 
   /* El tiempo agotado NUNCA apaga una luz. Ni el primero, ni ninguno. */
   var r = CB.vidas.timeout(e.luces);
+
+  /* PERO SÍ DEJA LA VETA A MEDIAS. Un fallo reinserta el ítem —vuelve tres o
+     cinco ítems después— y por eso la deuda se ve en la cola de repaso; quedarse
+     sin tiempo no reinserta nada, así que la veta parecería cerrada sin que
+     nadie la haya contestado. Sin esta línea el juego cantaría «Nivel superado»
+     de una veta cuyo único ítem se quedó en blanco. */
+  if (e.itemActual) e.vetasSinCerrar[e.itemActual.nivelId] = true;
 
   if (r.cambiaModo && e.modoTiempo !== 'sinPrisa') {
     e.modoTiempo = 'sinPrisa';
@@ -11153,7 +11548,12 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
 
   /* 2.º Gemas y desglose del bono. */
   var g = document.getElementById('fin-gemas');
-  if (g) g.textContent = String(Math.max(0, e.gemas));
+  /* Desde cero, y contando. Es el único sitio donde el número de la partida
+     entera aparece de golpe, así que es donde más se nota que aparezca subiendo.
+     Se pone el 0 a mano porque el nodo conserva el total de la partida anterior:
+     sin eso, contarHasta compararía contra esa cifra vieja y una partida peor que
+     la anterior escribiría el número sin más. */
+  if (g) { g.textContent = '0'; CB.ui.contarHasta(g, Math.max(0, e.gemas)); }
   var bl = document.getElementById('fin-bono');
   if (bl) {
     /* EN GEMAS, no en puntos. Decía «+340 de bono» justo debajo del recuento de
@@ -13356,6 +13756,12 @@ CB.arranque = function () {
 
   CB.texturas.generarTodas();
   CB.sprites.precalentar();
+  /* Las siete piezas de dinero, dibujadas y publicadas como --pieza-*. Va aquí,
+     junto a las texturas, porque es lo mismo: un dibujo que se genera una vez al
+     arrancar y que el CSS consume sin saber de dónde sale. Si esto no llegara a
+     ejecutarse, las piezas se quedan con su color plano y su tamaño, que siguen
+     distinguiéndolas: el dibujo mejora el reconocimiento, no lo sostiene. */
+  CB.sprites.generarDinero();
   CB.ui.iniciarParticulas();
 
   var ap = CB.almacen.ajustesDispositivo();
@@ -13445,6 +13851,8 @@ CB.arranque = function () {
     })(caras[i]);
   }
 
+  CB.arranque.conectarSonidoBotones(document);
+
   /* Guardado ante cierre y cambio de pestaña */
   window.addEventListener('pagehide', function () {
     if (!CB.perfil) return;
@@ -13528,6 +13936,56 @@ CB.arranque.esRecarga = function (perfil, ahoraMs) {
   var g = perfil && perfil.partidaEnCurso;
   if (!g || g.guardadaTs == null) return false;
   return (ahoraMs - g.guardadaTs) < CB.arranque.MS_RECARGA;
+};
+
+/* ── TODOS LOS BOTONES SUENAN AL PULSARSE ─────────────────────────────────────
+   UN SOLO OYENTE, en el documento y en fase de captura. Hay botones en las
+   diecisiete pantallas y la mitad los crea el JS en tiempo de ejecución —el
+   teclado, las opciones, las monedas, los cromos, los ajustes—, así que
+   engancharlos uno a uno sería una lista que hay que acordarse de mantener, y de
+   esas ya se han caído varias en este proyecto. Delegar cubre también los que
+   todavía no existen.
+
+   EN CAPTURA a propósito: si un manejador de más abajo llama a
+   stopPropagation(), un oyente en burbuja no llegaría a enterarse y ese botón
+   concreto se quedaría mudo sin que nada fallara.
+
+   ESTÁ FUERA DEL DOMContentLoaded, y eso es lo que la hace comprobable: el
+   arranque devuelve pronto cuando no hay #btn-jugar —así es como las páginas de
+   prueba evitan echar a andar un juego—, de modo que un oyente registrado ahí
+   dentro no existiría nunca en la suite. Con la función aparte, el guardián
+   ejecuta EL MISMO código de registro que el juego, y no una imitación.
+
+   Mismo cerrojo por atributo que CB.componentes.conectarToc(), y por el mismo
+   motivo: llamarla dos veces dejaría dos oyentes y el clic sonaría doble.
+
+   TRES EXCEPCIONES, y las tres porque ya suena algo:
+
+   · el botón deshabilitado no suena. Durante los 800 ms de construcción el toque
+     prematuro ya tiene su «toc» de madera, que además dice otra cosa: «aún no».
+     Dos sonidos a la vez convertirían esa distinción en ruido.
+   · las monedas y los billetes traen su propio «gema» al cogerse.
+   · el botón de sonido no se oye a sí mismo: sonaría justo el clic que pide que
+     no suene nada.
+
+   No hace falta comprobar el ajuste de silencio: CB.audio.sfx ya lo mira, y
+   repetirlo aquí sería la segunda copia de una regla que tiene dueño. */
+CB.arranque.conectarSonidoBotones = function (raiz) {
+  if (!raiz) return false;
+  var marca = raiz.documentElement || raiz;
+  if (marca.getAttribute && marca.getAttribute('data-clic') === 'si') return false;
+  if (marca.setAttribute) marca.setAttribute('data-clic', 'si');
+
+  raiz.addEventListener('click', function (ev) {
+    var b = ev.target;
+    if (!b || !b.closest) return;
+    b = b.closest('button');
+    if (!b || b.disabled) return;
+    if (b.classList.contains('moneda') || b.classList.contains('billete')) return;
+    if (b.getAttribute('data-accion') === 'sonido') return;
+    CB.audio.sfx('pulsar');
+  }, true);
+  return true;
 };
 
 document.addEventListener('DOMContentLoaded', function () {

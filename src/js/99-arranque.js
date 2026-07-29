@@ -427,6 +427,12 @@ CB.arranque = function () {
 
   CB.texturas.generarTodas();
   CB.sprites.precalentar();
+  /* Las siete piezas de dinero, dibujadas y publicadas como --pieza-*. Va aquí,
+     junto a las texturas, porque es lo mismo: un dibujo que se genera una vez al
+     arrancar y que el CSS consume sin saber de dónde sale. Si esto no llegara a
+     ejecutarse, las piezas se quedan con su color plano y su tamaño, que siguen
+     distinguiéndolas: el dibujo mejora el reconocimiento, no lo sostiene. */
+  CB.sprites.generarDinero();
   CB.ui.iniciarParticulas();
 
   var ap = CB.almacen.ajustesDispositivo();
@@ -516,6 +522,8 @@ CB.arranque = function () {
     })(caras[i]);
   }
 
+  CB.arranque.conectarSonidoBotones(document);
+
   /* Guardado ante cierre y cambio de pestaña */
   window.addEventListener('pagehide', function () {
     if (!CB.perfil) return;
@@ -599,6 +607,56 @@ CB.arranque.esRecarga = function (perfil, ahoraMs) {
   var g = perfil && perfil.partidaEnCurso;
   if (!g || g.guardadaTs == null) return false;
   return (ahoraMs - g.guardadaTs) < CB.arranque.MS_RECARGA;
+};
+
+/* ── TODOS LOS BOTONES SUENAN AL PULSARSE ─────────────────────────────────────
+   UN SOLO OYENTE, en el documento y en fase de captura. Hay botones en las
+   diecisiete pantallas y la mitad los crea el JS en tiempo de ejecución —el
+   teclado, las opciones, las monedas, los cromos, los ajustes—, así que
+   engancharlos uno a uno sería una lista que hay que acordarse de mantener, y de
+   esas ya se han caído varias en este proyecto. Delegar cubre también los que
+   todavía no existen.
+
+   EN CAPTURA a propósito: si un manejador de más abajo llama a
+   stopPropagation(), un oyente en burbuja no llegaría a enterarse y ese botón
+   concreto se quedaría mudo sin que nada fallara.
+
+   ESTÁ FUERA DEL DOMContentLoaded, y eso es lo que la hace comprobable: el
+   arranque devuelve pronto cuando no hay #btn-jugar —así es como las páginas de
+   prueba evitan echar a andar un juego—, de modo que un oyente registrado ahí
+   dentro no existiría nunca en la suite. Con la función aparte, el guardián
+   ejecuta EL MISMO código de registro que el juego, y no una imitación.
+
+   Mismo cerrojo por atributo que CB.componentes.conectarToc(), y por el mismo
+   motivo: llamarla dos veces dejaría dos oyentes y el clic sonaría doble.
+
+   TRES EXCEPCIONES, y las tres porque ya suena algo:
+
+   · el botón deshabilitado no suena. Durante los 800 ms de construcción el toque
+     prematuro ya tiene su «toc» de madera, que además dice otra cosa: «aún no».
+     Dos sonidos a la vez convertirían esa distinción en ruido.
+   · las monedas y los billetes traen su propio «gema» al cogerse.
+   · el botón de sonido no se oye a sí mismo: sonaría justo el clic que pide que
+     no suene nada.
+
+   No hace falta comprobar el ajuste de silencio: CB.audio.sfx ya lo mira, y
+   repetirlo aquí sería la segunda copia de una regla que tiene dueño. */
+CB.arranque.conectarSonidoBotones = function (raiz) {
+  if (!raiz) return false;
+  var marca = raiz.documentElement || raiz;
+  if (marca.getAttribute && marca.getAttribute('data-clic') === 'si') return false;
+  if (marca.setAttribute) marca.setAttribute('data-clic', 'si');
+
+  raiz.addEventListener('click', function (ev) {
+    var b = ev.target;
+    if (!b || !b.closest) return;
+    b = b.closest('button');
+    if (!b || b.disabled) return;
+    if (b.classList.contains('moneda') || b.classList.contains('billete')) return;
+    if (b.getAttribute('data-accion') === 'sonido') return;
+    CB.audio.sfx('pulsar');
+  }, true);
+  return true;
 };
 
 document.addEventListener('DOMContentLoaded', function () {

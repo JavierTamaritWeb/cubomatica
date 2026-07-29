@@ -176,6 +176,13 @@ CB.partida.iniciar = function (opciones) {
     escalera: CB.escalera.nuevoContador(),
     /* Escalón 4: el nivel que se cuela por delante del guion, una sola vez. */
     prerrequisitoPendiente: null,
+    /* La veta del ítem ANTERIOR, para saber cuándo se cambia de veta. */
+    vetaPrevia: null,
+    /* Las vetas que se quedaron a medias sin dejar deuda en la cola de repaso.
+       Hoy solo hay una manera de que eso pase —que se agote el tiempo, que no
+       reinserta nada— y sin este mapa el juego cantaría «Nivel superado» de una
+       veta cuyo único ítem se quedó sin contestar. */
+    vetasSinCerrar: {},
     colaRepaso: CB.leitner.nuevaCola(),
     itemsServidos: [],
     servidosSet: {},
@@ -208,6 +215,55 @@ CB.partida.iniciar = function (opciones) {
                     indice: 0, total: CB.partida.estado.guion.length });
   CB.partida.servirItem();
   return CB.partida.estado;
+};
+
+/**
+ * Cuántos ítems de esta veta le quedan a la expedición: los del guion que aún no
+ * se han servido, más los que esperan en la cola de repaso por haberse fallado.
+ *
+ * CUENTA DE MÁS A PROPÓSITO. Una reinserción consume el hueco de un ítem del
+ * guion, así que este número es un techo, no una cifra exacta. Equivocarse por
+ * arriba significa callarse una vez; equivocarse por abajo significa cantar
+ * «Nivel superado» y volver a servir esa misma veta tres ítems después, que es
+ * mentirle a quien juega. De los dos errores posibles solo uno es aceptable.
+ */
+CB.partida.quedanDeLaVeta = function (e, nivelId) {
+  if (!e || !nivelId) return 0;
+  var n = 0, i;
+  for (i = e.indice; i < e.guion.length; i++) {
+    if (e.guion[i] === nivelId) n++;
+  }
+  for (i = 0; i < e.colaRepaso.length; i++) {
+    if (e.colaRepaso[i].nivelId === nivelId) n++;
+  }
+  return n;
+};
+
+/**
+ * ¿Se acaba de terminar una veta? Devuelve el nivel que queda atrás, o null.
+ *
+ * SUPERADA SIGNIFICA SUPERADA, y por eso hay tres condiciones y no una:
+ *   1. que la veta del ítem que llega sea otra distinta;
+ *   2. que a la anterior no le quede ni un ítem por delante —ni en el guion ni
+ *      en la cola de repaso, donde cae todo lo que se falla dos veces—;
+ *   3. que no se haya quedado a medias por tiempo agotado.
+ *
+ * La segunda es la que hace honesta a la frase: un ítem fallado vuelve, así que
+ * mientras se deba un repaso de esa veta no se ha superado nada. La tercera
+ * tapa el único agujero que deja la segunda, porque el tiempo agotado no
+ * reinserta.
+ *
+ * Se pregunta al SERVIR el ítem siguiente y no al acertar el anterior, y eso
+ * tampoco es casual: en el momento del acierto todavía no se sabe qué veta viene
+ * —una reinserción puede colarse por delante del guion—, así que anunciarla
+ * entonces sería adivinar. Aquí ya está decidida.
+ */
+CB.partida.vetaSuperada = function (nivelId) {
+  var e = CB.partida.estado;
+  if (!e || !e.vetaPrevia || e.vetaPrevia === nivelId) return null;
+  if (e.vetasSinCerrar[e.vetaPrevia]) return null;
+  if (CB.partida.quedanDeLaVeta(e, e.vetaPrevia) > 0) return null;
+  return CB.catalogo.get(e.vetaPrevia);
 };
 
 /* ── Servir un ítem ─────────────────────────────────────────────────────── */
@@ -288,13 +344,53 @@ CB.partida.servirItem = function () {
   CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
                     indice: e.indice, total: e.guion.length });
 
+  /* ── EN QUÉ VETA ESTAMOS ─────────────────────────────────────────────────
+     Se resuelve ANTES de mover e.vetaPrevia, que es lo que la pregunta compara.
+     El rótulo se repinta siempre; la cinta solo cuando de verdad se ha cerrado
+     una veta, que son tres o cuatro veces por expedición y no veinte. */
+  var superada = CB.partida.vetaSuperada(nivelId);
+  e.vetaPrevia = nivelId;
+  CB.ui.pintarVeta(nivel, e.mundo);
+
   CB.ui.pintarItem(item);
   CB.ui.pintarBioma(e.mundo.bioma, e.indice / Math.max(1, e.guion.length));
   CB.partida.pintarRespuesta(item);
+
+  /* ── «NIVEL SUPERADO» ────────────────────────────────────────────────────
+     La cinta lleva el grito corto y el mensaje quieto lleva las dos frases que
+     hay que poder leer: cuál se ha cerrado y cuál empieza. Es el mismo reparto
+     que el resto del juego —la cinta cruza en un segundo y medio y ahí no cabe
+     nada que haya que leer— y es lo que hace que decir a la vez «superado» y «a
+     dónde vamos» no obligue a elegir entre las dos.
+
+     Va ANTES del anuncio de la consigna a propósito: CB.ui.mensaje escribe en la
+     región viva, y en el mismo turno gana la última escritura. La última tiene
+     que ser la que dice qué hay que hacer ahora.
+
+     Y NO CUANDO ADEMÁS SE BAJA AL PRERREQUISITO: los dos escriben en el mismo
+     nodo y el último ganaría, así que el aviso del escalón 4 —que es el que hace
+     falta entender— se comería a este. No pueden coincidir, porque el escalón 4
+     llega detrás de cuatro fallos seguidos y una veta que debe un repaso nunca
+     está superada; pero eso es un razonamiento sobre el estado de otro fichero,
+     y de esos ya se ha caído alguno en este proyecto. */
+  var dicho = '';
+  if (superada && !delPrerrequisito) {
+    /* PRIMERO A DÓNDE VAMOS, y no es indiferente: la caja del mensaje garantiza
+       tres líneas y la veta con el nombre más largo del catálogo ocupa dos. Si
+       la frase de destino fuera la segunda, con dos nombres largos se quedaría
+       fuera justo la mitad que se ha pedido enseñar. La que puede recortarse es
+       la de despedida, que además ya la ha dicho la cinta. */
+    dicho = 'Ahora vas a: ' + nivel.nombre + '. Ya has terminado ' +
+            superada.nombre + '. ';
+    CB.ui.mensaje('Ahora vas a: ' + nivel.nombre + '. Ya has terminado ' +
+                  superada.nombre + '.', 'acierto');
+    CB.ui.festejo.mostrar('vetaSuperada', '¡Nivel superado!');
+  }
+
   /* UNA SOLA CADENA. CB.a11y.anunciar reescribe la región viva de una vez, así
      que dos anuncios en el mismo turno se tapan: el «Reto» tiene que ir dentro
      del mismo texto que la consigna, no en una llamada aparte. */
-  CB.a11y.anunciar((item.esRetoBonus ? 'Reto. ' : '') +
+  CB.a11y.anunciar(dicho + (item.esRetoBonus ? 'Reto. ' : '') +
                    (item.consigna || item.enunciado || ''));
 
   /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la
@@ -545,6 +641,13 @@ CB.partida.tiempoAgotado = function () {
 
   /* El tiempo agotado NUNCA apaga una luz. Ni el primero, ni ninguno. */
   var r = CB.vidas.timeout(e.luces);
+
+  /* PERO SÍ DEJA LA VETA A MEDIAS. Un fallo reinserta el ítem —vuelve tres o
+     cinco ítems después— y por eso la deuda se ve en la cola de repaso; quedarse
+     sin tiempo no reinserta nada, así que la veta parecería cerrada sin que
+     nadie la haya contestado. Sin esta línea el juego cantaría «Nivel superado»
+     de una veta cuyo único ítem se quedó en blanco. */
+  if (e.itemActual) e.vetasSinCerrar[e.itemActual.nivelId] = true;
 
   if (r.cambiaModo && e.modoTiempo !== 'sinPrisa') {
     e.modoTiempo = 'sinPrisa';
@@ -1389,7 +1492,12 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
 
   /* 2.º Gemas y desglose del bono. */
   var g = document.getElementById('fin-gemas');
-  if (g) g.textContent = String(Math.max(0, e.gemas));
+  /* Desde cero, y contando. Es el único sitio donde el número de la partida
+     entera aparece de golpe, así que es donde más se nota que aparezca subiendo.
+     Se pone el 0 a mano porque el nodo conserva el total de la partida anterior:
+     sin eso, contarHasta compararía contra esa cifra vieja y una partida peor que
+     la anterior escribiría el número sin más. */
+  if (g) { g.textContent = '0'; CB.ui.contarHasta(g, Math.max(0, e.gemas)); }
   var bl = document.getElementById('fin-bono');
   if (bl) {
     /* EN GEMAS, no en puntos. Decía «+340 de bono» justo debajo del recuento de

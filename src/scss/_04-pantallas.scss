@@ -60,6 +60,83 @@
    robarle altura a la zona de respuesta. */
 .pantalla--juego .criatura { width: 56px; height: 56px; font-size: 34px; }
 
+/* ── EL RÓTULO DE VETA: en qué se está ──────────────────────────────────────
+   Una sola línea, y las dos partes se distinguen por FORMA, no por color: el
+   mundo va en versalitas espaciadas y pequeñas, la veta en la tipografía de
+   lectura al tamaño mínimo. Los dos colores son de los pares ya medidos sobre
+   fondo oscuro (--texto-claro y --texto-sec-claro), así que no aparece ningún
+   par de contraste nuevo que nadie haya verificado.
+
+   ALTURA: 20 px de texto + 2×4 de relleno = 28. Se paga de la zona superior,
+   nunca de la inferior, que es donde está el teclado; y por debajo de 660 px de
+   alto —donde la última fila del 3×4 va justa— el relleno vertical desaparece y
+   quedan 20. Medido en 1366×768 y en 1024×768, que son los dos aparatos reales
+   del aula. */
+.rotulo-veta {
+  flex: 0 0 auto;
+  display: flex; align-items: baseline; gap: var(--e2);
+  margin: 0;
+  /* MEDIDO, Y NO SE VE EN LAS PRUEBAS. `_02-base.scss` limita TODO <p> a
+     --ancho-lectura (34ch) porque es la medida de lectura cómoda para un texto
+     corrido, y esto no es un texto corrido: es una banda. Sin esta línea el
+     rótulo mide 432 px en una ventana de 1170, la banda oscura se corta a media
+     pantalla y «Monedas y billetes: reconocerlos» se queda en «M.».
+
+     Y no salía rojo en ninguna prueba: la maqueta de pruebas vive dentro de un
+     <div hidden>, donde nada tiene caja y por tanto ningún ancho se puede medir.
+     Lo cazó mirar la pantalla, que es la lección E14-E17 otra vez. */
+  max-width: none;
+  padding: var(--e1) var(--e3);
+  background: var(--bg-texto-oscuro);
+  @include bisel-lateral(var(--deco-oro));
+  overflow: hidden;
+}
+/* POR DEBAJO DE 480 px EL MUNDO NO SE ESCONDE: SE APARTA. El nombre del mundo no
+   cabe ahí junto al de la veta, y el que contesta a la pregunta es el de la
+   veta. Pero con `display: none` el nombre del mundo saldría también del árbol
+   de accesibilidad, y entonces quien navega con lector de pantalla tendría MENOS
+   información en la pantalla estrecha que en la ancha. Se usan las mismas
+   declaraciones que `.solo-lectores`: sigue leyéndose, solo que no se ve.
+
+   La alternativa —un aria-label en el <p>— está descartada a propósito: ARIA
+   prohíbe nombrar un párrafo, y axe-core lo marca. */
+.rotulo-veta__mundo {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+@include desde(movil) {
+  .rotulo-veta__mundo {
+    position: static;
+    width: auto; height: auto;
+    margin: 0;
+    clip: auto;
+    flex: 0 0 auto;
+    font-family: var(--fuente-pixel);
+    font-size: var(--tam-texto-min);
+    color: var(--texto-sec-claro);
+    letter-spacing: 1px;
+  }
+}
+/* La flecha va en ::after y no en el HTML porque es puntuación de la maqueta,
+   no contenido: un lector de pantalla lee «La Pradera de los Números Contar y
+   recontar» sin tropezarse con un símbolo que no sabe nombrar. */
+.rotulo-veta__mundo::after { content: " ▸"; }
+.rotulo-veta__mundo:empty { display: none; }
+.rotulo-veta__nombre {
+  flex: 1 1 auto;
+  font-family: var(--fuente-lectura);
+  font-size: var(--tam-texto-min);
+  color: var(--texto-claro);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+@include hasta-alto(baja) {
+  .rotulo-veta { padding: 0 var(--e3); }
+}
+
 .zona-juego {
   flex: 1 1 auto;
   display: flex; flex-direction: column;

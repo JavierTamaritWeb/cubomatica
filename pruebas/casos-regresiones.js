@@ -141,6 +141,19 @@
          el avance solo lo codificaba el cielo, que es aria-hidden
      E84 la calibración decía «ahora sí empieza el juego» y         AQUÍ
          llevaba a un menú con tres tarjetas bloqueadas
+     E85 el HUD decía cuánto queda y no decía en QUÉ se está:      AQUÍ
+         el nombre de la veta solo existía en la Cantera
+     E86 «Nivel superado» se cantaba sin comprobar que no          AQUÍ
+         quedaran ítems de esa veta ni deuda en la cola
+     E87 el tiempo agotado no deja deuda en ninguna cola, así      AQUÍ
+         que una veta sin contestar parecía cerrada
+     E88 el rótulo de veta estaba pintado y fuera de la vista      AQUÍ
+     E89 «toca la moneda de 2 euros» se acertaba buscando el 2:    AQUÍ
+         las cuatro opciones eran botones iguales con un número
+     E90 el marcador saltaba de 12 a 15 sin que se viera         AQUÍ
+         cambiar: la ganancia se contaba fuera del número
+     E91 los botones se pulsaban en silencio: sonaba lo que      AQUÍ
+         pasa, nunca el acto de tocar
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -1477,7 +1490,20 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
      invada la zona con la que se contesta. Eso ya pasó una vez —el aviso de
      prisa caía sobre la fila del ⌫, el 0 y el OK— y está contado en
      _03-componentes.scss. Así que la regla pasa a ser de TERRITORIO. */
-  var TOPE = 45;          // % de altura por debajo del cual no baja nada visible
+  /* DOS UMBRALES, Y NO SON EL MISMO. Aquí había un `TOPE = 45` que usaba solo la
+     segunda comprobación, mientras la primera llevaba un 30 escrito a mano; leído
+     deprisa parece una constante muerta y un número duplicado, y unificarlos en
+     30 pone roja la segunda —el cartel del logro se declara al 38 % y ahí está
+     bien—. No es un descuido: son dos reglas distintas sobre dos cosas distintas.
+
+     · Un FOTOGRAMA visible no puede bajar del 30 %: se mueve, y lo que se mueve
+       tapa el teclado justo mientras el niño va a tocarlo.
+     · Una COLOCACIÓN fija puede llegar al 45 %: se queda quieta, se ve entera y
+       no cruza por delante de nada.
+
+     El nombre común era lo único que sobraba. */
+  var TOPE_FOTOGRAMA = 30;
+  var TOPE_COLOCACION = 45;
 
   var invaden = [];
   Object.keys(c.fotogramas).forEach(function (nombre) {
@@ -1488,7 +1514,7 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
       m = /translateY\(\s*(-?[\d.]+)%/.exec(paso.style.transform || '');
       if (!m) continue;
       y = parseFloat(m[1]);
-      if (y > 30) invaden.push(nombre + ' @' + paso.keyText + ' → ' + y + '%');
+      if (y > TOPE_FOTOGRAMA) invaden.push(nombre + ' @' + paso.keyText + ' → ' + y + '%');
     }
   });
   t.igual(invaden.length, 0,
@@ -1503,10 +1529,10 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
   c.reglas.forEach(function (r) {
     var top = r.style.top;
     if (!top || top.indexOf('%') === -1) return;
-    if (parseFloat(top) > TOPE) arriba.push(r.selectorText + ' → top ' + top);
+    if (parseFloat(top) > TOPE_COLOCACION) arriba.push(r.selectorText + ' → top ' + top);
   });
   t.igual(arriba.length, 0,
-    'E47 · ningún cartel se declara por debajo del ' + TOPE + ' % de altura',
+    'E47 · ningún cartel se declara por debajo del ' + TOPE_COLOCACION + ' % de altura',
     arriba.join(' · '));
 
   /* Los dos que se superponen no interceptan toques, pase lo que pase. */
@@ -1539,7 +1565,7 @@ CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
   var c = CB.pruebas._reglasCinta();
   var tabla = Object.keys(CB.ui.cinta.COREOGRAFIAS);
 
-  t.igual(tabla.length, 3, 'E48 · la tabla declara las tres coreografías de cinta');
+  t.igual(tabla.length, 4, 'E48 · la tabla declara las cuatro coreografías de cinta');
 
   /* Ida: toda clave de la tabla tiene sus fotogramas. */
   var sinFotogramas = tabla.filter(function (k) {
@@ -3285,4 +3311,531 @@ CB.pruebas.suite('E84 · al acabar la calibración se empieza a jugar', function
       listo();
     }, 3600);
   });
+});
+
+/* ══ E85-E88 · Saber dónde estás ═════════════════════════════════════════════
+
+   La expedición encadena hasta veinte ítems de siete vetas distintas, barajados,
+   y lo único que decía el HUD era cuánto quedaba. En qué se está —qué se está
+   practicando— solo aparecía en la Cantera, dos pantallas atrás y antes de
+   empezar. Cambiar de veta era, visto desde la silla, que la pregunta cambiara
+   de tema sin causa.
+
+   El barajado NO se toca, y conviene dejar dicho por qué: la práctica intercalada
+   retiene mejor que la agrupada, y agrupar el guion por vetas para que «pasar de
+   nivel» fuera literal habría sido cambiar la pedagogía por la maqueta. Lo que se
+   arregla es lo que faltaba —decirlo—, no lo que funcionaba.
+
+   Y de ahí sale el riesgo que vigilan E86 y E87: en cuanto existe una cinta que
+   dice «Nivel superado», hay que asegurarse de que sea VERDAD. Con el guion
+   barajado, una veta que se deja atrás puede volver tres ítems después por dos
+   caminos —quedar más ítems suyos en el guion, o deber un repaso por haberla
+   fallado— y hay un tercero que no deja rastro en ninguna cola: el tiempo
+   agotado. Cantarlo sin comprobar los tres es prometer algo que el propio juego
+   desmiente un minuto después.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E85 · el HUD dice en qué veta se está', function () {
+  var t = CB.pruebas;
+  var nombre = document.getElementById('hud-veta-nombre');
+  var mundo = document.getElementById('hud-veta-mundo');
+
+  /* SE AFIRMA PRIMERO QUE LOS NODOS ESTÁN. Sin esto, pintarVeta hace su return
+     temprano y todas las comprobaciones de abajo miden la cadena vacía contra la
+     cadena vacía, en verde. */
+  if (!t.ok(!!(nombre && mundo), 'E85 · el rótulo de veta está en la maqueta')) return;
+
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  CB.perfil = CB.pruebas.perfilNuevo();
+
+  /* LA PARTIDA LA MONTA iniciar(), que es la única función que produce la forma
+     real del estado. Construir {guion: [...], mundo: {...}} a mano aquí sería
+     fabricar la forma que el test quiere ver: es exactamente lo que dejó E42
+     escondido durante toda la vida del proyecto. */
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  if (t.ok(!!estado, 'E85 · hay partida')) {
+    var servido = CB.catalogo.get(estado.itemActual.nivelId);
+    t.igual(nombre.textContent, servido.nombre,
+      'E85 · el rótulo nombra la veta del ítem que se está sirviendo',
+      'sirve ' + estado.itemActual.nivelId);
+    t.igual(mundo.textContent, estado.mundo.nombre,
+      'E85 · y el mundo en el que se está cavando');
+
+    /* Y CAMBIA. Esta es la aserción que importa: pintar el rótulo una vez al
+       empezar y no volver a tocarlo dejaría el nombre de la primera veta puesto
+       toda la expedición, que es peor que no ponerlo —dice algo, y es falso. */
+    var otro = null, i;
+    for (i = 0; i < estado.guion.length; i++) {
+      if (estado.guion[i] !== estado.itemActual.nivelId) { otro = estado.guion[i]; break; }
+    }
+    if (t.ok(!!otro, 'E85 · el guion mezcla más de una veta', estado.guion.join(' '))) {
+      estado.proximoDescanso = 99;
+      estado.indice = i;
+      estado.colaRepaso.length = 0;
+      CB.partida.servirItem();
+      t.igual(nombre.textContent, CB.catalogo.get(estado.itemActual.nivelId).nombre,
+        'E85 · al cambiar de veta, el rótulo cambia con ella',
+        'ahora sirve ' + estado.itemActual.nivelId);
+    }
+  }
+
+  CB.partida.pararCronometro();
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+CB.pruebas.suite('E86 · «Nivel superado» solo cuando de verdad lo está', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  CB.perfil = CB.pruebas.perfilNuevo();
+
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  if (t.ok(!!estado, 'E86 · hay partida')) {
+    var A = estado.guion[0], B = null, i;
+    for (i = 1; i < estado.guion.length; i++) {
+      if (estado.guion[i] !== A) { B = estado.guion[i]; break; }
+    }
+
+    if (t.ok(!!B, 'E86 · el guion mezcla más de una veta')) {
+      /* CASO 1 · quedan ítems de A en el guion → no está superada. */
+      estado.guion = [A, B, A];
+      estado.indice = 1;
+      estado.vetaPrevia = A;
+      estado.colaRepaso.length = 0;
+      estado.vetasSinCerrar = {};
+      t.igual(CB.partida.vetaSuperada(B), null,
+        'E86 · con ítems de esa veta aún por servir, no se canta nada');
+
+      /* CASO 2 · no quedan en el guion, pero se debe un repaso: tampoco. Un ítem
+         fallado dos veces vuelve entre tres y cinco ítems después, así que la
+         veta no está cerrada por mucho que el guion no la nombre más. */
+      estado.guion = [A, B];
+      estado.indice = 1;
+      CB.leitner.programarReinsercion(estado.colaRepaso, A, 1, estado.rng);
+      t.igual(CB.partida.vetaSuperada(B), null,
+        'E86 · debiendo un repaso de esa veta, tampoco');
+
+      /* CASO 3 · ni guion ni cola: ahora sí, y devuelve el nivel para poder
+         nombrarlo. Devolver true no habría bastado: el mensaje dice cuál. */
+      estado.colaRepaso.length = 0;
+      var cerrada = CB.partida.vetaSuperada(B);
+      t.ok(!!cerrada, 'E86 · sin ítems pendientes ni deuda, la veta está superada');
+      if (cerrada) {
+        t.igual(cerrada.id, A, 'E86 · y devuelve la veta que queda atrás, no la nueva');
+        t.ok(!!cerrada.nombre, 'E86 · con nombre, que es lo que se pinta');
+      }
+
+      /* CASO 4 · seguir en la misma veta no es superarla. Parece obvio y es el
+         fallo que habría salido de comparar solo «quedan cero»: al servir el
+         último ítem de A, si nadie compara la veta anterior con la nueva, se
+         anuncia que se ha superado A mientras se está sirviendo A. */
+      estado.vetaPrevia = A;
+      t.igual(CB.partida.vetaSuperada(A), null,
+        'E86 · servir otro ítem de la misma veta no la supera');
+
+      /* CASO 5 · el primer ítem de la expedición no viene de ninguna parte. */
+      estado.vetaPrevia = null;
+      t.igual(CB.partida.vetaSuperada(B), null,
+        'E86 · y el primer ítem no supera nada, porque no había veta anterior');
+    }
+  }
+
+  CB.partida.pararCronometro();
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+CB.pruebas.suite('E87 · el tiempo agotado deja la veta a medias', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  CB.perfil = CB.pruebas.perfilNuevo();
+
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  if (t.ok(!!estado, 'E87 · hay partida')) {
+    var A = estado.itemActual.nivelId, B = null, i;
+    for (i = 0; i < estado.guion.length; i++) {
+      if (estado.guion[i] !== A) { B = estado.guion[i]; break; }
+    }
+
+    if (t.ok(!!B, 'E87 · el guion mezcla más de una veta')) {
+      /* Se agota el tiempo del ítem de A. No reinserta nada —eso es lo que hace
+         a este caso distinto del fallo— así que sin el mapa de vetas sin cerrar
+         la comprobación de E86 diría que A está superada. */
+      CB.partida.tiempoAgotado();
+      t.ok(!!estado.vetasSinCerrar[A],
+        'E87 · la veta del ítem que se quedó sin tiempo queda marcada');
+
+      estado.guion = [A, B];
+      estado.indice = 1;
+      estado.vetaPrevia = A;
+      estado.colaRepaso.length = 0;
+      t.igual(CB.partida.quedanDeLaVeta(estado, A), 0,
+        'E87 · no le quedan ítems ni deuda: por ahí no se ve nada');
+      t.igual(CB.partida.vetaSuperada(B), null,
+        'E87 · y aun así no se canta superada, porque nadie la contestó');
+    }
+  }
+
+  CB.partida.pararCronometro();
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+CB.pruebas.suite('E88 · el rótulo de veta se ve', function () {
+  var t = CB.pruebas;
+  var rot = document.getElementById('hud-veta');
+  if (!t.ok(!!rot, 'E88 · el rótulo está en la maqueta')) return;
+
+  /* ESTA ES LA LECCIÓN DE 1.8.1, Y VA POR TRES. El cartel de logro se pintó
+     `absolute` y se olvidó apuntarlo en la lista de exclusiones de
+     _06-biomas.scss: `position: relative` le ganó por orden de cascada, su `top`
+     pasó a ser relativo y quedó a 887 px, fuera de la vista, con la suite entera
+     en verde. Aquí se comprueba lo contrario —que el rótulo es de flujo— porque
+     es lo que le corresponde: si alguien lo saca del flujo para «colocarlo
+     mejor», el rótulo se va por debajo del borde y no falla nada.
+
+     Se lee la position CALCULADA, no la declarada: es la única que sabe quién
+     ganó la cascada.
+
+     Y HAY QUE DESTAPAR LA MAQUETA PARA MEDIRLA. Las diecisiete secciones de
+     prueba viven dentro de un <div hidden>, así que NADA de ahí tiene caja: la
+     primera versión de esta comprobación pedía `offsetHeight > 0` y devolvía 0
+     para el rótulo, para el HUD y para la galería por igual. Es el mismo error
+     que ya cazó a este proyecto con `transform`, que vale `none` en un elemento
+     sin caja: una medida de maqueta hecha sobre un árbol oculto no mide la
+     maqueta, mide el `hidden`. Se destapa, se mide y se vuelve a tapar en el
+     mismo turno. */
+  var pantallaPrevia = CB.pantallas.actual;
+  CB.pantallas.ir('p-partida');
+
+  var maqueta = document.getElementById('p-partida').parentElement;
+  var estabaOculta = maqueta.hidden;
+  maqueta.hidden = false;
+
+  var calc = getComputedStyle(rot);
+  t.ok(calc.position !== 'absolute' && calc.position !== 'fixed',
+    'E88 · el rótulo va en el flujo, no superpuesto', calc.position);
+
+  /* Se AFIRMA que destapar ha servido de algo. Sin esto, si mañana la maqueta se
+     ocultara de otra manera —una clase, un contenedor más arriba— la línea de
+     abajo volvería a medir 0 y a ponerse roja sin decir por qué; o peor, alguien
+     la relajaría a `>= 0` y quedaría verde para siempre sin comprobar nada. */
+  var alto = rot.getBoundingClientRect().height;
+  t.ok(document.getElementById('hud-galeria').getBoundingClientRect().height > 0,
+    'E88 · la maqueta destapada sí tiene caja: la medida significa algo');
+  t.ok(alto > 0, 'E88 · y el rótulo ocupa alto de verdad', alto + 'px');
+
+  maqueta.hidden = estabaOculta;
+
+  /* El nombre de la veta NUNCA se esconde: es el que contesta a la pregunta. El
+     del mundo puede apartarse en pantalla estrecha, pero apartarse no es
+     desaparecer —con display:none saldría también del árbol de accesibilidad, y
+     entonces quien usa lector de pantalla tendría menos información en la
+     pantalla pequeña que en la grande. */
+  var nombre = document.getElementById('hud-veta-nombre');
+  var mundo = document.getElementById('hud-veta-mundo');
+  if (nombre && mundo) {
+    t.ok(getComputedStyle(nombre).display !== 'none',
+      'E88 · el nombre de la veta no se oculta en ninguna anchura');
+    t.ok(getComputedStyle(mundo).display !== 'none',
+      'E88 · y el del mundo se aparta, nunca se quita del árbol');
+  }
+
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+/* ══ E89 · La moneda que había que reconocer era un número ═══════════════════
+
+   `15-gen-dinero.js` abre diciendo que monedas y billetes son conjuntos separados
+   y que «el juego los distingue siempre visual y verbalmente». Lo cumplía en
+   pagar y en contar, donde la pieza se dibuja —el cuadrado de oro, el rectángulo
+   verde—, y no lo cumplía en E1, que es la única pregunta cuyo objeto ES
+   distinguirlos: las cuatro opciones salían como cuatro botones de madera
+   idénticos con un número dentro.
+
+   Lo que eso significa se ve mejor al revés: «Toca la moneda de 2 euros» con
+   opciones 1, 2, 5 y 10 se acierta leyendo el 2 del enunciado y buscando el 2.
+   Se puede sacar el nivel entero sin haber mirado nunca una moneda, que es justo
+   lo que el nivel dice que enseña. Es la familia de E70 —algo que se calcula y no
+   se ve— pero de la otra punta: algo que se ve y no era lo que había que ver.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
+  var t = CB.pruebas;
+  var cont = CB.componentes.contenedor();
+  if (!t.ok(!!cont, 'E89 · hay contenedor de respuesta en la maqueta')) return;
+
+  var item = CB.gen.dinero.E1(CB.util.mulberry32(7), 2);
+  t.ok(!!item.piezasDinero, 'E89 · el generador pide que las opciones sean piezas');
+
+  /* Las opciones se montan como las monta la partida: tres distractores fijos
+     más la respuesta. Construir la lista de otra forma probaría otra cosa. */
+  var opciones = item.distractoresFijos.slice(0, 3)
+    .map(function (v) { return { valor: v, codigoError: null }; })
+    .concat([{ valor: item.respuesta, codigoError: null }]);
+
+  CB.componentes.opciones4(item, opciones, function () {}, { bloqueoMs: 0 });
+
+  var piezas = cont.querySelectorAll('.moneda, .billete');
+  t.igual(piezas.length, 4, 'E89 · las cuatro opciones son piezas dibujadas',
+    'encontradas ' + piezas.length);
+  t.igual(cont.querySelectorAll('.rejilla-respuestas .btn-bloque').length, 0,
+    'E89 · y ninguna es un botón de madera con un número');
+
+  /* CADA UNA CON SU FORMA. Si todas salieran moneda —o todas billete— volvería a
+     no distinguirse nada, y las cuatro seguirían siendo el mismo dibujo con
+     distinta cifra, que es exactamente el fallo con otro traje. */
+  var correcta = null, i, v;
+  for (i = 0; i < piezas.length; i++) {
+    v = parseInt(piezas[i].textContent, 10);
+    t.ok(piezas[i].classList.contains(CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete'),
+      'E89 · el ' + v + ' € se dibuja como lo que es',
+      piezas[i].className);
+    /* Y el nombre accesible es el de la pieza entera, no el «2 €» escrito: quien
+       oye la pantalla tiene que oír la misma pregunta que se ve. */
+    t.igual(piezas[i].getAttribute('aria-label'), CB.gen.dinero.nombre(v),
+      'E89 · y se llama por su nombre para el lector de pantalla');
+    if (v === item.respuesta) correcta = piezas[i];
+  }
+  t.ok(!!correcta, 'E89 · la pieza correcta está entre las cuatro');
+
+  /* La retícula deja de imponer el ancho de columna: con --lado-respuesta a 64 px
+     el billete, que mide 128, desbordaría su celda. */
+  var rej = cont.querySelector('.rejilla-respuestas');
+  t.ok(rej && rej.classList.contains('rejilla-respuestas--dinero'),
+    'E89 · la retícula deja que el ancho lo mande la pieza');
+
+  /* ── Y NINGUNA DENOMINACIÓN SE DIBUJA IGUAL QUE OTRA ──────────────────────
+     Dibujar las opciones como piezas no arregla nada si las siete piezas son el
+     mismo rectángulo: eso es el fallo original con otro traje. Las de verdad se
+     reconocen por el color y por el tamaño antes que por la cifra, y eso es lo
+     que se comprueba aquí — que las siete tengan huella distinta.
+
+     Se lee el estilo CALCULADO, que devuelve la longitud declarada aunque el
+     elemento no tenga caja, así que esto vale dentro de la maqueta oculta. */
+  var caja = CB.ui.crear('div');
+  document.body.appendChild(caja);
+  var huellas = {}, repes = [];
+  [1, 2, 5, 10, 20, 50, 100].forEach(function (v) {
+    var p = CB.ui.pieza('span', v);
+    caja.appendChild(p);
+    var cs = getComputedStyle(p);
+    var huella = cs.backgroundColor + '|' + cs.width + '|' + cs.boxShadow;
+    if (huellas[huella]) repes.push(v + ' igual que ' + huellas[huella]);
+    huellas[huella] = v;
+  });
+  t.igual(repes.length, 0,
+    'E89 · las siete piezas se dibujan distintas entre sí', repes.join(' · '));
+  document.body.removeChild(caja);
+
+  /* Y NO SE ROMPE LO DE ANTES: una pregunta normal sigue dando botones. */
+  CB.componentes.opciones4({}, [{ valor: 3 }, { valor: 4 }, { valor: 5 }, { valor: 6 }],
+    function () {}, { bloqueoMs: 0 });
+  t.igual(cont.querySelectorAll('.moneda, .billete').length, 0,
+    'E89 · sin piezas de dinero, las opciones siguen siendo botones');
+  t.igual(cont.querySelectorAll('.rejilla-respuestas .btn-bloque').length, 4,
+    'E89 · las cuatro de siempre');
+
+  CB.ui.vaciar(cont);
+  if (CB.partida) CB.partida.bloqueado = false;
+});
+
+/* ══ E90 · El marcador cambiaba de golpe ═════════════════════════════════════
+
+   Donde ponía 12 ponía 15 en el fotograma siguiente. Toda la ganancia se contaba
+   FUERA del número —la insignia «+1» que brota al lado, la hilera de «+2 por
+   rapidez»— y el sitio donde de verdad vive la puntuación no se enteraba. Un
+   salto instantáneo entre dos números de dos cifras no se ve: se descubre
+   después, y para entonces ya no se sabe de dónde salió.
+
+   Lo que hay que vigilar de una cuenta animada no es que se mueva, es que
+   ATERRICE. Un contador que se queda en 39 porque el reparto en pasos no era
+   entero es peor que no animar: la puntuación deja de ser la puntuación.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E90 · la cifra sube, y aterriza donde debe', function () {
+  var t = CB.pruebas;
+  var g = document.getElementById('hud-gemas');
+  if (!t.ok(!!g, 'E90 · el marcador está en la maqueta')) return;
+
+  var raiz = document.documentElement;
+  var teniaSinMov = raiz.classList.contains('sin-movimiento');
+
+  /* ── Con movimiento: cuenta, y el destino se alcanza exacto ────────────── */
+  raiz.classList.remove('sin-movimiento');
+  g.textContent = '0';
+  CB.ui.contarHasta(g, 37);
+
+  t.ok(parseInt(g.textContent, 10) < 37,
+    'E90 · no llega de un salto: va contando', g.textContent);
+  t.ok(g.classList.contains('cifra-viva--sube'),
+    'E90 · y la cifra se marca mientras sube');
+
+  /* EL REPARTO NO ES ENTERO A PROPÓSITO: 37 en 8 pasos da 4,625. Con un salto de
+     5 el acumulado sería 40, y sin el ajuste del último paso el marcador diría
+     40 gemas donde hay 37. Es el caso que justifica la suite entera. */
+  return new Promise(function (listo) {
+    setTimeout(function () {
+      t.igual(g.textContent, '37',
+        'E90 · termina en el número exacto, no en el acumulado de los pasos');
+      t.ok(!g.classList.contains('cifra-viva--sube'),
+        'E90 · y se quita la marca al acabar');
+
+      /* ── NUNCA BAJA ──────────────────────────────────────────────────────
+         Empezar partida repinta el HUD con 0 mientras el nodo guarda las de la
+         anterior. Contar hacia atrás contradice la regla de que el marcador solo
+         sube, y además se vería como un castigo. */
+      CB.ui.contarHasta(g, 5);
+      t.igual(g.textContent, '5', 'E90 · un destino menor se escribe, no se cuenta');
+
+      /* ── UNA CUENTA CANCELA A LA ANTERIOR ────────────────────────────────
+         Dos aciertos seguidos disparan dos cuentas sobre el mismo nodo. Sin
+         cancelar la primera, los dos intervalos escriben a la vez y el número
+         va y viene hasta que gana el que acabe más tarde — que es el que iba al
+         destino equivocado.
+
+         SE ESPERA. La primera versión de esta comprobación miraba el nodo en la
+         línea siguiente a lanzar la cuenta y esperaba ver ya el 12: una cuenta
+         que acaba de empezar sigue valiendo 0, así que la aserción estaba mal
+         escrita y salió roja contra código correcto. Lo que hay que mirar no es
+         el valor inmediato, es DÓNDE ATERRIZA. */
+      g.textContent = '0';
+      CB.ui.contarHasta(g, 40);
+      CB.ui.contarHasta(g, 12);
+
+      setTimeout(function () {
+        t.igual(g.textContent, '12',
+          'E90 · la segunda cuenta manda: la primera no sigue escribiendo');
+
+        /* ── SIN MOVIMIENTO: EL NÚMERO ENTERO, YA ──────────────────────────
+           Quitar movimiento no puede quitar información, y aquí la información
+           es la cifra. Se escribe el destino sin contar. */
+        raiz.classList.add('sin-movimiento');
+        g.textContent = '0';
+        CB.ui.contarHasta(g, 23);
+        t.igual(g.textContent, '23',
+          'E90 · con el movimiento apagado, el número final se escribe entero');
+
+        if (!teniaSinMov) raiz.classList.remove('sin-movimiento');
+        g.textContent = '0';
+        listo();
+      }, CB.ui.MS_PASO_CIFRA * (CB.ui.PASOS_CIFRA + 3));
+    }, CB.ui.MS_PASO_CIFRA * (CB.ui.PASOS_CIFRA + 3));
+  });
+});
+
+/* ══ E91 · Los botones se pulsaban en silencio ═══════════════════════════════
+
+   Sonaba lo que PASA —el acierto, el fallo, la gema, la luz que se apaga— pero
+   no el acto de tocar. Un botón de navegación, uno de ajustes o el de pausa se
+   pulsaban sin ninguna respuesta sonora, así que no había forma de saber si el
+   toque había entrado; y en una pantalla táctil de aula, con ruido alrededor, eso
+   es la mitad de la confirmación que hay.
+
+   Lo que se vigila aquí no es que suene: es CUÁNDO NO tiene que sonar. Un clic
+   que se añade encima de un sonido que ya dice algo no informa, tapa.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function () {
+  var t = CB.pruebas;
+
+  t.ok(typeof CB.audio.EFECTOS.pulsar === 'function',
+    'E91 · existe el efecto de pulsar');
+
+  /* EL MÁS FRECUENTE ES EL MÁS FLOJO. Es la misma regla que ordena la tabla de
+     celebraciones —el espectáculo es inversamente proporcional a la frecuencia—
+     aplicada al sonido: este se oye cien veces por sesión. Se comprueba contra el
+     «toc», que es el otro sonido de toque y tiene que seguir destacando sobre él,
+     porque dice lo contrario: «aún no». */
+  var oidas = [];
+  var notaPrevia = CB.audio.nota, ruidoPrevio = CB.audio.ruido;
+  CB.audio.nota = function (f, cuando, dur, tipo, gan) {
+    oidas.push({ tipo: 'nota', dur: dur, gan: gan });
+  };
+  CB.audio.ruido = function (cuando, dur, filtro, gan) {
+    oidas.push({ tipo: 'ruido', dur: dur, gan: gan });
+  };
+
+  CB.audio.EFECTOS.pulsar();
+  var clic = oidas[0];
+  oidas = [];
+  CB.audio.EFECTOS.toc();
+  var toc = oidas[0];
+
+  CB.audio.nota = notaPrevia;
+  CB.audio.ruido = ruidoPrevio;
+
+  if (t.ok(!!(clic && toc), 'E91 · los dos sonidos de toque se han podido medir')) {
+    t.ok(clic.gan < toc.gan,
+      'E91 · el clic suena más flojo que el «toc»: es cien veces más frecuente',
+      clic.gan + ' contra ' + toc.gan);
+    t.ok(clic.dur <= toc.dur,
+      'E91 · y no dura más', clic.dur + ' contra ' + toc.dur);
+    t.ok(clic.tipo !== toc.tipo,
+      'E91 · y se distinguen: uno dice «sí» y el otro «aún no»',
+      clic.tipo + ' contra ' + toc.tipo);
+  }
+
+  /* ── LAS EXCEPCIONES, que es lo que de verdad se puede romper ────────────
+     El oyente vive en el documento, así que se prueba disparando clics de verdad
+     sobre botones de verdad y contando cuántas veces se pide el sonido. */
+  var sfxPrevio = CB.audio.sfx;
+  var pedidos = [];
+  CB.audio.sfx = function (n) { pedidos.push(n); };
+
+  /* SE CONECTA EL MISMO CÓDIGO QUE USA EL JUEGO, no una imitación. El oyente
+     vive fuera del DOMContentLoaded justamente para esto: el arranque devuelve
+     pronto cuando no hay #btn-jugar —así evitan las páginas de prueba echar a
+     andar un juego—, así que un oyente registrado ahí dentro no existiría aquí y
+     todo lo de abajo mediría el vacío. */
+  var conectado = CB.arranque.conectarSonidoBotones(document);
+  t.ok(conectado || document.documentElement.getAttribute('data-clic') === 'si',
+    'E91 · el oyente de clic está conectado al documento');
+  t.igual(CB.arranque.conectarSonidoBotones(document), false,
+    'E91 · y conectarlo dos veces no deja dos oyentes: el clic no suena doble');
+
+  var caja = CB.ui.crear('div');
+  document.body.appendChild(caja);
+
+  function pulsar(el) { pedidos = []; el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return pedidos; }
+
+  var normal = CB.ui.crear('button', 'btn-bloque', 'Vale');
+  caja.appendChild(normal);
+  t.ok(pulsar(normal).indexOf('pulsar') !== -1,
+    'E91 · un botón cualquiera suena al pulsarse');
+
+  var apagado = CB.ui.crear('button', 'btn-bloque', 'No');
+  apagado.disabled = true;
+  caja.appendChild(apagado);
+  t.igual(pulsar(apagado).indexOf('pulsar'), -1,
+    'E91 · un botón deshabilitado no suena: ahí manda el «toc» de construcción');
+
+  var moneda = CB.ui.pieza('button', 2);
+  caja.appendChild(moneda);
+  t.igual(pulsar(moneda).indexOf('pulsar'), -1,
+    'E91 · una moneda no suena dos veces: ya trae su «gema»');
+
+  var silencio = CB.ui.crear('button', 'btn-bloque', 'Sonido');
+  silencio.setAttribute('data-accion', 'sonido');
+  caja.appendChild(silencio);
+  t.igual(pulsar(silencio).indexOf('pulsar'), -1,
+    'E91 · el botón de silenciar no se oye a sí mismo');
+
+  /* Y desde DENTRO de un botón: los botones rotulados tienen un icono y una
+     palabra, así que el objeto del clic casi nunca es el botón. */
+  var rotulado = CB.ui.crear('button', 'btn-bloque btn-bloque--rotulado');
+  var dentro = CB.ui.crear('span', 'btn-bloque__rotulo', 'Pausa');
+  rotulado.appendChild(dentro);
+  caja.appendChild(rotulado);
+  t.ok(pulsar(dentro).indexOf('pulsar') !== -1,
+    'E91 · tocar el rótulo de dentro cuenta como tocar el botón');
+
+  CB.audio.sfx = sfxPrevio;
+  document.body.removeChild(caja);
 });

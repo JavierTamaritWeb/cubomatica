@@ -168,8 +168,23 @@
     <!-- La insignia «+1» brota aquí, junto al contador. Es la celebración del
          acierto de todos los días: la más frecuente y por eso la más pequeña.
          aria-hidden porque la ganancia ya se anuncia por la región viva. -->
-    <div class="gemas"><span class="gemas__icono" aria-hidden="true"></span><span id="hud-gemas">0</span><span id="insignia-gemas" class="insignia" aria-hidden="true" hidden></span></div>
+    <div class="gemas"><span class="gemas__icono" aria-hidden="true"></span><span id="hud-gemas" class="cifra-viva">0</span><span id="insignia-gemas" class="insignia" aria-hidden="true" hidden></span></div>
   </div>
+
+  <!-- DÓNDE ESTOY. El HUD decía cuánto queda —las luces, los bloques, el reloj—
+       y no decía en QUÉ se está. La expedición encadena hasta veinte ítems de
+       siete vetas distintas, barajados, y el nombre de la veta solo aparecía en
+       la Cantera, dos pantallas atrás. Un niño de siete años no tiene forma de
+       saber qué está practicando ni de notar que ha cambiado.
+
+       Va en el flujo, no superpuesto: no hay que apuntarlo en la lista de
+       exclusiones de _06-biomas.scss, y `position: relative` no le hace daño.
+       El nombre del mundo se cae por debajo de 480 px, donde no cabe; el de la
+       veta no se cae nunca, porque es el que contesta a la pregunta. -->
+  <p id="hud-veta" class="rotulo-veta">
+    <span id="hud-veta-mundo" class="rotulo-veta__mundo"></span>
+    <span id="hud-veta-nombre" class="rotulo-veta__nombre"></span>
+  </p>
 
   <div class="zona-juego bioma bioma--pradera" id="zona-juego">
     <div class="cielo cielo--0" aria-hidden="true"></div>
@@ -301,7 +316,7 @@
 
     <div class="panel-bloque">
       <p class="gemas"><span class="gemas__icono" aria-hidden="true"></span>
-        <span id="fin-gemas">0</span> gemas</p>
+        <span id="fin-gemas" class="cifra-viva">0</span> gemas</p>
       <p id="fin-bono" class="texto-menor"></p>
     </div>
 

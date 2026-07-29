@@ -127,6 +127,6 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
   /* ── El sonido del aviso ────────────────────────────────────────────── */
   t.ok(typeof CB.audio.EFECTOS.prisa === 'function',
     'existe el efecto «prisa» que acompaña al cartel');
-  t.igual(Object.keys(CB.audio.EFECTOS).length, 12,
-    'hay 12 efectos sintetizados, ni uno más sin declararlo');
+  t.igual(Object.keys(CB.audio.EFECTOS).length, 13,
+    'hay 13 efectos sintetizados, ni uno más sin declararlo');
 });

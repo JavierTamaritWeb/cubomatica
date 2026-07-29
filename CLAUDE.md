@@ -112,7 +112,7 @@ Reordering is what breaks; concatenating is safe. There are exactly **three hard
 
 Changing any of these numbers means changing the test that asserts it, on purpose:
 
-- **45 sources** on disk *and* in `manifiesto.json` — equality is checked both ways, so a new file nobody declared is a failure · **17 screens** · **10 SCSS partials** in the manifest, **12 `.scss` files** on disk (the manifest owns the ten that get `@use`d, in order; `cubomatica.scss` and `_herramientas.scss` are the entry point and the mixins) · **9 music tracks** · **12 SFX**
+- **45 sources** on disk *and* in `manifiesto.json` — equality is checked both ways, so a new file nobody declared is a failure · **17 screens** · **10 SCSS partials** in the manifest, **12 `.scss` files** on disk (the manifest owns the ten that get `@use`d, in order; `cubomatica.scss` and `_herramientas.scss` are the entry point and the mixins) · **9 music tracks** · **13 SFX**
 - **92 levels** across **4 worlds**, no repeats and no orphans (`casos-curriculo.js`, CU1–CU8)
 - **24 error codes = 24 recommendations**, same key set
 - **30 exact scoring cases**, no tolerance (`casos-formulas.js`)
@@ -141,7 +141,7 @@ Changing any of these numbers means changing the test that asserts it, on purpos
 
 ## Sound is split in two, deliberately
 
-`js/04-audio.js` synthesises 12 SFX through Web Audio. `js/07-musica.js` plays 9 MP3s through `<audio>` elements, because putting a file into an `AudioContext` needs `decodeAudioData()` on an `ArrayBuffer` — i.e. `fetch()` — which `file://` blocks. The two paths never meet, so **`CB.audio.silenciar()` reaches the music by hand**; that call is the only seam and must stay.
+`js/04-audio.js` synthesises 13 SFX through Web Audio. `js/07-musica.js` plays 9 MP3s through `<audio>` elements, because putting a file into an `AudioContext` needs `decodeAudioData()` on an `ArrayBuffer` — i.e. `fetch()` — which `file://` blocks. The two paths never meet, so **`CB.audio.silenciar()` reaches the music by hand**; that call is the only seam and must stay.
 
 Music is driven off `CB.bus.emitir('pantalla', id)`, emitted by `CB.pantallas.ir()`, `atras()` and `fallo()` — with **one deliberate exception**: `CB.jefes.terminar()` calls `CB.musica.poner('victoria')` directly, because it paints the victory *on top of* `p-jefe` without changing screen, so the bus never fires and the boss theme would keep playing through the one moment the game reserves for stopping everything. It is annotated in the table in `07-musica.js` and in `docs/decisiones.md`; the next screen change restores the theme by itself. All 17 screens are in `CB.musica.PANTALLAS`, `null` meaning deliberate silence, so adding a screen and forgetting the music is a test failure rather than a silence nobody notices.
 

@@ -334,3 +334,132 @@ CB.sprites.precalentar = function () {
   }
   return n;
 };
+
+/* ══ EL DINERO, DIBUJADO DE VERDAD ═══════════════════════════════════════════
+
+   Petición expresa: que las monedas y los billetes se vean como los de verdad y
+   no como rectángulos de colores.
+
+   NO HAY FICHEROS. El bloque 4 de la auditoría no admite un solo binario, porque
+   `dist/` se abre con doble clic desde file:// y una imagen suelta sería una
+   petición de red que ahí no existe. La salida es la misma que ya usan las ocho
+   texturas: se dibuja al arrancar y se publica como data: URI en una variable
+   CSS. Aquí en SVG en vez de canvas, porque lo que hay que dibujar son círculos,
+   estrellas y arcos y no ruido de 16×16.
+
+   TRES DECISIONES QUE NO SON DE GUSTO:
+
+   · LA CIFRA NO VA DENTRO DEL SVG. El dibujo trae el metal, el aro, las doce
+     estrellas y los arcos; el número lo sigue poniendo el DOM encima. Así crece
+     con `letra-grande` y con `modo-proyeccion`, sigue midiéndose en los pares de
+     contraste, y sigue estando si el SVG no llega a pintarse. Un número dibujado
+     dentro de la imagen sería un número que no obedece a los ajustes de
+     accesibilidad, que en material escolar no es un detalle.
+
+   · SIN CANVAS NI SVG SE QUEDA EL COLOR PLANO, que es lo que ya había: el
+     `background-color` de cada pieza sigue declarado en el CSS y el dibujo va
+     encima. Misma red de seguridad que las texturas.
+
+   · NO SON FACSÍMILES. Son dibujos: el metal, las doce estrellas de la Unión, la
+     silueta del continente y la ventana con arco que llevan los billetes. Ni se
+     copia un billete ni haría falta —lo que hay que aprender a distinguir es el
+     color, el tamaño y el metal, no el grabado—.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* [valor, metalAro, metalCentro] — el bimetal REAL, y del revés una de otra:
+   la de 1 € lleva el aro dorado y el centro plateado; la de 2 €, al contrario.
+   Es lo que permite separarlas en la mano sin leer el número. */
+CB.sprites.MONEDAS = [
+  [1, '#C9A227', '#C8CBD0'],
+  [2, '#C8CBD0', '#C9A227']
+];
+
+/* [valor, fondo, tinta] — el color de cada billete es el de verdad salvo el del
+   10, que en la paleta del juego tira a cobre porque no hay un rojo entre los
+   trece materiales y añadir uno reordenaría las 39 variables --deco-*. */
+CB.sprites.BILLETES = [
+  [5,   '#ADADAD', '#7A7A7A'],
+  [10,  '#C87137', '#8E4C21'],
+  [20,  '#5C9BE8', '#2A5CA8'],
+  [50,  '#F58B52', '#B84618'],
+  [100, '#7BC44A', '#3F7A1E']
+];
+
+/* Las doce estrellas de la Unión, colocadas en círculo. Se calculan porque
+   escribir doce pares de coordenadas a mano es doce sitios donde equivocarse. */
+CB.sprites.estrellasSVG = function (cx, cy, radio, tam, color) {
+  var s = '', i, a, x, y;
+  for (i = 0; i < 12; i++) {
+    a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+    x = cx + Math.cos(a) * radio;
+    y = cy + Math.sin(a) * radio;
+    s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
+         '" r="' + tam + '" fill="' + color + '"/>';
+  }
+  return s;
+};
+
+CB.sprites.svgMoneda = function (valor, aro, centro) {
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">';
+  s += '<circle cx="36" cy="36" r="35" fill="' + aro + '"/>';
+  /* El canto: un anillo más oscuro que hace que se lea como metal y no como un
+     disco de color. Sin desenfoque, como todo lo demás del juego. */
+  s += '<circle cx="36" cy="36" r="35" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2"/>';
+  s += CB.sprites.estrellasSVG(36, 36, 29, 1.6, 'rgba(0,0,0,.4)');
+  s += '<circle cx="36" cy="36" r="23" fill="' + centro + '"/>';
+  s += '<circle cx="36" cy="36" r="23" fill="none" stroke="rgba(0,0,0,.28)" stroke-width="1.5"/>';
+  /* La silueta del continente, muy esquemática: lo que tiene que leerse es «hay
+     un mapa», no la geografía. Va en la mitad de arriba para dejar libre la de
+     abajo, que es donde el DOM escribe la cifra. */
+  s += '<path fill="rgba(0,0,0,.22)" d="M23 22l4-5 5 1 3-4 6 1 4-3 5 2-2 5-5 1-3 4-6-1-4 3z"/>';
+  s += '</svg>';
+  return s;
+};
+
+CB.sprites.svgBillete = function (valor, fondo, tinta) {
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 64">';
+  s += '<rect width="128" height="64" fill="' + fondo + '"/>';
+  s += '<rect x="1.5" y="1.5" width="125" height="61" fill="none" stroke="' + tinta + '" stroke-width="2"/>';
+  /* La ventana con arco: el motivo que llevan todos los billetes de euro y que
+     los distingue de un rectángulo cualquiera. */
+  s += '<path fill="none" stroke="' + tinta + '" stroke-width="2" ' +
+       'd="M12 52V26a10 10 0 0 1 20 0v26"/>';
+  s += '<path fill="none" stroke="' + tinta + '" stroke-width="1.5" d="M22 20v32"/>';
+  /* La banda holográfica de la derecha. */
+  s += '<rect x="110" y="6" width="10" height="52" fill="rgba(255,255,255,.45)"/>';
+  /* Las doce estrellas van en corro arriba a la derecha, como en la bandera, y
+     NO alrededor del centro: ahí es donde el DOM escribe la cifra, y un corro de
+     estrellas por detrás del número lo vuelve ilegible. */
+  s += CB.sprites.estrellasSVG(88, 17, 9, 1.4, tinta);
+  s += '</svg>';
+  return s;
+};
+
+/* Publica las siete piezas como --pieza-N. El CSS las usa sin saber de dónde
+   vienen, exactamente igual que las --tex-*. */
+CB.sprites.generarDinero = function () {
+  if (typeof document === 'undefined' || !document.documentElement) return 0;
+  var raiz = document.documentElement, n = 0, i;
+
+  function poner(valor, svg) {
+    var url;
+    try {
+      url = 'data:image/svg+xml,' + encodeURIComponent(svg);
+    } catch (e) { return; }
+    CB.sprites.cache['pieza' + valor] = url;
+    raiz.style.setProperty('--pieza-' + valor, 'url("' + url + '")');
+    n++;
+  }
+
+  for (i = 0; i < CB.sprites.MONEDAS.length; i++) {
+    poner(CB.sprites.MONEDAS[i][0],
+          CB.sprites.svgMoneda(CB.sprites.MONEDAS[i][0],
+                               CB.sprites.MONEDAS[i][1], CB.sprites.MONEDAS[i][2]));
+  }
+  for (i = 0; i < CB.sprites.BILLETES.length; i++) {
+    poner(CB.sprites.BILLETES[i][0],
+          CB.sprites.svgBillete(CB.sprites.BILLETES[i][0],
+                                CB.sprites.BILLETES[i][1], CB.sprites.BILLETES[i][2]));
+  }
+  return n;
+};

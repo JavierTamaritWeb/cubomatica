@@ -67,7 +67,7 @@ CB.ui.pintarHUD = function (estado) {
   }
   var g = document.getElementById('hud-gemas');
   /* El contador de gemas SOLO SUBE. Nunca baja, nunca es negativo (§3.4). */
-  if (g) g.textContent = String(Math.max(0, estado.gemas || 0));
+  if (g) CB.ui.contarHasta(g, Math.max(0, estado.gemas || 0));
 
   /* ── CUÁNTO QUEDA ─────────────────────────────────────────────────────────
      Lo único que codificaba el avance era el cielo, y el cielo es aria-hidden.
@@ -97,6 +97,114 @@ CB.ui.pintarHUD = function (estado) {
        porque CSS no sabe sumar. */
     gal.setAttribute('data-texto', hechos + '/' + estado.total);
   }
+};
+
+/* ── EN QUÉ VETA SE ESTÁ ────────────────────────────────────────────────────
+   El HUD sabía decir cuánto queda y no sabía decir en qué se está. Una
+   expedición encadena hasta veinte ítems de siete vetas distintas, barajadas
+   —el barajado es deliberado: la práctica intercalada retiene mejor que la
+   agrupada— y el nombre de la veta solo se veía en la Cantera, dos pantallas
+   atrás. Con esto, cambiar de veta deja de ser un cambio de pregunta sin causa.
+
+   SIN ARIA. Es texto de verdad y se lee solo; el nombre del mundo se aparta
+   visualmente por debajo de 480 px pero sigue en el árbol de accesibilidad. Un
+   aria-label sobre un <p> además está prohibido por ARIA y axe lo marca. */
+CB.ui.pintarVeta = function (nivel, mundo) {
+  var nombre = document.getElementById('hud-veta-nombre');
+  var mun = document.getElementById('hud-veta-mundo');
+  if (nombre) nombre.textContent = nivel ? nivel.nombre : '';
+  if (mun) mun.textContent = mundo ? mundo.nombre : '';
+};
+
+/* ── UNA PIEZA DE DINERO ────────────────────────────────────────────────────
+   Estaba escrita tres veces —en las opciones, en el modo pagar y en el modo
+   contar— y las tres iban a divergir en cuanto la pieza dejara de ser un
+   rectángulo de un solo color, que es exactamente lo que pasa aquí.
+
+   `data-valor` es lo que permite que el CSS dibuje CADA denominación como la que
+   es: el aro bimetálico invertido de las monedas de 1 y 2 €, y el color y el
+   tamaño reales de cada billete. No hay ni una imagen en el proyecto —la
+   auditoría no admite un solo fichero binario— así que la pieza se dibuja, igual
+   que el reloj de arena, las gemas y el terreno. */
+CB.ui.pieza = function (etiqueta, v) {
+  var el = CB.ui.crear(etiqueta, CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete',
+                       v + ' €');
+  el.setAttribute('data-valor', String(v));
+  el.setAttribute('aria-label', CB.gen.dinero.nombre(v));
+  return el;
+};
+
+/* ── LA CIFRA QUE SUBE ──────────────────────────────────────────────────────
+   El marcador cambiaba de golpe: donde ponía 12 ponía 15 en el fotograma
+   siguiente. Toda la ganancia se contaba fuera de él —la insignia «+1» que brota
+   al lado, la hilera de «+2 por rapidez»— y el número, que es el sitio donde de
+   verdad vive la puntuación, no se enteraba. Un cambio instantáneo entre dos
+   números de dos cifras no se ve: se descubre después, y entonces ya no se sabe
+   de dónde ha salido.
+
+   Sube DE UNO EN UNO, con tope de pasos. Contar 3 gemas de una en una es lo que
+   hace que se noten las tres; contar 40 así al final de la partida serían cuatro
+   segundos de espera, y por eso el salto se agranda cuando la diferencia es
+   grande. El último paso escribe el destino EXACTO, nunca el acumulado de las
+   divisiones: una cifra de puntuación que se quede en 39 porque el reparto no
+   era entero es peor que no animar nada.
+
+   NUNCA BAJA. Empezar una partida repinta el HUD con 0 gemas y el nodo aún
+   guarda las de la anterior; contar hacia atrás contradice de frente la regla de
+   que el marcador solo sube (§3.4). Si el destino es menor, se escribe y ya.
+
+   Y CON EL MOVIMIENTO APAGADO SE ESCRIBE EL NÚMERO FINAL, no se pierde nada: la
+   información es la cifra, el movimiento solo es la gracia. La clase
+   `sin-movimiento` de la raíz es la fuente única de ese ajuste —la pone
+   CB.a11y.aplicarAjustes juntando el ajuste del juego y el del sistema— así que
+   aquí se lee de ahí y no se vuelve a preguntar a matchMedia. */
+CB.ui.MS_PASO_CIFRA = 90;
+CB.ui.PASOS_CIFRA = 8;
+CB.ui._cuentas = {};
+
+CB.ui.sinMovimiento = function () {
+  return !!(document.documentElement &&
+            document.documentElement.classList.contains('sin-movimiento'));
+};
+
+CB.ui.contarHasta = function (nodo, destino) {
+  if (!nodo) return;
+  destino = Math.max(0, Math.round(Number(destino)) || 0);
+
+  var clave = nodo.id || 'cifra';
+  if (CB.ui._cuentas[clave]) {
+    clearInterval(CB.ui._cuentas[clave]);
+    CB.ui._cuentas[clave] = null;
+  }
+
+  var previo = parseInt(nodo.textContent, 10);
+  if (!isFinite(previo)) previo = destino;
+
+  if (destino <= previo) { nodo.textContent = String(destino); return; }
+
+  /* El salto de la cifra. Va aunque el movimiento esté apagado —el CSS lo anula
+     ahí— porque quitar la clase a mano sería una segunda lista que mantener. */
+  nodo.classList.remove('cifra-viva--sube');
+  void nodo.offsetWidth;
+  nodo.classList.add('cifra-viva--sube');
+
+  if (CB.ui.sinMovimiento()) { nodo.textContent = String(destino); return; }
+
+  var falta = destino - previo;
+  var pasos = Math.min(CB.ui.PASOS_CIFRA, falta);
+  var salto = Math.ceil(falta / pasos);
+  var valor = previo;
+
+  CB.ui._cuentas[clave] = setInterval(function () {
+    valor += salto;
+    if (valor >= destino) {
+      valor = destino;                       // el destino EXACTO, siempre
+      clearInterval(CB.ui._cuentas[clave]);
+      CB.ui._cuentas[clave] = null;
+      nodo.classList.remove('cifra-viva--sube');
+    }
+    nodo.textContent = String(valor);
+  }, CB.ui.MS_PASO_CIFRA);
 };
 
 CB.ui.parpadeoGris = function () {
@@ -641,6 +749,7 @@ CB.ui.cinta = { nodo: null, _salida: null, _clave: null };
 CB.ui.cinta.COREOGRAFIAS = {
   'prisa':   { ms: 1900, sfx: 'prisa'      },
   'junta':   { ms: 1300, sfx: 'subirNivel' },
+  'sube':    { ms: 1400, sfx: 'subirNivel' },
   'bandera': { ms: 1800, sfx: 'cofre'      }
 };
 
@@ -728,6 +837,11 @@ CB.ui.festejo.CELEBRACIONES = {
                 quien: 'chispa', gesto: 'racha', particulas: true },
   /* Logro o luz extra: un cartel centrado con bisel, no una franja. */
   logro:      { vehiculo: 'cartel',   ms: 1600, sfx: 'luzExtra' },
+  /* Se acaba una veta y empieza otra. Es lo único de esta tabla que NO celebra
+     un acierto: sitúa. Por eso la cinta sube en peldaños y no rebota, y por eso
+     va sola —la fiesta del acierto que la cerró ya ha pasado hace un segundo y
+     medio, y dos fiestas seguidas no son el doble de fiesta. */
+  vetaSuperada: { vehiculo: 'cinta',  ms: 1400, sfx: 'subirNivel', coreo: 'sube' },
   /* El jefe cede. Cuatro veces en la vida de un perfil. */
   jefe:       { vehiculo: 'cinta',    ms: 1800, sfx: 'cofre', coreo: 'bandera' },
   /* Bloque raro, 1 de cada 20: tiembla la cantera entera. */

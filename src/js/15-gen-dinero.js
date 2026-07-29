@@ -64,6 +64,17 @@ CB.gen.dinero.E1 = function (rng, D) {
   return {
     formato: 'opciones4',
     consigna: 'Toca ' + CB.gen.dinero.nombre(v) + '.',
+    /* LAS OPCIONES SE DIBUJAN COMO PIEZAS, NO COMO NÚMEROS. La cabecera de este
+       fichero dice que monedas y billetes son conjuntos separados y que «el juego
+       los distingue siempre visual y verbalmente», y en la única pregunta cuyo
+       objeto ES distinguirlos no se distinguían: las cuatro opciones salían como
+       cuatro botones de madera idénticos con un número dentro. Es decir, se
+       preguntaba «toca la moneda de 2 euros» y lo que había que reconocer era el
+       2, no la moneda — que se puede acertar sin saber lo que es una moneda.
+
+       La pieza dibujada ya existía y se usaba en pagar y en contar. Aquí faltaba,
+       que es justo donde hace falta. */
+    piezasDinero: true,
     respuesta: v,
     expr: 'reconocer' + v,
     diagnostico: false,
