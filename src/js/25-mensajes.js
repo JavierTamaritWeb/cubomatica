@@ -44,7 +44,11 @@ CB.mensajes.nuevoEstado = function () {
        reiniciaría en cada guardado y el grito volvería a repetirse cada dos por
        tres sin que nada fallara. Es exactamente lo que le pasó a la dificultad D
        (E45), que era un trinquete de una sola dirección por este mismo motivo. */
-    gritos:  { bolsaAcierto: [] }
+    gritos:  { bolsaAcierto: [] },
+    /* Los cinco micro-descansos también van en bolsa. Sin guion bajo, por lo
+       mismo: sanear() borra esas claves y la bolsa se reiniciaría en cada
+       guardado, que es exactamente el fallo de E45. */
+    bolsaDescansos: []
   };
 };
 
@@ -58,6 +62,10 @@ CB.mensajes.asegurar = function (perfil) {
   /* Un perfil de 1.7.1 no la trae. Se crea aquí y por eso 1.8.0 no necesita
      migración en 01-almacen.js: la primera cifra de la versión se queda. */
   if (!m.gritos)  m.gritos  = { bolsaAcierto: [] };
+  /* Un perfil anterior a 1.13.0 no la trae. Se crea aquí, que es el conducto que
+     dejó documentado E52: sin esta línea, un perfil ya guardado reventaría o
+     volvería al sorteo con reemplazo sin avisar. */
+  if (!m.bolsaDescansos) m.bolsaDescansos = [];
   return m;
 };
 

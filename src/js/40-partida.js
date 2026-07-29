@@ -1077,13 +1077,29 @@ CB.partida.DESCANSOS = [
   { id: 'romper', titulo: '¡Descanso! Rompe los bloques' },
   { id: 'blopi', titulo: '¡Descanso! Dale de comer a Blopi' },
   { id: 'casa', titulo: '¡Descanso! Coloca bloques en tu casa' },
-  { id: 'cofre', titulo: '¡Descanso! ¿En qué cofre está la gema?' },
+  /* NO PROMETE GEMAS, y el título lo decía. El manejador de microDescanso solo
+     marca el cofre como roto, tira partículas y suena: no suma ni una gema a
+     e.gemas ni a perfil.gemas, y los tres cofres siguen pulsables, así que
+     «Elige uno» tampoco era verdad. Se corrige el TEXTO, no la economía: regalar
+     gemas aquí rompería el invariante de la moneda visible, haría del cofre el
+     único de los cinco descansos que paga, y ni siquiera se vería —servirItem no
+     llama a pintarHUD, así que el premio no aparecería hasta el acierto
+     siguiente—. Si algún día se quiere la mecánica entera, es una decisión de
+     economía y va a docs/decisiones.md, no un arreglo de texto. */
+  { id: 'cofre', titulo: '¡Descanso! Rompe los cofres de piedra' },
   { id: 'vagoneta', titulo: '¡Descanso! Monta en la vagoneta' }
 ];
 
 CB.partida.microDescanso = function () {
   var e = CB.partida.estado;
-  var d = CB.util.elegir(e.rng, CB.partida.DESCANSOS);
+  /* EN BOLSA, ahora sí. El comentario decía «en bolsa para que no se repitan» y
+     la línea sorteaba CON REEMPLAZO: con tres descansos por sesión, un 52 % de
+     probabilidad de ver dos veces el mismo. Se reutiliza la bolsa barajada de
+     los mensajes, que ya existe y ya está probada. */
+  var m = CB.mensajes.asegurar(CB.perfil);
+  var idx = CB.mensajes.sacarDeBolsa(m, 'bolsaDescansos',
+    CB.partida.DESCANSOS.length, [], [], 0, e.rng);
+  var d = CB.partida.DESCANSOS[idx < 0 ? 0 : idx];
 
   CB.pantallas.ir('p-descanso');
   var t = document.getElementById('descanso-titulo');
@@ -1095,7 +1111,7 @@ CB.partida.microDescanso = function () {
   if (d.id === 'cofre') {
     /* Se ve la lista completa de premios ANTES de abrir: sin cofres opacos, que
        es un patrón oscuro prohibido en un juego infantil (§21.4). */
-    var aviso = CB.ui.crear('p', 'texto-menor', 'En los tres cofres hay gemas. Elige uno.');
+    var aviso = CB.ui.crear('p', 'texto-menor', 'Tres cofres de piedra. Rómpelos todos.');
     tablero.appendChild(aviso);
   }
 

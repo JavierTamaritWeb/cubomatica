@@ -112,9 +112,13 @@ CB.mapaDestrezas.pintarMundos = function () {
 
   var saludo = document.getElementById('mapa-saludo');
   if (saludo) {
-    var vencidos = CB.memoria.vencidosHoy(perfil, CB.util.hoyISO());
-    saludo.textContent = vencidos.length
-      ? ('Hay ' + vencidos.length + (vencidos.length === 1 ? ' veta' : ' vetas') +
+    /* conMusgo, NO vencidosHoy: el mismo predicado que pinta el 🌿 de la Cantera.
+       Con vencidosHoy el saludo prometía vetas con musgo que no existían en
+       ningún sitio. CB.partida sigue usando vencidosHoy para elegir qué servir:
+       son dos preguntas distintas y solo una se le enseña al niño. */
+    var conMusgo = CB.memoria.conMusgo(perfil, CB.util.hoyISO());
+    saludo.textContent = conMusgo.length
+      ? ('Hay ' + conMusgo.length + (conMusgo.length === 1 ? ' veta' : ' vetas') +
          ' con musgo esperándote.')
       : ('Hola, ' + perfil.mote + '.');
   }

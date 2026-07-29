@@ -12,6 +12,69 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.13.0] — 2026-07-29
+
+**Segunda cifra: el perfil gana una clave aditiva.** Fase 11 del plan. `asegurar()` la
+crea si falta, así que no hay migración.
+
+Tres textos que prometían lo que el código no hace.
+
+### El cofre del descanso prometía gemas y no daba ninguna
+
+Dos mentiras encadenadas: el título decía «¿En qué cofre está la gema?» y el aviso «En los
+tres cofres hay gemas. Elige uno.» El manejador solo marca el cofre como roto, tira
+partículas y suena: **no suma ni una gema**, y los tres cofres siguen pulsables, así que
+«Elige uno» tampoco era verdad. El comentario del código invocaba la regla de no poner
+cofres opacos y el resultado era peor: un cofre transparente y vacío.
+
+Se corrige el **texto**, no la economía, y por tres motivos verificados: regalar gemas
+rompería el invariante de la moneda visible; haría del cofre el único de los cinco
+descansos que paga; y ni siquiera se vería, porque `servirItem` no llama a `pintarHUD` y el
+premio no aparecería hasta el acierto siguiente.
+
+### El musgo se contaba con un criterio y se pintaba con otro
+
+El saludo del mapa contaba `vencidosHoy()` —`R < 0.7`— y lo llamaba «vetas con musgo». El
+musgo se pinta cuando `clasificar()` dice `'oxidada'`, que exige **además** haber estado
+antes en afianzada o dominada.
+
+En la primera semana ninguna destreza ha llegado a afianzada, así que `oxidada` es
+imposible mientras `vencidosHoy` ya cuenta media docena: **«Hay 5 vetas con musgo
+esperándote» y ni una hoja verde en la Cantera**. La única razón honesta que este juego se
+dio para volver mañana era, vista por un niño, una frase que no se correspondía con nada.
+
+Nace `CB.memoria.conMusgo()`, con el **mismo predicado** que pinta la Cantera. Se cuentan
+destrezas, no niveles: son 13 frente a 92, y «hay 24 vetas con musgo» a un niño de 7 años
+es una deuda, no una invitación. `CB.partida` sigue usando `vencidosHoy` para elegir qué
+servir: son dos preguntas distintas y solo una se le enseña al niño.
+
+### Los cinco descansos se sorteaban con reemplazo
+
+El comentario decía «en bolsa para que no se repitan» y la línea sorteaba con reemplazo:
+con tres descansos por sesión, un **52 %** de ver dos veces el mismo. Ahora van en la bolsa
+barajada que ya existe, en `perfil.mensajes.bolsaDescansos` —**sin guion bajo**, porque
+`sanear()` borra esas claves— y creada también en `asegurar()`, que es el conducto para los
+perfiles ya guardados.
+
+### Pruebas: 639 → 658
+
+**E74**, **E75** y **E76**. Y E75 costó tres intentos, los tres por el mismo tipo de error
+**en la prueba, no en el código**:
+
+1. Construí la destreza a mano con `ultimoISO`, **una propiedad que no existe**:
+   `recuperabilidad()` lee `ultimoRepasoISO`. Devolvía 1, no había ninguna destreza vencida
+   y dos aserciones se ponían rojas contra código correcto.
+2. Con eso arreglado, el guardián **no cazaba su siembra**: comprobaba `conMusgo()` en
+   abstracto y no tocaba el saludo por ningún sitio.
+3. Al añadir la mitad que conduce el saludo, llamé a `pintar()` — y el saludo **no lo
+   escribe `pintar()` sino `pintarMundos()`—, así que el texto se quedaba como estaba, el
+   número leído era 0, el esperado era 0, y **volvía a dar verde con el fallo dentro**.
+
+Ahora marca el nodo con un centinela y afirma que alguien lo ha reescrito antes de comparar
+nada.
+
+---
+
 ## [1.12.0] — 2026-07-29
 
 **Segunda cifra: cinco premios que el juego calculaba, guardaba y no enseñaba.** Fase 10

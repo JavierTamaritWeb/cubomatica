@@ -85,6 +85,36 @@ CB.memoria.reclasificarTodo = function (perfil, hoyISO) {
 
 /* Destrezas vencidas hoy, ordenadas por recuperabilidad ascendente: primero las
    que más se han olvidado. */
+/**
+ * Las destrezas que la Cantera pinta con musgo. MISMO PREDICADO que clasificar(),
+ * no uno parecido.
+ *
+ * El saludo del mapa contaba vencidosHoy() —R < 0.7— y lo llamaba «vetas con
+ * musgo», pero el musgo se pinta cuando clasificar() dice 'oxidada', que exige
+ * además haber estado antes en afianzada o dominada. En la primera semana ninguna
+ * destreza ha llegado a afianzada, así que 'oxidada' es imposible mientras
+ * vencidosHoy ya cuenta media docena: «Hay 5 vetas con musgo esperándote» y ni
+ * una hoja verde en la Cantera. La única razón honesta que este juego se dio para
+ * volver mañana era, vista por un niño, una frase que no se correspondía con nada.
+ *
+ * Se cuentan DESTREZAS, no niveles: son 13 frente a 92, y «hay 24 vetas con
+ * musgo» a un niño de 7 años es una deuda, no una invitación.
+ *
+ * @param bloqueados opcional, mapa de destrezas bloqueadas
+ */
+CB.memoria.conMusgo = function (perfil, hoyISO, bloqueados) {
+  if (!perfil || !perfil.destrezas) return [];
+  var lista = [], k;
+  for (k in perfil.destrezas) {
+    if (!Object.prototype.hasOwnProperty.call(perfil.destrezas, k)) continue;
+    if (CB.memoria.clasificar(perfil.destrezas[k], hoyISO,
+        bloqueados ? !!bloqueados[k] : false) === 'oxidada') {
+      lista.push(k);
+    }
+  }
+  return lista;
+};
+
 CB.memoria.vencidosHoy = function (perfil, hoyISO) {
   if (!perfil || !perfil.destrezas) return [];
   var lista = [], k, d, R;

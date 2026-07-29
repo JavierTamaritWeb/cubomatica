@@ -2837,3 +2837,67 @@ daba antes de esta versión. Va escrito en el commit y aquí.
 | Fases del plan ejecutadas | 4 de 10 | **5 de 10** (6, 7, 8, 9 y 10) |
 | Paneles de `p-fin` | 3 | **4** (declarado) |
 | Nodos de cinta | 2 | **3** (partida, jefe, fin) |
+
+---
+
+# Ronda 18 · Fase 11 del plan: textos que prometían de más — versión 1.13.0 (29 de julio de 2026)
+
+## D-R18-1 · Arreglar el texto, no la economía
+
+El cofre del descanso prometía gemas y no daba ninguna. La tentación era darlas —parece más
+generoso— y estaba mal por tres motivos que se comprobaron uno a uno: rompe el invariante de
+la moneda visible, convierte al cofre en el único de los cinco descansos que paga, y **ni
+siquiera se vería**, porque `servirItem` no llama a `pintarHUD` y el premio no aparecería
+hasta el acierto siguiente.
+
+**Cuando el texto y el código no coinciden, la pregunta es cuál de los dos está bien.** Aquí
+el código: la economía del juego está cerrada y medida, y el texto se escribió describiendo
+una mecánica que nunca se implementó. Si algún día se quiere esa mecánica, es una decisión de
+economía y va aquí, no un arreglo de texto.
+
+## D-R18-2 · La misma cosa contada con dos criterios
+
+El saludo del mapa contaba una cosa (`R < 0.7`) y la Cantera pintaba otra (`oxidada`, que
+exige haber sido sólida antes). Los dos números coinciden en un perfil maduro y divergen del
+todo en la primera semana, que es justo cuando el niño empieza.
+
+Y el efecto era el peor posible: **la única razón honesta que este juego se dio para volver
+mañana** —el musgo— quedaba, vista por un niño, como una frase que no se corresponde con
+nada de lo que hay en pantalla.
+
+Regla: si un texto cuenta algo que además se dibuja, el recuento y el dibujo tienen que salir
+del **mismo predicado**, no de dos que se parecen. Es la misma familia que E25 (dos listas de
+movimiento) y R16 (dos teclados), y van cuatro.
+
+## D-R18-3 · Un guardián que costó tres intentos, los tres por lo mismo
+
+E75 es el guardián más caro de escribir de toda la serie, y no por difícil: por tres
+equivocaciones **mías, en la prueba**, encadenadas y todas de la misma familia.
+
+1. **Construí la destreza a mano** y le puse `ultimoISO`. La propiedad se llama
+   `ultimoRepasoISO`. `recuperabilidad()` devolvía 1, no había destrezas vencidas, y dos
+   aserciones se pusieron rojas contra código correcto. Es E42 exacto, por tercera vez en
+   esta serie.
+2. Con eso arreglado, **el guardián no cazaba su siembra**: comprobaba `conMusgo()` en
+   abstracto y no tocaba el saludo del mapa por ningún sitio. Verde con el fallo dentro.
+3. Al añadir la mitad que conduce el saludo, **llamé a la función equivocada**: el saludo no
+   lo escribe `pintar()` sino `pintarMundos()`. El texto se quedaba como estaba, el número
+   leído era 0, el esperado era 0, y **volvía a dar verde**.
+
+La tercera es la más instructiva, porque es una vacuidad que no se ve: dos ceros que
+coinciden por motivos distintos. Se arregla con un **centinela**: se escribe una marca en el
+nodo, se llama a la función y se afirma que alguien la ha borrado. Si el código no pinta, el
+guardián lo dice en vez de comparar basura con basura.
+
+**Lo que hay que sacar de aquí: sembrar no basta si el guardián no toca el camino real.** Un
+guardián que comprueba la función pura y no el sitio donde se usa está probando la mitad que
+ya funcionaba.
+
+## Estado al cerrar 1.13.0
+
+| | 1.12.0 | 1.13.0 |
+|---|---|---|
+| Comprobaciones de la suite | 639 | **658** |
+| Fallos registrados | E1–E73 | **E1–E76** |
+| Fases del plan ejecutadas | 5 de 10 | **6 de 10** (6 a 11) |
+| Textos que prometen de más | 3 | **0** |

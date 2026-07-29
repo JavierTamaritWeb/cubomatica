@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.12.0';
+CB.VERSION = '1.13.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -6947,7 +6947,11 @@ CB.mensajes.nuevoEstado = function () {
        reiniciaría en cada guardado y el grito volvería a repetirse cada dos por
        tres sin que nada fallara. Es exactamente lo que le pasó a la dificultad D
        (E45), que era un trinquete de una sola dirección por este mismo motivo. */
-    gritos:  { bolsaAcierto: [] }
+    gritos:  { bolsaAcierto: [] },
+    /* Los cinco micro-descansos también van en bolsa. Sin guion bajo, por lo
+       mismo: sanear() borra esas claves y la bolsa se reiniciaría en cada
+       guardado, que es exactamente el fallo de E45. */
+    bolsaDescansos: []
   };
 };
 
@@ -6961,6 +6965,10 @@ CB.mensajes.asegurar = function (perfil) {
   /* Un perfil de 1.7.1 no la trae. Se crea aquí y por eso 1.8.0 no necesita
      migración en 01-almacen.js: la primera cifra de la versión se queda. */
   if (!m.gritos)  m.gritos  = { bolsaAcierto: [] };
+  /* Un perfil anterior a 1.13.0 no la trae. Se crea aquí, que es el conducto que
+     dejó documentado E52: sin esta línea, un perfil ya guardado reventaría o
+     volvería al sorteo con reemplazo sin avisar. */
+  if (!m.bolsaDescansos) m.bolsaDescansos = [];
   return m;
 };
 
@@ -7518,6 +7526,36 @@ CB.memoria.reclasificarTodo = function (perfil, hoyISO) {
 
 /* Destrezas vencidas hoy, ordenadas por recuperabilidad ascendente: primero las
    que más se han olvidado. */
+/**
+ * Las destrezas que la Cantera pinta con musgo. MISMO PREDICADO que clasificar(),
+ * no uno parecido.
+ *
+ * El saludo del mapa contaba vencidosHoy() —R < 0.7— y lo llamaba «vetas con
+ * musgo», pero el musgo se pinta cuando clasificar() dice 'oxidada', que exige
+ * además haber estado antes en afianzada o dominada. En la primera semana ninguna
+ * destreza ha llegado a afianzada, así que 'oxidada' es imposible mientras
+ * vencidosHoy ya cuenta media docena: «Hay 5 vetas con musgo esperándote» y ni
+ * una hoja verde en la Cantera. La única razón honesta que este juego se dio para
+ * volver mañana era, vista por un niño, una frase que no se correspondía con nada.
+ *
+ * Se cuentan DESTREZAS, no niveles: son 13 frente a 92, y «hay 24 vetas con
+ * musgo» a un niño de 7 años es una deuda, no una invitación.
+ *
+ * @param bloqueados opcional, mapa de destrezas bloqueadas
+ */
+CB.memoria.conMusgo = function (perfil, hoyISO, bloqueados) {
+  if (!perfil || !perfil.destrezas) return [];
+  var lista = [], k;
+  for (k in perfil.destrezas) {
+    if (!Object.prototype.hasOwnProperty.call(perfil.destrezas, k)) continue;
+    if (CB.memoria.clasificar(perfil.destrezas[k], hoyISO,
+        bloqueados ? !!bloqueados[k] : false) === 'oxidada') {
+      lista.push(k);
+    }
+  }
+  return lista;
+};
+
 CB.memoria.vencidosHoy = function (perfil, hoyISO) {
   if (!perfil || !perfil.destrezas) return [];
   var lista = [], k, d, R;
@@ -10718,13 +10756,29 @@ CB.partida.DESCANSOS = [
   { id: 'romper', titulo: '¡Descanso! Rompe los bloques' },
   { id: 'blopi', titulo: '¡Descanso! Dale de comer a Blopi' },
   { id: 'casa', titulo: '¡Descanso! Coloca bloques en tu casa' },
-  { id: 'cofre', titulo: '¡Descanso! ¿En qué cofre está la gema?' },
+  /* NO PROMETE GEMAS, y el título lo decía. El manejador de microDescanso solo
+     marca el cofre como roto, tira partículas y suena: no suma ni una gema a
+     e.gemas ni a perfil.gemas, y los tres cofres siguen pulsables, así que
+     «Elige uno» tampoco era verdad. Se corrige el TEXTO, no la economía: regalar
+     gemas aquí rompería el invariante de la moneda visible, haría del cofre el
+     único de los cinco descansos que paga, y ni siquiera se vería —servirItem no
+     llama a pintarHUD, así que el premio no aparecería hasta el acierto
+     siguiente—. Si algún día se quiere la mecánica entera, es una decisión de
+     economía y va a docs/decisiones.md, no un arreglo de texto. */
+  { id: 'cofre', titulo: '¡Descanso! Rompe los cofres de piedra' },
   { id: 'vagoneta', titulo: '¡Descanso! Monta en la vagoneta' }
 ];
 
 CB.partida.microDescanso = function () {
   var e = CB.partida.estado;
-  var d = CB.util.elegir(e.rng, CB.partida.DESCANSOS);
+  /* EN BOLSA, ahora sí. El comentario decía «en bolsa para que no se repitan» y
+     la línea sorteaba CON REEMPLAZO: con tres descansos por sesión, un 52 % de
+     probabilidad de ver dos veces el mismo. Se reutiliza la bolsa barajada de
+     los mensajes, que ya existe y ya está probada. */
+  var m = CB.mensajes.asegurar(CB.perfil);
+  var idx = CB.mensajes.sacarDeBolsa(m, 'bolsaDescansos',
+    CB.partida.DESCANSOS.length, [], [], 0, e.rng);
+  var d = CB.partida.DESCANSOS[idx < 0 ? 0 : idx];
 
   CB.pantallas.ir('p-descanso');
   var t = document.getElementById('descanso-titulo');
@@ -10736,7 +10790,7 @@ CB.partida.microDescanso = function () {
   if (d.id === 'cofre') {
     /* Se ve la lista completa de premios ANTES de abrir: sin cofres opacos, que
        es un patrón oscuro prohibido en un juego infantil (§21.4). */
-    var aviso = CB.ui.crear('p', 'texto-menor', 'En los tres cofres hay gemas. Elige uno.');
+    var aviso = CB.ui.crear('p', 'texto-menor', 'Tres cofres de piedra. Rómpelos todos.');
     tablero.appendChild(aviso);
   }
 
@@ -12383,9 +12437,13 @@ CB.mapaDestrezas.pintarMundos = function () {
 
   var saludo = document.getElementById('mapa-saludo');
   if (saludo) {
-    var vencidos = CB.memoria.vencidosHoy(perfil, CB.util.hoyISO());
-    saludo.textContent = vencidos.length
-      ? ('Hay ' + vencidos.length + (vencidos.length === 1 ? ' veta' : ' vetas') +
+    /* conMusgo, NO vencidosHoy: el mismo predicado que pinta el 🌿 de la Cantera.
+       Con vencidosHoy el saludo prometía vetas con musgo que no existían en
+       ningún sitio. CB.partida sigue usando vencidosHoy para elegir qué servir:
+       son dos preguntas distintas y solo una se le enseña al niño. */
+    var conMusgo = CB.memoria.conMusgo(perfil, CB.util.hoyISO());
+    saludo.textContent = conMusgo.length
+      ? ('Hay ' + conMusgo.length + (conMusgo.length === 1 ? ' veta' : ' vetas') +
          ' con musgo esperándote.')
       : ('Hola, ' + perfil.mote + '.');
   }

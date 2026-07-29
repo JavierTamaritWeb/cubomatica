@@ -122,6 +122,11 @@
          desaparece nueve líneas después
      E72 abrir un mundo entero no lo decía nadie                    AQUÍ
      E73 el bono se rotulaba en puntos debajo de las gemas          AQUÍ
+     E74 el cofre del descanso prometía gemas y no daba ninguna     AQUÍ
+     E75 el saludo contaba «vetas con musgo» con un criterio        AQUÍ
+         distinto del que pinta el musgo en la Cantera
+     E76 los cinco descansos se sorteaban CON reemplazo pese al     AQUÍ
+         comentario que decía «en bolsa para que no se repitan»
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -2806,4 +2811,175 @@ CB.pruebas.suite('E73 · el bono habla en gemas, no en puntos', function () {
   CB.partida.estado = null;
   CB.perfil = perfilPrevio;
   if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+/* ══ E74-E76 · Fase 11: textos que prometían lo que el código no hace ════════
+
+   Tres promesas rotas. Ninguna daba error: el juego decía una cosa y hacía otra,
+   y solo se ve leyendo las dos a la vez.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E74 · el cofre del descanso no promete gemas', function () {
+  var t = CB.pruebas;
+  var cofre = CB.partida.DESCANSOS.filter(function (d) { return d.id === 'cofre'; })[0];
+  if (!t.ok(!!cofre, 'E74 · existe el descanso del cofre')) return;
+
+  /* PRIMERO: que el código siga sin dar gemas. Va antes que la comprobación del
+     texto a propósito — es lo que impide que alguien «arregle» esto sumando
+     gemas por detrás, que rompería el invariante de la moneda visible. */
+  var perfilPrevio = CB.perfil;
+  var perfil = CB.pruebas.perfilNuevo();
+  CB.perfil = perfil;
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  if (!t.ok(!!estado, 'E74 · hay partida')) { CB.perfil = perfilPrevio; return; }
+
+  var gemasAntes = perfil.gemas, delEstadoAntes = estado.gemas;
+  CB.partida.microDescanso();
+  var tablero = document.getElementById('descanso-tablero');
+  var piezas = tablero ? tablero.querySelectorAll('.bloque-rompible') : [];
+  var i;
+  for (i = 0; i < piezas.length; i++) piezas[i].click();
+
+  t.igual(perfil.gemas, gemasAntes, 'E74 · romper el descanso entero no da gemas al perfil');
+  t.igual(estado.gemas, delEstadoAntes, 'E74 · ni a la partida');
+
+  /* Y DESPUÉS: que el texto no las prometa. */
+  t.ok(cofre.titulo.indexOf('gema') === -1,
+    'E74 · el título del cofre no habla de gemas', cofre.titulo);
+
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+});
+
+CB.pruebas.suite('E75 · el musgo se cuenta con el criterio que lo pinta', function () {
+  var t = CB.pruebas;
+  t.ok(typeof CB.memoria.conMusgo === 'function', 'E75 · existe CB.memoria.conMusgo');
+
+  var hoy = CB.util.hoyISO();
+
+  /* PERFIL DE PRIMERA SEMANA, que es el caso que delata el fallo: destrezas
+     practicadas hace días pero que NUNCA llegaron a afianzada. vencidosHoy las
+     cuenta —R < 0.7— y la Cantera no pinta ni una, porque 'oxidada' exige haber
+     sido sólida antes. Con un perfil maduro los dos números pueden coincidir por
+     casualidad y el guardián pasaría en verde con el fallo dentro. */
+  /* LA DESTREZA LA CREA CB.adaptativo.nuevaDestreza(), no yo. La primera versión
+     de este montaje la escribía a mano y le ponía `ultimoISO`, UNA PROPIEDAD QUE
+     NO EXISTE: recuperabilidad() lee `ultimoRepasoISO`, así que devolvía 1 y no
+     había ni una destreza vencida. Dos aserciones rojas contra código correcto,
+     por suponer la forma de un dato en vez de pedírsela a quien lo produce. Es
+     E42, y van tres veces en esta serie. */
+  var perfil = CB.pruebas.perfilNuevo();
+  perfil.destrezas = {};
+  var slugs = ['numeracion', 'suma_sin_llevar', 'resta_sin_llevar'];
+  slugs.forEach(function (sl) {
+    var d = CB.adaptativo.nuevaDestreza('2026-01-01');   // repasada hace muchísimo
+    d.n = 4; d.aciertos = 2; d.aciertosPrimerIntento = 1;   // p1 = 0,25: aprendiendo
+    d.estado = 'aprendiendo';
+    perfil.destrezas[sl] = d;
+  });
+
+  var vencidas = CB.memoria.vencidosHoy(perfil, hoy);
+  var musgo = CB.memoria.conMusgo(perfil, hoy);
+
+  t.ok(vencidas.length > 0,
+    'E75 · en primera semana hay destrezas vencidas por tiempo', String(vencidas.length));
+  t.igual(musgo.length, 0,
+    'E75 · y NINGUNA con musgo: nunca fueron sólidas, así que no se han oxidado',
+    JSON.stringify(musgo));
+
+  /* Y el número de conMusgo coincide, una a una, con lo que clasificar() llama
+     oxidada: no se reimplementa el predicado, se le pregunta. */
+  var porClasificar = Object.keys(perfil.destrezas).filter(function (k) {
+    return CB.memoria.clasificar(perfil.destrezas[k], hoy, false) === 'oxidada';
+  });
+  t.igual(musgo.length, porClasificar.length,
+    'E75 · conMusgo y clasificar dicen exactamente lo mismo');
+
+  /* Y con una destreza que SÍ fue sólida y se ha olvidado, aparece. */
+  perfil.destrezas.numeracion.estado = 'afianzada';
+  perfil.destrezas.numeracion.aciertosPrimerIntento = 4;
+  var musgo2 = CB.memoria.conMusgo(perfil, hoy);
+  t.ok(musgo2.length >= 1,
+    'E75 · una destreza que fue sólida y se olvidó sí sale con musgo',
+    JSON.stringify(musgo2));
+
+  /* ── Y AHORA EL SALUDO DE VERDAD, que es lo que faltaba ──────────────────
+     Todo lo de arriba comprueba conMusgo() en abstracto, y sembrando el fallo
+     —devolver vencidosHoy() al saludo del mapa— este guardián SEGUÍA EN VERDE,
+     porque no tocaba el mapa por ningún sitio. Aquí se pinta la Cantera con el
+     perfil de primera semana y se compara el NÚMERO DEL SALUDO con lo que dice
+     conMusgo. Con vencidosHoy el saludo prometería vetas que no existen. */
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  var primeraSemana = CB.pruebas.perfilNuevo();
+  primeraSemana.destrezas = {};
+  slugs.forEach(function (sl) {
+    var d = CB.adaptativo.nuevaDestreza('2026-01-01');
+    d.n = 4; d.aciertos = 2; d.aciertosPrimerIntento = 1;
+    d.estado = 'aprendiendo';
+    primeraSemana.destrezas[sl] = d;
+  });
+  CB.perfil = primeraSemana;
+  var saludo = document.getElementById('mapa-saludo');
+  if (t.ok(!!saludo, 'E75 · hay saludo del mapa en la maqueta')) {
+    /* CENTINELA. La primera versión llamaba a pintar(), y el saludo NO lo escribe
+       pintar() sino pintarMundos(): el texto se quedaba como estaba, el número
+       leído era 0, el esperado era 0, y el guardián daba verde con el fallo
+       dentro. Se marca el nodo antes y se afirma que alguien lo ha reescrito. */
+    saludo.textContent = 'SIN PINTAR';
+    CB.mapaDestrezas.pintarMundos();
+    t.ok(saludo.textContent !== 'SIN PINTAR',
+      'E75 · pintarMundos() escribe el saludo de verdad');
+
+    var esperado = CB.memoria.conMusgo(primeraSemana, CB.util.hoyISO()).length;
+    var dice = parseInt((saludo.textContent.match(/Hay (\d+)/) || [])[1], 10);
+    if (isNaN(dice)) dice = 0;
+    t.igual(dice, esperado,
+      'E75 · el saludo cuenta lo mismo que se pinta con musgo, ni una más',
+      'dice «' + saludo.textContent + '» y con musgo hay ' + esperado);
+    t.igual(esperado, 0,
+      'E75 · y en primera semana eso es CERO: sin esto, el saludo promete vetas ' +
+      'que la Cantera no pinta en ningún sitio');
+  }
+
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+CB.pruebas.suite('E76 · los cinco descansos no se repiten, y sobreviven al guardado', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var perfil = CB.pruebas.perfilNuevo();
+  CB.perfil = perfil;
+  var m = CB.mensajes.asegurar(perfil);
+
+  t.ok(!!m.bolsaDescansos, 'E76 · el perfil trae bolsa de descansos');
+  var conGuion = Object.keys(m).filter(function (k) { return k.charAt(0) === '_'; });
+  t.igual(conGuion.length, 0, 'E76 · ninguna clave del estado empieza por guion bajo');
+
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  if (!t.ok(!!estado, 'E76 · hay partida')) { CB.perfil = perfilPrevio; return; }
+
+  /* CINCO DESCANSOS CON UN GUARDADO POR MEDIO. Sin el guardado, un guardián así
+     pasa en verde con una bolsa que se reinicia en cada `sanear()`: es
+     literalmente el fallo de E45, y el motivo de que esta clave no lleve guion
+     bajo. */
+  var vistos = [], i, titulo = document.getElementById('descanso-titulo');
+  for (i = 0; i < 5; i++) {
+    CB.partida.microDescanso();
+    vistos.push(titulo ? titulo.textContent : '?');
+    perfil = CB.almacen.sanear(JSON.parse(JSON.stringify(perfil)));
+    CB.perfil = perfil;
+  }
+
+  var unicos = vistos.filter(function (v, k) { return vistos.indexOf(v) === k; });
+  t.igual(unicos.length, 5,
+    'E76 · cinco descansos seguidos son cinco distintos, aun guardando por medio',
+    vistos.join(' | '));
+
+  t.ok(!!(perfil.mensajes && perfil.mensajes.bolsaDescansos),
+    'E76 · y la bolsa sigue ahí después de sanear()');
+
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
 });
