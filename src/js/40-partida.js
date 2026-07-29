@@ -202,7 +202,10 @@ CB.partida.iniciar = function (opciones) {
 
   CB.pantallas.ir('p-partida');
   CB.ui.pintarBioma(mundo.bioma, 0);
-  CB.ui.pintarHUD({ luces: luces.luces, gemas: 0 });
+  /* En este punto el guion ya está construido pero no se ha servido nada:
+     0 de N, que es lo que hay que enseñar. */
+  CB.ui.pintarHUD({ luces: luces.luces, gemas: 0,
+                    indice: 0, total: CB.partida.estado.guion.length });
   CB.partida.servirItem();
   return CB.partida.estado;
 };
@@ -277,6 +280,13 @@ CB.partida.servirItem = function () {
   e.itemActual = item;
   e.intento = 1;
   e.lecturaHecha = false;
+
+  /* LA GALERÍA SE PINTA AQUÍ, y no solo en trasAcierto: en ese momento e.indice
+     todavía es el del ítem que se acaba de responder, así que la fila iría un
+     bloque por detrás toda la partida. Aquí `indice` es exactamente el número de
+     ítems ya servidos, que es lo que la fila tiene que decir. */
+  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                    indice: e.indice, total: e.guion.length });
 
   CB.ui.pintarItem(item);
   CB.ui.pintarBioma(e.mundo.bioma, e.indice / Math.max(1, e.guion.length));
@@ -708,7 +718,8 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   }
 
   CB.partida.comprobarLogros(item);
-  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
+  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                   indice: e.indice, total: e.guion.length });
 
   /* NUNCA menos de los 1600 ms de siempre: la espera se estira si la coreografía
      es larga, pero no se encoge nunca. Acortarla recortaría tiempo de lectura. */
@@ -781,7 +792,8 @@ CB.partida.trasFallo = function (item, nivel, extra) {
       e.lucesApagadas++;
       CB.audio.sfx('luzApagada');
     }
-    CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
+    CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                   indice: e.indice, total: e.guion.length });
 
     /* Escalones 3, 4 y 5 según los fallos acumulados de ESE concepto.
        LA DECISIÓN LA TOMA CB.escalera, no este fichero. Antes se llamaba a
@@ -1013,7 +1025,8 @@ CB.partida.aplicarLogros = function (nuevos) {
 
     r = CB.vidas.conceder(e.luces, l.id, CB.perfil, e.modo);
     if (r.aplicada) {
-      CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
+      CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                   indice: e.indice, total: e.guion.length });
       CB.ui.encenderLuz(e.luces.luces - 1);
       CB.ui.mensaje('¡Luz extra! ' + l.nombre, 'acierto');
       CB.partida.festejarLogro('¡Luz extra!', i);
@@ -1210,7 +1223,8 @@ CB.partida.reanudarGuardada = function (perfil) {
   e.puntos = p.puntos;
   e.gemas = p.gemas;
   (p.itemsServidos || []).forEach(function (k) { e.servidosSet[k] = true; });
-  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
+  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                   indice: e.indice, total: e.guion.length });
   CB.partida.servirItem();
   return e;
 };

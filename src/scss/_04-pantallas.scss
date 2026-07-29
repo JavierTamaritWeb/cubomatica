@@ -272,3 +272,50 @@
    caería al 38 % del VIEWPORT, encima del panel de gemas, en la única pantalla
    cuyo trabajo es que se lea. Se comprueba en E71 con la position calculada. */
 .pantalla--fin { position: relative; }
+
+/* ── La galería del HUD: cuánto se lleva cavado ─────────────────────────────
+   Mismo dibujo que la armadura del jefe —bisel de 4 px sin desenfoque, que pasa
+   la regla dura— pero más pequeño, porque aquí caben hasta 20 y compite por el
+   sitio con el reloj. `flex-wrap: wrap` a propósito: con 20 bloques en la
+   anchura más estrecha, antes que empujar el reloj prefiere hacer dos filas. */
+.galeria-avance {
+  /* flex-shrink: 0. MEDIDO: sin esto, a 320 px el HUD aprieta la galería hasta
+     10 px de ancho, los 20 bloques se apilan en UNA COLUMNA y el HUD pasa de 72
+     a 254 px de alto. El `max-width: 40%` no lo impedía: el que manda cuando no
+     hay sitio es el encogimiento, no el máximo. */
+  display: flex; gap: 2px; flex-wrap: wrap;
+  align-items: center;
+  flex: 0 0 auto;
+  width: 128px;              /* 12 bloques por fila: 20 caben en dos */
+  max-height: 22px;          /* dos filas y ni una más */
+  overflow: hidden;
+}
+/* Y por debajo de la anchura más estrecha de referencia, ni 128 px hay: las
+   luces solas ocupan 160. Ahí la misma información va en texto, que ocupa una
+   cuarta parte. No se esconde: se dice de otra manera. */
+.galeria-avance > b { display: none; }
+.galeria-avance::after {
+  content: attr(data-texto);
+  font-family: var(--fuente-pixel);
+  font-size: var(--tam-texto-min);
+  color: var(--texto-claro);
+}
+@include desde(movil) {
+  .galeria-avance {
+    width: 128px;
+  }
+  .galeria-avance > b { display: block; }
+  .galeria-avance::after { content: ""; }
+}
+.galeria-avance > b {
+  width: 10px; height: 10px; display: block;
+  background: var(--deco-piedra);
+  box-shadow: inset 2px 2px 0 0 var(--deco-piedra-cla),
+              inset -2px -2px 0 0 var(--deco-piedra-osc);
+}
+/* Caído = ya cavado. Se apaga el relieve y queda el hueco, igual que en el jefe. */
+.galeria-avance > b[data-caido="si"] {
+  background: var(--deco-oro);
+  box-shadow: inset 2px 2px 0 0 var(--deco-oro-cla),
+              inset -2px -2px 0 0 var(--deco-oro-osc);
+}

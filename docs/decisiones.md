@@ -3030,3 +3030,62 @@ la regla que las une es corta: **el guardián tiene que mirar el efecto, no el m
 | Fases del plan ejecutadas | 7 de 10 | **8 de 10** (6 a 13) |
 | Números del bucle fuera de la fuente única | 1 | **0** |
 | Tiempo de lectura del mensaje de acierto | 1600 ms fijos | **hasta 3200 según longitud** |
+
+---
+
+# Ronda 21 · Fase 14 del plan: cuánto queda — versión 1.16.0 (29 de julio de 2026)
+
+## D-R21-1 · La lección estaba aprendida en el mismo repositorio
+
+La calibración escribe «Pregunta 3 de 4» y tiene un comentario explicando por qué se añadió.
+La expedición —siete minutos, entre 8 y 20 ítems, longitud variable— no decía nada. El único
+indicador de avance era el cielo, que es `aria-hidden`.
+
+Merece anotarse porque no es un descuido de escritura: es una lección aplicada en un sitio y
+no en el otro, con cuatro meses de diferencia entre los dos. **La misma familia que las tres
+ya registradas** —una regla en un sitio de tres, dos listas que se separan, dos teclados— y
+la quinta vez que aparece en esta serie.
+
+## D-R21-2 · Se pinta donde el índice significa lo que debe
+
+El plan proponía ampliar las cinco llamadas a `pintarHUD`. Correcto, pero insuficiente: en
+`trasAcierto`, `e.indice` es todavía el del ítem que se acaba de responder —lo incrementa
+`siguiente()`, después—, así que la fila habría ido **un bloque por detrás toda la partida**.
+
+Se pinta también en `servirItem`, donde `indice` es exactamente el número de ítems ya
+servidos. No es una llamada de más: es la única donde el número quiere decir lo que la fila
+enseña.
+
+## D-R21-3 · El máximo no manda cuando no hay sitio
+
+El plan pedía comprobar el ancho con 20 bloques en el escalón más estrecho, y decía
+literalmente que «cabe sin desplazar el reloj» no estaba verificado en ningún sitio. **No
+cabía.**
+
+A 320 px el HUD apretaba la galería hasta 10 px de ancho: los 20 bloques se apilaban en una
+columna y el HUD pasaba de 72 a 254 px de alto. El `max-width: 40%` no lo impidió, y ese es
+el detalle que conviene recordar: **en un contenedor flex, cuando no hay sitio el que decide
+es `flex-shrink`, no `max-width`.** Un máximo solo limita hacia arriba.
+
+Y por debajo de 480 px —donde las luces solas ocupan 160— no caben ni 128 px de galería. Ahí
+la misma información va en texto, «7/20». **No se esconde: se dice de otra manera.** Esconder
+habría sido más fácil y habría dejado sin saber cuánto queda justo en la pantalla más
+pequeña, que es donde menos se ve el cielo.
+
+## D-R21-4 · Afirmar el nodo antes de medir nada
+
+E83 empieza comprobando que `#hud-galeria` existe en la maqueta. Sin eso, `pintarHUD` sale
+por su `if` y todas las aserciones siguientes comparan cero bloques con cero esperados: verde
+perfecto, comprobación nula.
+
+Es la cuarta vez en esta serie que la vacuidad llega por la misma puerta —un nodo que falta
+en el mock— y por eso está escrito como primera línea del guardián y no al final.
+
+## Estado al cerrar 1.16.0
+
+| | 1.15.0 | 1.16.0 |
+|---|---|---|
+| Comprobaciones de la suite | 687 | **698** |
+| Fallos registrados | E1–E82 | **E1–E83** |
+| Fases del plan ejecutadas | 8 de 10 | **9 de 10** (6 a 14) |
+| Indicadores de avance visibles | 0 | **1** (galería del HUD) |

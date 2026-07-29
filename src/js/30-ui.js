@@ -68,6 +68,35 @@ CB.ui.pintarHUD = function (estado) {
   var g = document.getElementById('hud-gemas');
   /* El contador de gemas SOLO SUBE. Nunca baja, nunca es negativo (§3.4). */
   if (g) g.textContent = String(Math.max(0, estado.gemas || 0));
+
+  /* ── CUÁNTO QUEDA ─────────────────────────────────────────────────────────
+     Lo único que codificaba el avance era el cielo, y el cielo es aria-hidden.
+     El guion tiene entre 8 y 20 ítems y su longitud cambia de partida en partida,
+     así que un niño de siete años no tenía forma de saber si va por la mitad o
+     por el final. La lección ya estaba aprendida en este código para cuatro
+     preguntas —la calibración escribe «Pregunta 3 de 4»— y en la expedición de
+     siete minutos no se había aplicado.
+
+     LOS BLOQUES CAEN, NO QUEDAN: se pinta lo hecho. Un contador que baja se lee
+     como cuenta atrás, y aquí no hay ninguna.
+
+     Solo se repinta si viene `total`. Sin esa guarda, una llamada parcial
+     —cualquiera que pase solo luces y gemas— borraría la fila entera. */
+  var gal = document.getElementById('hud-galeria');
+  if (gal && estado.total) {
+    CB.ui.vaciar(gal);
+    var hechos = Math.max(0, Math.min(estado.total, estado.indice || 0));
+    var j, b;
+    for (j = 0; j < estado.total; j++) {
+      b = CB.ui.crear('b');
+      if (j < hechos) b.setAttribute('data-caido', 'si');
+      gal.appendChild(b);
+    }
+    gal.setAttribute('aria-label', 'Bloque ' + hechos + ' de ' + estado.total);
+    /* La versión corta, para cuando no caben los bloques. La escribe el JS
+       porque CSS no sabe sumar. */
+    gal.setAttribute('data-texto', hechos + '/' + estado.total);
+  }
 };
 
 CB.ui.parpadeoGris = function () {

@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.15.0';
+CB.VERSION = '1.16.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -7931,6 +7931,35 @@ CB.ui.pintarHUD = function (estado) {
   var g = document.getElementById('hud-gemas');
   /* El contador de gemas SOLO SUBE. Nunca baja, nunca es negativo (§3.4). */
   if (g) g.textContent = String(Math.max(0, estado.gemas || 0));
+
+  /* ── CUÁNTO QUEDA ─────────────────────────────────────────────────────────
+     Lo único que codificaba el avance era el cielo, y el cielo es aria-hidden.
+     El guion tiene entre 8 y 20 ítems y su longitud cambia de partida en partida,
+     así que un niño de siete años no tenía forma de saber si va por la mitad o
+     por el final. La lección ya estaba aprendida en este código para cuatro
+     preguntas —la calibración escribe «Pregunta 3 de 4»— y en la expedición de
+     siete minutos no se había aplicado.
+
+     LOS BLOQUES CAEN, NO QUEDAN: se pinta lo hecho. Un contador que baja se lee
+     como cuenta atrás, y aquí no hay ninguna.
+
+     Solo se repinta si viene `total`. Sin esa guarda, una llamada parcial
+     —cualquiera que pase solo luces y gemas— borraría la fila entera. */
+  var gal = document.getElementById('hud-galeria');
+  if (gal && estado.total) {
+    CB.ui.vaciar(gal);
+    var hechos = Math.max(0, Math.min(estado.total, estado.indice || 0));
+    var j, b;
+    for (j = 0; j < estado.total; j++) {
+      b = CB.ui.crear('b');
+      if (j < hechos) b.setAttribute('data-caido', 'si');
+      gal.appendChild(b);
+    }
+    gal.setAttribute('aria-label', 'Bloque ' + hechos + ' de ' + estado.total);
+    /* La versión corta, para cuando no caben los bloques. La escribe el JS
+       porque CSS no sabe sumar. */
+    gal.setAttribute('data-texto', hechos + '/' + estado.total);
+  }
 };
 
 CB.ui.parpadeoGris = function () {
@@ -9937,7 +9966,10 @@ CB.partida.iniciar = function (opciones) {
 
   CB.pantallas.ir('p-partida');
   CB.ui.pintarBioma(mundo.bioma, 0);
-  CB.ui.pintarHUD({ luces: luces.luces, gemas: 0 });
+  /* En este punto el guion ya está construido pero no se ha servido nada:
+     0 de N, que es lo que hay que enseñar. */
+  CB.ui.pintarHUD({ luces: luces.luces, gemas: 0,
+                    indice: 0, total: CB.partida.estado.guion.length });
   CB.partida.servirItem();
   return CB.partida.estado;
 };
@@ -10012,6 +10044,13 @@ CB.partida.servirItem = function () {
   e.itemActual = item;
   e.intento = 1;
   e.lecturaHecha = false;
+
+  /* LA GALERÍA SE PINTA AQUÍ, y no solo en trasAcierto: en ese momento e.indice
+     todavía es el del ítem que se acaba de responder, así que la fila iría un
+     bloque por detrás toda la partida. Aquí `indice` es exactamente el número de
+     ítems ya servidos, que es lo que la fila tiene que decir. */
+  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                    indice: e.indice, total: e.guion.length });
 
   CB.ui.pintarItem(item);
   CB.ui.pintarBioma(e.mundo.bioma, e.indice / Math.max(1, e.guion.length));
@@ -10443,7 +10482,8 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   }
 
   CB.partida.comprobarLogros(item);
-  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
+  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                   indice: e.indice, total: e.guion.length });
 
   /* NUNCA menos de los 1600 ms de siempre: la espera se estira si la coreografía
      es larga, pero no se encoge nunca. Acortarla recortaría tiempo de lectura. */
@@ -10516,7 +10556,8 @@ CB.partida.trasFallo = function (item, nivel, extra) {
       e.lucesApagadas++;
       CB.audio.sfx('luzApagada');
     }
-    CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
+    CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                   indice: e.indice, total: e.guion.length });
 
     /* Escalones 3, 4 y 5 según los fallos acumulados de ESE concepto.
        LA DECISIÓN LA TOMA CB.escalera, no este fichero. Antes se llamaba a
@@ -10748,7 +10789,8 @@ CB.partida.aplicarLogros = function (nuevos) {
 
     r = CB.vidas.conceder(e.luces, l.id, CB.perfil, e.modo);
     if (r.aplicada) {
-      CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
+      CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                   indice: e.indice, total: e.guion.length });
       CB.ui.encenderLuz(e.luces.luces - 1);
       CB.ui.mensaje('¡Luz extra! ' + l.nombre, 'acierto');
       CB.partida.festejarLogro('¡Luz extra!', i);
@@ -10945,7 +10987,8 @@ CB.partida.reanudarGuardada = function (perfil) {
   e.puntos = p.puntos;
   e.gemas = p.gemas;
   (p.itemsServidos || []).forEach(function (k) { e.servidosSet[k] = true; });
-  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
+  CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
+                   indice: e.indice, total: e.guion.length });
   CB.partida.servirItem();
   return e;
 };

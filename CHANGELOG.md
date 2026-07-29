@@ -12,6 +12,59 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.16.0] — 2026-07-29
+
+**Segunda cifra.** Fase 14 del plan. El perfil guardado no cambia.
+
+### No había forma de saber cuánto queda
+
+El HUD tenía luces, reloj y gemas. Lo único que codificaba el avance de la expedición era
+el **cielo**, y el cielo es `aria-hidden`. El guion tiene entre 8 y 20 ítems y su longitud
+cambia de partida en partida, así que un niño de siete años no podía saber si iba por la
+mitad o por el final.
+
+La lección ya estaba aprendida en este mismo código **para cuatro preguntas** —la
+calibración escribe «Pregunta 3 de 4» y hay un comentario explicando por qué se añadió— y en
+la expedición de siete minutos no se había aplicado.
+
+Nace la galería del HUD: un bloque por ítem, **los cavados en oro**. Los bloques caen, no
+quedan: un contador que baja se lee como cuenta atrás, y aquí no hay ninguna. El dibujo es
+decoración y la información va en el `aria-label`, reescrito en cada pintado.
+
+### Se pinta al servir, no al acertar
+
+El plan proponía ampliar las cinco llamadas a `pintarHUD`. Se hizo, y además se pinta en
+`servirItem`, porque en `trasAcierto` **`e.indice` es todavía el del ítem que se acaba de
+responder**: la fila habría ido un bloque por detrás toda la partida. En `servirItem`,
+`indice` es exactamente el número de ítems ya servidos, que es lo que la fila tiene que
+decir.
+
+### Un defecto de anchura que nadie había medido
+
+El plan pedía comprobar el ancho con 20 bloques en el escalón más estrecho, diciendo que
+«cabe sin desplazar el reloj» no estaba verificado en ningún sitio. **No cabía.** A 320 px el
+HUD apretaba la galería hasta 10 px, los 20 bloques se apilaban en una columna y el HUD
+pasaba de 72 a **254 px de alto**.
+
+El `max-width: 40%` no lo impedía: cuando no hay sitio, el que manda es el encogimiento y no
+el máximo. Ahora `flex: 0 0 auto`, ancho fijo de 128 px y dos filas como tope. Y por debajo
+de 480 px —donde las luces solas ocupan 160— la misma información va en **texto**, «7/20»,
+que ocupa una cuarta parte. No se esconde: se dice de otra manera.
+
+Medido después en cuatro anchuras: el HUD se queda en 72 px en las cuatro y la galería no
+pisa el reloj en ninguna.
+
+### Pruebas: 687 → 698
+
+**E83**, que **empieza afirmando que el nodo existe en la maqueta**: sin eso, `pintarHUD`
+sale por su `if` y todo lo demás pasaría por vacuidad, cero bloques contra cero esperados.
+Sembrado quitando el nodo del mock, esa primera aserción se pone roja y el resto ni corre.
+
+Y una llamada parcial —solo `{luces, gemas}`— se caza con la aserción del avance real, no con
+las de la fila estática.
+
+---
+
 ## [1.15.0] — 2026-07-29
 
 **Segunda cifra.** Fase 13 del plan. El perfil guardado no cambia.

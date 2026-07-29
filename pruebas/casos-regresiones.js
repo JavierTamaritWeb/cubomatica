@@ -137,6 +137,8 @@
          del bucle escrito a pelo
      E82 la música del mundo volvía al segundo cero en cada        casos-musica.js
          reparación y en cada descanso
+     E83 no había forma de saber cuánto queda de expedición:       AQUÍ
+         el avance solo lo codificaba el cielo, que es aria-hidden
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -3153,4 +3155,72 @@ CB.pruebas.suite('E81 · la espera del segundo intento sale de la fuente única'
 
   t.igual(CB.ui.festejo.CELEBRACIONES.animo.ms, previo,
     'E81 · la tabla queda como estaba');
+});
+
+/* ══ E83 · Fase 14: cuánto queda ═══════════════════════════════════════════ */
+
+CB.pruebas.suite('E83 · el HUD dice por qué bloque va la expedición', function () {
+  var t = CB.pruebas;
+
+  /* SE AFIRMA PRIMERO QUE EL NODO ESTÁ EN LA MAQUETA. Sin esto, pintarHUD sale
+     por su `if` y TODO lo de abajo pasaría por vacuidad: cero bloques contra cero
+     bloques esperados. Es la trampa que ya documentó el plan de 1.7.0 para los
+     nodos que un módulo cachea o busca en tiempo de ejecución. */
+  var gal = document.getElementById('hud-galeria');
+  if (!t.ok(!!gal, 'E83 · #hud-galeria existe en la maqueta de pruebas')) return;
+
+  CB.ui.pintarHUD({ luces: 3, gemas: 0, indice: 3, total: 12 });
+  t.igual(gal.querySelectorAll('b').length, 12,
+    'E83 · hay un bloque por ítem del guion');
+  t.igual(gal.querySelectorAll('b[data-caido="si"]').length, 3,
+    'E83 · y tres marcados como cavados');
+  t.igual(gal.getAttribute('aria-label'), 'Bloque 3 de 12',
+    'E83 · el dibujo es decoración: la información va en el aria-label',
+    gal.getAttribute('aria-label'));
+
+  /* LOS BLOQUES CAEN, NO QUEDAN. Con el guion entero hecho, TODOS marcados: si
+     alguien lo invirtiera para pintar «lo que falta», esto se pondría rojo. */
+  CB.ui.pintarHUD({ luces: 3, gemas: 0, indice: 12, total: 12 });
+  t.igual(gal.querySelectorAll('b[data-caido="si"]').length, 12,
+    'E83 · al final del guion están los doce cavados, no cero');
+
+  /* Una llamada PARCIAL no borra la fila: hay cinco sitios que llaman a
+     pintarHUD y basta que uno se olvide de pasar el total. */
+  CB.ui.pintarHUD({ luces: 2, gemas: 5 });
+  t.igual(gal.querySelectorAll('b').length, 12,
+    'E83 · una llamada sin total deja la fila como estaba, no la vacía');
+
+  /* Y el índice no se sale de la fila aunque venga pasado de rosca. */
+  CB.ui.pintarHUD({ luces: 3, gemas: 0, indice: 99, total: 8 });
+  t.igual(gal.querySelectorAll('b[data-caido="si"]').length, 8,
+    'E83 · un índice mayor que el total no pinta bloques de más');
+
+  /* LA HILERA NO MIENTE, y esto se comprueba contra el guion de verdad: el ítem
+     del escalón 4 se sirve EN LUGAR DEL del guion en ese índice, así que el total
+     de bloques servidos sigue siendo guion.length. */
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  CB.perfil = CB.pruebas.perfilNuevo();
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  if (t.ok(!!estado, 'E83 · hay partida')) {
+    t.igual(gal.querySelectorAll('b').length, estado.guion.length,
+      'E83 · al empezar hay tantos bloques como ítems tiene el guion',
+      'guion de ' + estado.guion.length);
+    t.igual(gal.querySelectorAll('b[data-caido="si"]').length, 0,
+      'E83 · y ninguno cavado todavía');
+
+    /* Y AVANZA AL SERVIR EL SIGUIENTE. Esta es la aserción que caza una llamada
+       que se olvide de pasar el total, y también el fallo de contar con el índice
+       equivocado: pintándolo solo en trasAcierto la fila iba un bloque por detrás
+       toda la partida, porque ahí e.indice es todavía el del ítem respondido. */
+    estado.proximoDescanso = 99;
+    estado.indice = 4;
+    CB.partida.servirItem();
+    t.igual(gal.querySelectorAll('b[data-caido="si"]').length, 4,
+      'E83 · servir el quinto ítem deja cuatro bloques cavados, no tres',
+      gal.getAttribute('aria-label'));
+  }
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
 });

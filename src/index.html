@@ -146,6 +146,12 @@
   <div class="hud">
     <div id="hud-luces" class="luces" role="img" aria-label="Luces del casco"></div>
 
+    <!-- CUÁNTO QUEDA. Los bloques CAEN, no quedan: se pinta lo hecho, porque un
+         contador que baja se lee como cuenta atrás y aquí no hay ninguna. El
+         aria-label lo reescribe pintarHUD en cada pintado, porque el dibujo es
+         decoración y la información tiene que estar en texto. -->
+    <div id="hud-galeria" class="galeria-avance" role="img" aria-label="Bloque 0 de 0"></div>
+
     <!-- Cuenta atrás de 30 s. El reloj de arena es decoración (aria-hidden): la
          información va en la cifra, que es texto de verdad. -->
     <div id="hud-reloj" class="reloj" hidden>
