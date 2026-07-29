@@ -12,6 +12,63 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.11.0] — 2026-07-29
+
+**Segunda cifra: el teclado de los problemas gana seis cosas que no tenía.** Fase 9 del
+plan. El perfil guardado no cambia.
+
+### Había tres teclados y solo uno estaba bien
+
+La tercera fase de `selectorDatos` —escribir el resultado de un problema— era una copia
+del teclado, y llevaba desincronizada desde que se escribió. No es un rincón: se usa en
+**todos** los problemas de enunciado desde el segundo trimestre.
+
+| | La copia | El original |
+|---|---|---|
+| ⌫ | mudo | suena |
+| dígito | mudo | suena |
+| visor | un `div` pelado | con `role="status"` y `aria-live` |
+| bloqueo de 800 ms | no lo miraba | sí |
+| `data-tecla` del OK | `"OK"` en mayúsculas | `"ok"` |
+| teclado físico | no había | dígitos, ⌫ y Enter |
+
+La de las mayúsculas es la que remata: `[data-tecla="ok"]` distingue mayúsculas, así que
+ese OK **ni siquiera recibía el verde** del botón primario.
+
+Ahora la fase 3 delega en `tecladoBloques`, que acepta un contenedor ajeno. Queda **una
+sola construcción de teclado** en todo el proyecto, y la fase 3 gana de paso el manejo
+por teclado físico, que no tenía: se jugaba con el dedo o no se jugaba.
+
+### Y un séptimo formato sin la protección de los 800 ms
+
+Al mirarlo de cerca: `selectorDatos` **ignoraba su propio `opciones.bloqueoMs`** —pasaba
+0 a `montar()`— y además ponía `CB.partida.bloqueado = false` al final, **después** de
+pintar. Era el único de los siete formatos sin la protección contra el toque heredado del
+ítem anterior. La línea se mueve antes de pintar.
+
+### Pruebas: 595 → 612
+
+**E68**, y lo que vigila no es nada de lo de arriba: vigila que los **cuatro campos de
+diagnóstico** lleguen intactos a `alResponder`. De ellos sale el informe del adulto, y no
+se ven en pantalla. Unificar teclados es fácil; que el informe empiece a decir que el niño
+falla la comprensión lectora cuando lo que falla es la cuenta no da ningún error.
+
+Sembrado —borrar `faseDatosOk` del envoltorio— se pone rojo exactamente ahí.
+
+### Un guardián que se puso rojo contra código correcto
+
+**E65 bajó a «6 de 7»** al unificar los teclados: comprobaba la confirmación del antiazar
+leyendo el **texto fuente** de cada formato, y `selectorDatos` dejó de contener la palabra
+porque ahora delega. La confirmación seguía ahí; el guardián no podía verla.
+
+Es la fragilidad que el proyecto ya tiene anotada —leer `toString()` solo vale para
+literales y nombres de propiedad—, usada aquí para inferir comportamiento. El barrido se
+queda porque cubre seis formatos de un vistazo y acepta la delegación, y el séptimo lo
+comprueba E68 **conduciendo las tres fases** y tocando el OK dos veces, que es la única
+forma honesta de saberlo.
+
+---
+
 ## [1.10.0] — 2026-07-29
 
 **Segunda cifra: entran capacidades.** Fase 8 del plan. El perfil guardado no cambia.

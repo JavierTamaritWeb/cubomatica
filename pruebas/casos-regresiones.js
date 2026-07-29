@@ -114,6 +114,8 @@
          pedían tres formatos de siete
      E66 «Salir» terminaba la expedición de un solo roce            AQUÍ
      E67 tocar una moneda no dejaba ninguna marca                   AQUÍ
+     E68 la fase 3 de selectorDatos era una copia desincronizada    AQUÍ
+         del teclado: muda, sin aria-live y con el OK en mayúsculas
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -2352,14 +2354,24 @@ CB.pruebas.suite('E65 · la confirmación se ve, y alcanza a los siete formatos'
     mas.click();
     t.igual(respuestas.length, 1, 'E65 · el segundo toque sí contesta');
 
-    /* Y los cuatro que antes se la saltaban la piden ahora. Se comprueba sobre el
-       CÓDIGO REAL de cada uno: que la función pase por pedirConfirmacion. */
+    /* Y los cuatro que antes se la saltaban la piden ahora.
+       SE ACEPTA LA DELEGACIÓN, y conviene explicar por qué: al unificar los
+       teclados (fase 9), selectorDatos dejó de contener la palabra
+       `pedirConfirmacion` —la pide el teclado en el que delega— y este aserto se
+       puso rojo contra código correcto. Es la fragilidad que el proyecto ya tiene
+       anotada: leer el texto fuente de una función solo vale para literales y
+       nombres de propiedad, y aquí se estaba usando para inferir comportamiento.
+
+       Se deja el barrido porque cubre seis formatos de un vistazo, pero el
+       séptimo lo comprueba E68 CONDUCIENDO las tres fases, que es la única forma
+       honesta de saberlo. */
     var conCerrojo = ['tecladoBloques', 'opciones4', 'balanza', 'selectorSigno',
                       'ordenarFila', 'monedas', 'selectorDatos'].filter(function (f) {
-      return /pedirConfirmacion/.test(String(CB.componentes[f]));
+      var src = String(CB.componentes[f]);
+      return /pedirConfirmacion/.test(src) || /tecladoBloques\(/.test(src);
     });
     t.igual(conCerrojo.length, 7,
-      'E65 · los siete formatos pasan por la confirmación, no tres de siete',
+      'E65 · los siete formatos pasan por la confirmación, directa o delegada',
       'la piden: ' + conCerrojo.join(', '));
 
     CB.componentes._confirmacionPendiente = confPrevia;
@@ -2469,5 +2481,108 @@ CB.pruebas.suite('E67 · tocar una moneda deja marca, y reiniciar la borra', fun
 
     CB.partida.bloqueado = bloqueoPrevio;
     CB.componentes._confirmacionPendiente = confPrevia;
+  });
+});
+
+/* ══ E68 · Fase 9: los tres teclados eran uno mal copiado ════════════════════
+
+   La fase 3 de selectorDatos —la de escribir el resultado de un problema, que se
+   usa en TODOS los problemas de enunciado desde el segundo trimestre— era una
+   copia del teclado con seis diferencias, todas en su contra: ⌫ mudo, dígito
+   mudo, visor sin role ni aria-live, sin mirar CB.partida.bloqueado, sin
+   confirmación del antiazar, y data-tecla="OK" en mayúsculas — que hace que
+   [data-tecla="ok"] no lo alcance y ni siquiera reciba el verde del primario.
+
+   LO QUE DE VERDAD VIGILA ESTE GUARDIÁN no es nada de eso. Unificar teclados es
+   fácil; lo difícil es no perder por el camino los cuatro campos de diagnóstico
+   que viajan con la respuesta, porque de ellos sale el informe del adulto y NO SE
+   VEN EN PANTALLA. Un informe que empieza a decir que el niño falla la
+   comprensión lectora cuando lo que falla es la cuenta no da ningún error.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E68 · la fase 3 usa el teclado de verdad, y no pierde el informe', function () {
+  var t = CB.pruebas;
+  var bloqueoPrevio = CB.partida.bloqueado;
+  var confPrevia = CB.componentes._confirmacionPendiente;
+  CB.componentes._confirmacionPendiente = false;
+
+  var item = {
+    enunciado: 'Ana tiene 7 canicas y le dan 5 más.',
+    consigna: '¿Cuántas tiene ahora?',
+    respuesta: 12, operacion: '+', subtipo: 'cambio1', datos: [7, 5]
+  };
+  var recibido = null;
+  CB.componentes.selectorDatos(item, function (v, origen, extra) {
+    recibido = { v: v, origen: origen, extra: extra };
+  }, { bloqueoMs: 0 });
+
+  return CB.pruebas._desbloqueo().then(function () {
+    var cont = CB.componentes.contenedor();
+
+    /* Fase 1: elegir los dos números del enunciado. */
+    var numeros = cont.querySelectorAll('.rejilla-respuestas .btn-bloque');
+    if (!t.ok(numeros.length >= 2, 'E68 · la fase de datos monta sus números',
+        String(numeros.length))) return;
+    numeros[0].click(); numeros[1].click();
+
+    /* Fase 2: el signo. Puede saltarse si el generador no la pide. */
+    var signo = cont.querySelector('.btn-bloque[aria-label*="sumar"]');
+    if (signo) signo.click();
+
+    return CB.pruebas._desbloqueo().then(function () {
+      /* Fase 3: aquí es donde estaba la copia. */
+      var teclado = cont.querySelector('.teclado-bloques');
+      if (!t.ok(!!teclado, 'E68 · se llega a la fase de escribir el resultado')) return;
+
+      var ok = teclado.querySelector('[data-tecla="ok"]');
+      t.ok(!!ok, 'E68 · el OK lleva data-tecla en minúsculas, como el teclado de verdad',
+        'si no, [data-tecla="ok"] no lo alcanza y ni se pinta de primario');
+
+      var visor = cont.querySelector('#visor-respuesta');
+      t.ok(!!visor, 'E68 · el visor es el del teclado real');
+      t.igual(visor ? visor.getAttribute('aria-live') : null, 'polite',
+        'E68 · y se anuncia: la copia no tenía aria-live ninguno');
+
+      /* Se escribe 12 y se confirma. */
+      var d1 = teclado.querySelector('[data-tecla="1"]');
+      var d2 = teclado.querySelector('[data-tecla="2"]');
+      if (!t.ok(!!(d1 && d2 && ok), 'E68 · están las teclas necesarias')) return;
+      d1.click(); d2.click();
+      t.igual(CB.componentes._valor, '12', 'E68 · los dígitos entran en el visor común');
+      ok.click();
+
+      /* Y LO QUE IMPORTA: los cuatro campos del informe, intactos. */
+      if (!t.ok(!!recibido, 'E68 · la respuesta llega')) return;
+      t.igual(recibido.v, 12, 'E68 · con el valor tecleado');
+      t.igual(recibido.origen, 'datos',
+        'E68 · y con origen «datos», no «teclado»: de ahí cuelga el registro por fases');
+      var e = recibido.extra || {};
+      t.ok(!!e.datosElegidos && e.datosElegidos.length === 2,
+        'E68 · llegan los datos elegidos', JSON.stringify(e.datosElegidos));
+      t.ok('faseDatosOk' in e, 'E68 · llega faseDatosOk');
+      t.ok('faseOperacionOk' in e, 'E68 · llega faseOperacionOk');
+      t.ok('signoElegido' in e, 'E68 · llega el signo elegido');
+
+      /* Y LA CONFIRMACIÓN DEL ANTIAZAR, conducida de verdad. E65 la comprueba
+         leyendo el código fuente de los otros seis formatos; para este no puede,
+         porque delega. Aquí se toca el OK con el cerrojo puesto y se mira si
+         contesta, que es lo único que de verdad lo demuestra. */
+      recibido = null;
+      CB.componentes._confirmacionPendiente = true;
+      /* El visor NO se vacía al contestar —lo remonta la partida al servir el ítem
+         siguiente—, así que aquí se limpia a mano antes de teclear. Sin esto se
+         escribía sobre el «12» anterior y salía «121». */
+      CB.componentes._valor = '';
+      d1.click();
+      var ok2 = cont.querySelector('.teclado-bloques [data-tecla="ok"]');
+      t.igual(CB.componentes._valor, '1', 'E68 · se ha escrito algo que confirmar');
+      ok2.click();
+      t.igual(recibido, null, 'E68 · con el antiazar disparado, el primer OK no contesta');
+      ok2.click();
+      t.ok(!!recibido, 'E68 · y el segundo sí');
+
+      CB.partida.bloqueado = bloqueoPrevio;
+      CB.componentes._confirmacionPendiente = confPrevia;
+    });
   });
 });

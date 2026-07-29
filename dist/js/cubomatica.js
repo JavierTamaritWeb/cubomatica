@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.10.0';
+CB.VERSION = '1.11.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -9061,10 +9061,17 @@ CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
 };
 
 /* ══ 1. TECLADO DE BLOQUES ═════════════════════════════════════════════════ */
+/**
+ * El teclado numérico. Desde 1.11.0 lo montan DOS sitios: la respuesta normal y
+ * la tercera fase de selectorDatos, que antes tenía su propia copia.
+ *
+ * @param opciones.contenedor  dónde montarlo; por defecto, el de respuesta
+ * @param opciones.vaciar      false para conservar lo que ya haya dentro
+ */
 CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   opciones = opciones || {};
-  var cont = CB.componentes.contenedor();
-  CB.ui.vaciar(cont);
+  var cont = opciones.contenedor || CB.componentes.contenedor();
+  if (opciones.vaciar !== false) CB.ui.vaciar(cont);
   CB.componentes._valor = '';
 
   var visor = CB.ui.crear('div', 'visor-respuesta');
@@ -9450,6 +9457,10 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
   var elegidos = [];
   var fase = 'datos';
   var signoElegido = null;
+  /* El teclado que monta la fase 3, para poder cederle las teclas físicas. Antes
+     la fase 3 devolvía `tecla: function () { return false; }`: se jugaba con el
+     dedo o no se jugaba. */
+  var montado = null;
 
   /* El paso 1 SE OMITE si el enunciado tiene exactamente 2 números y el nivel
      no lleva dato sobrante: no se hace perder el tiempo con una decisión que
@@ -9532,44 +9543,50 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     volverDatos.setAttribute('aria-label', 'Volver a elegir los números del problema');
     zona.appendChild(volverDatos);
 
-    CB.componentes._valor = '';
-    var visor = CB.ui.crear('div', 'visor-respuesta');
-    zona.appendChild(visor);
-    var teclado = CB.ui.crear('div', 'teclado-bloques');
-    ['1','2','3','4','5','6','7','8','9','⌫','0','OK'].forEach(function (t) {
-      var b = CB.ui.boton(t, t === 'OK' ? 'btn-bloque--primario' : '', function () {
-        if (t === '⌫') { CB.componentes._valor = CB.componentes._valor.slice(0, -1); }
-        else if (t === 'OK') {
-          if (!CB.componentes._valor.length) return;
-          CB.componentes.pedirConfirmacion(b, function () {
-            /* Cada fase se registra por separado: un niño que elige bien los datos
-               y la operación pero se equivoca al calcular NO tiene un problema de
-               comprensión lectora, y el informe lo dice (§9.6). */
-            alResponder(parseInt(CB.componentes._valor, 10), 'datos', {
-              datosElegidos: elegidos.slice(),
-              signoElegido: signoElegido,
-              faseDatosOk: CB.componentes.datosCorrectos(item, elegidos),
-              faseOperacionOk: signoElegido === item.operacion
-            });
-          });
-          return;
-        } else if (CB.componentes._valor.length < 3) {
-          CB.componentes._valor += t;
-        }
-        visor.textContent = CB.componentes._valor;
-      }, { tecla: t });
-      teclado.appendChild(b);
-    });
-    zona.appendChild(teclado);
-    CB.a11y.conectarFlechas(teclado, 3);
-    CB.componentes.montar(zona, 0);
+    /* ESTE TECLADO ERA UNA COPIA, y llevaba desincronizada desde que se escribió.
+       Se usa en TODOS los problemas de enunciado desde el segundo trimestre, así
+       que no era un rincón: sus diferencias con el original eran el ⌫ mudo, el
+       dígito mudo, un visor sin `role="status"` ni `aria-live` —o sea, invisible
+       para un lector de pantalla—, ningún respeto por CB.partida.bloqueado, y un
+       data-tecla="OK" en MAYÚSCULAS que hacía que `[data-tecla="ok"]` no lo
+       alcanzara: ni siquiera recibía el verde del botón primario.
+
+       Ahora delega. El envoltorio conserva intactos el origen 'datos' y los
+       cuatro campos de diagnóstico: los lee CB.partida.registrarRespuesta y de
+       ahí sale el informe del adulto. Unificar teclados es fácil; perder el
+       informe por el camino es el fallo de verdad, y no se ve en pantalla. */
+    montado = CB.componentes.tecladoBloques(item, function (valor) {
+      /* Cada fase se registra por separado: un niño que elige bien los datos y la
+         operación pero se equivoca al calcular NO tiene un problema de comprensión
+         lectora, y el informe lo dice (§9.6). */
+      alResponder(valor, 'datos', {
+        datosElegidos: elegidos.slice(),
+        signoElegido: signoElegido,
+        faseDatosOk: CB.componentes.datosCorrectos(item, elegidos),
+        faseOperacionOk: signoElegido === item.operacion
+      });
+    }, { contenedor: zona, vaciar: false, bloqueoMs: opciones.bloqueoMs });
+    /* El teclado se anuncia como suyo; esto sigue siendo el selector de datos. */
+    CB.componentes.actual.tipo = 'selectorDatos';
   }
 
+  /* ANTES de pintar, no después. Estaba al final y por tanto pisaba el bloqueo que
+     pone montar(): selectorDatos era el ÚNICO de los siete formatos sin la
+     protección de los 800 ms contra el toque heredado del ítem anterior, y encima
+     ignoraba su propio opciones.bloqueoMs. Se arregla aquí porque la fase 3 ya lo
+     recibe al delegar, y dejar la línea abajo lo habría anulado igual. */
+  if (CB.partida) CB.partida.bloqueado = false;
   pintarFase();
   CB.componentes.conectarToc(cont);
-  if (CB.partida) CB.partida.bloqueado = false;
 
-  CB.componentes.actual = { tipo: 'selectorDatos', tecla: function () { return false; } };
+  CB.componentes.actual = {
+    tipo: 'selectorDatos',
+    /* Se consulta al vuelo, no se captura: `montado` no existe hasta que se llega
+       a la fase 3, y capturarlo aquí guardaría null para siempre. */
+    tecla: function (k) {
+      return (montado && montado.tecla) ? montado.tecla(k) : false;
+    }
+  };
   return CB.componentes.actual;
 };
 

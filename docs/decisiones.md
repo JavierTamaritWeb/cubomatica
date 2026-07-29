@@ -2692,3 +2692,70 @@ de < 400 KB, y ese no se toca.
 | Fases del plan ejecutadas | 2 de 10 | **3 de 10** (6, 7 y 8) |
 | Formatos que piden confirmación | 3 de 7 | **7 de 7** |
 | Formatos donde se puede deshacer | 2 de 7 | **4 de 7** |
+
+---
+
+# Ronda 16 · Fase 9 del plan: tres teclados, uno solo bien — versión 1.11.0 (29 de julio de 2026)
+
+## D-R16-1 · Una copia no se desincroniza de golpe
+
+La fase 3 de `selectorDatos` no nació mal: nació **igual**. Se desincronizó porque cada
+mejora del teclado original —el sonido del ⌫, el `aria-live` del visor, el respeto por
+`CB.partida.bloqueado`, la confirmación del antiazar— se hizo en un sitio y no en el otro.
+Seis diferencias, ninguna introducida a propósito.
+
+Y una de ellas es puro azar tipográfico: `data-tecla="OK"` en mayúsculas frente a `"ok"`,
+lo que hace que `[data-tecla="ok"]` no lo alcance. Ese OK llevaba toda la vida sin recibir
+el verde del botón primario, y nadie lo vio porque nadie compara dos teclados en la misma
+pantalla.
+
+**La regla: dos implementaciones de la misma cosa no se mantienen sincronizadas por
+disciplina.** O se unifican o divergen; no hay tercer estado estable. Es la misma lección
+que E25 (dos listas de movimiento reducido) y E43 (dos implementaciones de la escalera),
+y van tres.
+
+## D-R16-2 · Lo que hay que vigilar al unificar no es lo que se unifica
+
+Unificar dos teclados es mecánico y se ve en pantalla al primer intento. Lo que **no** se
+ve es que la respuesta viaja con cuatro campos de diagnóstico —`datosElegidos`,
+`signoElegido`, `faseDatosOk`, `faseOperacionOk`— que alimentan el informe del adulto por
+fases. Perderlos al envolver el callback no rompe nada visible: el juego sigue jugándose
+igual y el informe empieza a mentir.
+
+E68 los comprueba uno a uno, y esa es su razón de existir. El resto de sus asertos —que
+el ⌫ suene, que el visor tenga `aria-live`— son la parte fácil.
+
+## D-R16-3 · Un séptimo formato sin la protección de los 800 ms
+
+Encontrado al mirar el orden de las líneas: `selectorDatos` ignoraba su propio
+`opciones.bloqueoMs` y ponía `CB.partida.bloqueado = false` **después** de pintar. Era el
+único de los siete formatos que no protegía contra el toque heredado del ítem anterior.
+
+No estaba en el plan. Salió de leer el código para hacer otra cosa, que es de donde salen
+casi todos los de esta serie.
+
+## D-R16-4 · Un guardián que se pone rojo contra código correcto
+
+**E65 bajó a «6 de 7» al unificar los teclados.** Comprobaba la confirmación del antiazar
+con `/pedirConfirmacion/.test(String(CB.componentes[f]))`, y `selectorDatos` dejó de
+contener la palabra porque ahora delega. La confirmación seguía funcionando; el guardián
+no podía verla.
+
+Es exactamente la fragilidad que este proyecto ya tenía anotada: **leer el texto fuente de
+una función solo vale para literales de cadena y nombres de propiedad**. Aquí se estaba
+usando para inferir comportamiento, que es justo lo que no aguanta un cambio de estructura.
+
+Se corrige en dos mitades, y las dos hacen falta: el barrido acepta la delegación —cubre
+seis formatos en dos líneas y eso vale— y el séptimo pasa a comprobarse **conduciendo las
+tres fases** y tocando el OK dos veces. Un barrido barato para lo ancho, una conducción
+cara para lo que el barrido ya no puede ver.
+
+## Estado al cerrar 1.11.0
+
+| | 1.10.0 | 1.11.0 |
+|---|---|---|
+| Comprobaciones de la suite | 595 | **612** |
+| Fallos registrados | E1–E67 | **E1–E68** |
+| Fases del plan ejecutadas | 3 de 10 | **4 de 10** (6, 7, 8 y 9) |
+| Construcciones de teclado en el código | 2 | **1** |
+| Formatos con bloqueo de 800 ms | 6 de 7 | **7 de 7** |
