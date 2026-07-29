@@ -12,6 +12,67 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.9.1] — 2026-07-29
+
+**Tercera cifra: corrige, no añade.** Fase 7 del plan. El perfil guardado no se toca.
+
+El teclado se deshabilita 800 ms al montar cada ítem, para que un toque heredado del
+ítem anterior no conteste el siguiente. **El bloqueo es correcto y no se toca.** Lo que
+estaba mal es cómo se veía.
+
+### El OK era la única tecla que fingía estar viva
+
+`.teclado-bloques .btn-bloque[data-tecla="ok"]` tiene especificidad (0,3,0) y
+`.btn-bloque:disabled` (0,2,0). Ganaba el verde: once teclas de piedra y hundidas, y
+justo la que el niño quiere pulsar, brillante. No es un detalle estético — es la
+diferencia entre «espera un momento» y «pulsa, que no pasa nada», y lo segundo se lee
+como que el juego está roto.
+
+Se apaga con los **dos** selectores, `:disabled` y `[aria-disabled="true"]`, porque la
+regla base cubre los dos y dejar uno fuera reabre el agujero por la otra puerta.
+
+### Las cifras estaban a 1,52:1
+
+El texto del botón bloqueado era `--deco-piedra-osc` sobre `--deco-piedra`: **#6E6E6E
+sobre #8C8C8C = 1,52:1 medido**, frente al 4,5 que exige WCAG 1.4.3. Durante 800 ms por
+ítem, treinta veces por sesión, no se distinguía el 7 del 1.
+
+Ahora el texto es el mismo del botón activo: **4,99:1**. Entre activo y bloqueado
+cambian el fondo, el bisel invertido y el hundido —tres señales que no son el color— y
+no la legibilidad de la cifra. `--gris-carbon` habría sido lo intuitivo y da **3,91:1**:
+no llega, y no se usa.
+
+Nacen `--btn-fondo-desactivado` y `--btn-texto-desactivado`, con su propia línea en el
+mixin de alto contraste: ese mixin reescribe `--btn-texto` a blanco y **no toca**
+`--deco-piedra`, así que sin ella el bloqueado quedaría a **3,36:1**. Con el fondo del
+hundido, 12,63:1.
+
+### Y con el movimiento apagado se perdía el hundido
+
+`desactivar-movimiento()` emitía `.btn-bloque--monta { opacity: 1; transform: none; }`.
+Con el prefijo `:root.sin-movimiento ` eso vale (0,2,1) y le gana a `.btn-bloque:disabled`
+(0,2,0): anulaba también el hundido. Para quien juega con el movimiento apagado —el
+ajuste que más lo necesita— el color quedaba como única señal. Ahora la excepción lleva
+`:not(:disabled)`.
+
+### Pruebas: 548 → 561
+
+**E62** (ninguna tecla finge estar viva; la excepción de movimiento no alcanza a los
+bloqueados) y **E63**, en `casos-contraste.js`, que mide el par sobre **un botón montado
+de verdad**, no sobre los tokens: entre lo que dicen los tokens y lo que se ve caben la
+especificidad y la cascada, que es justo lo que dejaba el OK verde.
+
+Validados con las tres siembras que pedía el plan, reconstruyendo entre cada una porque
+los guardianes miden `dist/` y no `src/`.
+
+Una corrección al propio guardián durante el camino: la mitad que comprobaba el hundido
+medía `getComputedStyle().transform` en la maqueta, donde los botones **no tienen caja de
+composición** y Chrome devuelve `none` para todo elemento sin renderizar — daba `none`
+incluso con un `style.transform` puesto a mano. Se habría puesto rojo midiera lo que
+midiera. Ahora lee las dos reglas que compiten y comprueba la relación entre ellas.
+
+---
+
 ## [1.9.0] — 2026-07-28
 
 **Segunda cifra: entran tres capacidades.** El perfil guardado no cambia de forma

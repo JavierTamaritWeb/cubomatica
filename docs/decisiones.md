@@ -2528,3 +2528,71 @@ lo dejó.**
 | Fallos registrados | E1–E58 | **E1–E61** |
 | Fases del plan ejecutadas | 0 de 10 | **1 de 10** (fase 6) |
 | Componentes que se presentan | 0 de 7 | **7 de 7** |
+
+---
+
+# Ronda 14 · Fase 7 del plan: el teclado que mentía 800 ms — versión 1.9.1 (29 de julio de 2026)
+
+## D-R14-1 · La especificidad como fuente de fallos accesibles
+
+Las tres correcciones de esta fase son **la misma clase de fallo**: una regla más
+específica pisando a la que declara un estado, sin que nadie se entere porque el elemento
+sigue ahí y sigue funcionando.
+
+- `.teclado-bloques .btn-bloque[data-tecla="ok"]` (0,3,0) pisaba a `.btn-bloque:disabled`
+  (0,2,0), y el OK se quedaba verde con el teclado bloqueado.
+- La excepción de `desactivar-movimiento()` con su prefijo valía (0,2,1) y pisaba al
+  mismo `:disabled`, anulando el hundido justo en el ajuste que más lo necesita.
+
+**La lección para la próxima:** cuando una regla declara un ESTADO —bloqueado,
+seleccionado, con error—, hay que preguntarse qué otras reglas del proyecto tienen más
+especificidad sobre los mismos elementos. Un estado que se pinta con una sola declaración
+es un estado que cualquier regla temática puede borrar en silencio.
+
+## D-R14-2 · Medir el contraste sobre el botón, no sobre los tokens
+
+`casos-contraste.js` medía pares de variables. Eso comprueba lo que alguien **quiso**;
+entre eso y lo que se **ve** caben la especificidad y la cascada. E63 monta el teclado de
+verdad, lo pilla deshabilitado y mide `getComputedStyle` de cada tecla: es lo único que
+podía ver que una de las doce tenía otro fondo.
+
+Y afirma primero que las teclas están deshabilitadas. Sin eso, si el bloqueo no llegara a
+aplicarse la prueba mediría botones activos —que sí son de colores distintos, a propósito—
+y pasaría en verde midiendo justo lo contrario.
+
+## D-R14-3 · Los números, medidos
+
+| par | ratio | veredicto |
+|---|---|---|
+| `#6E6E6E` sobre `#8C8C8C` (lo que había) | **1,52:1** | muy por debajo de 4,5 |
+| `--btn-texto` `#241C14` sobre `#8C8C8C` | **4,99:1** | el elegido |
+| `--gris-carbon` `#33302B` sobre `#8C8C8C` | **3,91:1** | descartado: no llega |
+| blanco sobre `#8C8C8C` (alto contraste sin línea propia) | **3,36:1** | descartado |
+| blanco sobre `#333333` (alto contraste, el elegido) | **12,63:1** | |
+
+El plan decía que el blanco sobre piedra daba 2,9:1 y que era «peor que hoy». Medido, son
+3,36:1 y es mejor que el 1,52 de partida. La conclusión no cambia —no llega a 4,5 y hace
+falta su propia línea— pero **el número del plan estaba mal y conviene dejarlo dicho**: un
+plan verificado no es un plan exacto.
+
+## D-R14-4 · Un guardián que se habría puesto rojo midiera lo que midiera
+
+La mitad de E62 que comprueba el hundido nació midiendo `getComputedStyle().transform`
+sobre un botón de la maqueta. En la maqueta de pruebas los botones **no tienen caja de
+composición** —`getBoundingClientRect()` da 0— y Chrome devuelve `transform: none` para
+todo elemento sin renderizar. Daba `none` incluso poniéndole `style.transform` a mano.
+
+Es un modo de fallo nuevo en la lista y merece nombre propio: **un guardián que no puede
+dar verde nunca es tan inútil como uno que no puede dar rojo**, y se detecta igual — al
+sembrar. Ahora lee las dos reglas que compiten en el CSSOM y comprueba la relación entre
+ellas, que además es el invariante de verdad: la excepción del movimiento no puede
+alcanzar a los botones bloqueados.
+
+## Estado al cerrar 1.9.1
+
+| | 1.9.0 | 1.9.1 |
+|---|---|---|
+| Comprobaciones de la suite | 548 | **561** |
+| Fallos registrados | E1–E61 | **E1–E63** |
+| Fases del plan ejecutadas | 1 de 10 | **2 de 10** (fases 6 y 7) |
+| Peor contraste del teclado bloqueado | 1,52:1 | **4,99:1** |

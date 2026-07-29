@@ -96,6 +96,18 @@
          cinta acabara de cruzar
      E55 el escalón 4 de la escalera estaba declarado, tenía       AQUÍ
          su función escrita y no la llamaba nadie
+     E56 las nueve celebraciones eran la misma banda: variaba      AQUÍ
+         el recorrido, no el vehículo, y el recorrido no se nota
+     E57 cada vehículo de celebración hace algo observable         AQUÍ
+     E58 el ánimo se celebraba como si fuera un acierto            AQUÍ
+     E59 atras() no ejecutaba el manejador de salida, ir() sí      AQUÍ
+     E60 las siete frases de presentación estaban escritas y       AQUÍ
+         no las pintaba nadie
+     E61 el enunciado no se leía en voz alta pese a que la         AQUÍ
+         documentación lo daba por hecho desde la versión 1
+     E62 el OK del teclado seguía verde mientras las otras         AQUÍ
+         once teclas estaban bloqueadas y de piedra
+     E63 las cifras del teclado bloqueado estaban a 1,52:1         casos-contraste.js
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -2159,4 +2171,80 @@ CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', funct
   CB.voz.activa = activaPrevia;
   CB.partida.estado = null;
   CB.perfil = perfilPrevio;
+});
+
+/* ══ E62 · El teclado bloqueado no puede tener una tecla que finja ═══════════
+
+   Fase 7 del plan. El bloqueo de 800 ms al montar es correcto y no se toca: está
+   para que un toque heredado del ítem anterior no conteste el siguiente. Lo que
+   estaba mal es cómo se ve.
+
+   `.teclado-bloques .btn-bloque[data-tecla="ok"]` vale (0,3,0) y
+   `.btn-bloque:disabled` vale (0,2,0): ganaba el verde. Once teclas de piedra y
+   hundidas, y la única que el niño quiere pulsar, brillante. No es un detalle
+   estético: es la diferencia entre «espera» y «pulsa, que no pasa nada», y lo
+   segundo se lee como que el juego está roto.
+
+   Y con el movimiento apagado era peor. La excepción del mixin
+   desactivar-movimiento valía (0,2,1) con su prefijo y anulaba el hundido, así
+   que en el ajuste que MÁS necesita señales no cromáticas el color se quedaba
+   como única señal.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E62 · con el teclado bloqueado, el OK tampoco engaña', function () {
+  var t = CB.pruebas;
+  var caja = document.getElementById('item-respuesta');
+  if (!t.ok(!!caja, 'E62 · hay contenedor de respuesta')) return;
+
+  CB.componentes.tecladoBloques({ respuesta: 7 }, function () {}, { bloqueoMs: 30000 });
+  var ok = caja.querySelector('.btn-bloque[data-tecla="ok"]');
+  var uno = caja.querySelector('.btn-bloque[data-tecla="1"]');
+  if (!t.ok(!!(ok && uno), 'E62 · están el OK y el 1')) return;
+
+  /* SE AFIRMA EL BLOQUEO ANTES DE MEDIR. Sin esto, si el teclado no llegara a
+     deshabilitarse compararíamos dos botones activos —que sí son de colores
+     distintos a propósito— y la prueba pasaría midiendo lo contrario. */
+  t.ok(ok.disabled || ok.getAttribute('aria-disabled') === 'true',
+    'E62 · el OK está deshabilitado durante la construcción');
+
+  var fondoOk = getComputedStyle(ok).backgroundColor;
+  var fondoUno = getComputedStyle(uno).backgroundColor;
+  t.igual(fondoOk, fondoUno,
+    'E62 · bloqueado, el OK tiene el mismo fondo que las demás teclas',
+    'OK ' + fondoOk + ' vs 1 ' + fondoUno);
+
+  /* Y EL HUNDIDO SOBREVIVE AL AJUSTE DE MOVIMIENTO REDUCIDO.
+     Esto se comprueba sobre las REGLAS, no sobre el estilo calculado, y no es
+     pereza: en la maqueta de pruebas los botones no tienen caja de composición
+     —getBoundingClientRect() da 0— y Chrome devuelve `transform: none` para todo
+     elemento sin renderizar, valga lo que valga la regla. Medirlo ahí daba
+     `none` incluso con un `style.transform` puesto a mano, es decir, habría sido
+     un guardián que se pone rojo mida lo que mida. Se leen las dos reglas que
+     compiten y se comprueba la relación entre ellas, que es el invariante real. */
+  var reglaDesactivado = null, reglaMonta = null, h, i, hojas, r;
+  for (h = 0; h < document.styleSheets.length; h++) {
+    try { hojas = document.styleSheets[h].cssRules; } catch (eH) { continue; }
+    if (!hojas) continue;
+    for (i = 0; i < hojas.length; i++) {
+      r = hojas[i];
+      if (!r.selectorText || !r.style) continue;
+      if (/\.btn-bloque:disabled/.test(r.selectorText) && r.style.transform) reglaDesactivado = r;
+      if (/sin-movimiento[^,]*\.btn-bloque--monta/.test(r.selectorText)) reglaMonta = r;
+    }
+  }
+
+  t.ok(!!reglaDesactivado && reglaDesactivado.style.transform !== 'none',
+    'E62 · el botón bloqueado declara su hundido',
+    reglaDesactivado ? reglaDesactivado.style.transform : 'no se encuentra la regla');
+
+  /* LA CLAVE. Con el prefijo, la excepción del movimiento reducido vale (0,2,1) y
+     le gana a .btn-bloque:disabled (0,2,0): sin el :not(:disabled) anulaba
+     también el hundido, y en el ajuste que MÁS necesita señales que no sean
+     color el color se quedaba como única señal. */
+  t.ok(!!reglaMonta, 'E62 · existe la excepción de movimiento reducido para los botones');
+  if (reglaMonta) {
+    t.ok(/:not\(:disabled\)/.test(reglaMonta.selectorText),
+      'E62 · y no alcanza a los botones bloqueados: conserva su hundido',
+      reglaMonta.selectorText);
+  }
 });

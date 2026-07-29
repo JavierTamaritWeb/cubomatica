@@ -65,8 +65,8 @@
 
 .btn-bloque:disabled,
 .btn-bloque[aria-disabled="true"] {
-  background: var(--deco-piedra);
-  color: var(--deco-piedra-osc);
+  background: var(--btn-fondo-desactivado);
+  color: var(--btn-texto-desactivado);
   @include bisel(var(--deco-piedra-osc), var(--deco-carbon));
   transform: translateY(var(--bisel));
 }
@@ -396,6 +396,19 @@
   background: var(--btn-primario);
   color: var(--btn-primario-texto);
   font-size: var(--tam-texto-min);
+}
+/* EL OK TAMBIÉN SE APAGA. La regla de arriba tiene especificidad (0,3,0) y
+   .btn-bloque:disabled (0,2,0), así que durante los 800 ms de construcción once
+   teclas quedaban de piedra y hundidas y el OK seguía verde y brillante: la
+   única que el niño quiere pulsar era la única que mentía.
+
+   LOS DOS SELECTORES, no uno. La regla base cubre :disabled y
+   [aria-disabled="true"], y dejar uno fuera reabre el agujero por la otra
+   puerta. */
+.teclado-bloques .btn-bloque[data-tecla="ok"]:disabled,
+.teclado-bloques .btn-bloque[data-tecla="ok"][aria-disabled="true"] {
+  background: var(--btn-fondo-desactivado);
+  color: var(--btn-texto-desactivado);
 }
 /* ── ESCALONES DE ALTURA ────────────────────────────────────────────────────
    Existen para UNA cosa: que la ultima fila del teclado 3x4 no se corte. Antes

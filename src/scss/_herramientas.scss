@@ -191,7 +191,13 @@ $alturas: (alta: 900px, media: 780px, baja: 660px, corta: 600px, minima: 420px);
   @each $s in $lista { $sel: list.append($sel, '#{$prefijo}#{$s}', $separator: comma); }
   #{$sel} { animation: none !important; }
   /* Sin animación, los botones aparecerían grises y cambiarían de color de golpe */
-  #{$prefijo}.btn-bloque--monta { opacity: 1; transform: none; }
+  /* :not(:disabled) NO ES DECORACIÓN. Con el prefijo `:root.sin-movimiento ` esta
+     regla vale (0,2,1) y le gana a `.btn-bloque:disabled` (0,2,0), así que
+     anulaba también el hundido del botón bloqueado. Para quien juega con el
+     movimiento apagado —el ajuste que más lo necesita— el color quedaba como
+     única señal de que el teclado aún no acepta toques. Quitar movimiento no
+     puede quitar información. */
+  #{$prefijo}.btn-bloque--monta:not(:disabled) { opacity: 1; transform: none; }
   #{$prefijo}.particula.particula--viva { display: none; }
   /* La cinta sigue APARECIENDO: quitarle el movimiento no puede quitarle el
      mensaje, porque el mensaje es información y el movimiento solo es la gracia.

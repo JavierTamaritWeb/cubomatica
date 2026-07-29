@@ -144,3 +144,91 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   document.body.removeChild(sonda);
   t.ok(e3 >= 16, 'la separación entre botones es de al menos 16 px', e3 + ' px');
 });
+
+/* ── E63 · El par del botón BLOQUEADO, medido sobre el botón de verdad ───────
+   No sobre los tokens a mano: sobre getComputedStyle de un botón montado y
+   deshabilitado. Los tokens dicen lo que alguien quiso; el botón dice lo que se
+   ve, y entre una cosa y otra caben la especificidad y la cascada — que es
+   exactamente lo que dejaba el OK del teclado verde y brillante mientras las
+   otras once teclas estaban de piedra.
+
+   El par de antes era --deco-piedra-osc sobre --deco-piedra: 1,52:1 medido,
+   frente al 4,5 que exige WCAG 1.4.3. Durante los 800 ms de construcción de cada
+   ítem no se distinguía el 7 del 1. Y son 800 ms POR ÍTEM, treinta veces por
+   sesión. */
+CB.pruebas.suite('Contraste: el teclado bloqueado también se lee', function () {
+  var t = CB.pruebas;
+
+  function rgbAHex(s) {
+    var m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(s || '');
+    if (!m) return null;
+    function dos(n) { var h = Number(n).toString(16); return h.length === 1 ? '0' + h : h; }
+    return '#' + dos(m[1]) + dos(m[2]) + dos(m[3]);
+  }
+  function lum(h) {
+    var r = parseInt(h.substr(1, 2), 16) / 255, g = parseInt(h.substr(3, 2), 16) / 255,
+        b = parseInt(h.substr(5, 2), 16) / 255;
+    function c(x) { return (x <= 0.03928) ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }
+    return 0.2126 * c(r) + 0.7152 * c(g) + 0.0722 * c(b);
+  }
+  function ratio(a, b) {
+    var la = lum(a), lb = lum(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+
+  var caja = document.getElementById('item-respuesta');
+  if (!t.ok(!!caja, 'E63 · hay contenedor de respuesta en la maqueta')) return;
+
+  /* Se monta el teclado REAL con un bloqueo largo, para pillarlo apagado. */
+  CB.componentes.tecladoBloques({ respuesta: 7 }, function () {}, { bloqueoMs: 30000 });
+  var teclas = caja.querySelectorAll('.btn-bloque');
+  if (!t.ok(teclas.length >= 12, 'E63 · el teclado monta sus doce teclas',
+      String(teclas.length))) return;
+
+  var apagadas = [], i, cs;
+  for (i = 0; i < teclas.length; i++) {
+    if (teclas[i].disabled || teclas[i].getAttribute('aria-disabled') === 'true') {
+      apagadas.push(teclas[i]);
+    }
+  }
+  /* SE AFIRMA QUE ESTÁN APAGADAS antes de medir nada. Si el bloqueo no llegara a
+     aplicarse, todo lo de abajo mediría el botón activo y pasaría en verde
+     midiendo otra cosa. */
+  t.ok(apagadas.length >= 12, 'E63 · las doce teclas están deshabilitadas durante el bloqueo',
+    apagadas.length + ' de ' + teclas.length);
+
+  var pares = [], fondos = {};
+  for (i = 0; i < apagadas.length; i++) {
+    cs = getComputedStyle(apagadas[i]);
+    var f = rgbAHex(cs.backgroundColor), c = rgbAHex(cs.color);
+    if (!f || !c) continue;
+    fondos[f] = (fondos[f] || 0) + 1;
+    pares.push({ tecla: apagadas[i].getAttribute('data-tecla') || apagadas[i].textContent,
+                 r: ratio(f, c), f: f, c: c });
+  }
+
+  /* TODAS del mismo color de fondo. Es lo que caza el OK: si una tecla se queda
+     verde mientras las once están de piedra, aquí hay dos fondos distintos. */
+  t.igual(Object.keys(fondos).length, 1,
+    'E63 · las doce teclas bloqueadas comparten fondo: ninguna finge estar viva',
+    JSON.stringify(fondos));
+
+  var flojas = pares.filter(function (p) { return p.r < 4.5; })
+    .map(function (p) { return p.tecla + ' ' + p.c + ' sobre ' + p.f + ' = ' + p.r.toFixed(2); });
+  t.igual(flojas.length, 0,
+    'E63 · y sus cifras se leen: 4,5:1 o más', flojas.slice(0, 4).join(' · '));
+
+  /* Y EN ALTO CONTRASTE, que reescribe --btn-texto a blanco sin tocar la piedra:
+     sin su propia línea, el bloqueado quedaría a 3,36:1. */
+  var raiz = document.documentElement, tenia = raiz.classList.contains('alto-contraste');
+  raiz.classList.add('alto-contraste');
+  var peorAC = 99;
+  for (i = 0; i < apagadas.length; i++) {
+    cs = getComputedStyle(apagadas[i]);
+    var fa = rgbAHex(cs.backgroundColor), ca = rgbAHex(cs.color);
+    if (fa && ca) peorAC = Math.min(peorAC, ratio(fa, ca));
+  }
+  if (!tenia) raiz.classList.remove('alto-contraste');
+  t.ok(peorAC >= 4.5, 'E63 · en alto contraste el bloqueado sigue por encima de 4,5:1',
+    peorAC.toFixed(2) + ':1');
+});

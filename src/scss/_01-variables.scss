@@ -84,6 +84,21 @@
   --btn-borde-luz:     #F0DDBE;
   --btn-borde-sombra:  #7A5628;
 
+  /* EL BOTÓN BLOQUEADO, con su propio par. Existe porque el teclado se
+     deshabilita 800 ms en cada ítem (CB.componentes.MS_CONSTRUCCION) y durante
+     ese rato el niño mira los dígitos: si no se leen, no está esperando, está
+     adivinando. El texto era --deco-piedra-osc sobre --deco-piedra, que da
+     1,52:1 MEDIDO, muy por debajo del 4,5 de WCAG 1.4.3.
+
+     Ahora el texto es el mismo del botón activo, 4,99:1 sobre la piedra: entre
+     activo y bloqueado cambia el fondo, el bisel invertido y el hundido —tres
+     señales que no son el color— y no la legibilidad de la cifra.
+
+     --gris-carbon habría sido lo intuitivo y da 3,91:1. No llega, y este
+     proyecto ya se comió un fallo por creerse un contraste sin medirlo. */
+  --btn-fondo-desactivado: var(--deco-piedra);
+  --btn-texto-desactivado: var(--btn-texto);
+
   --btn-primario:         #5AA02C;
   --btn-primario-hundido: #3F7A1E;
   --btn-primario-texto:   #241C14;   /* 5,2:1 sobre --btn-primario.
@@ -223,6 +238,12 @@
   --btn-fondo:        #000000;
   --btn-fondo-hundido:#333333;
   --btn-texto:        #FFFFFF;
+  /* El bloqueado necesita SU PROPIA línea aquí. Este mixin reescribe --btn-texto
+     a blanco y NO toca --deco-piedra, así que sin esto el botón deshabilitado
+     quedaría en blanco sobre #8C8C8C: 3,36:1 medido, por debajo del 4,5. Se
+     reutiliza el fondo del hundido, que ya está en esta paleta: 12,63:1. */
+  --btn-fondo-desactivado: #333333;
+  --btn-texto-desactivado: #FFFFFF;
   --btn-borde-luz:    #FFFFFF;
   --btn-borde-sombra: #FFFFFF;
   --btn-primario:     #000000;
