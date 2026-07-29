@@ -12,6 +12,53 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.17.0] — 2026-07-29
+
+**Segunda cifra.** Fase 15 del plan, la última. El perfil guardado no cambia.
+
+### «Ahora sí empieza el juego» y aparecía un menú
+
+La calibración termina diciendo literalmente *«Ahora sí empieza el juego: con reloj, con
+luces y con gemas»*, y a los 3,4 s llevaba a **p-mapa**: un menú con tres tarjetas
+bloqueadas —«Se abre al cavar más vetas del mundo anterior»— y una jugable. Es E21 un
+escalón más adelante: una frase que promete una cosa y una pantalla que hace otra.
+
+Y una asimetría que lo remataba: JUGAR costaba dos toques hasta el primer ítem y CANTERA
+TRANQUILA, uno.
+
+Ahora se empieza a jugar. Incondicional y sin riesgo: `terminar()` corre una vez por perfil
+y en ese instante M1 es el único mundo abierto, así que no se le quita ninguna decisión a
+nadie. La frase de cierre añade «Puedes parar cuando quieras con Pausa», porque el salto es
+directo a una expedición con reloj.
+
+Y en el mapa, cuando solo hay un mundo abierto, el foco va al único botón que hace algo:
+quien navega con teclado recorría tres tarjetas bloqueadas antes de llegar a él. **Enfocar no
+es navegar**, así que el contrato de que un `alEntrar` pinta sigue intacto.
+
+`p-mapa` sigue existiendo, sigue siendo alcanzable desde JUGAR y desde `atras()`, y el
+recorrido de `casos-carga.js` por las 16 navegables no cambia.
+
+### Pruebas: 698 → 704
+
+**E84**, que devuelve una promesa: el salto vive dentro de un `setTimeout` de 3400 ms y
+medir en el mismo turno daría siempre «sigue en la calibración» — verde sin comprobar nada.
+
+**Una corrección al plan.** Proponía proteger el orden con una aserción sobre
+`perfil.trimestreDeducido`, y **no protege nada**: la deducción es síncrona y el salto es
+diferido, así que para cuando el temporizador dispara, el trimestre ya está escrito pase lo
+que pase. Sembrar el orden equivocado deja el guardián en verde.
+
+Lo que sí protege el orden son las dos aserciones de **estado previo** —«justo después de
+`terminar()` seguimos en la calibración» y «no hay partida todavía»—, que se ponen rojas en
+cuanto alguien deja de diferir el salto. Se descubrió sembrando: la primera siembra no puso
+nada rojo, y una siembra que no pone nada rojo hay que sospecharla antes de celebrarla.
+
+### El plan queda terminado
+
+Diez fases, de la 6 a la 15. **443 → 704 comprobaciones** y **E46 → E84** desde que empezó.
+
+---
+
 ## [1.16.0] — 2026-07-29
 
 **Segunda cifra.** Fase 14 del plan. El perfil guardado no cambia.

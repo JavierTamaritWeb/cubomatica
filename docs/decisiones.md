@@ -3089,3 +3089,60 @@ en el mock— y por eso está escrito como primera línea del guardián y no al 
 | Fallos registrados | E1–E82 | **E1–E83** |
 | Fases del plan ejecutadas | 8 de 10 | **9 de 10** (6 a 14) |
 | Indicadores de avance visibles | 0 | **1** (galería del HUD) |
+
+---
+
+# Ronda 22 · Fase 15 del plan: el primer minuto — versión 1.17.0 (29 de julio de 2026)
+
+Última fase del plan que devolvieron las dos lentes que faltaban. Diez fases, de la 6 a la 15.
+
+## D-R22-1 · Una frase que promete y una pantalla que no cumple
+
+La calibración decía «Ahora sí empieza el juego: con reloj, con luces y con gemas» y llevaba
+a un menú con tres tarjetas bloqueadas. Es exactamente E21 —«el botón dice lo que va a
+pasar»— un escalón más adelante, y con la asimetría de que JUGAR costaba dos toques hasta el
+primer ítem mientras CANTERA TRANQUILA costaba uno.
+
+Se cambió el destino y **también la frase**, que añade «Puedes parar cuando quieras con
+Pausa»: si el salto va directo a una expedición con reloj, decirlo forma parte del arreglo.
+Cambiar solo el destino habría sido cambiar de sitio la promesa incumplida.
+
+## D-R22-2 · Enfocar no es navegar
+
+En `alEntrar['p-mapa']`, con un solo mundo abierto, el foco va al botón de cavar. La regla
+cerrada desde E1 es que **un `alEntrar` pinta y no navega** —un handler que llama a `ir()`
+sobre su propia pantalla recursa hasta desbordar la pila—, y mover el foco no es navegar. Se
+deja escrito porque la distinción es fina y el próximo que lea el handler tiene que poder
+saber por qué esto sí y `ir()` no.
+
+## D-R22-3 · El plan proponía un guardián que no guardaba nada
+
+El plan pedía proteger el orden —el salto tiene que ir después de `guardarPerfil`, porque
+`servirItem` lee `perfil.trimestreDeducido`— con una aserción sobre ese campo.
+
+**No protege nada.** La deducción es síncrona y el salto es diferido 3400 ms: para cuando el
+temporizador dispara, el trimestre ya está escrito pase lo que pase. Sembrar el orden
+equivocado deja esa aserción en verde.
+
+Lo que sí protege el orden son las dos aserciones de **estado previo**: «justo después de
+`terminar()` seguimos en la calibración» y «no hay partida todavía». Se ponen rojas en cuanto
+alguien deja de diferir el salto, que es la única forma real de romper esto.
+
+Y se descubrió **sembrando**: la primera siembra —mover la línea del `setTimeout` dentro de la
+función— no puso nada rojo, y con razón, porque mover una llamada diferida dentro de un cuerpo
+síncrono no cambia cuándo se ejecuta. **Una siembra que no pone nada rojo hay que sospecharla
+antes de celebrarla**, y esta vez la sospecha señalaba al plan, no al guardián.
+
+## Cierre del plan
+
+| | al empezar (1.8.0) | al terminar (1.17.0) |
+|---|---|---|
+| Comprobaciones de la suite | 443 | **704** |
+| Fallos registrados | E1–E46 | **E1–E84** |
+| Comprobaciones de la auditoría | 56 | **59** |
+| Fases del plan ejecutadas | 0 de 10 | **10 de 10** |
+
+Lo que queda fuera y sigue fuera: **F0.5** (pilotaje en papel con tres niños) y **F10**
+(calibración β con diez o quince). Ninguna de las dos se puede hacer con código, y los
+`betaBase` actuales siguen siendo una calibración razonada y no una medida. Conviene que la
+próxima persona que lea esto no lo confunda con trabajo pendiente de programar.

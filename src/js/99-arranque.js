@@ -138,16 +138,34 @@ CB.calibracion.terminar = function () {
      Una prueba que no anuncia que termina no se distingue de una partida que se
      ha roto. */
   var cierre = '¡Ya está! Ya sabemos por dónde empezar. Ahora sí empieza el ' +
-               'juego: con reloj, con luces y con gemas.';
+               'juego: con reloj, con luces y con gemas. Puedes parar cuando ' +
+               'quieras con Pausa.';
   var paso = document.getElementById('cal-paso');
   if (paso) paso.textContent = cierre;
   CB.ui.mensaje(cierre, 'acierto');
   CB.a11y.anunciar(cierre);
   CB.voz.leer(cierre);
 
+  /* Y SE EMPIEZA A JUGAR, que es lo que la frase acaba de prometer. Antes esto
+     llevaba a p-mapa: la frase decía literalmente «ahora sí empieza el juego» y
+     aparecía un menú con tres tarjetas bloqueadas y una jugable. Es el mismo
+     fallo que E21 un escalón más adelante, y con una asimetría que lo remata:
+     JUGAR costaba dos toques hasta el primer ítem y CANTERA TRANQUILA, uno.
+
+     Incondicional y sin riesgo: terminar() corre UNA vez por perfil —lo protege
+     perfil.calibrado— y en ese instante M1 es el único mundo abierto, así que no
+     se le quita ninguna decisión a nadie.
+
+     Y VA DESPUÉS del guardarPerfil de arriba, no antes: iniciar() acaba llamando
+     a servirItem(), que lee perfil.trimestreDeducido, y esa deducción se escribe
+     unas líneas más arriba. Adelantarlo serviría el primer ítem con el trimestre
+     por defecto en vez del recién calibrado — un fallo silencioso: la partida
+     arranca igual, solo que con la dificultad equivocada.
+
+     iniciar() navega solo; no hace falta ir() delante. */
   setTimeout(function () {
     CB.ui.ocultarMensaje();
-    CB.pantallas.ir('p-mapa');
+    CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   }, 3400);
 };
 
@@ -370,7 +388,21 @@ CB.creditos = function () {
 };
 
 /* ── Enganches de pantalla ──────────────────────────────────────────────── */
-CB.pantallas.alEntrar['p-mapa'] = function () { CB.mapaDestrezas.pintarMundos(); };
+CB.pantallas.alEntrar['p-mapa'] = function () {
+  CB.mapaDestrezas.pintarMundos();
+  /* Con un solo mundo abierto, el foco va al único botón que hace algo. Quien
+     navega con teclado recorría tres tarjetas bloqueadas antes de llegar a él.
+     ENFOCAR NO ES NAVEGAR: el contrato de que un alEntrar pinta y no navega
+     (E1) sigue intacto. */
+  var abiertos = CB.MUNDOS.filter(function (m) {
+    return CB.perfil && CB.perfil.mundos[m.id] && CB.perfil.mundos[m.id].desbloqueado;
+  });
+  if (abiertos.length === 1) {
+    var rejilla = document.getElementById('rejilla-mundos');
+    var cavar = rejilla ? rejilla.querySelector('.btn-bloque--primario') : null;
+    if (cavar) CB.a11y.enfocar(cavar);
+  }
+};
 CB.pantallas.alEntrar['p-cantera'] = function () { CB.mapaDestrezas.pintar(); };
 CB.pantallas.alEntrar['p-casa'] = function () { CB.casa.pintar(); };
 CB.pantallas.alEntrar['p-glosario'] = function () { CB.casa.pintarGlosario(); };

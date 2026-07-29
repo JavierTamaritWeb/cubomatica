@@ -139,6 +139,8 @@
          reparación y en cada descanso
      E83 no había forma de saber cuánto queda de expedición:       AQUÍ
          el avance solo lo codificaba el cielo, que es aria-hidden
+     E84 la calibración decía «ahora sí empieza el juego» y         AQUÍ
+         llevaba a un menú con tres tarjetas bloqueadas
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -3223,4 +3225,64 @@ CB.pruebas.suite('E83 · el HUD dice por qué bloque va la expedición', functio
   CB.partida.estado = null;
   CB.perfil = perfilPrevio;
   if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+/* ══ E84 · Fase 15: el primer minuto ════════════════════════════════════════
+
+   La calibración decía literalmente «Ahora sí empieza el juego: con reloj, con
+   luces y con gemas» y a continuación aparecía un menú con tres tarjetas
+   bloqueadas y una jugable. Es E21 un escalón más adelante: una frase que promete
+   una cosa y una pantalla que hace otra.
+
+   ESTA SUITE DEVUELVE UNA PROMESA. El salto ocurre dentro de un setTimeout de
+   3400 ms: medir en el mismo turno daría siempre «sigue en la calibración», que
+   es verde y no comprueba nada. */
+
+CB.pruebas.suite('E84 · al acabar la calibración se empieza a jugar', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+
+  var perfil = CB.pruebas.perfilNuevo();
+  perfil.calibrado = false;
+  perfil.trimestreDeducido = null;
+  CB.perfil = perfil;
+
+  CB.calibracion.aciertos = 4;                 // los cuatro bien: trimestre 3
+  CB.calibracion.indice = CB.calibracion.ITEMS.length;
+  CB.pantallas.ir('p-calibracion');
+  CB.calibracion.terminar();
+
+  /* SE AFIRMA EL ESTADO PREVIO: si ya estuviéramos en la partida, lo de abajo
+     pasaría sin que el temporizador hubiera hecho nada. */
+  t.igual(CB.pantallas.actual, 'p-calibracion',
+    'E84 · justo después de terminar() seguimos en la calibración');
+  t.igual(CB.partida.estado, null, 'E84 · y no hay partida todavía');
+
+  return new Promise(function (listo) {
+    setTimeout(function () {
+      t.igual(CB.pantallas.actual, 'p-partida',
+        'E84 · pasado el cierre, se está jugando: ni un toque intermedio',
+        'estamos en ' + CB.pantallas.actual);
+      t.ok(CB.partida.estado !== null, 'E84 · con partida viva');
+      if (CB.partida.estado) {
+        t.igual(CB.partida.estado.mundo.id, 'M1',
+          'E84 · en la Pradera, el único mundo abierto');
+
+        /* EL ORDEN IMPORTA, y esta es la aserción que lo protege. iniciar() acaba
+           en servirItem(), que lee perfil.trimestreDeducido; si el salto se
+           adelantara al guardarPerfil, el primer ítem se serviría con el valor por
+           defecto en vez del recién calibrado. La partida arrancaría igual y con
+           la dificultad equivocada: un fallo que no se ve. */
+        t.igual(perfil.trimestreDeducido, 3,
+          'E84 · y con el trimestre recién deducido, no con el de por defecto',
+          String(perfil.trimestreDeducido));
+      }
+
+      CB.partida.estado = null;
+      CB.perfil = perfilPrevio;
+      if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+      listo();
+    }, 3600);
+  });
 });
