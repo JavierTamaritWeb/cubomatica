@@ -43,12 +43,12 @@ Both need `npm run build` first; without it they say so instead of hanging on "P
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **561 checks, 0 failures** (deterministic).
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **595 checks, 0 failures** (deterministic).
 - **The page auto-runs on load.** Filtering `CB.pruebas.suites` while that run is in flight truncates the list *mid-race*: the runner stops early and prints a green summary for a subset — 248/0 instead of 489. Wait for the `· NNNN ms` suffix before touching the array.
 - **Serve the test pages with `Cache-Control: no-store`.** Chrome will happily reuse a cached `dist/js/cubomatica.js` or `casos-*.js` across a reload, so a green summary can be measuring code from three edits ago — and the check count won't necessarily change, which is what makes it invisible. Before trusting a run, assert something about the bundle you just built (`/paso <= 20/.test(String(CB.jefes.opciones))`, a function that should now exist) rather than assuming the reload did it.
 - **Run it in a foreground tab.** Chrome throttles `setTimeout` in a background tab, and the suites are chained with `setTimeout(…, 0)`: backgrounded, a 10 s run stretches past 80 s or stalls outright. A partial `resumen` is easy to mistake for a finished one — the `· NNNN ms` suffix is only appended when the last suite ends, so a summary without it is still running.
 
-**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all sixty-three found so far (E1-E63) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
+**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all sixty-seven found so far (E1-E67) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
 
 **Celebration is a table of vehicles, not a table of trajectories** (`CB.ui.festejo.CELEBRACIONES`, 1.8.1). 1.8.0 shipped nine choreographies that were all the same band — same width, same place, same type — and varying the path does not vary what a child recognises. Worse, the E47 guard written alongside it forbade any modifier from repositioning the band, so the monotony was *held in place by a test*. When a check blocks the fix, the check is part of the bug. The rule that orders the table only works once the vehicle differs: spectacle is inversely proportional to frequency, so the 60 %-case is a one-line `+1` beside the gem counter and the band is reserved for three rare moments.
 
@@ -116,7 +116,7 @@ Changing any of these numbers means changing the test that asserts it, on purpos
 - **92 levels** across **4 worlds**, no repeats and no orphans (`casos-curriculo.js`, CU1–CU8)
 - **24 error codes = 24 recommendations**, same key set
 - **30 exact scoring cases**, no tolerance (`casos-formulas.js`)
-- Three weight budgets, not one: **sources < 1100 KB**, **boot download < 400 KB** (`index.html` plus exactly what it references — this is the one that protects startup, and the one the old 900 KB was really about), **music < 60 MB**
+- Four weight budgets, not one: **compiled sources < 900 KB**, **tests < 500 KB** (split off in 1.10.0 — the single 1100 KB budget was breached entirely by guard growth, and raising it would have loosened the guard until it said nothing), **boot download < 400 KB** (`index.html` plus exactly what it references — this is the one that protects startup), **music < 60 MB**
 
 **Anything checked against `dist/` counts occurrences, never lines.** `grep -c '<section id="p-' dist/index.html` returns **1**, not 17, because the minified HTML is a single line. Same family of trap: `animation: none !important` serialises as `animation: auto ease 0s 1 normal none running none`, so match on `style.animationName`, not on text; and cssnano shortens `#000000` to `#000`, which silently *skipped* a WCAG contrast pair until `hex()` learned to read both forms.
 

@@ -108,6 +108,12 @@
      E62 el OK del teclado seguía verde mientras las otras         AQUÍ
          once teclas estaban bloqueadas y de piedra
      E63 las cifras del teclado bloqueado estaban a 1,52:1         casos-contraste.js
+     E64 ordenar la fila y elegir los datos no se podían           AQUÍ
+         deshacer: había que terminar mal el ítem a propósito
+     E65 la confirmación de dos toques era invisible, y la          AQUÍ
+         pedían tres formatos de siete
+     E66 «Salir» terminaba la expedición de un solo roce            AQUÍ
+     E67 tocar una moneda no dejaba ninguna marca                   AQUÍ
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -2247,4 +2253,221 @@ CB.pruebas.suite('E62 · con el teclado bloqueado, el OK tampoco engaña', funct
       'E62 · y no alcanza a los botones bloqueados: conserva su hundido',
       reglaMonta.selectorText);
   }
+});
+
+/* ══ E64-E67 · Fase 8: deshacer, confirmar y no perder la partida por un roce ═
+
+   TRAMPA OBLIGATORIA EN LOS CUATRO. CB.componentes.montar() bloquea de forma
+   síncrona y desbloquea en un temporizador, incluso con bloqueoMs: 0. Tocar en la
+   línea siguiente a montar el componente entra por el early return y NO PASA
+   NADA — y entonces «el primer toque no contesta» pasa en verde por no haber
+   habido primer toque. Es la vacuidad que dejó a E46 sin valor durante toda su
+   vida. Aquí se espera al desbloqueo y se AFIRMA que el primer gesto entró antes
+   de comprobar nada de lo que viene después.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas._desbloqueo = function () {
+  return new Promise(function (listo) {
+    var t0 = Date.now();
+    var i = setInterval(function () {
+      if (!CB.partida.bloqueado || Date.now() - t0 > 4000) { clearInterval(i); listo(); }
+    }, 20);
+  });
+};
+
+CB.pruebas.suite('E64 · ordenar y elegir datos se pueden deshacer', function () {
+  var t = CB.pruebas;
+  var bloqueoPrevio = CB.partida.bloqueado;
+  CB.partida.bloqueado = false;
+
+  var respuestas = [];
+  CB.componentes.ordenarFila(
+    { piezas: [3, 1, 2], orden: [1, 2, 3], respuesta: 7 },
+    function (v) { respuestas.push(v); }, { bloqueoMs: 0 });
+
+  return CB.pruebas._desbloqueo().then(function () {
+    var cont = CB.componentes.contenedor();
+    var piezas = cont.querySelectorAll('.fila-ordenar .btn-bloque');
+    if (!t.ok(piezas.length >= 3, 'E64 · la fila monta sus piezas', String(piezas.length))) return;
+
+    /* Tres toques, y SE AFIRMA QUE ENTRARON antes de deshacer nada. */
+    piezas[0].click(); piezas[1].click();
+    t.igual(CB.componentes._seleccion.length, 2,
+      'E64 · los dos primeros toques entran de verdad');
+    t.igual(piezas[0].disabled, true, 'E64 · y la pieza tocada se deshabilita');
+
+    var deshacer = null, i, todos = cont.querySelectorAll('.btn-bloque');
+    for (i = 0; i < todos.length; i++) {
+      if (/Quitar/.test(todos[i].textContent)) deshacer = todos[i];
+    }
+    if (!t.ok(!!deshacer, 'E64 · existe el botón de quitar')) return;
+
+    deshacer.click();
+    t.igual(CB.componentes._seleccion.length, 1, 'E64 · quitar retira la última');
+    t.igual(piezas[1].disabled, false,
+      'E64 · y la pieza vuelve a estar disponible, no solo el hueco vacío');
+    var hueco = cont.querySelector('[data-hueco="1"]');
+    t.igual(hueco ? hueco.textContent : '', '·', 'E64 · el hueco se vacía');
+
+    deshacer.click();
+    t.igual(CB.componentes._seleccion.length, 0, 'E64 · se puede deshacer hasta el principio');
+    deshacer.click();
+    t.igual(CB.componentes._seleccion.length, 0, 'E64 · y quitar de una fila vacía no rompe nada');
+    t.igual(respuestas.length, 0, 'E64 · nada de esto ha contestado por su cuenta');
+
+    CB.partida.bloqueado = bloqueoPrevio;
+  });
+});
+
+CB.pruebas.suite('E65 · la confirmación se ve, y alcanza a los siete formatos', function () {
+  var t = CB.pruebas;
+  var confPrevia = CB.componentes._confirmacionPendiente;
+  var bloqueoPrevio = CB.partida.bloqueado;
+  var nodo = CB.ui.nodoMensaje();
+
+  CB.partida.bloqueado = false;
+  CB.componentes._confirmacionPendiente = true;
+  CB.ui.ocultarMensaje();
+
+  var respuestas = [];
+  CB.componentes.selectorSigno({ respuesta: '+' },
+    function (v) { respuestas.push(v); }, { bloqueoMs: 0 });
+
+  return CB.pruebas._desbloqueo().then(function () {
+    var cont = CB.componentes.contenedor();
+    var mas = cont.querySelector('.btn-bloque');
+    if (!t.ok(!!mas, 'E65 · el selector de signo monta sus botones')) return;
+
+    mas.click();
+    /* Que el primer toque LLEGARA se afirma por su efecto visible: si hubiera
+       entrado por el early return del bloqueo no habría ni mensaje ni atributo, y
+       «no ha contestado» pasaría por no haber tocado nada. */
+    t.igual(mas.getAttribute('data-confirmando'), 'si',
+      'E65 · el primer toque queda registrado como pendiente de confirmar');
+    t.igual(respuestas.length, 0, 'E65 · y no contesta');
+    t.ok(nodo && !nodo.hidden && /confirmar/i.test(nodo.textContent),
+      'E65 · el aviso se VE, no solo se anuncia',
+      nodo ? nodo.textContent : 'sin nodo');
+
+    mas.click();
+    t.igual(respuestas.length, 1, 'E65 · el segundo toque sí contesta');
+
+    /* Y los cuatro que antes se la saltaban la piden ahora. Se comprueba sobre el
+       CÓDIGO REAL de cada uno: que la función pase por pedirConfirmacion. */
+    var conCerrojo = ['tecladoBloques', 'opciones4', 'balanza', 'selectorSigno',
+                      'ordenarFila', 'monedas', 'selectorDatos'].filter(function (f) {
+      return /pedirConfirmacion/.test(String(CB.componentes[f]));
+    });
+    t.igual(conCerrojo.length, 7,
+      'E65 · los siete formatos pasan por la confirmación, no tres de siete',
+      'la piden: ' + conCerrojo.join(', '));
+
+    CB.componentes._confirmacionPendiente = confPrevia;
+    CB.partida.bloqueado = bloqueoPrevio;
+    CB.ui.ocultarMensaje();
+  });
+});
+
+CB.pruebas.suite('E66 · salir de la partida pide dos toques y caduca', function () {
+  var t = CB.pruebas;
+  var estadoPrevio = CB.partida.estado;
+  var finPrevio = CB.partida.finalizar;
+  var finales = [];
+  CB.partida.finalizar = function (motivo) { finales.push(motivo); };
+
+  var boton = document.createElement('button');
+  boton.setAttribute('data-accion', 'salir-partida');
+  boton.textContent = '◀ Salir';
+  document.body.appendChild(boton);
+
+  var msPrevio = CB.partida.MS_CONFIRMAR_SALIDA;
+  CB.partida.MS_CONFIRMAR_SALIDA = 120;      // para no esperar tres segundos
+  CB.partida._rotuloSalir = null;
+
+  CB.partida.pedirSalida(boton);
+  t.igual(finales.length, 0, 'E66 · un solo toque NO termina la expedición');
+  t.igual(boton.getAttribute('data-confirmando'), 'si', 'E66 · queda armado');
+  t.ok(/de verdad/.test(boton.textContent),
+    'E66 · y lo dice cambiando el texto, no solo el color', boton.textContent);
+
+  CB.partida.pedirSalida(boton);
+  t.igual(finales.length, 1, 'E66 · el segundo toque sí sale');
+  t.igual(finales[0], 'salida', 'E66 · con el motivo correcto');
+
+  /* LA CADUCIDAD, que es la aserción que se olvida y la que atrapa un cerrojo que
+     no se suelta nunca: el niño toca Salir sin querer, sigue jugando cinco
+     minutos, y el siguiente roce —ya sin aviso ninguno— termina la partida. */
+  finales.length = 0;
+  CB.partida._rotuloSalir = null;
+  boton.textContent = '◀ Salir';
+  CB.partida.pedirSalida(boton);
+  return new Promise(function (listo) {
+    setTimeout(function () {
+      t.igual(boton.getAttribute('data-confirmando'), null,
+        'E66 · el armado caduca solo');
+      t.igual(boton.textContent, '◀ Salir', 'E66 · y el rótulo vuelve a lo que era');
+      t.igual(finales.length, 0, 'E66 · sin haber terminado nada');
+
+      CB.partida.MS_CONFIRMAR_SALIDA = msPrevio;
+      CB.partida.finalizar = finPrevio;
+      CB.partida.estado = estadoPrevio;
+      document.body.removeChild(boton);
+      listo();
+    }, 260);
+  });
+});
+
+CB.pruebas.suite('E67 · tocar una moneda deja marca, y reiniciar la borra', function () {
+  var t = CB.pruebas;
+  var bloqueoPrevio = CB.partida.bloqueado;
+  var confPrevia = CB.componentes._confirmacionPendiente;
+  CB.partida.bloqueado = false;
+  CB.componentes._confirmacionPendiente = false;
+
+  var respuestas = [];
+  CB.componentes.monedas(
+    { modo: 'pagar', objetivo: 6, disponibles: [1, 2, 5] },
+    function (v) { respuestas.push(v); }, { bloqueoMs: 0 });
+
+  return CB.pruebas._desbloqueo().then(function () {
+    var cont = CB.componentes.contenedor();
+    var dos = cont.querySelector('.moneda[aria-label], .billete[aria-label]');
+    var piezas = cont.querySelectorAll('.moneda, .billete');
+    if (!t.ok(piezas.length >= 3, 'E67 · se montan las piezas', String(piezas.length))) return;
+
+    dos = piezas[1];                       // la de 2 €
+    dos.click();
+    t.igual(dos.getAttribute('data-veces'), '1',
+      'E67 · tocar una moneda deja marca: antes no dejaba ninguna');
+    dos.click();
+    t.igual(dos.getAttribute('data-veces'), '2', 'E67 · y cuenta las veces');
+
+    var fila = cont.querySelector('.hilera-cogidas');
+    t.ok(!!fila, 'E67 · existe la fila de lo cogido');
+    t.igual(fila ? fila.querySelectorAll('.hilera-cogidas__pieza').length : 0, 2,
+      'E67 · la fila muestra las dos piezas, no solo el total');
+
+    /* Y la pieza que CIERRA el pago también se marca: si el contador estuviera
+       detrás de la comprobación del objetivo, la última no se vería nunca. */
+    piezas[0].click();                     // la de 1 €: total 5, aún no llega
+    piezas[1].click();                     // otra de 2 €: total 7 ≥ 6, cierra
+    t.igual(dos.getAttribute('data-veces'), '3',
+      'E67 · la pieza que cierra el pago también queda marcada');
+    t.ok(respuestas.length > 0, 'E67 · y el pago se ha cerrado');
+
+    var reinicio = null, i, botones = cont.querySelectorAll('.btn-bloque');
+    for (i = 0; i < botones.length; i++) {
+      if (/Empezar/.test(botones[i].textContent)) reinicio = botones[i];
+    }
+    if (!t.ok(!!reinicio, 'E67 · existe «Empezar de nuevo»')) return;
+
+    reinicio.click();
+    t.igual(cont.querySelectorAll('[data-veces]').length, 0,
+      'E67 · reiniciar borra las marcas: si no, el total diría 0 y las monedas otra cosa');
+    t.igual(fila ? fila.querySelectorAll('.hilera-cogidas__pieza').length : -1, 0,
+      'E67 · y vacía la fila');
+
+    CB.partida.bloqueado = bloqueoPrevio;
+    CB.componentes._confirmacionPendiente = confPrevia;
+  });
 });

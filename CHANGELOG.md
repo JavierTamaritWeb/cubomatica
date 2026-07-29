@@ -12,6 +12,100 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.10.0] — 2026-07-29
+
+**Segunda cifra: entran capacidades.** Fase 8 del plan. El perfil guardado no cambia.
+
+Cuatro cosas que un niño de 7 años no podía hacer y debía poder.
+
+### Deshacer, en los dos formatos que no dejaban
+
+`ordenarFila` se contestaba sola al colocar la última pieza y no había forma de
+retirar ninguna: tocar el 5 cuando se quería el 3 obligaba a **terminar mal el ítem a
+propósito**. Y el registro guardaba «falló ordenar». Lo mismo en la fase de datos de
+`selectorDatos`, que además saltaba de fase sola y anotaba `faseFallada = 'datos'` —
+que es atribuirle al niño un problema de comprensión lectora cuando lo que ha pasado es
+que se le ha ido el dedo.
+
+Ahora: un ⌫ en la fila de ordenar, destocar en la fase de datos, y un
+«◀ Cambiar los números» en la fase siguiente para cuando ya ha saltado.
+
+**Sin OK y sin peaje**: se sigue contestando al colocar la última pieza, así que el caso
+bueno no cuesta ni un toque más. Exigir un OK habría metido un toque obligatorio en cada
+ítem de esos formatos, que es lo contrario de lo que se busca.
+
+### La confirmación de dos toques era invisible, y la pedían tres de siete
+
+`pedirConfirmacion` hundía el botón 300 ms —indistinguible del `:active` de cualquier
+botón— y llamaba a `CB.a11y.anunciar`, que escribe en una región con
+`clip: rect(0 0 0 0)`. Justo después de decidir que el niño va al tuntún, el juego le
+cambiaba la regla de entrada y **se lo contaba solo a un lector de pantalla**.
+
+Ahora se ve, con `CB.ui.mensaje`. Se **sustituye** el anuncio en vez de añadirlo, porque
+`CB.ui.mensaje` ya anuncia por dentro y dejar los dos haría que el lector lo dijera dos
+veces.
+
+Y la piden los siete formatos, no tres. Se la saltaban `selectorSigno`, la fase 3 de
+`selectorDatos`, `ordenarFila` y `monedas` — el patrón E44 entero. En los dos últimos la
+respuesta se dispara sola, así que la confirmación cuelga del gesto que la cierra: la
+última pieza, la moneda que alcanza el importe. **Por eso esta parte necesitaba el ⌫**:
+sin poder deshacer, un «toca otra vez» sobre la última pieza no tendría segunda
+oportunidad posible.
+
+### «◀ Salir» ya no termina la expedición de un roce
+
+Estaba abajo a la derecha, a 16 px del botón de sonido y del mismo tamaño: la zona del
+pulgar que sujeta la tableta. Un roce y se acababa.
+
+Ahora pide **dos toques** y el aviso cambia el **texto** del botón —«◀ Salir de
+verdad»—, no su color: nunca solo color, y aquí además el color queda debajo del dedo.
+El armado **caduca a los 3 s**. Y el botón se muda al grupo de la izquierda, con Pista,
+lejos de esa mano.
+
+No se usa `pedirConfirmacion`: esa función empieza con
+`if (!_confirmacionPendiente) { alConfirmar(); return; }`, y esa bandera solo vale `true`
+cuando el antiazar ha disparado. En una partida normal habría sido un no-operativo — un
+cerrojo que no cierra, verde en las pruebas y roto en el juego.
+
+### Tocar una moneda no dejaba ninguna marca
+
+El manejador sumaba al total y la pieza seguía idéntica. Pagar 6 € es tocar tres veces
+la moneda de 2 €, y las tres veces la moneda se quedaba igual. Había además una regla
+CSS muerta para `[aria-pressed="true"]`, un atributo que **nadie ponía nunca** sobre una
+moneda.
+
+Ahora se **cuenta** con `data-veces` —no se marca con `aria-pressed`, que convertiría un
+contador en un interruptor y le diría «pulsado» al lector de pantalla de un botón que
+hay que seguir pulsando (WCAG 4.1.2)— y hay una **fila visible de lo cogido**:
+«2 € + 2 € + 1 €». Es lo que de verdad descarga la memoria: el niño ve la suma, no solo
+el resultado. «Empezar de nuevo» borra las marcas y vacía la fila.
+
+Y monedas y billetes no son `.btn-bloque`, así que durante los 800 ms de construcción no
+recibían ni el «toc» ni la sacudida: se tocaban y no pasaba nada de nada. Ahora sí.
+
+### Pruebas: 561 → 595
+
+**E64** a **E67**. El plan los llamaba E61-E64; esos números ya estaban gastados.
+
+Los cuatro validados con su siembra, y E65 además **señala cuál** de los siete formatos
+se ha saltado la confirmación en vez de caerse en bloque — si un fallo en uno tumbara los
+siete asertos, no sabríamos cuál.
+
+Y la siembra de vacuidad, que es la que importaba: sin esperar al desbloqueo de
+`montar()`, los guardianes **se ponen rojos** en «los dos primeros toques entran de
+verdad → obtenido 0», en vez de pasar en verde por no haber tocado nada. Al primer
+intento la siembra no valía —seguía esperando un tic de 20 ms, y el desbloqueo llega
+antes—, así que hubo que sembrarla dos veces para que dijera algo.
+
+### Un fallo del propio arreglo, cazado por su guardián
+
+`pedirSalida` no soltaba el cerrojo al confirmar: el botón se quedaba armado para
+siempre, y al volver a una partida el primer roce en Salir la habría terminado sin aviso
+— el fallo que el cerrojo venía a impedir, entrando por la puerta de atrás. Lo cazó la
+**tercera** aserción de E66, la de la caducidad, que era la que parecía menos importante.
+
+---
+
 ## [1.9.1] — 2026-07-29
 
 **Tercera cifra: corrige, no añade.** Fase 7 del plan. El perfil guardado no se toca.

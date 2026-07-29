@@ -211,11 +211,16 @@
            conectó de verdad en 1.9.0, solo para problemas de enunciado, solo con
            el ajuste encendido y solo si hay voz española instalada. -->
       <button class="btn-bloque btn-bloque--rotulado" data-accion="pista" aria-label="Pista"><span class="btn-bloque__ico" aria-hidden="true">💡</span><span class="btn-bloque__rotulo">Pista</span></button>
+      <!-- SALIR VIVE AQUÍ, con Pista, y no con Pausa y Sonido. Estaba abajo a
+           la derecha, a 16 px del de sonido y del mismo tamaño: la zona del
+           pulgar que sujeta la tableta. Un roce terminaba la expedición. Ahora
+           está lejos de esa mano y además pide dos toques
+           (CB.partida.pedirSalida). -->
+      <button class="btn-bloque" data-accion="salir-partida">◀ Salir</button>
     </div>
     <div class="barra-herramientas__grupo">
       <button class="btn-bloque btn-bloque--rotulado" data-accion="pausa"  aria-label="Pausa"><span class="btn-bloque__ico" aria-hidden="true">⏸</span><span class="btn-bloque__rotulo">Pausa</span></button>
       <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="btn-bloque__ico" aria-hidden="true">🔈</span><span class="btn-bloque__rotulo">Sonido</span></button>
-      <button class="btn-bloque" data-accion="salir-partida">◀ Salir</button>
     </div>
   </div>
 </section>

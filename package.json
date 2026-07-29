@@ -1,6 +1,6 @@
 {
   "name": "cubomatica",
-  "version": "1.9.1",
+  "version": "1.10.0",
   "private": true,
   "description": "Cubomatica — juego de matematicas para 2.º de Primaria (RD 157/2022)",
   "license": "MIT",

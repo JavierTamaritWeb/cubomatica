@@ -477,17 +477,33 @@ titulo('7. Peso');
    conviven el bundle minificado que se sirve y el legible que solo usan la
    auditoría y la suite, y pesar la carpeta daría más del doble de lo que nadie
    descarga. */
-let bytesFuente = 0;
+/* DOS PRESUPUESTOS, NO UNO, y el motivo importa. Había uno solo de 1 100 KB para
+   todo lo que no es dist/, y en 1.10.0 se pasó por 1 KB — enteramente por el
+   crecimiento de pruebas/: casos-regresiones.js había pasado de 1 358 a 2 473
+   líneas en cinco rondas de guardianes nuevos.
+
+   Subir el número a 1 200 y seguir habría sido aflojar el guardián hasta que deje
+   de decir nada, que es como mueren estos topes. Se parte: lo que se COMPILA
+   tiene su presupuesto —ahí sí, engordar es un problema— y las PRUEBAS tienen el
+   suyo, más holgado, porque que crezcan es exactamente lo que se quiere.
+
+   El tope que de verdad protege el arranque no es ninguno de estos dos: es el de
+   la descarga inicial del bloque 5, < 400 KB, y ese no se toca. */
+let bytesCompilado = 0, bytesPruebas = 0;
 for (const f of recorrer(RAIZ)) {
   const c = corto(f);
-  if (c.startsWith('src/') || c.startsWith('pruebas/') || c.startsWith('herramientas/') ||
+  if (c.startsWith('pruebas/')) { bytesPruebas += statSync(f).size; continue; }
+  if (c.startsWith('src/') || c.startsWith('herramientas/') ||
       /^(README\.md|manifiesto\.json|gulpfile\.js|package\.json|servir\.|[^/]*\.txt)/.test(c)) {
-    bytesFuente += statSync(f).size;
+    bytesCompilado += statSync(f).size;
   }
 }
-const kbFuente = Math.round(bytesFuente / 1024);
-juzgar(kbFuente < 1100, 'las fuentes ocupan ' + kbFuente + ' KB (presupuesto: < 1100 KB)',
-  'las fuentes ocupan ' + kbFuente + ' KB, por encima del presupuesto de 1100 KB');
+const kbFuente = Math.round(bytesCompilado / 1024);
+const kbPruebas = Math.round(bytesPruebas / 1024);
+juzgar(kbFuente < 900, 'las fuentes ocupan ' + kbFuente + ' KB (presupuesto: < 900 KB)',
+  'las fuentes ocupan ' + kbFuente + ' KB, por encima del presupuesto de 900 KB');
+juzgar(kbPruebas < 500, 'las pruebas ocupan ' + kbPruebas + ' KB (presupuesto: < 500 KB)',
+  'las pruebas ocupan ' + kbPruebas + ' KB, por encima del presupuesto de 500 KB');
 
 const bytesMusica = PISTAS.reduce((n, p) => {
   const f = D('dist/audio', p + '.mp3');

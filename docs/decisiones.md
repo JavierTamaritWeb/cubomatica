@@ -2596,3 +2596,99 @@ alcanzar a los botones bloqueados.
 | Fallos registrados | E1–E61 | **E1–E63** |
 | Fases del plan ejecutadas | 1 de 10 | **2 de 10** (fases 6 y 7) |
 | Peor contraste del teclado bloqueado | 1,52:1 | **4,99:1** |
+
+---
+
+# Ronda 15 · Fase 8 del plan: deshacer, confirmar y no salir por un roce — versión 1.10.0 (29 de julio de 2026)
+
+## D-R15-1 · Deshacer sin peaje, no confirmar con peaje
+
+`ordenarFila` y la fase de datos de `selectorDatos` se contestaban solas y no dejaban
+retirar nada. Un dedo que se va obligaba a **terminar mal el ítem a propósito**, y el
+registro guardaba «falló ordenar» o `faseFallada = 'datos'`: le atribuye al niño un
+problema de comprensión que no tiene, y ese registro alimenta el informe del adulto.
+
+La tentación era pedir un OK. Se descartó: metería un toque obligatorio en **cada** ítem
+de esos formatos —quien acierta a la primera lo pagaría— y choca con la decisión ya
+cerrada de omitir la fase 1 cuando hay exactamente dos números, que existe justamente
+«para no hacer perder el tiempo con una decisión que no existe» (§9.6).
+
+**La regla que queda: el arreglo de un error no puede cobrarle nada a quien no se
+equivoca.** Deshacer cuesta un toque solo a quien lo necesita; confirmar se lo cobra a
+todos.
+
+## D-R15-2 · Una regla en tres sitios de siete
+
+`pedirConfirmacion` la aplicaban `tecladoBloques`, `opciones4` y `balanza`. Se la
+saltaban `selectorSigno`, la fase 3 de `selectorDatos`, `ordenarFila` y `monedas`. Es E44
+otra vez, con cuatro huecos en vez de dos.
+
+Y en los dos últimos la respuesta se dispara sola, sin OK del que colgar la
+confirmación. La solución —colgarla del gesto **que cierra** la respuesta: la última
+pieza, la moneda que alcanza el importe— **exige poder deshacer**, porque si no un «toca
+otra vez» sobre la última pieza no tendría segunda oportunidad posible. De ahí que 8.1
+vaya antes que 8.2 en el plan; el orden no era estético.
+
+## D-R15-3 · Un cerrojo que no cierra es peor que ninguno
+
+Para «Salir» se descartó `pedirConfirmacion`: empieza con
+`if (!_confirmacionPendiente) { alConfirmar(); return; }`, y esa bandera solo vale `true`
+cuando el antiazar ha disparado. En una partida normal habría sido un **no-operativo**:
+verde en las pruebas, roto en el juego.
+
+Y el cerrojo propio nació con el mismo tipo de agujero: **no soltaba el armado al
+confirmar**. El botón se quedaba armado para siempre, de modo que al volver a una partida
+el primer roce en Salir la habría terminado sin aviso — el fallo que el cerrojo venía a
+impedir, entrando por la puerta de atrás. Lo cazó la **tercera** aserción de E66, la de
+la caducidad, que era la que parecía menos importante de las tres.
+
+Se extrae `CB.partida.soltarSalida()` porque hay **dos** salidas del ciclo —confirmar y
+caducar— y una de las dos siempre se olvida cuando esto se escribe en línea.
+
+## D-R15-4 · Contar no es marcar
+
+`disponibles` es una pieza por valor, sin repeticiones: pagar 6 € es tocar tres veces la
+moneda de 2 €. Poner `aria-pressed="true"` habría convertido un contador en un
+interruptor —decirle «pulsado» al lector de pantalla de un botón que hay que seguir
+pulsando— que es mal uso de ARIA, WCAG 4.1.2. Se cuenta con `data-veces`.
+
+Y la fila visible de lo cogido —«2 € + 2 € + 1 €»— es lo que de verdad descarga la
+memoria: con solo el total, quien va por 5 € no sabe si ha cogido dos de 2 y una de 1 o
+una de 5, y **no puede comprobarlo**.
+
+## D-R15-5 · Sembrar la vacuidad hay que hacerlo bien
+
+El plan pedía sembrar la vacuidad quitando la espera al desbloqueo de `montar()`. Al
+primer intento la siembra **no valía**: la versión «sin esperar» seguía esperando un tic
+de `setInterval` de 20 ms, y el desbloqueo llega antes. Todo salió verde y por un momento
+pareció que los guardianes no dependían de la espera.
+
+Sembrada de verdad —resolución inmediata— los guardianes **se ponen rojos** en «los dos
+primeros toques entran de verdad → obtenido 0». Eso es lo que se quería demostrar: fallan
+ruidosamente en vez de pasar en verde sin haber tocado nada.
+
+**Lección: una siembra que no pone nada rojo hay que sospecharla antes de celebrarla.**
+Puede ser que el guardián sea bueno; puede ser que la siembra no siembre.
+
+## D-R15-6 · El presupuesto de peso se parte en dos
+
+La auditoría se puso roja por 1 KB: 1 101 sobre un tope de 1 100. El desbordamiento era
+**enteramente de `pruebas/`** —`casos-regresiones.js` había pasado de 1 358 a 2 473 líneas
+en cinco rondas de guardianes—.
+
+Subir el número a 1 200 y seguir habría sido aflojar el guardián hasta que deje de decir
+nada, que es como mueren estos topes. Se parte: **lo que se compila < 900 KB** (ahí sí,
+engordar es un problema) y **las pruebas < 500 KB** (que crezcan es lo que se quiere). El
+tope que de verdad protege el arranque no es ninguno de los dos: es la descarga inicial
+de < 400 KB, y ese no se toca.
+
+## Estado al cerrar 1.10.0
+
+| | 1.9.1 | 1.10.0 |
+|---|---|---|
+| Comprobaciones de la suite | 561 | **595** |
+| Comprobaciones de la auditoría | 58 | **59** |
+| Fallos registrados | E1–E63 | **E1–E67** |
+| Fases del plan ejecutadas | 2 de 10 | **3 de 10** (6, 7 y 8) |
+| Formatos que piden confirmación | 3 de 7 | **7 de 7** |
+| Formatos donde se puede deshacer | 2 de 7 | **4 de 7** |

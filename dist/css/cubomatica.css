@@ -1462,6 +1462,8 @@ button:focus:not(:focus-visible) {
   font-family: var(--fuente-pixel);
   font-size: var(--tam-texto-min);
   color: var(--texto-principal);
+  /* Ancla la esquina donde va el contador de veces cogida. */
+  position: relative;
 }
 
 .moneda { /* redonda NO: en este mundo todo es cúbico */
@@ -1490,10 +1492,80 @@ button:focus:not(:focus-visible) {
   justify-content: center;
 }
 
-.moneda[aria-pressed=true], .billete[aria-pressed=true] {
+/* ── Piezas ya cogidas ──────────────────────────────────────────────────────
+   Esta regla estaba escrita para [aria-pressed="true"] y NADIE ponía nunca ese
+   atributo sobre una moneda: era CSS muerto, y tocar una pieza no dejaba ninguna
+   marca. El niño tocaba tres veces la moneda de 2 € para pagar 6 € y las tres
+   piezas seguían exactamente iguales.
+
+   Se cuenta con data-veces en vez de aria-pressed a propósito: la misma moneda se
+   toca varias veces, y decirle «pulsado» a un lector de pantalla de un botón que
+   hay que seguir pulsando es mal uso de ARIA (WCAG 4.1.2). */
+.moneda[data-veces], .billete[data-veces] {
   outline: var(--bisel) solid var(--foco-oro);
   outline-offset: var(--u);
   transform: translateY(calc(var(--bisel) * -1));
+}
+
+/* Cuántas veces se ha cogido, para quien no distingue el contorno dorado: nunca
+   solo color, tampoco aquí.
+
+   Va en una ESQUINA, colocada aparte, y no dentro del texto de la pieza: metido
+   en el flujo, el «×2» partía en dos líneas el «2 €» de la moneda y la dejaba
+   ilegible. Se vio mirando la pantalla, que es la única forma de ver esto. */
+.moneda[data-veces]::after, .billete[data-veces]::after {
+  content: "×" attr(data-veces);
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0 2px;
+  background: var(--bg-texto-oscuro);
+  color: var(--deco-oro-cla);
+  font-family: var(--fuente-pixel);
+  font-size: var(--tam-texto-min);
+  line-height: 1.1;
+}
+
+.moneda[data-veces="1"]::after, .billete[data-veces="1"]::after {
+  content: "";
+  padding: 0;
+}
+
+/* Y los estados que les faltaban: no son .btn-bloque, así que ni el hundido ni
+   el bloqueado de arriba las alcanzaban. */
+.moneda:active, .billete:active {
+  transform: translateY(var(--bisel));
+}
+
+.moneda:disabled, .billete:disabled {
+  background: var(--btn-fondo-desactivado);
+  color: var(--btn-texto-desactivado);
+  transform: translateY(var(--bisel));
+}
+
+/* ── La fila de lo cogido: «2 € + 2 € + 1 €» ────────────────────────────── */
+.hilera-cogidas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e2);
+  flex-wrap: wrap;
+  /* Separación real: las piezas cogidas se levantan 4 px con translateY, y sin
+     este margen la fila se les montaba encima. */
+  margin: var(--e2) 0 var(--e3);
+  min-height: calc(var(--tam-texto-min) + var(--e2));
+  font-family: var(--fuente-pixel);
+  color: var(--texto-claro);
+}
+
+.hilera-cogidas__pieza {
+  padding: 0 var(--e2);
+  background: var(--bg-texto-oscuro);
+  color: var(--deco-oro-cla);
+}
+
+.hilera-cogidas__mas {
+  color: var(--texto-claro);
 }
 
 .fila-ordenar {

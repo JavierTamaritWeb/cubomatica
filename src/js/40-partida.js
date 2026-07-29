@@ -1386,6 +1386,65 @@ CB.partida.accionDe = function (nodo) {
   return null;
 };
 
+CB.partida.MS_CONFIRMAR_SALIDA = 3000;
+
+/**
+ * Salir pide dos toques. NO se usa CB.componentes.pedirConfirmacion: esa función
+ * empieza con `if (!_confirmacionPendiente) { alConfirmar(); return; }`, y esa
+ * bandera solo se pone a true cuando el antiazar ha detectado azar. En una
+ * partida normal vale false, así que pasar por ahí habría sido un no-operativo
+ * — un cerrojo que no cierra, verde en las pruebas y roto en el juego.
+ *
+ * El botón está abajo a la derecha, a 16 px del de sonido y del mismo tamaño:
+ * la zona del pulgar que sujeta la tableta. Un roce y se acababa la expedición.
+ *
+ * Y el aviso CAMBIA EL TEXTO del botón, no su color: «nunca solo color» es
+ * obligación legal, y aquí además el color no se vería —el dedo está encima.
+ */
+CB.partida.pedirSalida = function (nodo) {
+  var boton = nodo && nodo.closest ? nodo.closest('[data-accion="salir-partida"]') : null;
+  if (!boton) { CB.partida.finalizar('salida'); return false; }
+
+  if (boton.getAttribute('data-confirmando') === 'si') {
+    /* SE SUELTA EL CERROJO ANTES DE SALIR, y no es limpieza cosmética: sin esto
+       el botón se queda armado para siempre. Al volver a una partida, el primer
+       roce en Salir la terminaría sin aviso ninguno — es decir, el fallo que este
+       cerrojo venía a impedir, reaparecido por la puerta de atrás. Lo cazó E66,
+       en su tercera aserción, que es justo la que parecía la menos importante. */
+    CB.partida.soltarSalida(boton);
+    CB.partida.finalizar('salida');
+    return true;
+  }
+
+  if (CB.partida._rotuloSalir == null) CB.partida._rotuloSalir = boton.textContent;
+  boton.setAttribute('data-confirmando', 'si');
+  boton.textContent = '◀ Salir de verdad';
+  CB.ui.mensaje('Toca otra vez para salir. La expedición se guarda.', 'animo');
+
+  if (CB.partida._temporizadorSalir) clearTimeout(CB.partida._temporizadorSalir);
+  /* CADUCA. Un cerrojo que no se suelta es peor que no tenerlo: el niño toca
+     Salir sin querer, sigue jugando cinco minutos y el siguiente roce —ya sin
+     ningún aviso en pantalla— termina la partida. */
+  CB.partida._temporizadorSalir = setTimeout(function () {
+    CB.partida.soltarSalida(boton);
+    CB.ui.ocultarMensaje();
+  }, CB.partida.MS_CONFIRMAR_SALIDA);
+  return false;
+};
+
+/* Desarma el botón y le devuelve su rótulo. Se llama desde los DOS sitios que
+   cierran el ciclo —confirmar y caducar—, porque una de las dos salidas siempre
+   se olvida cuando esto se escribe en línea. */
+CB.partida.soltarSalida = function (boton) {
+  if (CB.partida._temporizadorSalir) {
+    clearTimeout(CB.partida._temporizadorSalir);
+    CB.partida._temporizadorSalir = null;
+  }
+  if (!boton) return;
+  boton.removeAttribute('data-confirmando');
+  if (CB.partida._rotuloSalir != null) boton.textContent = CB.partida._rotuloSalir;
+};
+
 CB.partida.conectarBarra = function () {
   document.addEventListener('click', function (ev) {
     var a = CB.partida.accionDe(ev.target);
@@ -1402,7 +1461,6 @@ CB.partida.conectarBarra = function () {
       aj.silencio = s;
       CB.almacen.guardarAjustesDispositivo(aj);
     }
-    /* Salir guarda íntegro y sale SIN diálogo de retención. */
-    if (a === 'salir-partida') CB.partida.finalizar('salida');
+    if (a === 'salir-partida') CB.partida.pedirSalida(ev.target);
   });
 };

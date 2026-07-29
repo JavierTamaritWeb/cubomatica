@@ -82,7 +82,11 @@ CB.componentes.conectarToc = function (contenedor) {
   contenedor.addEventListener('pointerdown', function (ev) {
     if (!CB.partida || !CB.partida.bloqueado) return;
     var b = ev.target;
-    if (b && b.classList && b.classList.contains('btn-bloque')) {
+    /* Monedas y billetes NO son .btn-bloque, así que durante los 800 ms de
+       construcción no recibían ni el «toc» ni la sacudida: se tocaban y no pasaba
+       nada de nada, ni siquiera el sonido de «aún no». */
+    if (b && b.classList && (b.classList.contains('btn-bloque') ||
+        b.classList.contains('moneda') || b.classList.contains('billete'))) {
       b.classList.add('btn-bloque--toc');
       setTimeout(function () { b.classList.remove('btn-bloque--toc'); }, 260);
     }
@@ -129,7 +133,17 @@ CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
   boton.setAttribute('data-confirmando', 'si');
   boton.classList.add('btn-bloque--hundido');
   setTimeout(function () { boton.classList.remove('btn-bloque--hundido'); }, 300);
-  CB.a11y.anunciar('Toca otra vez para confirmar.');
+  /* SE VE, no solo se oye. Esto era un CB.a11y.anunciar, que escribe en
+     #region-viva —`clip: rect(0 0 0 0)`, invisible por definición—: justo después
+     de decidir que el niño va al tuntún, el juego le cambiaba la regla de entrada
+     y se lo contaba SOLO a un lector de pantalla. El hundido de 300 ms no vale
+     como aviso: es indistinguible del :active de cualquier botón.
+
+     Se SUSTITUYE el anuncio, no se añade: CB.ui.mensaje ya llama por dentro a
+     CB.a11y.anunciar, así que dejar los dos haría que el lector lo dijera dos
+     veces. Y no se usa la cinta: podría pisarse con la del fallo, que es
+     exactamente el defecto que cerró E51. */
+  CB.ui.mensaje('Toca otra vez para confirmar.', 'animo');
 };
 
 /* ══ 1. TECLADO DE BLOQUES ═════════════════════════════════════════════════ */
@@ -263,7 +277,12 @@ CB.componentes.selectorSigno = function (item, alResponder, opciones) {
   ['+', '−'].forEach(function (s, idx) {
     var b = CB.ui.boton(s, '', function () {
       if (CB.partida && CB.partida.bloqueado) return;
-      alResponder(s === '+' ? '+' : '-', 'signo', { posicion: idx });
+      /* La misma regla que el teclado y las opciones. Se la saltaba, y con ella
+         tres formatos más: una regla aplicada en tres sitios de siete es
+         literalmente E44. */
+      CB.componentes.pedirConfirmacion(b, function () {
+        alResponder(s === '+' ? '+' : '-', 'signo', { posicion: idx });
+      });
     }, { posicion: idx });
     b.setAttribute('aria-label', s === '+' ? 'Más, sumar' : 'Menos, restar');
     fila.appendChild(b);
@@ -334,30 +353,72 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   cont.appendChild(huecos);
 
   var piezas = CB.ui.crear('div', 'fila-ordenar');
+  /* Los botones en el orden en que se han tocado, para poder deshacer. Se lleva
+     aparte de _seleccion —que guarda VALORES— porque buscar la pieza por su
+     número obliga a suponer que no hay valores repetidos, y eso es una suposición
+     sobre el generador que este componente no tiene por qué hacer. */
+  var usados = [];
+
+  function cerrarSiEstaLlena() {
+    if (CB.componentes._seleccion.length !== item.orden.length) return;
+    var correcto = CB.componentes._seleccion.every(function (x, j) {
+      return x === item.orden[j];
+    });
+    alResponder(correcto ? item.respuesta : -1, 'ordenar',
+                { secuencia: CB.componentes._seleccion.slice() });
+  }
+
   item.piezas.forEach(function (v, idx) {
     var b = CB.ui.boton(String(v), '', function () {
       if (CB.partida && CB.partida.bloqueado) return;
       if (b.disabled) return;
       var pos = CB.componentes._seleccion.length;
       CB.componentes._seleccion.push(v);
+      usados.push(b);
       var hueco = huecos.querySelector('[data-hueco="' + pos + '"]');
       if (hueco) hueco.textContent = String(v);
       b.disabled = true;
       b.classList.add('btn-bloque--hundido');
       CB.audio.sfx('picar');
 
+      /* La confirmación de dos toques cuelga del gesto QUE CIERRA la respuesta,
+         que aquí es colocar la última pieza: no hay OK del que colgarla. Y por
+         eso esta parte necesita el ⌫ de abajo — sin poder deshacer, un «toca otra
+         vez» sobre la última pieza no tendría segunda oportunidad posible. */
       if (CB.componentes._seleccion.length === item.orden.length) {
-        var correcto = CB.componentes._seleccion.every(function (x, j) {
-          return x === item.orden[j];
-        });
-        alResponder(correcto ? item.respuesta : -1, 'ordenar',
-                    { secuencia: CB.componentes._seleccion.slice() });
+        CB.componentes.pedirConfirmacion(b, cerrarSiEstaLlena);
       }
     }, { posicion: idx });
     b.style.width = '80px'; b.style.height = '80px';
     piezas.appendChild(b);
   });
   cont.appendChild(piezas);
+
+  /* DESHACER SIN PEAJE. Antes, tocar el 5 cuando se quería el 3 obligaba a
+     terminar mal a propósito: la fila se contestaba sola al llenarse y no había
+     forma de retirar una pieza. Peor que perder el ítem: el registro guardaba
+     «falló ordenar», que le atribuye al niño un problema que no tiene.
+
+     NO se añade un OK. Exigirlo metería un toque obligatorio en cada ítem de este
+     formato, que es lo contrario de lo que se busca; se sigue contestando al
+     colocar la última pieza, así que el caso bueno no cuesta ni un toque más. */
+  var deshacer = CB.ui.boton('⌫ Quitar', '', function () {
+    if (CB.partida && CB.partida.bloqueado) return;
+    if (!CB.componentes._seleccion.length) return;
+    CB.componentes._seleccion.pop();
+    var pieza = usados.pop();
+    var pos = CB.componentes._seleccion.length;
+    var hueco = huecos.querySelector('[data-hueco="' + pos + '"]');
+    if (hueco) hueco.textContent = '·';
+    if (pieza) {
+      pieza.disabled = false;
+      pieza.classList.remove('btn-bloque--hundido');
+      pieza.removeAttribute('data-confirmando');
+    }
+    CB.audio.sfx('toc');
+  });
+  deshacer.setAttribute('aria-label', 'Quitar el último número colocado');
+  cont.appendChild(deshacer);
 
   CB.componentes.conectarToc(cont);
   CB.componentes.montar(cont, opciones.bloqueoMs);
@@ -377,6 +438,23 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
     var marcador = CB.ui.crear('div', 'visor-respuesta', '0');
     cont.appendChild(marcador);
 
+    /* LA FILA DE LO COGIDO: «2 € + 2 € + 1 €». Es lo que de verdad descarga la
+       memoria del niño. Con solo el marcador del total, quien va por 5 € no sabe
+       si ha cogido dos de 2 y una de 1 o una de 5, y no puede comprobarlo. */
+    var cogidas = [];
+    var fila = CB.ui.crear('div', 'hilera-cogidas');
+    fila.setAttribute('aria-live', 'off');
+    cont.appendChild(fila);
+
+    function pintarCogidas() {
+      CB.ui.vaciar(fila);
+      var j;
+      for (j = 0; j < cogidas.length; j++) {
+        if (j) fila.appendChild(CB.ui.crear('span', 'hilera-cogidas__mas', '+'));
+        fila.appendChild(CB.ui.crear('span', 'hilera-cogidas__pieza', cogidas[j] + ' €'));
+      }
+    }
+
     var caja = CB.ui.crear('div', 'contenedor-dinero');
     item.disponibles.forEach(function (v, idx) {
       var esMoneda = CB.gen.dinero.esMoneda(v);
@@ -388,9 +466,25 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
         if (CB.partida && CB.partida.bloqueado) return;
         total += v;
         marcador.textContent = String(total);
+        cogidas.push(v);
+        /* CONTAR, NO MARCAR. `disponibles` es una pieza por valor, sin repetir, y
+           el manejador no tiene cerrojo: pagar 6 € es tocar tres veces la de 2 €.
+           Un aria-pressed convertiría un contador en un interruptor —le diría
+           «pulsado» al lector de pantalla de un botón que hay que seguir
+           pulsando—, que es mal uso de ARIA (WCAG 4.1.2). Por eso se cuenta.
+
+           Y va ANTES de comprobar el objetivo: si fuera después, la pieza que
+           cierra el pago no llegaría a verse marcada nunca. */
+        var veces = (parseInt(b.getAttribute('data-veces'), 10) || 0) + 1;
+        b.setAttribute('data-veces', String(veces));
+        pintarCogidas();
         CB.audio.sfx('gema');
         if (total >= item.objetivo) {
-          alResponder(total, 'monedas', {});
+          /* Igual que en la fila de ordenar: la confirmación cuelga del gesto que
+             cierra el pago, porque aquí tampoco hay OK. */
+          CB.componentes.pedirConfirmacion(b, function () {
+            alResponder(total, 'monedas', {});
+          });
         }
       });
       caja.appendChild(b);
@@ -399,6 +493,16 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
 
     var deshacer = CB.ui.boton('Empezar de nuevo', '', function () {
       total = 0; marcador.textContent = '0';
+      /* Y SE LIMPIAN LAS MARCAS. Sin esto, tras reiniciar las piezas seguirían
+         contadas: peor que no marcarlas, porque el marcador diría 0 y las monedas
+         dirían que se han cogido. */
+      cogidas.length = 0;
+      pintarCogidas();
+      var piezas = caja.querySelectorAll('[data-veces]'), k;
+      for (k = 0; k < piezas.length; k++) {
+        piezas[k].removeAttribute('data-veces');
+        piezas[k].removeAttribute('data-confirmando');
+      }
     });
     cont.appendChild(deshacer);
 
@@ -455,7 +559,20 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
       var rej = CB.ui.crear('div', 'rejilla-respuestas');
       numeros.forEach(function (n, idx) {
         var b = CB.ui.boton(String(n), '', function () {
-          if (b.getAttribute('aria-pressed') === 'true') return;
+          if (CB.partida && CB.partida.bloqueado) return;
+          /* DESTOCAR. Antes este `if` salía sin hacer nada: el número elegido por
+             error se quedaba elegido y el niño tenía que terminar mal el ítem a
+             propósito. Y el registro guardaba faseFallada = 'datos', que es
+             decir que no ha entendido el enunciado cuando lo que ha pasado es
+             que se le ha ido el dedo. */
+          if (b.getAttribute('aria-pressed') === 'true') {
+            b.setAttribute('aria-pressed', 'false');
+            b.classList.remove('btn-bloque--hundido');
+            var donde = elegidos.indexOf(n);
+            if (donde !== -1) elegidos.splice(donde, 1);
+            CB.audio.sfx('toc');
+            return;
+          }
           b.setAttribute('aria-pressed', 'true');
           b.classList.add('btn-bloque--hundido');
           elegidos.push(n);
@@ -488,6 +605,19 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     }
 
     titulo.textContent = 'Escribe el resultado.';
+    /* Volver a elegir los números. La fase salta sola al tocar el último, así que
+       sin esto un error en el penúltimo toque era irreparable. Un toque SOLO
+       cuando hace falta: quien acierta a la primera no lo ve ni lo paga. */
+    var volverDatos = CB.ui.boton('◀ Cambiar los números', '', function () {
+      if (CB.partida && CB.partida.bloqueado) return;
+      elegidos.length = 0;
+      signoElegido = null;
+      fase = 'datos';
+      pintarFase();
+    });
+    volverDatos.setAttribute('aria-label', 'Volver a elegir los números del problema');
+    zona.appendChild(volverDatos);
+
     CB.componentes._valor = '';
     var visor = CB.ui.crear('div', 'visor-respuesta');
     zona.appendChild(visor);
@@ -497,14 +627,16 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
         if (t === '⌫') { CB.componentes._valor = CB.componentes._valor.slice(0, -1); }
         else if (t === 'OK') {
           if (!CB.componentes._valor.length) return;
-          /* Cada fase se registra por separado: un niño que elige bien los datos
-             y la operación pero se equivoca al calcular NO tiene un problema de
-             comprensión lectora, y el informe lo dice (§9.6). */
-          alResponder(parseInt(CB.componentes._valor, 10), 'datos', {
-            datosElegidos: elegidos.slice(),
-            signoElegido: signoElegido,
-            faseDatosOk: CB.componentes.datosCorrectos(item, elegidos),
-            faseOperacionOk: signoElegido === item.operacion
+          CB.componentes.pedirConfirmacion(b, function () {
+            /* Cada fase se registra por separado: un niño que elige bien los datos
+               y la operación pero se equivoca al calcular NO tiene un problema de
+               comprensión lectora, y el informe lo dice (§9.6). */
+            alResponder(parseInt(CB.componentes._valor, 10), 'datos', {
+              datosElegidos: elegidos.slice(),
+              signoElegido: signoElegido,
+              faseDatosOk: CB.componentes.datosCorrectos(item, elegidos),
+              faseOperacionOk: signoElegido === item.operacion
+            });
           });
           return;
         } else if (CB.componentes._valor.length < 3) {
