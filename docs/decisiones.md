@@ -2960,3 +2960,73 @@ tardar y no tardaba.
 | Fases del plan ejecutadas | 6 de 10 | **7 de 10** (6 a 12) |
 | Anuncios en el combate del jefe | solo el fallo | **acierto y fallo** |
 | Escrituras muertas en el perfil | 1 (`jefeSinFallos`) | **0** |
+
+---
+
+# Ronda 20 · Fase 13 del plan: tiempo de lectura y música — versión 1.15.0 (29 de julio de 2026)
+
+## D-R20-1 · 350 ms por palabra, y por qué no 700
+
+El ritmo real de un lector de 2.º es 60-90 palabras por minuto, o sea unos 700 ms por
+palabra. Aplicarlo habría sido lo «correcto» y está mal: las 13 palabras del mensaje típico
+darían 9,1 s, recortados al tope 3200, y **el juego se congelaría 5,2 s en casi todos los
+aciertos, doce veces por sesión**.
+
+Eso contradice de frente el principio rector de todo este plan —la fricción vive en la
+matemática y en ningún otro sitio—, y convertiría la recompensa en un peaje. Con 350 se dobla
+el tiempo de lectura sin que el bucle deje de ser un bucle.
+
+**La lección: un número correcto en abstracto puede ser el número equivocado en su sitio.**
+El criterio no era «cuánto tarda en leerse» sino «cuánto puede esperar un niño de 7 años sin
+que la recompensa se convierta en castigo».
+
+## D-R20-2 · Un parámetro opcional en vez de un global
+
+`espera()` gana un tercer argumento opcional. La alternativa —un global con el último
+mensaje— habría sido menos código y habría cambiado **todas** las llamadas a la vez, incluidas
+las tres que existen para comprobar que nada cambia.
+
+Y eso es exactamente lo que se comprobó sembrándolo: con el global, los tres `t.igual` de E54
+se ponen rojos. **Esos tres asertos son el guardián de verdad de esta fase**, y por eso se ha
+escrito al lado por qué no se pueden borrar por parecer redundantes.
+
+## D-R20-3 · El presupuesto que se mueve se dice
+
+Alargar la espera de cada acierto no toca el presupuesto de tiempo por ítem: toca el reloj de
+pared, `limiteSesionMin`. La sesión de 20 minutos pierde unos 20 s de ítems.
+
+Es poco, y aun así va escrito en el commit y aquí. Un cambio que consume presupuesto sin
+decirlo es como el que rompe un contrato sin declararlo: funciona hasta que alguien mide.
+
+## D-R20-4 · La monotonía que fabricaba el motor
+
+De nueve pistas normalizadas, con puntos de entrada y de bucle medidos uno a uno, el niño oía
+siempre los mismos treinta primeros segundos: cada reparación y cada descanso ponen `'calma'`,
+y al volver la pista del mundo empezaba otra vez desde su entrada. Cinco o seis idas y venidas
+por partida.
+
+Es el mismo tipo de defecto que la ronda 12 de las cintas —**variedad que existe en los datos
+y que el motor no deja llegar a quien juega**—, aquí en la banda sonora. Diez líneas.
+
+Se guarda en memoria de sesión, no en el perfil: `07-musica.js` es adaptador de plataforma y
+puede tener estado, pero el almacén no es esto.
+
+## D-R20-5 · Afirmar la recuperación, no el guardado
+
+E82 podría haber comprobado que `CB.musica.posiciones['mundoPradera']` existe. Habría pasado
+en verde con el fallo entero dentro, porque lo que faltaba no era guardar: era **usar** lo
+guardado.
+
+Es la misma forma de la debilidad que ya apareció en E60 —comprobar las dos funciones sueltas
+y no el conducto— y en E75 —comprobar la función pura y no el sitio donde se usa—. Van tres, y
+la regla que las une es corta: **el guardián tiene que mirar el efecto, no el mecanismo.**
+
+## Estado al cerrar 1.15.0
+
+| | 1.14.0 | 1.15.0 |
+|---|---|---|
+| Comprobaciones de la suite | 673 | **687** |
+| Fallos registrados | E1–E79 | **E1–E82** |
+| Fases del plan ejecutadas | 7 de 10 | **8 de 10** (6 a 13) |
+| Números del bucle fuera de la fuente única | 1 | **0** |
+| Tiempo de lectura del mensaje de acierto | 1600 ms fijos | **hasta 3200 según longitud** |

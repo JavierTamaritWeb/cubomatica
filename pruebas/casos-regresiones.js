@@ -131,6 +131,12 @@
          silencio, y el intro del jefe no lo leía nadie
      E78 jefeSinFallos se escribía y no lo leía nadie              AQUÍ
      E79 la victoria del jefe sonaba a jefe                        casos-musica.js
+     E80 el mensaje que enseña se borraba a los 1600 ms:           AQUÍ
+         560 palabras por minuto para un lector de 60-90
+     E81 la espera del segundo intento era el último número        AQUÍ
+         del bucle escrito a pelo
+     E82 la música del mundo volvía al segundo cero en cada        casos-musica.js
+         reparación y en cada descanso
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -1743,6 +1749,26 @@ CB.pruebas.suite('E54 · el ítem siguiente no llega antes que la cinta', functi
     'E54 · una larga sí estira la espera');
   t.igual(CB.ui.festejo.espera('inventada', 1600), 1600,
     'E54 · una clave que no existe deja la espera de siempre');
+
+  /* ── E80 · el tiempo de lectura ───────────────────────────────────────────
+     El mensaje de acierto son 13-15 palabras y se borraba a los 1600 ms: 560
+     palabras por minuto, para un lector de 2.º que va a 60-90. La única parte
+     del mensaje que enseña algo —la frase de procedimiento— no se leía nunca.
+
+     LOS TRES `t.igual` DE ARRIBA SON EL GUARDIÁN DE VERDAD de este cambio: si
+     siguen valiendo, el tercer parámetro no se ha colado en las llamadas de dos
+     argumentos. Se dice aquí para que nadie los borre por parecer redundantes. */
+  var largo = 'Muy bien. Has pedido prestada una decena y la has deshecho bien ' +
+              'sin equivocarte en ninguna columna del ejercicio completo.';
+  t.ok(CB.ui.festejo.espera('normal', 1600, largo) > 1600,
+    'E80 · con texto, la espera se estira para poder leerlo',
+    String(CB.ui.festejo.espera('normal', 1600, largo)));
+  t.igual(CB.ui.festejo.espera('normal', 1600, largo), CB.ui.festejo.TOPE_LECTURA,
+    'E80 · y un texto muy largo se recorta al tope, no congela el juego');
+  t.igual(CB.ui.festejo.espera('normal', 1600), 1600,
+    'E80 · SIN texto devuelve exactamente lo de siempre');
+  t.ok(CB.ui.festejo.espera('normal', 1600, 'Muy bien.') === 1600,
+    'E80 · y un texto corto tampoco alarga nada');
 });
 
 CB.pruebas.suite('E55 · el escalón 4 lleva al prerrequisito, y alguien lo llama', function () {
@@ -3099,4 +3125,32 @@ CB.pruebas.suite('E78 · «cerrado sin un fallo» se lee de verdad', function ()
 
   CB.perfil = perfilPrevio;
   if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+CB.pruebas.suite('E81 · la espera del segundo intento sale de la fuente única', function () {
+  var t = CB.pruebas;
+  t.ok(typeof CB.partida.esperaSegundoIntento === 'function',
+    'E81 · la espera del fallo es una función, no un literal dentro de un setTimeout');
+  if (typeof CB.partida.esperaSegundoIntento !== 'function') return;
+
+  var base = CB.partida.esperaSegundoIntento('Vuelve a mirarlo con calma.');
+  t.ok(base >= 2600, 'E81 · nunca baja del suelo de siempre', String(base));
+
+  /* Y CRECE CON LA COREOGRAFÍA. Esta es la que importa: con el 2600 escrito a
+     pelo, la primera aserción pasaría en verde igual y el número seguiría fuera
+     de la fuente única. Se toca la tabla y se restaura pase lo que pase. */
+  var previo = CB.ui.festejo.CELEBRACIONES.animo.ms;
+  var conTexto;
+  try {
+    CB.ui.festejo.CELEBRACIONES.animo.ms = 9000;
+    conTexto = CB.partida.esperaSegundoIntento('Vuelve a mirarlo con calma.');
+  } finally {
+    CB.ui.festejo.CELEBRACIONES.animo.ms = previo;
+  }
+  t.ok(conTexto > base,
+    'E81 · y sigue a la tabla del festejo: no es un número suelto',
+    base + ' → ' + conTexto);
+
+  t.igual(CB.ui.festejo.CELEBRACIONES.animo.ms, previo,
+    'E81 · la tabla queda como estaba');
 });

@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.14.0';
+CB.VERSION = '1.15.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -3070,8 +3070,30 @@ CB.musica.tick = function () {
   if (!vivo) CB.musica.pararReloj();
 };
 
+/* DÓNDE SE QUEDÓ CADA PISTA. Es estado de SESIÓN, no del perfil: 07-musica.js es
+   adaptador de plataforma (capa 00-07) y puede tenerlo, pero el almacén no es
+   esto y aquí no se persiste nada.
+
+   Sin esto, cada reparación y cada descanso ponían 'calma' y al volver la pista
+   del mundo empezaba otra vez en su punto de entrada. Con un fallo de cada dos
+   llevando a reparación y un descanso cada 6-8 ítems, son cinco o seis idas y
+   venidas por partida: de nueve pistas normalizadas y con puntos de bucle
+   medidos, el niño oía siempre los mismos treinta primeros segundos. Monotonía
+   fabricada por el motor. */
+CB.musica.posiciones = {};
+
 CB.musica.soltar = function (c) {
   if (!c.el) return;
+  /* Se apunta ANTES de liberar, y recortado para no reanudar dentro del fundido
+     de bucle: ahí el factor de volumen va por debajo de 1 y la pista entraría
+     baja, que se oye como un fallo de sonido. */
+  if (c.clave && CB.musica.PISTAS[c.clave]) {
+    var p = CB.musica.PISTAS[c.clave];
+    try {
+      CB.musica.posiciones[c.clave] = CB.util.clamp(c.el.currentTime || 0,
+        p.entra, Math.max(p.entra, p.sale - CB.musica.S_BUCLE));
+    } catch (ePos) { }
+  }
   try { c.el.pause(); c.el.removeAttribute('src'); c.el.load(); } catch (e) { }
   c.el = null;
   c.clave = null;
@@ -3131,7 +3153,10 @@ CB.musica.poner = function (clave) {
   destino.clave = clave;
   destino.f = 0;
   destino.objetivo = 1;
-  try { destino.el.currentTime = CB.musica.PISTAS[clave].entra; } catch (e) { }
+  /* Se retoma donde se dejó, si es que se había oído antes en esta sesión. */
+  var desde = (CB.musica.posiciones[clave] != null)
+    ? CB.musica.posiciones[clave] : CB.musica.PISTAS[clave].entra;
+  try { destino.el.currentTime = desde; } catch (e) { }
 
   CB.musica.reproducir(destino);
   CB.musica.arrancarReloj();
@@ -8561,10 +8586,34 @@ CB.ui.festejo.POR_CATEGORIA = {
  * NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es
  * justo lo contrario de lo que se busca.
  */
-CB.ui.festejo.espera = function (clave, minimoMs) {
+CB.ui.festejo.MS_POR_PALABRA = 350;
+CB.ui.festejo.TOPE_LECTURA = 3200;
+
+/**
+ * @param texto opcional: si se pasa, la espera se estira para poder leerlo.
+ *
+ * EL TERCER PARÁMETRO ES OPCIONAL A PROPÓSITO. Sin él, esta función devuelve
+ * exactamente lo que devolvía antes, y eso es lo que permite que las llamadas y
+ * los guardianes viejos sigan valiendo. Un global habría cambiado todas a la vez.
+ *
+ * 350 ms POR PALABRA, TOPE 3200. El mensaje típico de acierto son 13-15 palabras
+ * y la espera era de 1600 ms: 560 palabras por minuto. Un lector de 2.º va a
+ * 60-90, así que la única parte del mensaje que enseña algo —la frase de
+ * procedimiento— no se leía nunca.
+ *
+ * Con 700 ms/palabra, que sería el ritmo real de lectura, esas 13 palabras darían
+ * 9,1 s recortados al tope: el juego se congelaría 5,2 s en casi todos los
+ * aciertos, doce veces por sesión. Eso contradice de frente el principio de que
+ * la fricción vive en la matemática y en ningún otro sitio. Con 350 se dobla el
+ * tiempo de lectura sin convertir cada acierto en una espera.
+ */
+CB.ui.festejo.espera = function (clave, minimoMs, texto) {
   var c = CB.ui.festejo.CELEBRACIONES[clave];
   var m = minimoMs || 0;
-  return c ? Math.max(m, c.ms + 400) : m;
+  var lectura = texto
+    ? CB.util.palabras(texto).length * CB.ui.festejo.MS_POR_PALABRA : 0;
+  if (lectura > CB.ui.festejo.TOPE_LECTURA) lectura = CB.ui.festejo.TOPE_LECTURA;
+  return Math.max(m, c ? c.ms + 400 : 0, lectura);
 };
 
 CB.ui.festejo.limpiar = function () {
@@ -10399,7 +10448,24 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   /* NUNCA menos de los 1600 ms de siempre: la espera se estira si la coreografía
      es larga, pero no se encoge nunca. Acortarla recortaría tiempo de lectura. */
   setTimeout(function () { CB.partida.siguiente(); },
-             CB.ui.festejo.espera(festejo, 1600));
+             CB.ui.festejo.espera(festejo, 1600, msg));
+};
+
+/**
+ * Cuánto se queda en pantalla el mensaje del primer fallo. Era un 2600 escrito a
+ * pelo, el último número del bucle fuera de la fuente única —las otras dos
+ * esperas ya pasaban por ella—. Se expone como función para poder comprobarla:
+ * un literal dentro de un setTimeout no se puede probar sin leer el código.
+ *
+ * NO se recorta el suelo. Se estudió quitar los 800 ms de construcción en el
+ * segundo intento y es exactamente el patrón de E40: iniciarCronometro tiene
+ * MS_CONSTRUCCION cableado en tres sitios, y habilitar los botones antes deja el
+ * t0 en el futuro. Eso da rt NEGATIVO: multiplicador de tiempo al tope, bono
+ * máximo por rapidez, y esa muestra envenenada entra en el detector de azar.
+ */
+CB.partida.esperaSegundoIntento = function (pista) {
+  return CB.ui.festejo.espera('animo', 2600,
+    'Esta no suma gemas. Te queda otro intento. ' + (pista || ''));
 };
 
 /* ── Fallo ──────────────────────────────────────────────────────────────── */
@@ -10431,7 +10497,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
       CB.ui.ocultarMensaje();
       CB.partida.pintarRespuesta(item);
       CB.partida.iniciarCronometro(!!item.subtipo);
-    }, 2600);
+    }, CB.partida.esperaSegundoIntento(pista));
     return;
   }
 

@@ -713,7 +713,24 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   /* NUNCA menos de los 1600 ms de siempre: la espera se estira si la coreografía
      es larga, pero no se encoge nunca. Acortarla recortaría tiempo de lectura. */
   setTimeout(function () { CB.partida.siguiente(); },
-             CB.ui.festejo.espera(festejo, 1600));
+             CB.ui.festejo.espera(festejo, 1600, msg));
+};
+
+/**
+ * Cuánto se queda en pantalla el mensaje del primer fallo. Era un 2600 escrito a
+ * pelo, el último número del bucle fuera de la fuente única —las otras dos
+ * esperas ya pasaban por ella—. Se expone como función para poder comprobarla:
+ * un literal dentro de un setTimeout no se puede probar sin leer el código.
+ *
+ * NO se recorta el suelo. Se estudió quitar los 800 ms de construcción en el
+ * segundo intento y es exactamente el patrón de E40: iniciarCronometro tiene
+ * MS_CONSTRUCCION cableado en tres sitios, y habilitar los botones antes deja el
+ * t0 en el futuro. Eso da rt NEGATIVO: multiplicador de tiempo al tope, bono
+ * máximo por rapidez, y esa muestra envenenada entra en el detector de azar.
+ */
+CB.partida.esperaSegundoIntento = function (pista) {
+  return CB.ui.festejo.espera('animo', 2600,
+    'Esta no suma gemas. Te queda otro intento. ' + (pista || ''));
 };
 
 /* ── Fallo ──────────────────────────────────────────────────────────────── */
@@ -745,7 +762,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
       CB.ui.ocultarMensaje();
       CB.partida.pintarRespuesta(item);
       CB.partida.iniciarCronometro(!!item.subtipo);
-    }, 2600);
+    }, CB.partida.esperaSegundoIntento(pista));
     return;
   }
 

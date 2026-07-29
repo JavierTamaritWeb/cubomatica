@@ -12,6 +12,67 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.15.0] — 2026-07-29
+
+**Segunda cifra.** Fase 13 del plan. El perfil guardado no cambia.
+
+### La frase que enseña se borraba a los 1600 ms
+
+El mensaje de acierto son 13-15 palabras y la espera era de 1600 ms: **560 palabras por
+minuto**, para un lector de 2.º que va a 60-90. La única parte del mensaje que enseña algo
+—la frase de procedimiento— no se leía nunca.
+
+`CB.ui.festejo.espera()` gana un **tercer parámetro opcional**: 350 ms por palabra, tope
+3200. Opcional a propósito: sin él devuelve exactamente lo que devolvía antes, y por eso las
+llamadas y los guardianes viejos siguen valiendo. Un global habría cambiado todas a la vez.
+
+**No 700 ms por palabra**, que sería el ritmo real: esas 13 palabras darían 9,1 s recortados
+al tope, y el juego se congelaría 5,2 s en casi todos los aciertos, doce veces por sesión —
+lo contrario del principio de que la fricción vive en la matemática y en ningún otro sitio.
+
+**Presupuesto que se mueve, y se dice:** no el de tiempo por ítem, sino el reloj de pared.
+La sesión de 20 minutos pierde unos 20 s de ítems.
+
+### El último número suelto del bucle
+
+La espera del primer fallo era un `2600` escrito a pelo dentro de un `setTimeout`; las otras
+dos ya pasaban por la fuente única. Ahora es `CB.partida.esperaSegundoIntento()`, que además
+se puede probar: un literal dentro de un temporizador no se comprueba sin leer el código.
+
+**Descartado**: recortar el suelo quitando los 800 ms de construcción en el segundo intento.
+`iniciarCronometro` tiene `MS_CONSTRUCCION` cableado en tres sitios, y habilitar los botones
+antes deja el `t0` en el futuro: **rt negativo**, multiplicador de tiempo al tope, bono máximo
+por rapidez, y esa muestra envenenada entra en el detector de azar. Es el patrón de E40.
+
+### La música volvía al segundo cero en cada reparación y en cada descanso
+
+Ambas pantallas ponen `'calma'`, y al volver `poner()` soltaba el canal y creaba elemento
+nuevo colocándolo en su punto de entrada. Con un fallo de cada dos llevando a reparación y un
+descanso cada 6-8 ítems son cinco o seis idas y venidas por partida: de nueve pistas
+normalizadas y con puntos de bucle medidos, el niño oía siempre los mismos treinta primeros
+segundos. **Monotonía fabricada por el motor.**
+
+`CB.musica.posiciones` guarda dónde se quedó cada pista y `poner()` retoma ahí. Es estado de
+**sesión** —`07-musica.js` es adaptador de plataforma y puede tenerlo—, y no se persiste en el
+perfil. Se recorta al guardar para no reanudar dentro del fundido de bucle, donde la pista
+entraría baja.
+
+### Pruebas: 673 → 687
+
+**E80**, **E81** y **E82**, y las tres siembras se comportaron exactamente como el plan
+predecía:
+
+- Leer el texto de un global en vez del parámetro tumba **los tres `t.igual` originales de
+  E54**. Son el guardián de verdad de este cambio: si siguen valiendo, el tercer parámetro no
+  se ha colado en las llamadas de dos argumentos.
+- Devolver el `2600` literal tumba solo la **segunda** aserción de E81. La primera sola
+  pasaría en verde con el número a pelo, que es el fallo entero.
+- Guardar la posición sin usarla tumba la **recuperación** y no la existencia. Un guardián
+  que solo comprobara que `posiciones['mundoPradera']` existe pasaría en verde con el fallo
+  dentro.
+
+---
+
 ## [1.14.0] — 2026-07-29
 
 **Segunda cifra: el combate del jefe gana lo que no tenía.** Fase 12 del plan. El perfil

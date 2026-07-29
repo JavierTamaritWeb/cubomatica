@@ -362,3 +362,62 @@ CB.pruebas.suite('E79 · al ganar al jefe, la música cambia a victoria', functi
   CB.perfil = perfilPrevio;
   if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
 });
+
+/* ── E82 · La pista del mundo no vuelve al segundo cero ──────────────────────
+   Cada reparación y cada descanso ponen 'calma'. Al volver, poner() soltaba el
+   canal y creaba elemento nuevo colocándolo en su punto de entrada. Con un fallo
+   de cada dos llevando a reparación y un descanso cada 6-8 ítems, son cinco o
+   seis idas y venidas por partida: de nueve pistas normalizadas y con puntos de
+   bucle medidos, el niño oía siempre los mismos treinta primeros segundos.
+
+   SE AFIRMA LA RECUPERACIÓN, NO EL GUARDADO. Comprobar que
+   CB.musica.posiciones['mundoPradera'] existe pasaría en verde con el fallo
+   entero dentro: lo que importa es que poner() la USE. */
+CB.pruebas.suite('E82 · la música del mundo retoma donde se quedó', function () {
+  var t = CB.pruebas;
+  if (!t.ok(!!CB.musica.posiciones, 'E82 · existe la tabla de posiciones')) return;
+
+  var posPrevias = CB.musica.posiciones;
+  var actualPrevia = CB.musica.pistaActual;
+  CB.musica.posiciones = {};
+
+  var puesta = CB.musica.poner('mundoPradera');
+  var canal = CB.musica.canales[CB.musica._activo];
+  if (!t.ok(puesta && canal && canal.el,
+      'E82 · la pista del mundo llega a sonar en este navegador')) {
+    CB.musica.posiciones = posPrevias;
+    CB.musica.pistaActual = actualPrevia;
+    return;
+  }
+
+  /* Se avanza a mano y se comprueba que el avance ha cuajado: asignar
+     currentTime antes del metadato es lo que un try/catch se traga en silencio. */
+  var destino = 40;
+  try { canal.el.currentTime = destino; } catch (e) { }
+  var llegó = canal.el.currentTime;
+  if (!t.ok(llegó > 1,
+      'E82 · el elemento acepta que se le mueva el tiempo', String(llegó))) {
+    CB.musica.posiciones = posPrevias;
+    CB.musica.pistaActual = actualPrevia;
+    return;
+  }
+
+  CB.musica.poner('calma');
+  CB.musica.poner('mundoPradera');
+  var vuelta = CB.musica.canales[CB.musica._activo];
+  var entra = CB.musica.PISTAS.mundoPradera.entra;
+
+  t.ok(vuelta && vuelta.el, 'E82 · vuelve a sonar');
+  if (vuelta && vuelta.el) {
+    t.ok(Math.abs(vuelta.el.currentTime - llegó) < 3,
+      'E82 · y retoma cerca de donde se quedó',
+      'estaba en ' + llegó.toFixed(1) + ' y vuelve en ' + vuelta.el.currentTime.toFixed(1));
+    t.ok(Math.abs(vuelta.el.currentTime - entra) > 1,
+      'E82 · no en el punto de entrada, que es el fallo que se corrige',
+      'entra = ' + entra);
+  }
+
+  CB.musica.poner(null);
+  CB.musica.posiciones = posPrevias;
+  CB.musica.pistaActual = actualPrevia;
+});

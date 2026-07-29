@@ -295,8 +295,30 @@ CB.musica.tick = function () {
   if (!vivo) CB.musica.pararReloj();
 };
 
+/* DÓNDE SE QUEDÓ CADA PISTA. Es estado de SESIÓN, no del perfil: 07-musica.js es
+   adaptador de plataforma (capa 00-07) y puede tenerlo, pero el almacén no es
+   esto y aquí no se persiste nada.
+
+   Sin esto, cada reparación y cada descanso ponían 'calma' y al volver la pista
+   del mundo empezaba otra vez en su punto de entrada. Con un fallo de cada dos
+   llevando a reparación y un descanso cada 6-8 ítems, son cinco o seis idas y
+   venidas por partida: de nueve pistas normalizadas y con puntos de bucle
+   medidos, el niño oía siempre los mismos treinta primeros segundos. Monotonía
+   fabricada por el motor. */
+CB.musica.posiciones = {};
+
 CB.musica.soltar = function (c) {
   if (!c.el) return;
+  /* Se apunta ANTES de liberar, y recortado para no reanudar dentro del fundido
+     de bucle: ahí el factor de volumen va por debajo de 1 y la pista entraría
+     baja, que se oye como un fallo de sonido. */
+  if (c.clave && CB.musica.PISTAS[c.clave]) {
+    var p = CB.musica.PISTAS[c.clave];
+    try {
+      CB.musica.posiciones[c.clave] = CB.util.clamp(c.el.currentTime || 0,
+        p.entra, Math.max(p.entra, p.sale - CB.musica.S_BUCLE));
+    } catch (ePos) { }
+  }
   try { c.el.pause(); c.el.removeAttribute('src'); c.el.load(); } catch (e) { }
   c.el = null;
   c.clave = null;
@@ -356,7 +378,10 @@ CB.musica.poner = function (clave) {
   destino.clave = clave;
   destino.f = 0;
   destino.objetivo = 1;
-  try { destino.el.currentTime = CB.musica.PISTAS[clave].entra; } catch (e) { }
+  /* Se retoma donde se dejó, si es que se había oído antes en esta sesión. */
+  var desde = (CB.musica.posiciones[clave] != null)
+    ? CB.musica.posiciones[clave] : CB.musica.PISTAS[clave].entra;
+  try { destino.el.currentTime = desde; } catch (e) { }
 
   CB.musica.reproducir(destino);
   CB.musica.arrancarReloj();

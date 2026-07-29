@@ -723,10 +723,34 @@ CB.ui.festejo.POR_CATEGORIA = {
  * NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es
  * justo lo contrario de lo que se busca.
  */
-CB.ui.festejo.espera = function (clave, minimoMs) {
+CB.ui.festejo.MS_POR_PALABRA = 350;
+CB.ui.festejo.TOPE_LECTURA = 3200;
+
+/**
+ * @param texto opcional: si se pasa, la espera se estira para poder leerlo.
+ *
+ * EL TERCER PARÁMETRO ES OPCIONAL A PROPÓSITO. Sin él, esta función devuelve
+ * exactamente lo que devolvía antes, y eso es lo que permite que las llamadas y
+ * los guardianes viejos sigan valiendo. Un global habría cambiado todas a la vez.
+ *
+ * 350 ms POR PALABRA, TOPE 3200. El mensaje típico de acierto son 13-15 palabras
+ * y la espera era de 1600 ms: 560 palabras por minuto. Un lector de 2.º va a
+ * 60-90, así que la única parte del mensaje que enseña algo —la frase de
+ * procedimiento— no se leía nunca.
+ *
+ * Con 700 ms/palabra, que sería el ritmo real de lectura, esas 13 palabras darían
+ * 9,1 s recortados al tope: el juego se congelaría 5,2 s en casi todos los
+ * aciertos, doce veces por sesión. Eso contradice de frente el principio de que
+ * la fricción vive en la matemática y en ningún otro sitio. Con 350 se dobla el
+ * tiempo de lectura sin convertir cada acierto en una espera.
+ */
+CB.ui.festejo.espera = function (clave, minimoMs, texto) {
   var c = CB.ui.festejo.CELEBRACIONES[clave];
   var m = minimoMs || 0;
-  return c ? Math.max(m, c.ms + 400) : m;
+  var lectura = texto
+    ? CB.util.palabras(texto).length * CB.ui.festejo.MS_POR_PALABRA : 0;
+  if (lectura > CB.ui.festejo.TOPE_LECTURA) lectura = CB.ui.festejo.TOPE_LECTURA;
+  return Math.max(m, c ? c.ms + 400 : 0, lectura);
 };
 
 CB.ui.festejo.limpiar = function () {
