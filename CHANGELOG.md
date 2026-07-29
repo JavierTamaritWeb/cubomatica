@@ -12,6 +12,86 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.12.0] — 2026-07-29
+
+**Segunda cifra: cinco premios que el juego calculaba, guardaba y no enseñaba.** Fase 10
+del plan. El perfil guardado no cambia.
+
+Ninguno era un fallo de cálculo, y por eso ninguno daba error: el juego funcionaba y el
+niño no se enteraba.
+
+### El cromo del bloque raro no decía cuál era
+
+`darCromo()` guardaba el cromo y su única salida era un anuncio **con el id crudo** —«el
+cromo de gluglu», no «Gluglú»— que solo oye un lector de pantalla. El premio más raro del
+juego, uno de cada veinte ítems, se entregaba sin decir qué era.
+
+Ahora la cinta grita el nombre y el mensaje quieto lo explica —**concatenado, nunca
+sustituyendo** la frase de procedimiento, que es la única parte que enseña—. Con los once
+reunidos devuelve `null` y queda el grito normal.
+
+Y algo que nadie había visto: `darCromo` comprobaba logros por dentro, y `aplicarLogros`
+pinta su propia cinta, que empieza por **ocultar la anterior**. En el ítem donde cae el
+quinto cromo y salta «Coleccionista», la cinta del cromo se cancelaba a sí misma. Es E51
+llegando por una ruta que E51 no vigila.
+
+### El reto bonus estaba en los datos y no en la pantalla
+
+Se calculaba, se guardaba y concedía una **luz extra** sin que el niño supiera por qué. El
+distintivo va ahora arriba del todo en `pintarItem`, **antes del `return` de la rama de los
+problemas de enunciado**: puesto al final no se vería nunca justo donde `D === 3` es más
+probable.
+
+### Los logros de fin se celebraban sobre una pantalla que desaparece
+
+Se aplicaban estando aún en `p-partida` y nueve líneas después la pantalla cambiaba.
+«Primer pico», «Cantero» y «Vuelvo mañana» sonaban y no se veían, porque el único nodo de
+cinta vivía dentro de `p-partida`.
+
+Ahora `p-fin` tiene el suyo, y un panel nuevo —**«Hoy además»**— entre lo dominado y las
+gemas. El orden de lectura de §3.7 es contrato cerrado: el cambio está declarado en
+`docs/decisiones.md`, no metido de tapadillo.
+
+Los logros se **encolan**: si caían dos en el mismo ítem, la segunda cinta cancelaba a la
+primera. Y el nombre del logro pasa al mensaje quieto, porque en la cinta no cabe —«Reto
+bonus superado» son 19 caracteres y el tope es 16—.
+
+### Se desbloqueaba un mundo entero y no lo decía nadie
+
+Abrir el Bosque, el Río o la Mina son los tres hitos más grandes de la vida de un perfil y
+ocurrían **sin una sola línea de interfaz**. Ahora se dice en texto, se anuncia por la
+región viva —la cinta es `aria-hidden` por diseño— y el nombre sale de `CB.MUNDOS`, nunca
+escrito a mano.
+
+### El bono hablaba en puntos debajo de las gemas
+
+«+450 de bono» en **puntos**, justo debajo del recuento de **gemas**. Parecían gemas y no
+lo eran. Ahora dice las gemas del bono, que ya están dentro de `#fin-gemas`: es
+literalmente verdad y es la moneda que el niño conoce. Los puntos siguen sin enseñarse.
+
+Y la mejor expedición se celebra **sin cifra**, contra el récord del mismo modo, que es el
+antifarmeo ya cerrado.
+
+### Efecto colateral declarado
+
+Resolver el cromo antes del grito cambia el orden de consumo del RNG sembrado. La partida
+sigue siendo reproducible desde su semilla, pero **deja de dar la misma secuencia que
+antes**.
+
+### Pruebas: 612 → 639
+
+**E69** a **E73**. Cinco siembras, y dos de ellas destaparon guardianes míos que
+**ramificaban en vez de afirmar**: E72 y E73 decían «si el hito ocurrió, compruébalo», así
+que con el fallo sembrado —capturar los mundos abiertos *después* de abrirlos— la condición
+era falsa siempre y el guardián se iba por el `else` en verde. Un guardián que solo
+comprueba cuando la cosa ocurre no comprueba que la cosa ocurra.
+
+Y el montaje de E72 filtraba por `nivel.mundo`, **una propiedad que no existe**: el nivel
+no guarda su mundo. No marcaba ningún nivel y cuatro aserciones se ponían rojas contra
+código correcto. Ahora se le pregunta a `CB.catalogo.nuclearesDe()`.
+
+---
+
 ## [1.11.0] — 2026-07-29
 
 **Segunda cifra: el teclado de los problemas gana seis cosas que no tenía.** Fase 9 del

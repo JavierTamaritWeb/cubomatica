@@ -93,6 +93,15 @@ CB.ui.pintarItem = function (item) {
   CB.ui.vaciar(cont);
   cont.className = 'panel-bloque';
 
+  /* EL DISTINTIVO DE RETO, y va aquí arriba a propósito: la rama de los problemas
+     de enunciado hace `return` unas líneas más abajo, así que ponerlo al final no
+     se vería nunca en los problemas — que es justo donde D === 3 es más probable.
+     El reto se calculaba, se guardaba y concedía una luz extra sin que el niño
+     supiera por qué. Es texto, no color: «nunca solo color» también aquí. */
+  if (item.esRetoBonus) {
+    cont.appendChild(CB.ui.crear('span', 'distintivo', 'reto'));
+  }
+
   /* Problemas de enunciado: frases separadas, tipografía del sistema, 34ch. */
   if (item.frases && item.frases.length) {
     var caja = CB.ui.crear('div', 'enunciado');

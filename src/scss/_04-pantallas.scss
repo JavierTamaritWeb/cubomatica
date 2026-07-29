@@ -267,3 +267,8 @@
   margin: 0;
 }
 .pantalla--portada .portada__pista:empty { display: none; }
+
+/* La cinta de la pantalla de fin necesita un antepasado posicionado: sin esto
+   caería al 38 % del VIEWPORT, encima del panel de gemas, en la única pantalla
+   cuyo trabajo es que se lea. Se comprueba en E71 con la position calculada. */
+.pantalla--fin { position: relative; }

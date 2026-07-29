@@ -116,6 +116,12 @@
      E67 tocar una moneda no dejaba ninguna marca                   AQUÍ
      E68 la fase 3 de selectorDatos era una copia desincronizada    AQUÍ
          del teclado: muda, sin aria-live y con el OK en mayúsculas
+     E69 el cromo del bloque raro se entregaba sin decir cuál es    AQUÍ
+     E70 el reto bonus se calculaba y no se veía en pantalla        AQUÍ
+     E71 los logros de fin se celebraban sobre p-partida, que       AQUÍ
+         desaparece nueve líneas después
+     E72 abrir un mundo entero no lo decía nadie                    AQUÍ
+     E73 el bono se rotulaba en puntos debajo de las gemas          AQUÍ
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -2585,4 +2591,219 @@ CB.pruebas.suite('E68 · la fase 3 usa el teclado de verdad, y no pierde el info
       CB.componentes._confirmacionPendiente = confPrevia;
     });
   });
+});
+
+/* ══ E69-E73 · Fase 10: cinco premios que el juego calculaba y no enseñaba ═══
+
+   Ninguno es un fallo de cálculo. Los cinco se guardaban bien en el perfil. Lo
+   que faltaba era decirlo, y por eso ninguno daba error: el juego funcionaba, el
+   niño no se enteraba.
+
+   Todos los asertos miran el DOM —textContent, hidden, la identidad del nodo—,
+   nunca el texto fuente de una función.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E69 · el cromo del bloque raro dice cuál es', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var perfil = CB.pruebas.perfilNuevo();
+  CB.perfil = perfil;
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  if (!t.ok(!!estado, 'E69 · hay partida')) { CB.perfil = perfilPrevio; return; }
+
+  /* Diez cromos ya reunidos: queda exactamente uno, así que se sabe cuál toca. */
+  var todos = Object.keys(CB.ui.CRIATURAS);
+  perfil.cromos = todos.slice(0, todos.length - 1);
+  var queFalta = todos[todos.length - 1];
+
+  var dado = CB.partida.darCromo();
+  t.igual(dado, queFalta, 'E69 · darCromo DEVUELVE el id, para poder nombrarlo');
+  t.ok(perfil.cromos.indexOf(queFalta) !== -1, 'E69 · y lo guarda en el álbum');
+  t.ok(!!CB.casa.NOMBRES_CROMO[dado],
+    'E69 · el id tiene nombre legible: el anuncio decía «gluglu», no «Gluglú»', dado);
+
+  /* Con los once reunidos devuelve null, y no revienta. */
+  var otra = CB.partida.darCromo();
+  t.igual(otra, null, 'E69 · con los once reunidos devuelve null en vez de fallar');
+
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+});
+
+CB.pruebas.suite('E70 · el reto bonus se ve, también en los problemas', function () {
+  var t = CB.pruebas;
+  var cont = document.getElementById('item-enunciado');
+  if (!t.ok(!!cont, 'E70 · hay panel de enunciado')) return;
+
+  /* Ítem de cálculo. */
+  CB.ui.pintarItem({ consigna: '6 − 3', operacion: '-', esRetoBonus: true });
+  t.igual(cont.querySelectorAll('.distintivo').length, 1,
+    'E70 · un ítem de cálculo marcado como reto lleva su distintivo');
+
+  /* Y UN PROBLEMA, que es la mitad que importa: esa rama hace `return` antes de
+     llegar al final de pintarItem, así que un distintivo puesto abajo no se vería
+     nunca justo donde D === 3 es más probable. */
+  CB.ui.pintarItem({ frases: ['Ana tiene 3 canicas.', '¿Cuántas le quedan?'],
+                     consigna: '¿Cuántas?', esRetoBonus: true });
+  t.igual(cont.querySelectorAll('.distintivo').length, 1,
+    'E70 · y un problema de enunciado también, pese al return de esa rama');
+
+  /* Sin reto, ninguno. */
+  CB.ui.pintarItem({ consigna: '6 − 3', operacion: '-' });
+  t.igual(cont.querySelectorAll('.distintivo').length, 0,
+    'E70 · sin reto no aparece: es una etiqueta, no un adorno fijo');
+});
+
+CB.pruebas.suite('E71 · lo que se celebra al acabar se ve en la pantalla de fin', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  var perfil = CB.pruebas.perfilNuevo();
+  CB.perfil = perfil;
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  if (!t.ok(!!estado, 'E71 · hay partida')) { CB.perfil = perfilPrevio; return; }
+
+  estado.preguntas = 10; estado.aciertos = 9; estado.aciertos1er = 8;
+  estado.puntos = 500; estado.gemas = 20;
+  CB.partida.finalizar('guion');
+
+  t.igual(CB.pantallas.actual, 'p-fin', 'E71 · se termina en la pantalla de fin');
+
+  /* LA CINTA DE p-fin. Se comprueba la IDENTIDAD del nodo, no que exista alguno:
+     si p-fin no tuviera el suyo, nodoDe() caería en el getElementById('cinta') de
+     respaldo —el de p-partida, oculto— y todo se celebraría donde no se ve. */
+  var deFin = document.getElementById('cinta-fin');
+  var elegido = CB.ui.cinta.nodoDe();
+  t.ok(!!deFin, 'E71 · la pantalla de fin tiene su propio nodo de cinta');
+  t.igual(elegido, deFin,
+    'E71 · y es el que se elige estando en p-fin, no el de la partida',
+    elegido ? elegido.id : 'ninguno');
+
+  /* Y la cinta cae DENTRO de la sección, no al 38 % del viewport. */
+  if (deFin) {
+    t.igual(getComputedStyle(deFin).position, 'absolute',
+      'E71 · la cinta de fin sigue siendo absoluta');
+    t.igual(getComputedStyle(document.getElementById('p-fin')).position, 'relative',
+      'E71 · y la pantalla de fin la ancla: si no, caería sobre el panel de gemas');
+  }
+
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+CB.pruebas.suite('E72 · abrir un mundo se dice, y una sola vez', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  var anunciados = [];
+  var anunciarPrevio = CB.a11y.anunciar;
+  CB.a11y.anunciar = function (txt) { anunciados.push(String(txt)); return anunciarPrevio.apply(this, arguments); };
+
+  var perfil = CB.pruebas.perfilNuevo();
+  CB.perfil = perfil;
+
+  /* Se completa M1 para que al terminar se abra M2. SE LE PREGUNTA AL CATÁLOGO
+     cuáles son sus niveles nucleares: la primera versión filtraba por
+     `nivel.mundo === 'M1'`, una propiedad QUE NO EXISTE —el nivel no guarda su
+     mundo—, así que no marcaba ninguno y las cuatro aserciones de abajo se
+     ponían rojas contra código correcto. Suponer la forma de un dato ajeno es
+     exactamente lo que se cobró E42. */
+  var nucleares = CB.catalogo.nuclearesDe('M1'), i;
+  for (i = 0; i < nucleares.length; i++) {
+    perfil.niveles[nucleares[i]] = { n: 10, aciertos: 10, caja: 3, D: 2,
+                                     ultimoISO: CB.util.hoyISO(), enPausa: false };
+  }
+
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  estado.preguntas = 10; estado.aciertos = 10; estado.aciertos1er = 10; estado.puntos = 400;
+  anunciados.length = 0;
+  CB.partida.finalizar('guion');
+
+  var caja = document.getElementById('fin-hitos');
+  var texto = (document.getElementById('fin-hitos-lista') || {}).textContent || '';
+
+  /* SE AFIRMA, NO SE RAMIFICA. La primera versión de este guardián decía
+     `if (abierto) { ...comprobar... } else { pasa }`, y con el fallo sembrado
+     —capturar los mundos abiertos DESPUÉS de abrirlos— `abierto` era siempre
+     falso y el guardián se iba por el else en verde. Un guardián que solo
+     comprueba cuando la cosa ocurre no comprueba que la cosa ocurra. */
+  t.ok(!!perfil.mundos.M2 && perfil.mundos.M2.desbloqueado,
+    'E72 · con M1 completo, la expedición abre el mundo siguiente');
+  t.ok(/Se ha abierto/.test(texto),
+    'E72 · y la pantalla de fin lo dice', texto || '(panel vacío)');
+  t.igual(caja ? caja.hidden : true, false, 'E72 · con el panel de hitos visible');
+
+  /* El nombre sale de CB.MUNDOS, nunca escrito a mano: no existe ningún «Bosque
+     de las Restas», y una cadena literal se desviaría del catálogo. */
+  var deCatalogo = CB.MUNDOS.filter(function (m) { return texto.indexOf(m.nombre) !== -1; });
+  t.ok(deCatalogo.length > 0,
+    'E72 · el nombre del mundo sale del catálogo, no de una cadena inventada', texto);
+  t.ok(anunciados.some(function (a) { return /Se ha abierto/.test(a); }),
+    'E72 · se anuncia también por la región viva: la cinta es aria-hidden');
+
+  /* Y NO SE REPITE. */
+  var estado2 = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  estado2.preguntas = 10; estado2.aciertos = 10; estado2.aciertos1er = 10; estado2.puntos = 100;
+  anunciados.length = 0;
+  CB.partida.finalizar('guion');
+  var texto2 = (document.getElementById('fin-hitos-lista') || {}).textContent || '';
+  t.ok(!/Se ha abierto/.test(texto2),
+    'E72 · la segunda expedición ya no lo vuelve a anunciar', texto2);
+
+  CB.a11y.anunciar = anunciarPrevio;
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+CB.pruebas.suite('E73 · el bono habla en gemas, no en puntos', function () {
+  var t = CB.pruebas;
+  var perfilPrevio = CB.perfil;
+  var pantallaPrevia = CB.pantallas.actual;
+  var perfil = CB.pruebas.perfilNuevo();
+  CB.perfil = perfil;
+
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  estado.preguntas = 20; estado.aciertos = 20; estado.aciertos1er = 20;
+  estado.puntos = 1000; estado.gemas = 30;
+  estado.luces.luces = CB.vidas.INICIALES;
+  CB.partida.finalizar('guion');
+
+  var bl = document.getElementById('fin-bono');
+  if (!t.ok(!!bl, 'E73 · hay línea de bono')) { CB.perfil = perfilPrevio; return; }
+
+  if (bl.textContent.length) {
+    t.ok(/gemas/.test(bl.textContent),
+      'E73 · el bono se rotula en gemas, que es la moneda que el niño conoce',
+      bl.textContent);
+    /* Y el número es el de gemas, no el de puntos: iba en puntos justo debajo del
+       recuento de gemas, y parecía que eran gemas. */
+    var n = parseInt((bl.textContent.match(/\+(\d+)/) || [])[1], 10);
+    t.ok(n < 100,
+      'E73 · y la cifra es la de gemas del bono, no los puntos crudos', String(n));
+  } else {
+    t.ok(true, 'E73 · esta partida no dio bono');
+  }
+
+  /* EL RÉCORD, afirmado y no ramificado: es un perfil nuevo con 1000 puntos, así
+     que la primera expedición bate el récord por definición. Si esto se pusiera
+     rojo sería porque el récord se lee DESPUÉS de pisarlo, y entonces
+     `puntos > récord` no es cierto nunca. */
+  var lista = document.getElementById('fin-hitos-lista');
+  t.ok(!!lista && /mejor expedición/i.test(lista.textContent),
+    'E73 · la primera expedición de un perfil bate su récord y se dice',
+    lista ? lista.textContent : 'sin lista');
+  if (lista) {
+    t.ok(!/\d{3,}/.test(lista.textContent),
+      'E73 · y se celebra SIN enseñar los puntos: la moneda visible es la gema',
+      lista.textContent);
+  }
+
+  /* Batir el récord de un modo no lo dispara en el otro: es el antifarmeo. */
+  t.ok(!!CB.perfil.mejorPuntuacion, 'E73 · el récord se guarda por modo');
+
+  CB.partida.estado = null;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
 });

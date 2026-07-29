@@ -2759,3 +2759,81 @@ cara para lo que el barrido ya no puede ver.
 | Fases del plan ejecutadas | 3 de 10 | **4 de 10** (6, 7, 8 y 9) |
 | Construcciones de teclado en el código | 2 | **1** |
 | Formatos con bloqueo de 800 ms | 6 de 7 | **7 de 7** |
+
+---
+
+# Ronda 17 · Fase 10 del plan: cinco premios que no se enseñaban — versión 1.12.0 (29 de julio de 2026)
+
+## D-R17-1 · Calcular, guardar y no decir es una forma de no hacerlo
+
+Los cinco casos de esta fase comparten la misma estructura: el juego hacía el trabajo
+—elegía el cromo, marcaba el reto, concedía el logro, abría el mundo, batía el récord—, lo
+escribía en el perfil, y **no lo decía**. Ninguno daba error. El juego funcionaba y el niño
+no se enteraba.
+
+Es una familia distinta de las tres que ya estaban anotadas (una función que nadie llama,
+una propiedad que no existe, una regla en un sitio de tres). Aquí la función se llama, el
+dato existe y la regla se aplica: lo que falta es la última línea, la que lo pone en
+pantalla. **Y es la que nunca falla una prueba**, porque el estado queda correcto.
+
+Regla que queda: cuando algo se escribe en el perfil, preguntarse quién lo lee. Si la
+respuesta es «el informe del adulto» o «nadie», hay que mirarlo dos veces.
+
+## D-R17-2 · El panel «Hoy además», y por qué se declara
+
+El orden de lectura de `p-fin` (§3.7) es contrato cerrado. Los hitos podían haberse metido
+dentro de `#fin-dominado`, y habría sido más barato, pero ese panel se titula «Lo que has
+dominado hoy» y un mundo abierto no es una destreza dominada: el rótulo habría empezado a
+mentir.
+
+Panel propio, entre lo dominado y las gemas, porque **los hitos van antes que el
+recuento**. Y se declara aquí, que es lo que pide el contrato, en vez de cambiarlo de
+tapadillo.
+
+## D-R17-3 · Dos guardianes míos que ramificaban en vez de afirmar
+
+El hallazgo de método de esta ronda, y es incómodo porque es la segunda vez que aparece con
+otra cara.
+
+E72 y E73 estaban escritos así:
+
+```js
+if (elHitoOcurrio) { ...comprobarlo... } else { t.ok(true, 'no tocaba'); }
+```
+
+Con el fallo sembrado —capturar los mundos abiertos DESPUÉS de abrirlos— la condición era
+falsa siempre, el guardián se iba por el `else` y **daba verde**. Es la vacuidad de E46
+disfrazada de prudencia: parece defensivo y en realidad es un guardián que se apaga solo
+justo cuando hace falta.
+
+**Un guardián que solo comprueba cuando la cosa ocurre no comprueba que la cosa ocurra.**
+Si el escenario se puede montar de forma determinista, se monta y se afirma; si no se
+puede, no hay guardián, hay decoración.
+
+## D-R17-4 · Y un escenario montado sobre una propiedad inexistente
+
+El montaje de E72 marcaba los niveles de M1 filtrando por `nivel.mundo === 'M1'`. **El
+nivel no guarda su mundo**: no existe esa propiedad. El filtro no marcaba nada, ningún
+nivel quedaba superado, el mundo no se abría y cuatro aserciones se ponían rojas contra
+código correcto.
+
+Se le pregunta ahora a `CB.catalogo.nuclearesDe('M1')`, que es quien lo sabe. Suponer la
+forma de un dato ajeno en vez de preguntársela al módulo que lo produce es exactamente lo
+que se cobró E42, y van dos veces en esta serie.
+
+## D-R17-5 · Efecto colateral que se declara, no se esconde
+
+Resolver el cromo antes del grito mueve `CB.util.elegir` por delante de `sacarDeBolsa`, y
+eso **cambia el orden de consumo del RNG sembrado**. Una partida sigue siendo reproducible
+desde su semilla —que es la propiedad que importa— pero deja de dar la misma secuencia que
+daba antes de esta versión. Va escrito en el commit y aquí.
+
+## Estado al cerrar 1.12.0
+
+| | 1.11.0 | 1.12.0 |
+|---|---|---|
+| Comprobaciones de la suite | 612 | **639** |
+| Fallos registrados | E1–E68 | **E1–E73** |
+| Fases del plan ejecutadas | 4 de 10 | **5 de 10** (6, 7, 8, 9 y 10) |
+| Paneles de `p-fin` | 3 | **4** (declarado) |
+| Nodos de cinta | 2 | **3** (partida, jefe, fin) |

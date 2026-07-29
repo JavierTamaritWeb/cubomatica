@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.11.0';
+CB.VERSION = '1.12.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -7886,6 +7886,15 @@ CB.ui.pintarItem = function (item) {
   CB.ui.vaciar(cont);
   cont.className = 'panel-bloque';
 
+  /* EL DISTINTIVO DE RETO, y va aquí arriba a propósito: la rama de los problemas
+     de enunciado hace `return` unas líneas más abajo, así que ponerlo al final no
+     se vería nunca en los problemas — que es justo donde D === 3 es más probable.
+     El reto se calculaba, se guardaba y concedía una luz extra sin que el niño
+     supiera por qué. Es texto, no color: «nunca solo color» también aquí. */
+  if (item.esRetoBonus) {
+    cont.appendChild(CB.ui.crear('span', 'distintivo', 'reto'));
+  }
+
   /* Problemas de enunciado: frases separadas, tipografía del sistema, 34ch. */
   if (item.frases && item.frases.length) {
     var caja = CB.ui.crear('div', 'enunciado');
@@ -9913,7 +9922,11 @@ CB.partida.servirItem = function () {
   CB.ui.pintarItem(item);
   CB.ui.pintarBioma(e.mundo.bioma, e.indice / Math.max(1, e.guion.length));
   CB.partida.pintarRespuesta(item);
-  CB.a11y.anunciar(item.consigna || item.enunciado || '');
+  /* UNA SOLA CADENA. CB.a11y.anunciar reescribe la región viva de una vez, así
+     que dos anuncios en el mismo turno se tapan: el «Reto» tiene que ir dentro
+     del mismo texto que la consigna, no en una llamada aparte. */
+  CB.a11y.anunciar((item.esRetoBonus ? 'Reto. ' : '') +
+                   (item.consigna || item.enunciado || ''));
 
   /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la
      primera versión sin que ocurriera: aquí solo había una llamada a la región
@@ -10285,6 +10298,12 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   /* El mensaje entero se queda QUIETO aquí. Es donde va la frase de
      procedimiento, que es la única parte que enseña algo y que hay que poder
      leer con calma: no cabe en una cinta que cruza en menos de dos segundos. */
+  /* SE CONCATENA, no se sustituye: la frase de procedimiento es la única parte
+     del mensaje que enseña algo, y el cromo no puede comérsela. */
+  if (cromo) {
+    msg = msg + ' Bloque raro: ' + (CB.casa.NOMBRES_CROMO[cromo] || cromo) +
+          ' es tuyo. Está en tu álbum.';
+  }
   CB.ui.mensaje(msg, 'acierto');
   CB.ui.personaje('cubi', 'acierto');
   if (e.rachaPrimerIntento >= 3) CB.ui.personaje('chispa', 'racha');
@@ -10295,12 +10314,21 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
      categorías ya las calculaba CB.mensajes.categoriaAcierto() desde el primer
      día; aquí solo se les pone cuerpo. Encima va el bloque raro, que es 1 de
      cada 20 y se lleva lo que casi nunca se ve. */
-  var festejo = item.esBloqueRaro
-    ? 'raro'
-    : CB.ui.festejo.POR_CATEGORIA[CB.mensajes.categoriaAcierto(ctxMsg)];
-  CB.ui.festejo.mostrar(festejo,
-    CB.mensajes.grito({ perfil: perfil, rng: e.rng }),
-    { bono: bono });
+  /* EL CROMO SE RESUELVE ANTES DE GRITAR, para poder decir cuál es. Efecto
+     colateral declarado: mover CB.util.elegir por delante de sacarDeBolsa cambia
+     el orden de consumo del RNG sembrado. La partida sigue siendo reproducible
+     desde su semilla, pero deja de dar la misma secuencia que daba antes. */
+  var cromo = item.esBloqueRaro ? CB.partida.darCromo() : null;
+  /* Si coinciden, manda el más raro: el bloque raro es 1 de cada 20 y el reto
+     necesita además D === 3. */
+  var festejo = item.esBloqueRaro ? 'raro'
+    : (item.esRetoBonus ? 'logro'
+      : CB.ui.festejo.POR_CATEGORIA[CB.mensajes.categoriaAcierto(ctxMsg)]);
+  /* Si ya están los once, darCromo devuelve null y queda el grito normal. */
+  var grito = cromo ? ('¡' + (CB.casa.NOMBRES_CROMO[cromo] || cromo) + '!')
+            : (item.esRetoBonus ? '¡Reto!'
+              : CB.mensajes.grito({ perfil: perfil, rng: e.rng }));
+  CB.ui.festejo.mostrar(festejo, grito, { bono: bono });
 
   /* El sonido lo pone el festejo: cada uno trae el suyo, y por eso una
      superación no suena igual que un acierto de todos los días. */
@@ -10309,7 +10337,9 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
 
   /* Bloque raro: cromo garantizado. Es la sorpresa que hace que merezca la pena
      el ítem 47 (§7.5). */
-  if (item.esBloqueRaro) CB.partida.darCromo();
+  /* Los logros del cromo van DESPUÉS de la cinta: su propia cinta 'estalla'
+     cancelaría la de 'raro' si se comprobaran antes. */
+  if (cromo) CB.partida.logrosDeCromo();
 
   /* Vocabulario: el término entra en el Diccionario de Bloques. */
   var termino = CB.gen.vocabulario.terminoDe(item);
@@ -10578,15 +10608,30 @@ CB.partida.comprobarLogros = function (item) {
   CB.partida.aplicarLogros(nuevos);
 };
 
+/**
+ * Celebra un logro ENCOLADO. Si caen dos en el mismo ítem, el bucle llamaba dos
+ * veces a mostrar() y la segunda cancelaba a la primera —mostrar() empieza por
+ * ocultar()—, así que el segundo logro no se veía. Es la lección de E51 llegando
+ * por una ruta que E51 no vigila.
+ */
+CB.partida.festejarLogro = function (grito, indice) {
+  if (!indice) { CB.ui.festejo.mostrar('logro', grito); return; }
+  setTimeout(function () { CB.ui.festejo.mostrar('logro', grito); },
+             CB.ui.festejo.espera('logro', 0) * indice);
+};
+
 CB.partida.aplicarLogros = function (nuevos) {
   var e = CB.partida.estado, i, l, r;
   for (i = 0; i < (nuevos || []).length; i++) {
     l = nuevos[i];
-    /* Un logro sin luz solo se anunciaba a los lectores de pantalla: quien ve
-       la pantalla no se enteraba de nada. Ahora la cinta lo dice. */
     if (!l.luz) {
       CB.a11y.anunciar('Logro: ' + l.nombre);
-      CB.ui.festejo.mostrar('logro', '¡Logro! ' + l.nombre);
+      /* EL NOMBRE SE VE, y no cabe en la cinta: «Reto bonus superado» son 19
+         caracteres y el tope del texto de cinta es 16. La cinta lleva el grito
+         corto y fijo; el nombre va al mensaje quieto, que es donde se lee. Sin
+         esta línea el nombre del logro solo lo oía un lector de pantalla. */
+      CB.ui.mensaje('Logro: ' + l.nombre, 'acierto');
+      CB.partida.festejarLogro('¡Logro!', i);
       continue;
     }
 
@@ -10595,30 +10640,48 @@ CB.partida.aplicarLogros = function (nuevos) {
       CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas });
       CB.ui.encenderLuz(e.luces.luces - 1);
       CB.ui.mensaje('¡Luz extra! ' + l.nombre, 'acierto');
-      CB.ui.festejo.mostrar('logro', '¡Luz extra!');
+      CB.partida.festejarLogro('¡Luz extra!', i);
       CB.a11y.anunciar('Luz extra por ' + l.nombre);
     } else if (r.guardada) {
       CB.ui.mensaje('Guardas 1 luz para la próxima expedición.', 'acierto');
-      CB.ui.festejo.mostrar('logro', '¡Luz guardada!');
+      CB.partida.festejarLogro('¡Luz guardada!', i);
     }
   }
 };
 
+/**
+ * Entrega un cromo del bloque raro. DEVUELVE su id, o null si ya están los once.
+ *
+ * Antes no devolvía nada y su única salida era un anuncio con el ID CRUDO
+ * —«el cromo de gluglu»—, que solo oía un lector de pantalla. El premio más raro
+ * del juego, uno de cada veinte ítems, se entregaba sin decir qué era.
+ *
+ * Y NO comprueba logros aquí: lo hace quien la llama, DESPUÉS de pintar la cinta.
+ * Estaba dentro, y aplicarLogros pinta su propia cinta 'estalla', que empieza por
+ * ocultar la anterior: en el ítem donde cae el quinto cromo y salta
+ * «Coleccionista», la cinta del cromo se cancelaba a sí misma. Es E51 otra vez,
+ * llegando por una ruta que E51 no vigila.
+ */
 CB.partida.darCromo = function () {
   var perfil = CB.perfil, e = CB.partida.estado;
   var posibles = Object.keys(CB.ui.CRIATURAS).filter(function (c) {
     return perfil.cromos.indexOf(c) === -1;
   });
-  if (!posibles.length) return;
+  if (!posibles.length) return null;
   var c = CB.util.elegir(e.rng, posibles);
   perfil.cromos.push(c);
   /* El sonido lo pone la cinta 'veta-madre', que ya suena a cofre. Sonaba dos
      veces seguidas y se oía como un eco. */
-  CB.a11y.anunciar('Bloque raro: has encontrado el cromo de ' + c);
-  var nuevos = CB.logros.comprobar('cromo', {
-    perfil: perfil, modo: e.modo, hoyISO: CB.util.hoyISO()
-  });
-  CB.partida.aplicarLogros(nuevos);
+  return c;
+};
+
+/* Los logros que dispara un cromo, aparte y a posteriori. */
+CB.partida.logrosDeCromo = function () {
+  var e = CB.partida.estado;
+  if (!e) return;
+  CB.partida.aplicarLogros(CB.logros.comprobar('cromo', {
+    perfil: CB.perfil, modo: e.modo, hoyISO: CB.util.hoyISO()
+  }));
 };
 
 /* ── Avanzar ────────────────────────────────────────────────────────────── */
@@ -10777,11 +10840,13 @@ CB.partida.finalizar = function (motivo) {
   perfil.gemas += Math.max(0, Math.round(bono.total / 50));
   perfil.puntosTotales = (perfil.puntosTotales || 0) + Math.max(0, e.puntos);
 
+  /* EL RÉCORD SE LEE ANTES DE PISARLO. Si se lee después, `e.puntos > récord`
+     es falso siempre y la celebración no se dispara nunca. Y se compara SIEMPRE
+     contra el récord del MISMO modo: el antifarmeo cerrado en 24-logros.js. */
   var claveModo = (e.modo === 'tranquila') ? 'sinPrisa' : e.modoTiempo;
   if (!perfil.mejorPuntuacion[claveModo]) perfil.mejorPuntuacion[claveModo] = 0;
-  if (e.puntos > perfil.mejorPuntuacion[claveModo]) {
-    perfil.mejorPuntuacion[claveModo] = e.puntos;
-  }
+  var esRecord = e.preguntas > 0 && e.puntos > perfil.mejorPuntuacion[claveModo];
+  if (esRecord) perfil.mejorPuntuacion[claveModo] = e.puntos;
 
   var hoy = CB.util.hoyISO();
   perfil.historial.push({
@@ -10802,16 +10867,34 @@ CB.partida.finalizar = function (motivo) {
     (perfil.diario.tiempoPantallaPorDia[hoy] || 0) + Math.round((Date.now() - e.inicioTs) / 1000);
 
   var mundoCompletado = CB.catalogo.progresoMundo(e.mundo.id, perfil).fraccion >= 0.6;
-  CB.partida.aplicarLogros(CB.logros.comprobar('finPartida', {
+  /* Se GUARDAN para pintarlos en p-fin. Se aplicaban aquí, estando todavía en
+     p-partida, y nueve líneas después la pantalla cambiaba: «Primer pico»,
+     «Cantero» y «Vuelvo mañana» sonaban sobre una pantalla que desaparecía. */
+  var logrosFin = CB.logros.comprobar('finPartida', {
     perfil: perfil, modo: e.modo, hoyISO: hoy, mundoCompletado: mundoCompletado
-  }));
+  });
+  CB.partida.aplicarLogros(logrosFin);
 
+  /* QUÉ MUNDOS ESTABAN ABIERTOS, ANTES de abrir ninguno. Capturarlo después
+     daría siempre «ninguno nuevo», que es la forma silenciosa de que esto no
+     funcione. Abrir el Bosque, el Río o la Mina son los tres hitos más grandes
+     de la vida de un perfil y ocurrían sin una sola línea de interfaz. */
+  var abiertosAntes = {};
+  CB.MUNDOS.forEach(function (m) {
+    abiertosAntes[m.id] = !!(perfil.mundos[m.id] && perfil.mundos[m.id].desbloqueado);
+  });
   CB.partida.desbloquearMundos();
+  var mundoNuevo = null;
+  CB.MUNDOS.forEach(function (m) {
+    if (!abiertosAntes[m.id] && perfil.mundos[m.id] && perfil.mundos[m.id].desbloqueado) {
+      mundoNuevo = m;
+    }
+  });
   perfil.partidaEnCurso = null;
   CB.almacen.podar(perfil, {});
   CB.almacen.guardarPerfil(perfil);
 
-  CB.partida.pintarFin(motivo, bono);
+  CB.partida.pintarFin(motivo, bono, { logros: logrosFin, mundoNuevo: mundoNuevo, esRecord: esRecord });
   CB.partida.estado = null;
 };
 
@@ -10829,7 +10912,7 @@ CB.partida.desbloquearMundos = function () {
 };
 
 /* Pantalla de fin: MISMO TONO se acabe como se acabe (§3.7) */
-CB.partida.pintarFin = function (motivo, bono) {
+CB.partida.pintarFin = function (motivo, bono, hitos) {
   var e = CB.partida.estado, perfil = CB.perfil;
   CB.pantallas.ir('p-fin');
 
@@ -10866,17 +10949,61 @@ CB.partida.pintarFin = function (motivo, bono) {
       'Hoy has practicado. Mañana se notará en el mapa.'));
   }
 
+  /* 1.º bis · HOY ADEMÁS: los tres hitos que el juego calculaba y no enseñaba.
+     Panel nuevo, declarado en docs/decisiones.md porque el orden de lectura de
+     §3.7 es contrato cerrado. Va entre lo dominado y las gemas: son hitos, y los
+     hitos van antes que el recuento. */
+  hitos = hitos || {};
+  var caja = document.getElementById('fin-hitos');
+  var lista = document.getElementById('fin-hitos-lista');
+  var dijo = [];
+  if (caja && lista) {
+    CB.ui.vaciar(lista);
+
+    (hitos.logros || []).forEach(function (l) {
+      lista.appendChild(CB.ui.crear('p', null, 'Logro: ' + l.nombre));
+      dijo.push('Logro: ' + l.nombre);
+    });
+
+    if (hitos.mundoNuevo) {
+      /* El nombre sale de CB.MUNDOS, NUNCA escrito a mano: no existe ningún
+         «Bosque de las Restas», y una cadena literal aquí se desviaría del
+         catálogo el día que alguien renombre un mundo. */
+      lista.appendChild(CB.ui.crear('p', null, 'Se ha abierto ' + hitos.mundoNuevo.nombre + '.'));
+      dijo.push('Se ha abierto ' + hitos.mundoNuevo.nombre);
+    }
+
+    if (hitos.esRecord) {
+      lista.appendChild(CB.ui.crear('p', null, '¡Tu mejor expedición!'));
+      dijo.push('Tu mejor expedición');
+    }
+
+    caja.hidden = !dijo.length;
+  }
+
   /* 2.º Gemas y desglose del bono. */
   var g = document.getElementById('fin-gemas');
   if (g) g.textContent = String(Math.max(0, e.gemas));
   var bl = document.getElementById('fin-bono');
   if (bl) {
-    bl.textContent = bono.total > 0
-      ? ('+' + bono.total + ' de bono: ' + bono.extras.map(function (x) {
+    /* EN GEMAS, no en puntos. Decía «+340 de bono» justo debajo del recuento de
+       gemas, en puntos, y parecía que eran gemas. Las gemas del bono ya están
+       dentro de #fin-gemas —se suman en finalizar—, así que esta cifra es
+       literalmente verdad y además es la moneda que el niño conoce. */
+    var gemasBono = Math.max(0, Math.round(bono.total / 50));
+    bl.textContent = gemasBono > 0
+      ? ('+' + gemasBono + ' gemas de bono: ' + bono.extras.map(function (x) {
           return CB.puntuacion.ETIQUETA_EXTRA[x] || x;
         }).join(', '))
       : '';
   }
+
+  /* La cinta es aria-hidden por diseño, así que sin este anuncio los hitos no
+     existirían para un lector de pantalla. Una sola cadena: dos anuncios en el
+     mismo turno se tapan. */
+  if (dijo.length) CB.a11y.anunciar(dijo.join('. ') + '.');
+  if (hitos.mundoNuevo) CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
+  else if (hitos.esRecord) CB.ui.festejo.mostrar('logro', '¡Tu récord!');
 
   /* 3.º Momento socioafectivo: 1,5 s DESPUÉS, y solo si la partida duró ≥3 min.
      Nunca inmediatamente después de la tercera luz. */

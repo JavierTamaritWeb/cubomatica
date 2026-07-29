@@ -270,6 +270,10 @@
 
 <!-- ══ 10. FIN DE LA EXPEDICIÓN ════════════════════════════════════════════ -->
 <section id="p-fin" class="pantalla pantalla--scroll pantalla--fin" hidden>
+  <!-- La pantalla de fin tiene su propia cinta. Sin ella, todo lo que se celebra
+       aquí escribía en el nodo de p-partida, que en ese momento está oculto: se
+       oía y no se veía. CB.ui.cinta.nodoDe() resuelve la de la pantalla visible. -->
+  <div id="cinta-fin" class="cinta" aria-hidden="true" hidden><span class="cinta__texto"></span></div>
   <div class="contenido">
     <h1 id="fin-titulo">Fin de la expedición</h1>
     <p id="fin-subtitulo" class="texto-lectura"></p>
@@ -277,6 +281,16 @@
     <div class="panel-bloque">
       <h2>Lo que has dominado hoy</h2>
       <div id="fin-dominado"></div>
+    </div>
+
+    <!-- PANEL NUEVO, y el orden de lectura de §3.7 es contrato cerrado: el cambio
+         está declarado en docs/decisiones.md, no metido de tapadillo. Va aquí, entre
+         lo dominado y las gemas, porque lo que celebra —logros, mundo abierto,
+         mejor expedición— son hitos, y los hitos van antes que el recuento.
+         Se queda oculto cuando no hay nada que decir. -->
+    <div id="fin-hitos" class="panel-bloque" hidden>
+      <h2>Hoy además</h2>
+      <div id="fin-hitos-lista"></div>
     </div>
 
     <div class="panel-bloque">
