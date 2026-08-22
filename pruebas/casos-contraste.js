@@ -103,14 +103,40 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   /* Ningún texto se dibuja jamás sobre una textura (§10.1): el contraste de un
      texto sobre ruido pseudoaleatorio no es un par de colores y no se puede
      verificar. */
-  var conTextura = [];
-  var sospechosas = ['.enunciado', '.operacion', '.texto-menor', '.panel-bloque',
+  var conTextura = [], sinRegla = [], sinMedir = [];
+  var sospechosas = ['.enunciado', '.enunciado--operacion', '.texto--menor', '.panel-bloque',
                      '.btn-bloque', '.mensaje-resultado', '.veta', '.cromo'];
+
+  /* PRIMERO: que las ocho clases EXISTAN en la hoja cargada. Aquí había un
+     `if (!el) return;` que convertía «esta clase ya no existe» en «nada que
+     comprobar», en verde. Con eso, renombrar cualquiera de las ocho apagaba en
+     silencio una comprobación que es obligación legal, y el resumen seguía
+     diciendo que todo estaba medido. Un nombre que ya no está es un fallo. */
   sospechosas.forEach(function (sel) {
-    var el = document.querySelector(sel);
-    if (!el) return;
+    var hay = t.claseEnHoja(sel);
+    if (hay === null) sinMedir.push(sel);
+    else if (!hay) sinRegla.push(sel);
+  });
+  t.ok(sinMedir.length === 0,
+    'se pueden leer las reglas de la hoja para comprobar los nombres',
+    sinMedir.length ? 'sirve la página por HTTP: por file:// el navegador no deja leer cssRules' : '');
+  t.ok(sinRegla.length === 0,
+    'las ' + sospechosas.length + ' clases con texto siguen existiendo en la hoja',
+    'sin regla: ' + sinRegla.join(', '));
+
+  /* Y DESPUÉS se miden. La que no esté montada en la maqueta se monta: medir
+     solo las que había a mano dejaba fuera a las demás sin decirlo. */
+  sospechosas.forEach(function (sel) {
+    var el = document.querySelector(sel), prestado = null;
+    if (!el) {
+      prestado = document.createElement('div');
+      prestado.className = sel.slice(1);
+      document.body.appendChild(prestado);
+      el = prestado;
+    }
     var bg = getComputedStyle(el).backgroundImage;
     if (bg && bg !== 'none' && bg.indexOf('url(') !== -1) conTextura.push(sel);
+    if (prestado) document.body.removeChild(prestado);
   });
   t.ok(conTextura.length === 0,
     'ninguna clase con texto hereda una textura de fondo', conTextura.join(', '));

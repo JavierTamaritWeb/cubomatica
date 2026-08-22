@@ -175,7 +175,7 @@ CB.adulto.pintar = function () {
     (m.diasJugados === 1 ? ' día jugado' : ' días jugados')));
 
   /* Alcance declarado, LITERAL, en la primera pantalla del panel (§1.3). */
-  var aviso = CB.ui.crear('div', 'adulto-aviso');
+  var aviso = CB.ui.crear('div', 'adulto__aviso');
   aviso.appendChild(CB.ui.crear('h3', null, 'Qué mide y qué no mide este juego'));
   aviso.appendChild(CB.ui.crear('p', null, CB.LEGAL.ALCANCE));
   aviso.appendChild(CB.ui.crear('p', null, CB.LEGAL.SECUENCIACION));
@@ -187,7 +187,7 @@ CB.adulto.pintar = function () {
   cont.appendChild(aviso);
 
   if (CB.almacen.sinDisco) {
-    var alerta = CB.ui.crear('div', 'adulto-aviso');
+    var alerta = CB.ui.crear('div', 'adulto__aviso');
     alerta.appendChild(CB.ui.crear('h3', null, 'Aviso: no se está guardando en disco'));
     alerta.appendChild(CB.ui.crear('p', null,
       'El navegador no permite guardar. El progreso de esta sesión se perderá ' +
@@ -196,7 +196,7 @@ CB.adulto.pintar = function () {
   }
 
   /* ── Métricas 1-3 ──────────────────────────────────────────────────── */
-  var caja1 = CB.ui.crear('div', 'adulto-caja');
+  var caja1 = CB.ui.crear('div', 'adulto__caja');
   caja1.appendChild(CB.ui.crear('h2', null, 'De un vistazo'));
   CB.adulto.metrica(caja1, 'Tiempo de pantalla hoy',
     Math.round(m.m1_tiempoHoy / 60) + ' min');
@@ -213,9 +213,9 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja1);
 
   /* ── Métrica 4: semáforo ───────────────────────────────────────────── */
-  var caja2 = CB.ui.crear('div', 'adulto-caja');
+  var caja2 = CB.ui.crear('div', 'adulto__caja');
   caja2.appendChild(CB.ui.crear('h2', null, 'Por bloques de contenido'));
-  var tabla = CB.ui.crear('table', 'tabla-adulto');
+  var tabla = CB.ui.crear('table', 'adulto__tabla');
   var thead = CB.ui.crear('thead');
   var trh = CB.ui.crear('tr');
   ['Bloque', 'Situación', 'Preguntas'].forEach(function (t) {
@@ -240,13 +240,13 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja2);
 
   /* ── Métrica 6: la matriz de los 20 subtipos ───────────────────────── */
-  var caja3 = CB.ui.crear('div', 'adulto-caja');
+  var caja3 = CB.ui.crear('div', 'adulto__caja');
   caja3.appendChild(CB.ui.crear('h2', null, 'Problemas de enunciado, por tipo'));
   caja3.appendChild(CB.ui.crear('p', null,
     'Dos problemas con los mismos números y la misma operación tienen ' +
     'dificultades muy distintas según cómo estén contados. Esta tabla es la ' +
     'información más accionable del panel.'));
-  var t2 = CB.ui.crear('table', 'tabla-adulto matriz-subtipos');
+  var t2 = CB.ui.crear('table', 'adulto__tabla matriz-subtipos');
   var th2 = CB.ui.crear('tr');
   ['Tipo de problema', 'Intentos', 'Aciertos', 'Tiempo medio'].forEach(function (t) {
     th2.appendChild(CB.ui.crear('th', null, t));
@@ -268,7 +268,7 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja3);
 
   /* ── Métrica 7: errores frecuentes con su actividad de 10 minutos ──── */
-  var caja4 = CB.ui.crear('div', 'adulto-caja');
+  var caja4 = CB.ui.crear('div', 'adulto__caja');
   caja4.appendChild(CB.ui.crear('h2', null, 'Qué conviene trabajar'));
   var codigos = Object.keys(m.m7_errores).filter(function (c) {
     return m.m7_errores[c].vecesDiscriminante >= 2;
@@ -288,7 +288,7 @@ CB.adulto.pintar = function () {
       caja4.appendChild(CB.ui.crear('h3', null, rec.frase));
       caja4.appendChild(CB.ui.crear('p', null, '10 minutos: ' + rec.actividad));
       var ejemplos = (m.m7_errores[c].ejemplos || []).join(' · ');
-      if (ejemplos) caja4.appendChild(CB.ui.crear('p', 'texto-menor', 'Ejemplos: ' + ejemplos));
+      if (ejemplos) caja4.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Ejemplos: ' + ejemplos));
       caja4.appendChild(CB.ui.boton('Imprimir ficha de refuerzo', 'btn-adulto', function () {
         CB.adulto.fichaRefuerzo(perfil, c);
       }));
@@ -297,10 +297,10 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja4);
 
   /* ── Métricas 8-10 ─────────────────────────────────────────────────── */
-  var caja5 = CB.ui.crear('div', 'adulto-caja');
+  var caja5 = CB.ui.crear('div', 'adulto__caja');
   caja5.appendChild(CB.ui.crear('h2', null, 'Cómo está jugando'));
   CB.adulto.metrica(caja5, 'Respuestas muy rápidas sin acertar', String(m.m8_azares));
-  caja5.appendChild(CB.ui.crear('p', 'texto-menor',
+  caja5.appendChild(CB.ui.crear('p', 'texto texto--menor',
     'El juego no se lo reprocha nunca: solo deja de puntuar esa pregunta y da ' +
     'un momento de pausa. Si el número es alto, suele indicar cansancio o que ' +
     'la dificultad está por encima, no mala intención.'));
@@ -327,13 +327,13 @@ CB.adulto.pintar = function () {
      descargar 42 MB en el disco de un aparato escolar es una decisión informada
      de una persona adulta, no un efecto colateral de darle a jugar. */
   if (CB.offline && CB.offline.DISPONIBLE) {
-    var cajaSC = CB.ui.crear('div', 'adulto-caja');
+    var cajaSC = CB.ui.crear('div', 'adulto__caja');
     cajaSC.appendChild(CB.ui.crear('h2', null, 'Sin conexión'));
     cajaSC.appendChild(CB.ui.crear('p', null,
       'El juego ya funciona sin internet: no pide nada a la red. Lo único que ' +
       'no se guarda por su cuenta es la música, porque son 42 MB.'));
 
-    var estadoSC = CB.ui.crear('p', 'texto-menor', 'Comprobando…');
+    var estadoSC = CB.ui.crear('p', 'texto texto--menor', 'Comprobando…');
     cajaSC.appendChild(estadoSC);
     CB.offline.musicaGuardada(function (n) {
       estadoSC.textContent = n === 0
@@ -384,7 +384,7 @@ CB.adulto.pintar = function () {
   }
 
   /* ── Datos ─────────────────────────────────────────────────────────── */
-  var caja7 = CB.ui.crear('div', 'adulto-caja');
+  var caja7 = CB.ui.crear('div', 'adulto__caja');
   caja7.appendChild(CB.ui.crear('h2', null, 'Datos'));
   caja7.appendChild(CB.ui.crear('p', null, CB.LEGAL.PRIVACIDAD));
   caja7.appendChild(CB.ui.crear('p', null, CB.LEGAL.LIMITACION));
@@ -415,7 +415,7 @@ CB.adulto.pintar = function () {
   }));
   caja7.appendChild(fila);
 
-  var aviso = CB.ui.crear('p', 'texto-menor');
+  var aviso = CB.ui.crear('p', 'texto texto--menor');
   aviso.id = 'adulto-aviso-datos';
   aviso.setAttribute('role', 'status');
   caja7.appendChild(aviso);
@@ -482,14 +482,14 @@ CB.adulto.AJUSTES = [
 ];
 
 CB.adulto.cajaAjustes = function (perfil) {
-  var caja = CB.ui.crear('div', 'adulto-caja');
+  var caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Ajustes'));
 
   CB.adulto.AJUSTES.forEach(function (a) {
     var fila = CB.ui.crear('div', 'metrica');
     var izq = CB.ui.crear('span');
     izq.appendChild(CB.ui.crear('span', null, a.t));
-    if (a.nota) izq.appendChild(CB.ui.crear('p', 'texto-menor', a.nota));
+    if (a.nota) izq.appendChild(CB.ui.crear('p', 'texto texto--menor', a.nota));
     fila.appendChild(izq);
 
     if (a.tipo === 'bool') {
@@ -558,7 +558,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
     'Fecha: ' + CB.util.hoyISO() + ' · ' + m.diasJugados + ' días jugados · ' +
     m.m2_partidas + ' expediciones'));
 
-  var av = CB.ui.crear('div', 'adulto-aviso');
+  var av = CB.ui.crear('div', 'adulto__aviso');
   av.appendChild(CB.ui.crear('p', null, CB.LEGAL.ALCANCE));
   av.appendChild(CB.ui.crear('p', null, CB.LEGAL.SECUENCIACION));
   av.appendChild(CB.ui.crear('p', null,
@@ -566,7 +566,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
   cuerpo.appendChild(av);
 
   cuerpo.appendChild(CB.ui.crear('h2', null, 'Por bloques'));
-  var t = CB.ui.crear('table', 'tabla-adulto');
+  var t = CB.ui.crear('table', 'adulto__tabla');
   var trh = CB.ui.crear('tr');
   ['Bloque', 'Situación', 'Preguntas'].forEach(function (x) {
     trh.appendChild(CB.ui.crear('th', null, x));
@@ -600,7 +600,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
     });
   }
 
-  cuerpo.appendChild(CB.ui.crear('p', 'pie-informe',
+  cuerpo.appendChild(CB.ui.crear('p', 'informe__pie',
     CB.LEGAL.NORMA + ' — ' + CB.LEGAL.PRIVACIDAD));
 
   CB.pantallas.ir('p-informe');
@@ -627,7 +627,7 @@ CB.adulto.fichaRefuerzo = function (perfil, codigoError) {
   });
   var nivel = niveles[Math.floor(niveles.length / 2)] || niveles[0];
 
-  var rej = CB.ui.crear('div', 'rejilla-ejercicios');
+  var rej = CB.ui.crear('div', 'ficha-refuerzo__rejilla');
   var i;
   for (i = 0; i < 10 && nivel; i++) {
     var rng = CB.util.mulberry32(CB.util.hash32(perfil.id + codigoError + i));
@@ -745,7 +745,7 @@ CB.adulto.restaurar = function (cont) {
 };
 
 CB.adulto.confirmarBorrado = function (perfil, cont) {
-  var caja = CB.ui.crear('div', 'adulto-aviso');
+  var caja = CB.ui.crear('div', 'adulto__aviso');
   caja.appendChild(CB.ui.crear('p', null,
     'Esto borra para siempre el progreso de ' + perfil.mote +
     '. Escribe BORRAR para confirmar.'));

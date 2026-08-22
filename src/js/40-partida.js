@@ -1255,14 +1255,14 @@ CB.partida.microDescanso = function () {
   if (d.id === 'cofre') {
     /* Se ve la lista completa de premios ANTES de abrir: sin cofres opacos, que
        es un patrón oscuro prohibido en un juego infantil (§21.4). */
-    var aviso = CB.ui.crear('p', 'texto-menor', 'Tres cofres de piedra. Rómpelos todos.');
+    var aviso = CB.ui.crear('p', 'texto texto--menor', 'Tres cofres de piedra. Rómpelos todos.');
     tablero.appendChild(aviso);
   }
 
   var n = (d.id === 'cofre') ? 3 : 8, i;
   for (i = 0; i < n; i++) {
     (function () {
-      var b = CB.ui.crear('button', 'bloque-rompible');
+      var b = CB.ui.crear('button', 'tablero-descanso__bloque');
       b.type = 'button';
       b.setAttribute('aria-label', d.id === 'cofre' ? 'Cofre' : 'Bloque');
       b.addEventListener('click', function () {
@@ -1465,7 +1465,7 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
       dom.appendChild(fila);
     });
   } else {
-    dom.appendChild(CB.ui.crear('p', 'texto-menor',
+    dom.appendChild(CB.ui.crear('p', 'texto texto--menor',
       'Hoy has practicado. Mañana se notará en el mapa.'));
   }
 

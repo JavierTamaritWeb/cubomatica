@@ -55,7 +55,7 @@
 /* Los ocho materiales que js/02-texturas.js sustituye por un data: URI al
    arrancar. El valor inicial es el color plano, para que nunca se vea un hueco. */
 /* Cada bioma es un material. Se usa DOS veces —en `.bioma--X` y en
-   `.cinta-bioma[data-bioma=X]`— y antes se escribía dos veces. */
+   `.tarjeta-mundo__cinta[data-bioma=X]`— y antes se escribía dos veces. */
 /* Los 6 estados de una veta del Mapa de Destrezas, cada uno con su tono. */
 /* ══════════════════════════════════════════════════════════════════════════
    PUNTOS DE RUPTURA
@@ -86,7 +86,7 @@
    MIXINS
    ══════════════════════════════════════════════════════════════════════════ */
 /* ── bisel() ────────────────────────────────────────────────────────────────
-   El relieve de mundo de cubos: una luz arriba-izquierda y una sombra
+   El relieve de mundo de cubos: una luces__luz arriba-izquierda y una sombra
    abajo-derecha, las dos con desenfoque CERO.
 
    NO HAY PARÁMETRO DE DESENFOQUE, y eso es el punto entero del mixin. El tercer
@@ -120,6 +120,48 @@
 
    Sigue siendo imposible escribir una animación suavizada a través del mixin:
    el tipo de tiempo es steps() y no se puede pasar otro. */
+/* ── frenar-todo() ─────────────────────────────────────────────────────────
+   El freno de mano: deja toda animación y toda transición en una milésima. Va
+   en DOS contextos —el ajuste del sistema y el del juego— y estaba escrito dos
+   veces a mano, veinte líneas más abajo el uno del otro. Es exactamente la
+   forma que tenía E25 antes de romperse: dos listas gemelas que nadie obliga a
+   seguir siéndolo. `desactivar-movimiento()` ya se arregló así; a esta le
+   faltaba el mismo remedio.
+
+   NO SUSTITUYE a desactivar-movimiento(): esto frena lo que ya está corriendo,
+   y aquel apaga las animaciones concretas y repone lo que la animación dejaba a
+   medias. Los dos hacen falta y se emiten juntos. */
+/* ── fila-envuelta() ───────────────────────────────────────────────────────
+   «Una fila que envuelve y se centra». Estaba copiada SIETE veces con las
+   mismas cuatro declaraciones y en tres ordenes distintos —contenedor de
+   dinero, fila de ordenar, rejilla de cromos, de vetas, de mundos, lista de
+   perfiles y opciones del jefe—, lo que ademas hacia imposible verlas como lo
+   mismo leyendo el fichero.
+
+   Existia ya la utilidad `.fila .fila--centro` con esas cuatro declaraciones y
+   no la usaba ninguna de las siete, porque son BLOQUES: mezclarles la utilidad
+   habria obligado a tocar siete sitios del JS y del HTML para no ganar nada. Un
+   mixin dice lo mismo sin mover el marcado. */
+/* ── apagado() ─────────────────────────────────────────────────────────────
+   El par de colores del control que no acepta toques. Estaba escrito tres veces
+   —el botón, el OK del teclado y la pieza de dinero— y son tres sitios donde
+   acordarse de cambiarlo a la vez. El par lo verifica casos-contraste.js, así
+   que separarse en uno solo de los tres es un rojo que llega tarde.
+
+   NO INCLUYE el hundido (`transform`) ni el bisel: dos de los tres lo llevan y
+   el tercero no, y meterlo aquí habría cambiado el aspecto del OK. Un mixin que
+   uniformiza de más es peor que tres copias honestas. */
+/* ── oculto-visual() ───────────────────────────────────────────────────────
+   Se ve con lector de pantalla y no se ve con los ojos. Estas siete
+   declaraciones estaban copiadas DOS veces —`.solo-lectores` y
+   `.rotulo-veta__mundo`— y el proyecto ya mató una tercera copia (`.oculto-visual`,
+   retirada por duplicar `.solo-lectores`). Copiar una receta de accesibilidad es
+   peor que copiar cualquier otra cosa: cuando una de las copias se queda corta,
+   lo que falla no se ve por definición.
+
+   `clip: rect(0 0 0 0)` está marcada como obsoleta y se queda: es la receta que
+   entienden también los lectores viejos, y aquí el suelo de soporte es una
+   obligación legal, no una preferencia. */
 /* ── desactivar-movimiento() ────────────────────────────────────────────────
    UNA lista, DOS contextos. El ajuste del sistema (prefers-reduced-motion) y el
    del propio juego (:root.sin-movimiento) tienen que apagar exactamente lo
@@ -590,6 +632,36 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   }
 }
 /* ============================================================================
+   cubomatica.scss — el único punto de entrada de la hoja de estilo
+   ----------------------------------------------------------------------------
+   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
+   7-1 al uso:
+
+   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
+      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
+      explicar que su `position: relative` gana por venir DESPUÉS de
+      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
+      esa relación y la rompe la primera vez que alguien reordena un @use.
+   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
+      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
+      activos externos» obliga a dejar vacío para siempre.
+   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
+      estos nombres. Mantenerlos convirtió la migración en un renombrado
+      mecánico verificable, y `git mv` conservó el historial de cada fichero.
+
+   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
+   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
+   primera línea. Es la causa número uno de errores al añadir mixins — pero
+   falla ruidosamente, en compilación, que es lo bueno.
+      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
+   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
+   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
+   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
+   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
+   con miembros es `herramientas`, y por eso es el único que importa de verdad.
+   ========================================================================== */
+/* @use NO es transitivo */
+/* ============================================================================
    02-base.css — Reset y reglas duras de estilo
    ----------------------------------------------------------------------------
    REGLAS DURAS VERIFICABLES POR REVISIÓN VISUAL (PLAN §4.2):
@@ -748,17 +820,29 @@ button:focus:not(:focus-visible) {
   justify-content: center;
 }
 
-.texto-lectura {
-  font-family: var(--fuente-lectura);
-  font-size: var(--tam-enunciado);
+/* UN BLOQUE `texto` CON DOS MODIFICADORES, y no dos bloques sueltos. Eran
+   `.texto-lectura` y `.texto-menor`, dos nombres que compartían la única
+   declaración que de verdad tenían en común —el ancho de lectura— por
+   casualidad, no por decirlo. En el marcado van las dos clases:
+   `class="texto texto--menor"`. */
+.texto {
   max-width: var(--ancho-lectura);
 }
 
-/* Por defecto, sobre el fondo oscuro de pantalla. Dentro de un panel crema se
-   invierte (ver 03-componentes.css). */
-.texto-menor {
+.texto--lectura {
+  font-family: var(--fuente-lectura);
+  font-size: var(--tam-enunciado);
+}
+
+/* EL COLOR LO PIDE, NO LO IMPONE EL SITIO. Antes había siete selectores del
+   tipo `.panel-bloque .texto-menor` en _03-componentes.scss: descendencia entre
+   bloques, que es justo lo que un bloque no puede tener —cambiaba de aspecto
+   según quién lo contuviera—. Ahora el contenedor declara `--texto-sec` y el
+   texto lo consume con un valor por defecto: funciona con contenedores que aún
+   no existen y no depende del orden de la cascada. */
+.texto--menor {
   font-size: var(--tam-texto-min);
-  color: var(--texto-sec-claro);
+  color: var(--texto-sec, var(--texto-sec-claro));
 }
 
 /* Un texto NUNCA se dibuja sobre una textura (PLAN §10.1). Aquí había una
@@ -790,7 +874,9 @@ button:focus:not(:focus-visible) {
     display: flex;
   }
 }
-/* ── Movimiento reducido ────────────────────────────────────────────────── */
+/* ── Movimiento reducido: UNA regla, DOS contextos ──────────────────────────
+   El del sistema y el del juego tienen que frenar exactamente lo mismo, y aquí
+   estaban las mismas tres declaraciones escritas dos veces. Ver el mixin. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -858,20 +944,23 @@ button:focus:not(:focus-visible) {
   margin-bottom: 0;
 }
 
-/* Dentro de un panel crema, el texto secundario vuelve al par oscuro. */
-.panel-bloque .texto-menor,
-.tarjeta-mundo .texto-menor,
-.tarjeta-perfil .texto-menor,
-.termino-glosario .texto-menor,
-.cromo .texto-menor,
-.veta .texto-menor,
-.ajuste .texto-menor {
-  color: var(--texto-secundario);
+/* Dentro de un fondo crema, el texto secundario vuelve al par oscuro. Se
+   declara la variable, no se estila al hijo: el bloque `texto` la consume con
+   `var(--texto-sec, var(--texto-sec-claro))` y así nadie tiene que saber quién
+   lo contiene. Ver _02-base.scss. */
+.panel-bloque,
+.tarjeta-mundo,
+.tarjeta-perfil,
+.termino-glosario,
+.cromo,
+.veta,
+.ajuste {
+  --texto-sec: var(--texto-secundario);
 }
 
 /* Todo contenedor de fondo claro fija su color de texto explícitamente: sin
    esto heredarían el claro del body y quedarían ilegibles. */
-.cromo, .hueco-orden, .columna-cdu, .balanza__cifra, .lienzo-explicador {
+.cromo, .fila-ordenar__hueco, .columna-cdu, .balanza__cifra, .lienzo-explicador {
   color: var(--texto-principal);
 }
 
@@ -1014,7 +1103,7 @@ button:focus:not(:focus-visible) {
   align-items: center;
 }
 
-.luz {
+.luces__luz {
   width: 48px;
   height: 48px;
   background: var(--cristal-claro);
@@ -1022,13 +1111,13 @@ button:focus:not(:focus-visible) {
   position: relative;
 }
 
-.luz[data-estado=apagada] {
+.luces__luz[data-estado=apagada] {
   background: var(--luz-apagada);
   box-shadow: inset 8px 8px 0 0 var(--gris-piedra), inset -8px -8px 0 0 var(--gris-carbon);
 }
 
-/* Nunca solo color: la luz apagada lleva además una marca de forma (§10.4) */
-.luz[data-estado=apagada]::after {
+/* Nunca solo color: la luces__luz apagada lleva además una marca de forma (§10.4) */
+.luces__luz[data-estado=apagada]::after {
   content: "";
   position: absolute;
   inset: 40% 20%;
@@ -1048,7 +1137,7 @@ button:focus:not(:focus-visible) {
     transform: scale(1);
   }
 }
-.luz.luz--recien-encendida {
+.luces__luz.luces__luz--recien-encendida {
   animation: luz-extra 1500ms steps(6, end) 1;
 }
 
@@ -1255,7 +1344,7 @@ button:focus:not(:focus-visible) {
   text-shadow: 2px 2px 0 var(--sombra-honda);
 }
 
-/* ── El cartel: logro y luz extra ───────────────────────────────────────────
+/* ── El cartel: logro y luces__luz extra ───────────────────────────────────────────
    Un panel centrado con bisel, NO una franja de lado a lado. Esa diferencia de
    forma es la que hace que no se confunda con la cinta de un vistazo, que es
    justo lo que le faltaba a la primera versión: allí todo era la misma banda.
@@ -1341,7 +1430,7 @@ button:focus:not(:focus-visible) {
   justify-content: center;
 }
 
-.rejilla-respuestas .btn-bloque {
+.rejilla-respuestas__opcion {
   width: var(--lado);
   height: var(--lado);
   /* La cifra sigue al boton: en 64px, 44px de digito no cabe. El techo lo pone
@@ -1392,13 +1481,13 @@ button:focus:not(:focus-visible) {
   justify-content: center;
 }
 
-.teclado-bloques .btn-bloque {
+.teclado-bloques__tecla {
   width: var(--lado-respuesta);
   height: var(--lado-respuesta);
   font-size: min(var(--tam-numero-opcion), var(--lado-respuesta) * 0.46);
 }
 
-.teclado-bloques .btn-bloque[data-tecla=ok] {
+.teclado-bloques__tecla[data-tecla=ok] {
   grid-column: span 1;
   background: var(--btn-primario);
   color: var(--btn-primario-texto);
@@ -1413,8 +1502,8 @@ button:focus:not(:focus-visible) {
    LOS DOS SELECTORES, no uno. La regla base cubre :disabled y
    [aria-disabled="true"], y dejar uno fuera reabre el agujero por la otra
    puerta. */
-.teclado-bloques .btn-bloque[data-tecla=ok]:disabled,
-.teclado-bloques .btn-bloque[data-tecla=ok][aria-disabled=true] {
+.teclado-bloques__tecla[data-tecla=ok]:disabled,
+.teclado-bloques__tecla[data-tecla=ok][aria-disabled=true] {
   background: var(--btn-fondo-desactivado);
   color: var(--btn-texto-desactivado);
 }
@@ -1446,7 +1535,7 @@ button:focus:not(:focus-visible) {
   :root, :root.modo-proyeccion {
     --lado-techo: 72px;
   }
-  .visor-respuesta {
+  .respuesta__visor {
     min-height: 60px;
     font-size: 36px;
   }
@@ -1470,7 +1559,7 @@ button:focus:not(:focus-visible) {
   }
 }
 /* Visor del resultado que se está tecleando */
-.visor-respuesta {
+.respuesta__visor {
   min-width: 160px;
   min-height: 76px;
   display: flex;
@@ -1484,7 +1573,7 @@ button:focus:not(:focus-visible) {
   padding: 0 var(--e3);
 }
 
-.visor-respuesta:empty::before {
+.respuesta__visor:empty::before {
   content: "_";
   color: var(--texto-secundario);
 }
@@ -1494,7 +1583,7 @@ button:focus:not(:focus-visible) {
    sobre un panel. Un texto suelto ahí queda claro-sobre-claro y es ilegible.
    Toda instrucción de esa zona va dentro de este chip de color plano, que es la
    misma regla de §10.1: ningún texto se dibuja jamás sobre una textura. */
-.consigna-respuesta {
+.respuesta__consigna {
   display: inline-block;
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
@@ -1513,15 +1602,15 @@ button:focus:not(:focus-visible) {
   line-height: var(--interlineado);
 }
 
-.enunciado .enunciado__linea--activa {
+.enunciado__linea--activa {
   background: var(--deco-oro-cla);
 }
 
 /* `.numero-dato` marcaba las cifras del enunciado como pulsables, con su estado
    [aria-pressed]. Nunca se llegó a generar ese marcado: el enunciado se pinta
-   en frases (.frase-enunciado) y el resaltado es por línea, no por número. */
+   en frases (.enunciado__frase) y el resaltado es por línea, no por número. */
 /* ── Operación en columna (para las cifras grandes) ─────────────────────── */
-.operacion {
+.enunciado--operacion {
   font-family: var(--fuente-pixel);
   font-size: calc(var(--tam-numero-opcion) + 8px);
   letter-spacing: 0.12em;
@@ -1588,7 +1677,12 @@ button:focus:not(:focus-visible) {
    NO SON FACSÍMILES NI PRETENDEN SERLO: son fotografías a un cuarto del tamaño
    real, de una sola cara, con una finalidad didáctica. Los billetes de 20 y 50
    llevan además la palabra MUESTRA impresa en el original. */
-.moneda, .billete {
+/* EL BLOQUE ES LA PIEZA, y las dos variantes son modificadores suyos. Antes
+   `.pieza--moneda` y `.pieza--billete` eran dos bloques hermanos que compartían esta regla por
+   enumeración, y `.pieza__cifra` —la cinta con el número— era un elemento
+   HUÉRFANO: no existía ningún bloque `.pieza` del que colgara. Son la misma
+   pieza de dinero con otra fotografía y otra escala, y ahora lo dicen. */
+.pieza {
   display: inline-flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1613,7 +1707,7 @@ button:focus:not(:focus-visible) {
   line-height: 1;
 }
 
-.moneda {
+.pieza--moneda {
   --lado-pieza: 72px;
   width: var(--lado-pieza);
   height: calc(var(--lado-pieza) + var(--cinta-pieza));
@@ -1621,7 +1715,7 @@ button:focus:not(:focus-visible) {
   background-color: var(--deco-oro);
 }
 
-.billete {
+.pieza--billete {
   --ancho-pieza: 113px;
   --alto-pieza: 61px;
   width: var(--ancho-pieza);
@@ -1631,13 +1725,13 @@ button:focus:not(:focus-visible) {
 }
 
 /* Las monedas de euro. La de 1 € es el ancla de la escala: 23,25 mm → 72 px. */
-.moneda[data-valor="1"] {
+.pieza--moneda[data-valor="1"] {
   --lado-pieza: 72px;
   background-image: var(--pieza-1);
   background-color: var(--deco-piedra-cla);
 }
 
-.moneda[data-valor="2"] {
+.pieza--moneda[data-valor="2"] {
   --lado-pieza: 80px;
   background-image: var(--pieza-2);
   background-color: var(--deco-piedra-cla);
@@ -1648,31 +1742,31 @@ button:focus:not(:focus-visible) {
    la moneda de 5 céntimos, y con un solo atributo la de 5 céntimos habría salido
    con la foto del billete. Es el mismo motivo por el que en el JS la pieza se
    nombra 'c5' y no 5. */
-.moneda[data-centimos="1"] {
+.pieza--moneda[data-centimos="1"] {
   --lado-pieza: 50px;
   background-image: var(--pieza-c1);
   background-color: var(--deco-cobre);
 }
 
-.moneda[data-centimos="5"] {
+.pieza--moneda[data-centimos="5"] {
   --lado-pieza: 66px;
   background-image: var(--pieza-c5);
   background-color: var(--deco-cobre);
 }
 
-.moneda[data-centimos="10"] {
+.pieza--moneda[data-centimos="10"] {
   --lado-pieza: 61px;
   background-image: var(--pieza-c10);
   background-color: var(--deco-oro);
 }
 
-.moneda[data-centimos="20"] {
+.pieza--moneda[data-centimos="20"] {
   --lado-pieza: 69px;
   background-image: var(--pieza-c20);
   background-color: var(--deco-oro);
 }
 
-.moneda[data-centimos="50"] {
+.pieza--moneda[data-centimos="50"] {
   --lado-pieza: 75px;
   background-image: var(--pieza-c50);
   background-color: var(--deco-oro);
@@ -1682,35 +1776,35 @@ button:focus:not(:focus-visible) {
    ancho es el de 100 con 125 px: con dos columnas y 16 px de hueco caben en los
    288 px útiles de la pantalla más estrecha del proyecto, que es el tope que
    manda aquí. */
-.billete[data-valor="5"] {
+.pieza--billete[data-valor="5"] {
   --ancho-pieza: 102px;
   --alto-pieza: 53px;
   background-image: var(--pieza-5);
   background-color: var(--deco-piedra-cla);
 }
 
-.billete[data-valor="10"] {
+.pieza--billete[data-valor="10"] {
   --ancho-pieza: 108px;
   --alto-pieza: 57px;
   background-image: var(--pieza-10);
   background-color: var(--deco-cobre);
 }
 
-.billete[data-valor="20"] {
+.pieza--billete[data-valor="20"] {
   --ancho-pieza: 113px;
   --alto-pieza: 61px;
   background-image: var(--pieza-20);
   background-color: var(--deco-agua-cla);
 }
 
-.billete[data-valor="50"] {
+.pieza--billete[data-valor="50"] {
   --ancho-pieza: 119px;
   --alto-pieza: 65px;
   background-image: var(--pieza-50);
   background-color: var(--deco-brasa-cla);
 }
 
-.billete[data-valor="100"] {
+.pieza--billete[data-valor="100"] {
   --ancho-pieza: 125px;
   --alto-pieza: 70px;
   background-image: var(--pieza-100);
@@ -1733,7 +1827,7 @@ button:focus:not(:focus-visible) {
    Se cuenta con data-veces en vez de aria-pressed a propósito: la misma moneda se
    toca varias veces, y decirle «pulsado» a un lector de pantalla de un botón que
    hay que seguir pulsando es mal uso de ARIA (WCAG 4.1.2). */
-.moneda[data-veces], .billete[data-veces] {
+.pieza[data-veces] {
   outline: var(--bisel) solid var(--foco-oro);
   outline-offset: var(--u);
   transform: translateY(calc(var(--bisel) * -1));
@@ -1750,7 +1844,7 @@ button:focus:not(:focus-visible) {
    el borde inferior de la pieza, así que en la esquina de abajo el «×2» caía
    justo encima del «2 €». Dos cifras superpuestas en el sitio donde el niño mira
    para saber cuánto lleva pagado. */
-.moneda[data-veces]::after, .billete[data-veces]::after {
+.pieza[data-veces]::after {
   content: "×" attr(data-veces);
   position: absolute;
   right: 0;
@@ -1763,18 +1857,18 @@ button:focus:not(:focus-visible) {
   line-height: 1.1;
 }
 
-.moneda[data-veces="1"]::after, .billete[data-veces="1"]::after {
+.pieza[data-veces="1"]::after {
   content: "";
   padding: 0;
 }
 
 /* Y los estados que les faltaban: no son .btn-bloque, así que ni el hundido ni
    el bloqueado de arriba las alcanzaban. */
-.moneda:active, .billete:active {
+.pieza:active {
   transform: translateY(var(--bisel));
 }
 
-.moneda:disabled, .billete:disabled {
+.pieza:disabled {
   background: var(--btn-fondo-desactivado);
   color: var(--btn-texto-desactivado);
   transform: translateY(var(--bisel));
@@ -1807,12 +1901,12 @@ button:focus:not(:focus-visible) {
 
 .fila-ordenar {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--e3);
   justify-content: center;
-  flex-wrap: wrap;
 }
 
-.hueco-orden {
+.fila-ordenar__hueco {
   width: 80px;
   height: 80px;
   background: var(--bg-texto-panel);
@@ -1867,7 +1961,7 @@ button:focus:not(:focus-visible) {
   box-shadow: inset 4px 4px 0 0 var(--deco-piedra-cla), inset -4px -4px 0 0 var(--deco-piedra-osc);
 }
 
-.veta > .veta__icono {
+.veta__icono {
   font-size: 26px;
   line-height: 1;
 }
@@ -1930,13 +2024,16 @@ button:focus:not(:focus-visible) {
 }
 
 /* ── Criaturas ──────────────────────────────────────────────────────────── */
+/* El lado y el cuerpo de letra salen de dos variables con valor por defecto:
+   la pantalla de juego las reescribe y las criaturas encogen sin que ninguna
+   regla tenga que saber dónde está (ver _04-pantallas.scss). */
 .criatura {
-  width: 96px;
-  height: 96px;
+  width: var(--lado-criatura, 96px);
+  height: var(--lado-criatura, 96px);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 56px;
+  font-size: var(--tam-criatura, 56px);
   line-height: 1;
   flex: 0 0 auto;
 }
@@ -2108,13 +2205,13 @@ button:focus:not(:focus-visible) {
    desborda parte lo que sobra en DOS lados, y lo de arriba no se recupera nunca
    porque scrollTop no puede ser negativo. Con `safe` centra mientras cabe y se
    comporta como `start` en cuanto deja de caber. */
-.pantalla--portada .pila-centro {
+.portada__pila {
   overflow-y: auto;
   justify-content: safe center;
   align-items: safe center;
 }
 
-.pantalla--portada .titulo-juego {
+.portada__titulo {
   font-family: var(--fuente-pixel);
   font-size: var(--tam-titulo);
   background: var(--bg-texto-panel);
@@ -2135,7 +2232,7 @@ button:focus:not(:focus-visible) {
   overflow-wrap: anywhere;
 }
 
-.pantalla--portada .lema {
+.portada__lema {
   font-family: var(--fuente-lectura);
   font-size: var(--tam-texto-min);
   background: var(--bg-texto-panel);
@@ -2153,7 +2250,7 @@ button:focus:not(:focus-visible) {
   box-shadow: inset 0 var(--bisel) 0 0 var(--deco-hierba-cla);
 }
 
-.esquina-llave {
+.portada__llave {
   position: absolute;
   top: var(--e3);
   right: var(--e3);
@@ -2181,7 +2278,7 @@ button:focus:not(:focus-visible) {
   font-size: var(--tam-texto-min);
 }
 
-.avatar-cubi {
+.tarjeta-perfil__avatar {
   width: 64px;
   height: 64px;
   box-shadow: inset 8px 8px 0 0 rgba(255, 255, 255, 0.5), inset -8px -8px 0 0 rgba(0, 0, 0, 0.35);
@@ -2197,10 +2294,13 @@ button:focus:not(:focus-visible) {
 
 /* En la partida las criaturas son acompañamiento, no protagonistas: no pueden
    robarle altura a la zona de respuesta. */
-.pantalla--juego .criatura {
-  width: 56px;
-  height: 56px;
-  font-size: 34px;
+/* EL TAMAÑO LO PIDE LA CRIATURA Y LO DECIDE LA PANTALLA, por variable y no por
+   descendencia: una criatura no puede cambiar según quién la contenga (R4). La
+   pantalla de juego declara el valor y cualquier criatura que se añada mañana lo
+   hereda sin que nadie tenga que acordarse. */
+.pantalla--juego {
+  --lado-criatura: 56px;
+  --tam-criatura: 34px;
 }
 
 /* ── EL RÓTULO DE VETA: en qué se está ──────────────────────────────────────
@@ -2260,7 +2360,7 @@ button:focus:not(:focus-visible) {
 @media (max-width: 479px) {
   /* Un relleno lateral menos generoso en la pantalla más estrecha: son 32 px
      que el título necesita para caber entero en una línea. */
-  .pantalla--portada .titulo-juego {
+  .portada__titulo {
     padding: var(--e3);
   }
   /* Y LA MISMA FAMILIA QUE E99-E100, UN NIVEL MÁS ADENTRO. A 320 px una línea
@@ -2273,7 +2373,7 @@ button:focus:not(:focus-visible) {
   .contenido p,
   .contenido li,
   .contenido h2,
-  .texto-lectura {
+  .texto {
     overflow-wrap: break-word;
   }
   .contenido ul,
@@ -2333,7 +2433,7 @@ button:focus:not(:focus-visible) {
    desplazarse es el enunciado, nunca los botones. Con el reparto 45/55 fijo, en
    una ventana de 800 px el teclado de bloques quedaba cortado por abajo y la
    fila del OK no se veía. */
-.zona-superior {
+.zona-juego__alta {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -2365,7 +2465,7 @@ button:focus:not(:focus-visible) {
   position: relative;
 }
 
-.zona-inferior { /* SIEMPRE la mitad inferior: alcance del pulgar */
+.zona-juego__baja { /* SIEMPRE la mitad inferior: alcance del pulgar */
   flex: 0 0 auto;
   /* `safe center` por el mismo motivo que arriba: aquí no hay barra que
      recuperar lo que se salga, así que un teclado más alto que su hueco se
@@ -2435,12 +2535,12 @@ button:focus:not(:focus-visible) {
      como toda alineación posicional en una caja con scroll, en cuanto el hijo es
      más ancho que la columna manda el desbordamiento hacia el lado que la barra
      no alcanza. Con `safe` la preferencia se cae sola y vuelve a `start`. */
-  .zona-superior {
+  .zona-juego__alta {
     flex: 1 1 0;
     align-items: safe flex-end;
     padding: var(--e3) 0 var(--e3) var(--e3);
   }
-  .zona-inferior {
+  .zona-juego__baja {
     flex: 1 1 0;
     align-items: flex-start;
     justify-content: safe center;
@@ -2462,7 +2562,7 @@ button:focus:not(:focus-visible) {
   flex: 0 0 auto;
 }
 
-.barra-herramientas .barra-herramientas__grupo {
+.barra-herramientas__grupo {
   display: flex;
   gap: var(--e2);
 }
@@ -2493,7 +2593,7 @@ button:focus:not(:focus-visible) {
   background: var(--deco-piedra);
 }
 
-.tarjeta-mundo .cinta-bioma {
+.tarjeta-mundo__cinta {
   height: 32px;
   background-size: 32px 32px;
   box-shadow: inset 0 var(--bisel) 0 0 rgba(255, 255, 255, 0.4);
@@ -2509,20 +2609,20 @@ button:focus:not(:focus-visible) {
   box-shadow: inset 2px 2px 0 0 var(--blanco), inset -2px -2px 0 0 var(--deco-oro-osc);
 }
 
-.barra-progreso-mundo {
+.tarjeta-mundo__barra {
   height: 20px;
   background: var(--deco-carbon);
   box-shadow: inset 2px 2px 0 0 var(--negro);
 }
 
-.barra-progreso-mundo > i {
+.tarjeta-mundo__relleno {
   display: block;
   height: 100%;
   background: var(--deco-hierba);
 }
 
 /* ── 7. Reparación ──────────────────────────────────────────────────────── */
-.pantalla--reparacion .pasos-reparacion {
+.reparacion__pasos {
   display: flex;
   flex-direction: column;
   gap: var(--e3);
@@ -2530,7 +2630,7 @@ button:focus:not(:focus-visible) {
   max-width: 560px;
 }
 
-.paso-reparacion {
+.reparacion__paso {
   display: flex;
   align-items: center;
   gap: var(--e3);
@@ -2543,13 +2643,13 @@ button:focus:not(:focus-visible) {
   width: 100%;
 }
 
-.paso-reparacion[data-hecho=si] {
+.reparacion__paso[data-hecho=si] {
   color: var(--texto-principal);
   box-shadow: inset var(--bisel) 0 0 0 var(--btn-primario);
   background: var(--ok-fondo);
 }
 
-.paso-reparacion .paso-reparacion__numero {
+.reparacion__numero {
   flex: 0 0 auto;
   width: 48px;
   height: 48px;
@@ -2562,7 +2662,7 @@ button:focus:not(:focus-visible) {
   color: var(--texto-principal);
 }
 
-.paso-reparacion[data-hecho=si] .paso-reparacion__numero {
+.reparacion__paso[data-hecho=si] .reparacion__numero {
   background: var(--btn-primario);
 }
 
@@ -2597,7 +2697,7 @@ button:focus:not(:focus-visible) {
   gap: 2px;
 }
 
-.manojo-decena > b {
+.manojo-decena__palo {
   width: 6px;
   height: 28px;
   background: var(--deco-madera);
@@ -2614,7 +2714,7 @@ button:focus:not(:focus-visible) {
   align-items: center;
 }
 
-.bloque-rompible {
+.tablero-descanso__bloque {
   width: 72px;
   height: 72px;
   background-color: var(--deco-piedra);
@@ -2623,19 +2723,19 @@ button:focus:not(:focus-visible) {
   box-shadow: inset var(--bisel) var(--bisel) 0 0 var(--deco-piedra-cla), inset calc(var(--bisel) * -1) calc(var(--bisel) * -1) 0 0 var(--deco-piedra-osc);
 }
 
-.bloque-rompible[data-roto=si] {
+.tablero-descanso__bloque[data-roto=si] {
   visibility: hidden;
 }
 
 /* ── 9. Jefe ────────────────────────────────────────────────────────────── */
-.armadura-jefe {
+.jefe__armadura {
   display: flex;
   gap: var(--e1);
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.armadura-jefe > b {
+.jefe__bloque {
   width: 32px;
   height: 32px;
   display: block;
@@ -2643,20 +2743,20 @@ button:focus:not(:focus-visible) {
   box-shadow: inset 4px 4px 0 0 var(--deco-piedra-cla), inset -4px -4px 0 0 var(--deco-piedra-osc);
 }
 
-.armadura-jefe > b[data-caido=si] {
+.jefe__bloque[data-caido=si] {
   background: transparent;
   box-shadow: none;
 }
 
-.opciones-jefe {
+.jefe__opciones {
   display: flex;
-  gap: var(--e3);
   flex-wrap: wrap;
+  gap: var(--e3);
   justify-content: center;
 }
 
 /* ── 10. Fin de la expedición ───────────────────────────────────────────── */
-.pantalla--fin .bloque-dominado {
+.bloque-dominado {
   display: flex;
   align-items: center;
   gap: var(--e2);
@@ -2666,13 +2766,13 @@ button:focus:not(:focus-visible) {
   color: var(--ok-texto);
 }
 
-.caras-animo {
+.animo {
   display: flex;
   gap: var(--e4);
   justify-content: center;
 }
 
-.cara-animo {
+.animo__cara {
   width: 88px;
   height: 88px;
   font-size: 44px;
@@ -2683,7 +2783,7 @@ button:focus:not(:focus-visible) {
   box-shadow: inset var(--bisel) var(--bisel) 0 0 var(--blanco), inset calc(var(--bisel) * -1) calc(var(--bisel) * -1) 0 0 var(--btn-borde-sombra);
 }
 
-.cara-animo[aria-pressed=true] {
+.animo__cara[aria-pressed=true] {
   background: var(--deco-oro-cla);
 }
 
@@ -2709,7 +2809,7 @@ button:focus:not(:focus-visible) {
   background: var(--deco-piedra);
 }
 
-.termino-glosario .termino-glosario__marca {
+.termino-glosario__marca {
   font-family: var(--fuente-pixel);
   font-size: 13px;
   background: var(--bg-texto-aviso);
@@ -2737,7 +2837,7 @@ button:focus:not(:focus-visible) {
   text-align: left;
 }
 
-.ajuste .ajuste__etiqueta {
+.ajuste__etiqueta {
   flex: 1 1 auto;
 }
 
@@ -2766,7 +2866,7 @@ button:focus:not(:focus-visible) {
 /* Cabecera de la calibración. Su h1 era `solo-lectores` y la pantalla se
    quedaba sin explicar: cuatro preguntas sueltas, sin reloj, que parecían una
    partida averiada. */
-.cabecera-calibracion {
+.calibracion__cabecera {
   flex: 0 0 auto;
   padding: var(--e2) var(--e3);
   text-align: center;
@@ -2774,12 +2874,12 @@ button:focus:not(:focus-visible) {
   color: var(--texto-claro);
 }
 
-.cabecera-calibracion h1 {
+.calibracion__titulo {
   margin: 0;
   font-size: var(--tam-titulo);
 }
 
-.cabecera-calibracion p {
+.calibracion__paso {
   margin: var(--e1) auto 0 auto;
   max-width: none;
   color: var(--texto-sec-claro);
@@ -2788,7 +2888,7 @@ button:focus:not(:focus-visible) {
 /* La pista bajo el botón principal. Va sobre fondo de TEXTO, nunca sobre el
    cielo: los colores decorativos no llevan texto encima (regla de
    01-variables.css) y sobre el azul del cielo esta línea era ilegible. */
-.pantalla--portada .portada__pista {
+.portada__pista {
   font-family: var(--fuente-lectura);
   font-size: var(--tam-texto-min);
   background: var(--bg-texto-panel);
@@ -2799,7 +2899,7 @@ button:focus:not(:focus-visible) {
   margin: 0;
 }
 
-.pantalla--portada .portada__pista:empty {
+.portada__pista:empty {
   display: none;
 }
 
@@ -2833,7 +2933,7 @@ button:focus:not(:focus-visible) {
 /* Y por debajo de la anchura más estrecha de referencia, ni 128 px hay: las
    luces solas ocupan 160. Ahí la misma información va en texto, que ocupa una
    cuarta parte. No se esconde: se dice de otra manera. */
-.galeria-avance > b {
+.galeria-avance__bloque {
   display: none;
 }
 
@@ -2848,14 +2948,14 @@ button:focus:not(:focus-visible) {
   .galeria-avance {
     width: 128px;
   }
-  .galeria-avance > b {
+  .galeria-avance__bloque {
     display: block;
   }
   .galeria-avance::after {
     content: "";
   }
 }
-.galeria-avance > b {
+.galeria-avance__bloque {
   width: 10px;
   height: 10px;
   display: block;
@@ -2864,7 +2964,7 @@ button:focus:not(:focus-visible) {
 }
 
 /* Caído = ya cavado. Se apaga el relieve y queda el hueco, igual que en el jefe. */
-.galeria-avance > b[data-caido=si] {
+.galeria-avance__bloque[data-caido=si] {
   background: var(--deco-oro);
   box-shadow: inset 2px 2px 0 0 var(--deco-oro-cla), inset -2px -2px 0 0 var(--deco-oro-osc);
 }
@@ -3132,7 +3232,7 @@ button:focus:not(:focus-visible) {
     transform: translateY(3px);
   }
 }
-.reloj .reloj__chorro {
+.reloj__chorro {
   animation: reloj-chorro 420ms steps(2, end) infinite;
 }
 
@@ -3458,7 +3558,7 @@ button:focus:not(:focus-visible) {
 }
 
 /* ── VEHÍCULO 4 · EL CARTEL ─────────────────────────────────────────────────
-   Logro y luz extra. Crece desde el centro con un rebote. No cruza, no barre:
+   Logro y luces__luz extra. Crece desde el centro con un rebote. No cruza, no barre:
    aparece donde está y se queda. Es un panel, no una franja, y esa diferencia de
    silueta es la que hace que no se confunda con la cinta. */
 @keyframes cartel-brota {
@@ -3538,7 +3638,7 @@ button:focus:not(:focus-visible) {
    sigue valiendo si mañana esto se escribe de otra manera.
    ────────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .particula.particula--viva, .criatura--flota, .criatura--saltito, .criatura--asiente, .criatura--gotea, .criatura--gira, .nube, .veta--musgo, .btn-bloque--monta, .btn-bloque--destello, .reloj__arena.reloj__arena--voltea, .reloj .reloj__chorro, .reloj--prisa .reloj__arena, .reloj__cifra.reloj__cifra--late, .cinta.cinta--entra, .cinta--prisa.cinta--entra .cinta__texto, .insignia.insignia--brota, .cartel.cartel--brota, .cifra-viva.cifra-viva--sube, .zona-juego.zona-juego--sacude {
+  .particula.particula--viva, .criatura--flota, .criatura--saltito, .criatura--asiente, .criatura--gotea, .criatura--gira, .nube, .veta--musgo, .btn-bloque--monta, .btn-bloque--destello, .reloj__arena.reloj__arena--voltea, .reloj__chorro, .reloj--prisa .reloj__arena, .reloj__cifra.reloj__cifra--late, .cinta.cinta--entra, .cinta--prisa.cinta--entra .cinta__texto, .insignia.insignia--brota, .cartel.cartel--brota, .cifra-viva.cifra-viva--sube, .zona-juego.zona-juego--sacude {
     animation: none !important;
   }
   /* Sin animación, los botones aparecerían grises y cambiarían de color de golpe */
@@ -3586,7 +3686,7 @@ button:focus:not(:focus-visible) {
     box-shadow: inset 0 0 0 8px var(--deco-oro);
   }
 }
-:root.sin-movimiento .particula.particula--viva, :root.sin-movimiento .criatura--flota, :root.sin-movimiento .criatura--saltito, :root.sin-movimiento .criatura--asiente, :root.sin-movimiento .criatura--gotea, :root.sin-movimiento .criatura--gira, :root.sin-movimiento .nube, :root.sin-movimiento .veta--musgo, :root.sin-movimiento .btn-bloque--monta, :root.sin-movimiento .btn-bloque--destello, :root.sin-movimiento .reloj__arena.reloj__arena--voltea, :root.sin-movimiento .reloj .reloj__chorro, :root.sin-movimiento .reloj--prisa .reloj__arena, :root.sin-movimiento .reloj__cifra.reloj__cifra--late, :root.sin-movimiento .cinta.cinta--entra, :root.sin-movimiento .cinta--prisa.cinta--entra .cinta__texto, :root.sin-movimiento .insignia.insignia--brota, :root.sin-movimiento .cartel.cartel--brota, :root.sin-movimiento .cifra-viva.cifra-viva--sube, :root.sin-movimiento .zona-juego.zona-juego--sacude {
+:root.sin-movimiento .particula.particula--viva, :root.sin-movimiento .criatura--flota, :root.sin-movimiento .criatura--saltito, :root.sin-movimiento .criatura--asiente, :root.sin-movimiento .criatura--gotea, :root.sin-movimiento .criatura--gira, :root.sin-movimiento .nube, :root.sin-movimiento .veta--musgo, :root.sin-movimiento .btn-bloque--monta, :root.sin-movimiento .btn-bloque--destello, :root.sin-movimiento .reloj__arena.reloj__arena--voltea, :root.sin-movimiento .reloj__chorro, :root.sin-movimiento .reloj--prisa .reloj__arena, :root.sin-movimiento .reloj__cifra.reloj__cifra--late, :root.sin-movimiento .cinta.cinta--entra, :root.sin-movimiento .cinta--prisa.cinta--entra .cinta__texto, :root.sin-movimiento .insignia.insignia--brota, :root.sin-movimiento .cartel.cartel--brota, :root.sin-movimiento .cifra-viva.cifra-viva--sube, :root.sin-movimiento .zona-juego.zona-juego--sacude {
   animation: none !important;
 }
 
@@ -3768,7 +3868,7 @@ button:focus:not(:focus-visible) {
 }
 
 /* Los cuatro biomas salen del mapa $biomas. Cada uno es un material, y esa
-   correspondencia se escribia DOS veces: aqui y en .cinta-bioma[data-bioma],
+   correspondencia se escribia DOS veces: aqui y en .tarjeta-mundo__cinta[data-bioma],
    cuarenta lineas mas abajo. Dos sitios que hay que acordarse de cambiar a la
    vez es el mismo fallo que tenian las listas de movimiento reducido. */
 .bioma--pradera {
@@ -3808,22 +3908,22 @@ button:focus:not(:focus-visible) {
 }
 
 /* Cintas de bioma de las tarjetas del mapa */
-.cinta-bioma[data-bioma=pradera] {
+.tarjeta-mundo__cinta[data-bioma=pradera] {
   background-color: var(--deco-hierba);
   background-image: var(--tex-hierba);
 }
 
-.cinta-bioma[data-bioma=bosque] {
+.tarjeta-mundo__cinta[data-bioma=bosque] {
   background-color: var(--deco-musgo);
   background-image: var(--tex-musgo);
 }
 
-.cinta-bioma[data-bioma=rio] {
+.tarjeta-mundo__cinta[data-bioma=rio] {
   background-color: var(--deco-agua);
   background-image: var(--tex-agua);
 }
 
-.cinta-bioma[data-bioma=mina] {
+.tarjeta-mundo__cinta[data-bioma=mina] {
   background-color: var(--deco-piedra);
   background-image: var(--tex-piedra);
 }
@@ -3907,14 +4007,14 @@ button:focus:not(:focus-visible) {
   max-width: 68ch;
 }
 
-.adulto-caja {
+.adulto__caja {
   background: var(--blanco);
   padding: var(--e3);
   box-shadow: inset 2px 2px 0 0 var(--deco-piedra);
   margin-bottom: var(--e3);
 }
 
-.adulto-aviso {
+.adulto__aviso {
   background: var(--bg-texto-aviso);
   color: var(--texto-aviso);
   padding: var(--e3);
@@ -3922,25 +4022,25 @@ button:focus:not(:focus-visible) {
   margin-bottom: var(--e3);
 }
 
-.tabla-adulto {
+.adulto__tabla {
   border-collapse: collapse;
   width: 100%;
   font-size: 15px;
 }
 
-.tabla-adulto th, .tabla-adulto td {
+.adulto__tabla th, .adulto__tabla td {
   border: 2px solid var(--deco-piedra);
   padding: var(--e2);
   text-align: left;
   vertical-align: top;
 }
 
-.tabla-adulto th {
+.adulto__tabla th {
   background: var(--bg-texto-aviso);
   font-weight: bold;
 }
 
-.tabla-adulto tr:nth-child(even) td {
+.adulto__tabla tr:nth-child(even) td {
   background: var(--crema-fila);
 }
 
@@ -4009,7 +4109,7 @@ button:focus:not(:focus-visible) {
   border-bottom: 2px solid var(--deco-piedra);
 }
 
-.metrica .metrica__valor {
+.metrica__valor {
   font-weight: bold;
   white-space: nowrap;
 }
@@ -4034,14 +4134,14 @@ button:focus:not(:focus-visible) {
   background: var(--peligro-suave);
 }
 
-.puerta-parental {
+.adulto__puerta {
   display: flex;
   flex-direction: column;
   gap: var(--e3);
   max-width: 480px;
 }
 
-.puerta-parental input {
+.adulto__campo {
   font-size: 20px;
   padding: var(--e2);
   background: var(--blanco);
@@ -4108,18 +4208,18 @@ button:focus:not(:focus-visible) {
   }
   h1 {
     font-size: 17pt !important;
-    margin: 0 0 4mm 0 !important;
+    margin: 0 0 4mm !important;
   }
   h2 {
     font-size: 13pt !important;
-    margin: 6mm 0 2mm 0 !important;
+    margin: 6mm 0 2mm !important;
     page-break-after: avoid;
   }
   h3 {
     font-size: 11pt !important;
     page-break-after: avoid;
   }
-  .adulto-caja, .adulto-aviso {
+  .adulto__caja, .adulto__aviso {
     box-shadow: none !important;
     border: 1pt solid var(--negro);
     padding: 3mm !important;
@@ -4127,21 +4227,21 @@ button:focus:not(:focus-visible) {
     background: var(--blanco) !important;
     page-break-inside: avoid;
   }
-  .tabla-adulto {
+  .adulto__tabla {
     width: 100%;
     border-collapse: collapse;
     font-size: 10pt;
   }
-  .tabla-adulto th, .tabla-adulto td {
+  .adulto__tabla th, .adulto__tabla td {
     border: 0.6pt solid var(--negro) !important;
     padding: 1.6mm !important;
     background: var(--blanco) !important;
     color: var(--negro) !important;
   }
-  .tabla-adulto th {
+  .adulto__tabla th {
     font-weight: bold;
   }
-  .tabla-adulto tr {
+  .adulto__tabla tr {
     page-break-inside: avoid;
   }
   /* El semáforo ya lleva símbolo y texto en ::before: en B/N sigue leyéndose */
@@ -4155,26 +4255,26 @@ button:focus:not(:focus-visible) {
   .ficha-refuerzo {
     page-break-before: always;
   }
-  .ficha-refuerzo .rejilla-ejercicios {
+  .ficha-refuerzo__rejilla {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8mm 12mm;
     margin-top: 6mm;
   }
-  .ficha-refuerzo .ficha-refuerzo__ejercicio {
+  .ficha-refuerzo__ejercicio {
     font-size: 20pt;
     font-family: Verdana, Geneva, sans-serif;
     border-bottom: 0.8pt solid var(--negro);
     padding-bottom: 12mm;
     page-break-inside: avoid;
   }
-  .ficha-refuerzo .ficha-refuerzo__pie {
+  .ficha-refuerzo__pie {
     margin-top: 8mm;
     font-size: 9pt;
     border-top: 0.6pt solid var(--negro);
     padding-top: 2mm;
   }
-  .pie-informe {
+  .informe__pie {
     margin-top: 6mm;
     font-size: 8.5pt;
     border-top: 0.6pt solid var(--negro);
@@ -4204,7 +4304,7 @@ button:focus:not(:focus-visible) {
 @media (forced-colors: active) {
   /* El relieve, a borde real */
   .btn-bloque, .panel-bloque, .veta, .cromo, .tarjeta-mundo, .tarjeta-perfil,
-  .visor-respuesta, .adulto-caja, .btn-adulto {
+  .respuesta__visor, .adulto__caja, .btn-adulto {
     box-shadow: none;
     border: 2px solid ButtonBorder;
   }
@@ -4215,14 +4315,14 @@ button:focus:not(:focus-visible) {
     outline-offset: 2px;
   }
   /* NUNCA SOLO COLOR, y aquí menos que nunca: en forced-colors el color lo elige
-     el sistema, así que la forma es lo ÚNICO que queda. La luz apagada se
+     el sistema, así que la forma es lo ÚNICO que queda. La luces__luz apagada se
      distingue por el trazo discontinuo, no por su gris. */
-  .luz[data-estado=apagada] {
+  .luces__luz[data-estado=apagada] {
     border-style: dashed;
   }
   /* Las texturas de fondo desaparecen en forced-colors; sin esto, los biomas
      quedarían como rectángulos planos indistinguibles. Se marcan por borde. */
-  .bioma::after, .cinta-bioma {
+  .bioma::after, .tarjeta-mundo__cinta {
     border: 1px solid CanvasText;
   }
 }

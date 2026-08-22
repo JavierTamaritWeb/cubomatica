@@ -60,6 +60,14 @@ CB.pruebas.suite('Tipografía: cobertura de glifos y rama activa de la cascada',
     'la pila de lectura encabeza con Verdana (x-height alta, formas abiertas)');
 
   /* Los enunciados de problema NUNCA usan la fuente pixel (§10.2) */
+  /* La sonda se monta con la clase puesta, así que mide igual exista o no el
+     nodo en la maqueta. Lo que NO puede darse por hecho es que la clase siga
+     existiendo en la hoja: sin regla, la sonda hereda la tipografía del body
+     —que también es la de lectura— y la comprobación pasa midiendo la nada. */
+  var reglaEnunciado = t.claseEnHoja('.enunciado');
+  t.ok(reglaEnunciado === true,
+    'la clase .enunciado sigue teniendo regla en la hoja cargada',
+    reglaEnunciado === null ? 'no se pueden leer las cssRules: sirve la página por HTTP' : 'sin regla');
   var enun = document.querySelector('.enunciado') || document.createElement('div');
   enun.className = 'enunciado';
   document.body.appendChild(enun);

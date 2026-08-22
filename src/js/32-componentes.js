@@ -86,7 +86,7 @@ CB.componentes.conectarToc = function (contenedor) {
        construcción no recibían ni el «toc» ni la sacudida: se tocaban y no pasaba
        nada de nada, ni siquiera el sonido de «aún no». */
     if (b && b.classList && (b.classList.contains('btn-bloque') ||
-        b.classList.contains('moneda') || b.classList.contains('billete'))) {
+        b.classList.contains('pieza'))) {
       b.classList.add('btn-bloque--toc');
       setTimeout(function () { b.classList.remove('btn-bloque--toc'); }, 260);
     }
@@ -160,7 +160,7 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   if (opciones.vaciar !== false) CB.ui.vaciar(cont);
   CB.componentes._valor = '';
 
-  var visor = CB.ui.crear('div', 'visor-respuesta');
+  var visor = CB.ui.crear('div', 'respuesta__visor');
   visor.id = 'visor-respuesta';
   visor.setAttribute('role', 'status');
   visor.setAttribute('aria-live', 'polite');
@@ -198,7 +198,12 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   var botonOK = null;
   for (i = 0; i < teclas.length; i++) {
     (function (t) {
-      var b = CB.ui.boton(t, t === 'OK' ? 'btn-bloque--primario' : '', function () {
+      /* La tecla lleva ADEMAS la clase de elemento del teclado. Antes el
+         tamano de las teclas salia de `.teclado-bloques .btn-bloque`, o sea del
+         contenedor estilando a un bloque ajeno: el boton cambiaba de tamano
+         segun donde estuviera, que es lo que un bloque no puede hacer. */
+      var b = CB.ui.boton(t, 'teclado-bloques__tecla' +
+        (t === 'OK' ? ' btn-bloque--primario' : ''), function () {
         pulsa(t, b);
       }, { tecla: t === '⌫' ? 'borrar' : (t === 'OK' ? 'ok' : t) });
       b.setAttribute('aria-label', t === '⌫' ? 'Borrar' : (t === 'OK' ? 'Confirmar' : t));
@@ -271,7 +276,7 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
         b.addEventListener('click', elegir);
       } else {
         var etiqueta = (op.texto != null) ? op.texto : String(op.valor);
-        b = CB.ui.boton(etiqueta, '', elegir, { posicion: idx });
+        b = CB.ui.boton(etiqueta, 'rejilla-respuestas__opcion', elegir, { posicion: idx });
         if (op.texto != null) b.style.fontSize = 'var(--tam-texto-min)';
       }
       rej.appendChild(b);
@@ -306,7 +311,7 @@ CB.componentes.selectorSigno = function (item, alResponder, opciones) {
 
   var fila = CB.ui.crear('div', 'rejilla-respuestas');
   ['+', '−'].forEach(function (s, idx) {
-    var b = CB.ui.boton(s, '', function () {
+    var b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
       if (CB.partida && CB.partida.bloqueado) return;
       /* La misma regla que el teclado y las opciones. Se la saltaba, y con ella
          tres formatos más: una regla aplicada en tres sitios de siete es
@@ -337,7 +342,7 @@ CB.componentes.balanza = function (item, alResponder, opciones) {
   var etiquetas = { '>': 'mayor que', '<': 'menor que', '=': 'igual que' };
 
   signos.forEach(function (s, idx) {
-    var b = CB.ui.boton(s, '', function () {
+    var b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
       if (CB.partida && CB.partida.bloqueado) return;
       CB.componentes.pedirConfirmacion(b, function () {
         alResponder(s, 'balanza', { posicion: idx });
@@ -376,11 +381,11 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   var huecos = CB.ui.crear('div', 'fila-ordenar');
   var i;
   for (i = 0; i < item.orden.length; i++) {
-    var h = CB.ui.crear('span', 'hueco-orden', '·');
+    var h = CB.ui.crear('span', 'fila-ordenar__hueco', '·');
     h.setAttribute('data-hueco', i);
     huecos.appendChild(h);
   }
-  cont.appendChild(CB.ui.crear('p', 'consigna-respuesta', 'Toca los números en orden.'));
+  cont.appendChild(CB.ui.crear('p', 'respuesta__consigna', 'Toca los números en orden.'));
   cont.appendChild(huecos);
 
   var piezas = CB.ui.crear('div', 'fila-ordenar');
@@ -466,7 +471,7 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
   /* Modo «pagar»: el niño elige piezas hasta el importe exacto. */
   if (item.modo === 'pagar') {
     var total = 0;
-    var marcador = CB.ui.crear('div', 'visor-respuesta', '0');
+    var marcador = CB.ui.crear('div', 'respuesta__visor', '0');
     cont.appendChild(marcador);
 
     /* LA FILA DE LO COGIDO: «2 € + 2 € + 1 €». Es lo que de verdad descarga la
@@ -575,7 +580,7 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     fase = 'operacion';
   }
 
-  var titulo = CB.ui.crear('p', 'consigna-respuesta', '');
+  var titulo = CB.ui.crear('p', 'respuesta__consigna', '');
   cont.appendChild(titulo);
   var zona = CB.ui.crear('div');
   cont.appendChild(zona);
@@ -588,7 +593,7 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
       var numeros = (item.enunciado.match(/\d+/g) || []).map(Number);
       var rej = CB.ui.crear('div', 'rejilla-respuestas');
       numeros.forEach(function (n, idx) {
-        var b = CB.ui.boton(String(n), '', function () {
+        var b = CB.ui.boton(String(n), 'rejilla-respuestas__opcion', function () {
           if (CB.partida && CB.partida.bloqueado) return;
           /* DESTOCAR. Antes este `if` salía sin hacer nada: el número elegido por
              error se quedaba elegido y el niño tenía que terminar mal el ítem a
@@ -621,7 +626,7 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
       titulo.textContent = '¿Qué hay que hacer?';
       var fila = CB.ui.crear('div', 'rejilla-respuestas');
       ['+', '−'].forEach(function (s, idx) {
-        var b = CB.ui.boton(s, '', function () {
+        var b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
           signoElegido = (s === '+') ? '+' : '-';
           fase = 'calculo';
           pintarFase();

@@ -59,7 +59,7 @@ CB.ui.pintarHUD = function (estado) {
     var i, luz;
     for (i = 0; i < CB.vidas.TOPE; i++) {
       if (i >= Math.max(CB.vidas.INICIALES, estado.luces)) break;
-      luz = CB.ui.crear('span', 'luz');
+      luz = CB.ui.crear('span', 'luces__luz');
       luz.setAttribute('data-estado', i < estado.luces ? 'encendida' : 'apagada');
       cont.appendChild(luz);
     }
@@ -88,7 +88,7 @@ CB.ui.pintarHUD = function (estado) {
     var hechos = Math.max(0, Math.min(estado.total, estado.indice || 0));
     var j, b;
     for (j = 0; j < estado.total; j++) {
-      b = CB.ui.crear('b');
+      b = CB.ui.crear('b', 'galeria-avance__bloque');
       if (j < hechos) b.setAttribute('data-caido', 'si');
       gal.appendChild(b);
     }
@@ -139,7 +139,8 @@ CB.ui.pintarVeta = function (nivel, mundo) {
    la cabecera de `15-gen-dinero.js`. */
 CB.ui.pieza = function (etiqueta, v) {
   var esCent = CB.gen.dinero.esCentimo(v);
-  var el = CB.ui.crear(etiqueta, CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete');
+  var el = CB.ui.crear(etiqueta,
+    'pieza ' + (CB.gen.dinero.esMoneda(v) ? 'pieza--moneda' : 'pieza--billete'));
   if (esCent) {
     el.setAttribute('data-centimos', String(CB.gen.dinero.valorCent(v)));
     el.appendChild(CB.ui.crear('span', 'pieza__cifra',
@@ -233,11 +234,11 @@ CB.ui.parpadeoGris = function () {
 };
 
 CB.ui.encenderLuz = function (indice) {
-  var luces = document.querySelectorAll('#hud-luces .luz');
+  var luces = document.querySelectorAll('#hud-luces .luces__luz');
   if (luces[indice]) {
     luces[indice].setAttribute('data-estado', 'encendida');
-    luces[indice].classList.add('luz--recien-encendida');
-    setTimeout(function () { luces[indice].classList.remove('luz--recien-encendida'); }, 1600);
+    luces[indice].classList.add('luces__luz--recien-encendida');
+    setTimeout(function () { luces[indice].classList.remove('luces__luz--recien-encendida'); }, 1600);
   }
 };
 
@@ -262,7 +263,7 @@ CB.ui.pintarItem = function (item) {
     var caja = CB.ui.crear('div', 'enunciado');
     var i;
     for (i = 0; i < item.frases.length; i++) {
-      var p = CB.ui.crear('p', 'frase-enunciado', item.frases[i]);
+      var p = CB.ui.crear('p', 'enunciado__frase', item.frases[i]);
       p.setAttribute('data-frase', i);
       caja.appendChild(p);
     }
@@ -284,7 +285,7 @@ CB.ui.pintarItem = function (item) {
   if (item.visual && item.visual.tipo === 'matriz') {
     cont.appendChild(CB.ui.matriz(item.visual.filas, item.visual.columnas));
     if (item.sumaReiterada) {
-      cont.appendChild(CB.ui.crear('p', 'texto-menor', item.sumaReiterada));
+      cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.sumaReiterada));
     }
   }
 
@@ -301,12 +302,13 @@ CB.ui.pintarItem = function (item) {
   }
 
   if (item.preguntaPrevia) {
-    cont.appendChild(CB.ui.crear('p', 'texto-menor', item.preguntaPrevia));
+    cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
   }
 
   var texto = item.consigna || '';
   var esOperacion = !!item.operacion && !item.visual;
-  var linea = CB.ui.crear('p', esOperacion ? 'operacion' : 'enunciado', texto);
+  var linea = CB.ui.crear('p',
+    'enunciado' + (esOperacion ? ' enunciado--operacion' : ''), texto);
   cont.appendChild(linea);
 };
 
@@ -366,7 +368,7 @@ CB.ui.filaVagonetas = function (total, marcada) {
   var caja = CB.ui.crear('div', 'fila-ordenar');
   var i;
   for (i = 1; i <= total && i <= 20; i++) {
-    var v = CB.ui.crear('span', 'hueco-orden', i === marcada ? '★' : '·');
+    var v = CB.ui.crear('span', 'fila-ordenar__hueco', i === marcada ? '★' : '·');
     if (i === marcada) v.style.background = 'var(--deco-oro-cla)';
     caja.appendChild(v);
   }
@@ -490,7 +492,7 @@ CB.ui.ocultarPersonaje = function (quien) {
 
 /* ── Lectura guiada: resalta la palabra que se está leyendo ─────────────── */
 CB.ui.resaltarLinea = function (indice) {
-  var lineas = document.querySelectorAll('#item-enunciado .frase-enunciado');
+  var lineas = document.querySelectorAll('#item-enunciado .enunciado__frase');
   var i;
   for (i = 0; i < lineas.length; i++) {
     lineas[i].classList.toggle('enunciado__linea--activa', i === indice);
@@ -504,7 +506,7 @@ CB.ui.resaltarPalabra = function (indice, texto) {
   /* Se resalta la frase que contiene esa palabra: resaltar palabra a palabra
      exigiría reconstruir el DOM en cada paso, y eso rompe el lector de pantalla. */
   var acumulado = 0, i;
-  var frases = caja.querySelectorAll('.frase-enunciado');
+  var frases = caja.querySelectorAll('.enunciado__frase');
   for (i = 0; i < frases.length; i++) {
     var n = CB.util.palabras(frases[i].textContent).length;
     if (indice < acumulado + n) { CB.ui.resaltarLinea(i); return; }
@@ -591,10 +593,10 @@ CB.ui.mostrarReparacion = function (item, hipotesis, alTerminar) {
   }
 
   tarjeta.pasos.forEach(function (paso, i) {
-    var fila = CB.ui.crear('button', 'paso-reparacion');
+    var fila = CB.ui.crear('button', 'reparacion__paso');
     fila.type = 'button';
     fila.setAttribute('data-hecho', 'no');
-    fila.appendChild(CB.ui.crear('span', 'paso-reparacion__numero', String(i + 1)));
+    fila.appendChild(CB.ui.crear('span', 'reparacion__numero', String(i + 1)));
     fila.appendChild(CB.ui.crear('span', null, paso.texto));
     fila.addEventListener('click', function () {
       CB.reparacion.tocar(puerta, i);
@@ -614,7 +616,7 @@ CB.ui.mostrarReparacion = function (item, hipotesis, alTerminar) {
   /* Salvavidas: siempre por detrás del suelo temporal, nunca antes de 25 s */
   var salvavidas = setTimeout(function () {
     CB.reparacion.autocompletar(puerta);
-    var filas = cont.querySelectorAll('.paso-reparacion');
+    var filas = cont.querySelectorAll('.reparacion__paso');
     var i;
     for (i = 0; i < filas.length; i++) filas[i].setAttribute('data-hecho', 'si');
     boton.disabled = false;
@@ -645,7 +647,7 @@ CB.ui.dibujoReparacion = function (tarjeta) {
       var col = CB.ui.crear('div', 'columna-cdu');
       col.setAttribute('data-columna', letra);
       col.setAttribute('data-activa', 'no');
-      col.appendChild(CB.ui.crear('span', 'texto-menor', letra));
+      col.appendChild(CB.ui.crear('span', 'texto texto--menor', letra));
       var pot = Math.pow(10, 2 - idx);
       col.appendChild(CB.ui.crear('span', null, Math.floor(d.a / pot) % 10));
       col.appendChild(CB.ui.crear('span', null, d.op));
@@ -653,7 +655,7 @@ CB.ui.dibujoReparacion = function (tarjeta) {
       caja.appendChild(col);
     });
     var manojo = CB.ui.crear('div', 'manojo-decena');
-    for (i = 0; i < 10; i++) manojo.appendChild(CB.ui.crear('b'));
+    for (i = 0; i < 10; i++) manojo.appendChild(CB.ui.crear('b', 'manojo-decena__palo'));
     caja.appendChild(manojo);
 
   } else if (tarjeta.dibujo === 'matriz') {
@@ -676,7 +678,7 @@ CB.ui.dibujoReparacion = function (tarjeta) {
 
   } else if (tarjeta.dibujo === 'monedas') {
     (d.piezas || []).forEach(function (v) {
-      caja.appendChild(CB.ui.crear('span', 'moneda', v + ' €'));
+      caja.appendChild(CB.ui.crear('span', 'pieza pieza--moneda', v + ' €'));
     });
 
   } else if (tarjeta.dibujo === 'tabla100') {
@@ -695,7 +697,7 @@ CB.ui.dibujoReparacion = function (tarjeta) {
   } else {
     var recta = CB.ui.crear('div', 'fila-ordenar');
     for (i = d.desde; i <= d.hasta && i - d.desde < 20; i++) {
-      var h = CB.ui.crear('span', 'hueco-orden', i);
+      var h = CB.ui.crear('span', 'fila-ordenar__hueco', i);
       h.style.width = '48px'; h.style.height = '48px'; h.style.fontSize = '16px';
       if (i === d.marca) h.style.background = 'var(--deco-oro-cla)';
       recta.appendChild(h);
@@ -718,8 +720,8 @@ CB.ui.resaltarPasoDibujo = function (foco) {
 
 /* ── Barra de progreso genérica ─────────────────────────────────────────── */
 CB.ui.barra = function (fraccion) {
-  var b = CB.ui.crear('div', 'barra-progreso-mundo');
-  var i = CB.ui.crear('i');
+  var b = CB.ui.crear('div', 'tarjeta-mundo__barra');
+  var i = CB.ui.crear('i', 'tarjeta-mundo__relleno');
   i.style.width = Math.round(CB.util.clamp(fraccion, 0, 1) * 100) + '%';
   b.appendChild(i);
   return b;

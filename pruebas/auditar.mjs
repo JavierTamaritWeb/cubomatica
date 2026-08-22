@@ -552,21 +552,36 @@ titulo('7. Peso');
 
    El tope que de verdad protege el arranque no es ninguno de estos dos: es el de
    la descarga inicial del bloque 5, < 400 KB, y ese no se toca. */
-let bytesCompilado = 0, bytesPruebas = 0;
+/* TRES CUBOS, NO DOS, y por el mismo motivo por el que en su día se partió el
+   único de 1 100 KB. `herramientas/` no se compila ni se entrega: es utillaje de
+   verificación —el cruce de clases, la comprobación de dist, los retratos de
+   pantalla, el volcado de CSS—, o sea de la misma naturaleza que `pruebas/` y de
+   naturaleza distinta a `src/`. Contarlo con las fuentes solo se sostenía
+   mientras fuera pequeño; en cuanto crece, el rojo dice «el juego ha engordado»
+   cuando lo que ha pasado es que se ha comprobado más, que es lo contrario de un
+   problema. Cada cubo tiene ahora su techo y cada techo significa una cosa.
+
+   El que de verdad protege a quien juega sigue siendo el del bloque 5: la
+   descarga de arranque, < 400 KB, y ese no se toca. */
+let bytesCompilado = 0, bytesPruebas = 0, bytesHerramientas = 0;
 for (const f of recorrer(RAIZ)) {
   const c = corto(f);
   if (c.startsWith('pruebas/')) { bytesPruebas += statSync(f).size; continue; }
-  if (c.startsWith('src/') || c.startsWith('herramientas/') ||
+  if (c.startsWith('herramientas/')) { bytesHerramientas += statSync(f).size; continue; }
+  if (c.startsWith('src/') ||
       /^(README\.md|manifiesto\.json|gulpfile\.js|package\.json|servir\.|[^/]*\.txt)/.test(c)) {
     bytesCompilado += statSync(f).size;
   }
 }
 const kbFuente = Math.round(bytesCompilado / 1024);
 const kbPruebas = Math.round(bytesPruebas / 1024);
+const kbHerramientas = Math.round(bytesHerramientas / 1024);
 juzgar(kbFuente < 900, 'las fuentes ocupan ' + kbFuente + ' KB (presupuesto: < 900 KB)',
   'las fuentes ocupan ' + kbFuente + ' KB, por encima del presupuesto de 900 KB');
 juzgar(kbPruebas < 500, 'las pruebas ocupan ' + kbPruebas + ' KB (presupuesto: < 500 KB)',
   'las pruebas ocupan ' + kbPruebas + ' KB, por encima del presupuesto de 500 KB');
+juzgar(kbHerramientas < 100, 'las herramientas ocupan ' + kbHerramientas + ' KB (presupuesto: < 100 KB)',
+  'las herramientas ocupan ' + kbHerramientas + ' KB, por encima del presupuesto de 100 KB');
 
 const bytesMusica = PISTAS.reduce((n, p) => {
   const f = D('dist/audio', p + '.mp3');
@@ -591,6 +606,78 @@ try {
   verde('cero clases muertas, cero fantasma, cero getElementById huerfano, cero selectores por id');
 } catch (e) {
   rojo('el cruce de clases ha encontrado desajustes', String(e.stdout || ''));
+}
+
+/* ══ 9. LA GRAMATICA DE LAS CLASES ════════════════════════════════════════
+   E104 · stylelint comprueba la FORMA de cada nombre: kebab-case, un solo `__`,
+   cero `#id`, anidamiento <= 2 y como mucho tres compuestos. La convencion
+   entera esta en docs/convencion-bem.md, y la configuracion —con el motivo de
+   cada regla apagada— en stylelint.config.mjs.
+
+   NO comprueba el SENTIDO: que `luz` deberia llamarse `luces__luz` no lo sabe
+   ninguna herramienta. Eso lo decide una persona y queda escrito en el mapa.
+
+   Se salta si no estan las dependencias: `npm install` no forma parte de clonar
+   el repositorio, y un rojo que diga «falta stylelint» no ayuda a nadie. Lo que
+   NO se salta nunca es E105, que solo necesita el CSS compilado. */
+titulo('9. Gramatica de las clases (BEM)');
+if (existsSync(D('node_modules', 'stylelint'))) {
+  try {
+    execFileSync(process.execPath, [D('node_modules/stylelint/bin/stylelint.mjs'),
+      'src/scss/**/*.scss'], { cwd: RAIZ, encoding: 'utf8', stdio: 'pipe' });
+    verde('E104 · stylelint: los nombres de clase cumplen la gramatica BEM');
+  } catch (e) {
+    rojo('E104 · stylelint ha encontrado nombres fuera de la gramatica',
+      String(e.stdout || '') + String(e.stderr || ''));
+  }
+} else {
+  salto('E104 · stylelint no esta instalado (npm install)');
+}
+
+/* E105 · CERO DESCENDENCIA ENTRE BLOQUES, que es la regla que ninguna
+   herramienta generica sabe leer porque la lista blanca es del proyecto.
+
+   Un bloque no puede cambiar segun quien lo contenga: si lo hace, deja de ser
+   un bloque. Habia siete selectores asi (`.panel-bloque .texto-menor` y sus
+   hermanos) y ahora el contenedor declara una variable y el bloque la consume.
+
+   Se mide sobre el CSS COMPILADO, no sobre las fuentes: ahi estan ya los
+   selectores que genera Sass con @each y los que emiten los mixins. */
+if (!existsSync(CSS_COMPILADO)) {
+  salto('E105 · descendencia entre bloques: no hay CSS compilado');
+} else {
+  const cssE105 = sinComentariosCSS(leer(CSS_COMPILADO));
+  /* Lo que va dentro de un :not() NO cuenta: son exclusiones, no contexto. Es
+     lo que salva al unico selector estructural del proyecto —el
+     `.pantalla > *:not(.cielo):not(.cinta):not(.cartel)` de _06-biomas.scss, que
+     garantiza que todo hijo directo entra en el flujo y lo vigila E47—. */
+  const bloqueDe = (compuesto) => {
+    const limpio = compuesto.replace(/:not\([^)]*\)/g, '');
+    const m = limpio.match(/\.([a-z][\w-]*)/);
+    return m ? m[1].split('__')[0].split('--')[0] : null;
+  };
+  const ESTADOS = ['sin-movimiento', 'letra-grande', 'modo-proyeccion', 'alto-contraste'];
+  const acoplados = [];
+  for (const m of cssE105.matchAll(/([^{}]+)\{/g)) {
+    const preludio = m[1].trim();
+    if (preludio.startsWith('@')) continue;
+    for (const parte of preludio.split(',')) {
+      const compuestos = parte.trim().split(/\s+(?![^(]*\))/).filter((x) => x && x !== '>' && x !== '+' && x !== '~');
+      let previo = null;
+      for (const c of compuestos) {
+        const b = bloqueDe(c);
+        /* Los cuatro estados globales viven en :root y no son bloques de nada:
+           que precedan a cualquier cosa es justo su trabajo. */
+        if (previo && b && previo !== b && !ESTADOS.includes(previo)) {
+          acoplados.push(parte.trim());
+          break;
+        }
+        if (b) previo = b;
+      }
+    }
+  }
+  juzgar(!acoplados.length, 'E105 · ningun bloque se estila por quien lo contiene',
+    'descendencia entre bloques', [...new Set(acoplados)].join('\n'));
 }
 
 /* ══ AUTOPRUEBA ═══════════════════════════════════════════════════════════

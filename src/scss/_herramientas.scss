@@ -50,7 +50,7 @@ $cielos: (#8FD3F4, #7FC2E8, #6BA6D6, #4F7BA8, #2E4A72, #1A2A48);
 $texturados: piedra, tierra, hierba, madera, arena, agua, musgo, cristal;
 
 /* Cada bioma es un material. Se usa DOS veces —en `.bioma--X` y en
-   `.cinta-bioma[data-bioma=X]`— y antes se escribía dos veces. */
+   `.tarjeta-mundo__cinta[data-bioma=X]`— y antes se escribía dos veces. */
 $biomas: (pradera: hierba, bosque: musgo, rio: agua, mina: piedra);
 
 /* Los 6 estados de una veta del Mapa de Destrezas, cada uno con su tono. */
@@ -112,7 +112,7 @@ $alturas: (alta: 900px, media: 780px, baja: 660px, corta: 600px, minima: 420px);
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── bisel() ────────────────────────────────────────────────────────────────
-   El relieve de mundo de cubos: una luz arriba-izquierda y una sombra
+   El relieve de mundo de cubos: una luces__luz arriba-izquierda y una sombra
    abajo-derecha, las dos con desenfoque CERO.
 
    NO HAY PARÁMETRO DE DESENFOQUE, y eso es el punto entero del mixin. El tercer
@@ -174,6 +174,77 @@ $alturas: (alta: 900px, media: 780px, baja: 660px, corta: 600px, minima: 420px);
   animation-timing-function: steps(#{$pasos}, end);
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
+}
+
+/* ── frenar-todo() ─────────────────────────────────────────────────────────
+   El freno de mano: deja toda animación y toda transición en una milésima. Va
+   en DOS contextos —el ajuste del sistema y el del juego— y estaba escrito dos
+   veces a mano, veinte líneas más abajo el uno del otro. Es exactamente la
+   forma que tenía E25 antes de romperse: dos listas gemelas que nadie obliga a
+   seguir siéndolo. `desactivar-movimiento()` ya se arregló así; a esta le
+   faltaba el mismo remedio.
+
+   NO SUSTITUYE a desactivar-movimiento(): esto frena lo que ya está corriendo,
+   y aquel apaga las animaciones concretas y repone lo que la animación dejaba a
+   medias. Los dos hacen falta y se emiten juntos. */
+@mixin frenar-todo($prefijo: '') {
+  #{$prefijo}*, #{$prefijo}*::before, #{$prefijo}*::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* ── fila-envuelta() ───────────────────────────────────────────────────────
+   «Una fila que envuelve y se centra». Estaba copiada SIETE veces con las
+   mismas cuatro declaraciones y en tres ordenes distintos —contenedor de
+   dinero, fila de ordenar, rejilla de cromos, de vetas, de mundos, lista de
+   perfiles y opciones del jefe—, lo que ademas hacia imposible verlas como lo
+   mismo leyendo el fichero.
+
+   Existia ya la utilidad `.fila .fila--centro` con esas cuatro declaraciones y
+   no la usaba ninguna de las siete, porque son BLOQUES: mezclarles la utilidad
+   habria obligado a tocar siete sitios del JS y del HTML para no ganar nada. Un
+   mixin dice lo mismo sin mover el marcado. */
+@mixin fila-envuelta($hueco: var(--e3)) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $hueco;
+  justify-content: center;
+}
+
+/* ── apagado() ─────────────────────────────────────────────────────────────
+   El par de colores del control que no acepta toques. Estaba escrito tres veces
+   —el botón, el OK del teclado y la pieza de dinero— y son tres sitios donde
+   acordarse de cambiarlo a la vez. El par lo verifica casos-contraste.js, así
+   que separarse en uno solo de los tres es un rojo que llega tarde.
+
+   NO INCLUYE el hundido (`transform`) ni el bisel: dos de los tres lo llevan y
+   el tercero no, y meterlo aquí habría cambiado el aspecto del OK. Un mixin que
+   uniformiza de más es peor que tres copias honestas. */
+@mixin apagado {
+  background: var(--btn-fondo-desactivado);
+  color: var(--btn-texto-desactivado);
+}
+
+/* ── oculto-visual() ───────────────────────────────────────────────────────
+   Se ve con lector de pantalla y no se ve con los ojos. Estas siete
+   declaraciones estaban copiadas DOS veces —`.solo-lectores` y
+   `.rotulo-veta__mundo`— y el proyecto ya mató una tercera copia (`.oculto-visual`,
+   retirada por duplicar `.solo-lectores`). Copiar una receta de accesibilidad es
+   peor que copiar cualquier otra cosa: cuando una de las copias se queda corta,
+   lo que falla no se ve por definición.
+
+   `clip: rect(0 0 0 0)` está marcada como obsoleta y se queda: es la receta que
+   entienden también los lectores viejos, y aquí el suelo de soporte es una
+   obligación legal, no una preferencia. */
+@mixin oculto-visual {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* ── desactivar-movimiento() ────────────────────────────────────────────────

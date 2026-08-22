@@ -22,7 +22,7 @@
 @media (forced-colors: active) {
   /* El relieve, a borde real */
   .btn-bloque, .panel-bloque, .veta, .cromo, .tarjeta-mundo, .tarjeta-perfil,
-  .visor-respuesta, .adulto-caja, .btn-adulto {
+  .respuesta__visor, .adulto__caja, .btn-adulto {
     box-shadow: none;
     border: 2px solid ButtonBorder;
   }
@@ -32,11 +32,11 @@
   :focus-visible { outline: 3px solid Highlight; outline-offset: 2px; }
 
   /* NUNCA SOLO COLOR, y aquí menos que nunca: en forced-colors el color lo elige
-     el sistema, así que la forma es lo ÚNICO que queda. La luz apagada se
+     el sistema, así que la forma es lo ÚNICO que queda. La luces__luz apagada se
      distingue por el trazo discontinuo, no por su gris. */
-  .luz[data-estado="apagada"] { border-style: dashed; }
+  .luces__luz[data-estado="apagada"] { border-style: dashed; }
 
   /* Las texturas de fondo desaparecen en forced-colors; sin esto, los biomas
      quedarían como rectángulos planos indistinguibles. Se marcan por borde. */
-  .bioma::after, .cinta-bioma { border: 1px solid CanvasText; }
+  .bioma::after, .tarjeta-mundo__cinta { border: 1px solid CanvasText; }
 }

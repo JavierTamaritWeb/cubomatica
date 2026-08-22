@@ -3,15 +3,15 @@
   "fuentes": {
     "src/scss/_00-fuentes.scss": "aa93cbff2a9c2950c537ff8324616ddd9d0b270a",
     "src/scss/_01-variables.scss": "9b0f7f056d8fc67564b7101553407ee6304e4962",
-    "src/scss/_02-base.scss": "ca9e0c0d27438c588bdfef6ed828574e4683945a",
-    "src/scss/_03-componentes.scss": "a6b671653552afb446e94265d4cac527cb3efc9a",
-    "src/scss/_04-pantallas.scss": "8cbcb6fd29483b6297156c23b5d73c3e39ddbba4",
-    "src/scss/_05-animaciones.scss": "ae2f4c4b03ed908b6b1eb7865de27ea5c409e956",
-    "src/scss/_06-biomas.scss": "04087976fa9f259b1b1aed63da5ddee859209838",
-    "src/scss/_07-adulto.scss": "1f574581a6d6bfb29f2c12ea6f53dd5b480f0ca8",
-    "src/scss/_08-imprimir.scss": "2432db6715e609510672d600ac05f47c2abc28ef",
-    "src/scss/_09-forzado.scss": "77b91d055ee4d477089d3f577e954ab9357cbd8f",
+    "src/scss/_02-base.scss": "c797694828eec993da36fdc4e32d31cd81a58e35",
+    "src/scss/_03-componentes.scss": "48403e69b1f4e6fdffcba9c7314c332a1cdcbd98",
+    "src/scss/_04-pantallas.scss": "4998686d6ac40798675be8fc00c4aaa4d549d201",
+    "src/scss/_05-animaciones.scss": "eee9f2962845985a3bd5533fced8888a749b0704",
+    "src/scss/_06-biomas.scss": "c6c90d813cd5115d351a0591123d3b0416905eae",
+    "src/scss/_07-adulto.scss": "7c779d3acc39de7c6d9ba8ae4ae05dfd95c16a24",
+    "src/scss/_08-imprimir.scss": "ee35482df2d9678317670d9367733b088128c5e6",
+    "src/scss/_09-forzado.scss": "afcedae9f868ec97b2290f7c085b27657324293f",
     "src/scss/cubomatica.scss": "ef7e5a5b49d407356ac37dc0bc17079f59693fd3",
-    "src/scss/_herramientas.scss": "63fbc8114d0cbb9667c8a195f051d9ab5ce520f6"
+    "src/scss/_herramientas.scss": "22d1cb72a37d0b2c1f736a80cc58ba27c9a8d57e"
   }
 }

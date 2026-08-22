@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.22.0';
+CB.VERSION = '1.23.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -8061,7 +8061,7 @@ CB.ui.pintarHUD = function (estado) {
     var i, luz;
     for (i = 0; i < CB.vidas.TOPE; i++) {
       if (i >= Math.max(CB.vidas.INICIALES, estado.luces)) break;
-      luz = CB.ui.crear('span', 'luz');
+      luz = CB.ui.crear('span', 'luces__luz');
       luz.setAttribute('data-estado', i < estado.luces ? 'encendida' : 'apagada');
       cont.appendChild(luz);
     }
@@ -8090,7 +8090,7 @@ CB.ui.pintarHUD = function (estado) {
     var hechos = Math.max(0, Math.min(estado.total, estado.indice || 0));
     var j, b;
     for (j = 0; j < estado.total; j++) {
-      b = CB.ui.crear('b');
+      b = CB.ui.crear('b', 'galeria-avance__bloque');
       if (j < hechos) b.setAttribute('data-caido', 'si');
       gal.appendChild(b);
     }
@@ -8141,7 +8141,8 @@ CB.ui.pintarVeta = function (nivel, mundo) {
    la cabecera de `15-gen-dinero.js`. */
 CB.ui.pieza = function (etiqueta, v) {
   var esCent = CB.gen.dinero.esCentimo(v);
-  var el = CB.ui.crear(etiqueta, CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete');
+  var el = CB.ui.crear(etiqueta,
+    'pieza ' + (CB.gen.dinero.esMoneda(v) ? 'pieza--moneda' : 'pieza--billete'));
   if (esCent) {
     el.setAttribute('data-centimos', String(CB.gen.dinero.valorCent(v)));
     el.appendChild(CB.ui.crear('span', 'pieza__cifra',
@@ -8235,11 +8236,11 @@ CB.ui.parpadeoGris = function () {
 };
 
 CB.ui.encenderLuz = function (indice) {
-  var luces = document.querySelectorAll('#hud-luces .luz');
+  var luces = document.querySelectorAll('#hud-luces .luces__luz');
   if (luces[indice]) {
     luces[indice].setAttribute('data-estado', 'encendida');
-    luces[indice].classList.add('luz--recien-encendida');
-    setTimeout(function () { luces[indice].classList.remove('luz--recien-encendida'); }, 1600);
+    luces[indice].classList.add('luces__luz--recien-encendida');
+    setTimeout(function () { luces[indice].classList.remove('luces__luz--recien-encendida'); }, 1600);
   }
 };
 
@@ -8264,7 +8265,7 @@ CB.ui.pintarItem = function (item) {
     var caja = CB.ui.crear('div', 'enunciado');
     var i;
     for (i = 0; i < item.frases.length; i++) {
-      var p = CB.ui.crear('p', 'frase-enunciado', item.frases[i]);
+      var p = CB.ui.crear('p', 'enunciado__frase', item.frases[i]);
       p.setAttribute('data-frase', i);
       caja.appendChild(p);
     }
@@ -8286,7 +8287,7 @@ CB.ui.pintarItem = function (item) {
   if (item.visual && item.visual.tipo === 'matriz') {
     cont.appendChild(CB.ui.matriz(item.visual.filas, item.visual.columnas));
     if (item.sumaReiterada) {
-      cont.appendChild(CB.ui.crear('p', 'texto-menor', item.sumaReiterada));
+      cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.sumaReiterada));
     }
   }
 
@@ -8303,12 +8304,13 @@ CB.ui.pintarItem = function (item) {
   }
 
   if (item.preguntaPrevia) {
-    cont.appendChild(CB.ui.crear('p', 'texto-menor', item.preguntaPrevia));
+    cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
   }
 
   var texto = item.consigna || '';
   var esOperacion = !!item.operacion && !item.visual;
-  var linea = CB.ui.crear('p', esOperacion ? 'operacion' : 'enunciado', texto);
+  var linea = CB.ui.crear('p',
+    'enunciado' + (esOperacion ? ' enunciado--operacion' : ''), texto);
   cont.appendChild(linea);
 };
 
@@ -8368,7 +8370,7 @@ CB.ui.filaVagonetas = function (total, marcada) {
   var caja = CB.ui.crear('div', 'fila-ordenar');
   var i;
   for (i = 1; i <= total && i <= 20; i++) {
-    var v = CB.ui.crear('span', 'hueco-orden', i === marcada ? '★' : '·');
+    var v = CB.ui.crear('span', 'fila-ordenar__hueco', i === marcada ? '★' : '·');
     if (i === marcada) v.style.background = 'var(--deco-oro-cla)';
     caja.appendChild(v);
   }
@@ -8492,7 +8494,7 @@ CB.ui.ocultarPersonaje = function (quien) {
 
 /* ── Lectura guiada: resalta la palabra que se está leyendo ─────────────── */
 CB.ui.resaltarLinea = function (indice) {
-  var lineas = document.querySelectorAll('#item-enunciado .frase-enunciado');
+  var lineas = document.querySelectorAll('#item-enunciado .enunciado__frase');
   var i;
   for (i = 0; i < lineas.length; i++) {
     lineas[i].classList.toggle('enunciado__linea--activa', i === indice);
@@ -8506,7 +8508,7 @@ CB.ui.resaltarPalabra = function (indice, texto) {
   /* Se resalta la frase que contiene esa palabra: resaltar palabra a palabra
      exigiría reconstruir el DOM en cada paso, y eso rompe el lector de pantalla. */
   var acumulado = 0, i;
-  var frases = caja.querySelectorAll('.frase-enunciado');
+  var frases = caja.querySelectorAll('.enunciado__frase');
   for (i = 0; i < frases.length; i++) {
     var n = CB.util.palabras(frases[i].textContent).length;
     if (indice < acumulado + n) { CB.ui.resaltarLinea(i); return; }
@@ -8593,10 +8595,10 @@ CB.ui.mostrarReparacion = function (item, hipotesis, alTerminar) {
   }
 
   tarjeta.pasos.forEach(function (paso, i) {
-    var fila = CB.ui.crear('button', 'paso-reparacion');
+    var fila = CB.ui.crear('button', 'reparacion__paso');
     fila.type = 'button';
     fila.setAttribute('data-hecho', 'no');
-    fila.appendChild(CB.ui.crear('span', 'paso-reparacion__numero', String(i + 1)));
+    fila.appendChild(CB.ui.crear('span', 'reparacion__numero', String(i + 1)));
     fila.appendChild(CB.ui.crear('span', null, paso.texto));
     fila.addEventListener('click', function () {
       CB.reparacion.tocar(puerta, i);
@@ -8616,7 +8618,7 @@ CB.ui.mostrarReparacion = function (item, hipotesis, alTerminar) {
   /* Salvavidas: siempre por detrás del suelo temporal, nunca antes de 25 s */
   var salvavidas = setTimeout(function () {
     CB.reparacion.autocompletar(puerta);
-    var filas = cont.querySelectorAll('.paso-reparacion');
+    var filas = cont.querySelectorAll('.reparacion__paso');
     var i;
     for (i = 0; i < filas.length; i++) filas[i].setAttribute('data-hecho', 'si');
     boton.disabled = false;
@@ -8647,7 +8649,7 @@ CB.ui.dibujoReparacion = function (tarjeta) {
       var col = CB.ui.crear('div', 'columna-cdu');
       col.setAttribute('data-columna', letra);
       col.setAttribute('data-activa', 'no');
-      col.appendChild(CB.ui.crear('span', 'texto-menor', letra));
+      col.appendChild(CB.ui.crear('span', 'texto texto--menor', letra));
       var pot = Math.pow(10, 2 - idx);
       col.appendChild(CB.ui.crear('span', null, Math.floor(d.a / pot) % 10));
       col.appendChild(CB.ui.crear('span', null, d.op));
@@ -8655,7 +8657,7 @@ CB.ui.dibujoReparacion = function (tarjeta) {
       caja.appendChild(col);
     });
     var manojo = CB.ui.crear('div', 'manojo-decena');
-    for (i = 0; i < 10; i++) manojo.appendChild(CB.ui.crear('b'));
+    for (i = 0; i < 10; i++) manojo.appendChild(CB.ui.crear('b', 'manojo-decena__palo'));
     caja.appendChild(manojo);
 
   } else if (tarjeta.dibujo === 'matriz') {
@@ -8678,7 +8680,7 @@ CB.ui.dibujoReparacion = function (tarjeta) {
 
   } else if (tarjeta.dibujo === 'monedas') {
     (d.piezas || []).forEach(function (v) {
-      caja.appendChild(CB.ui.crear('span', 'moneda', v + ' €'));
+      caja.appendChild(CB.ui.crear('span', 'pieza pieza--moneda', v + ' €'));
     });
 
   } else if (tarjeta.dibujo === 'tabla100') {
@@ -8697,7 +8699,7 @@ CB.ui.dibujoReparacion = function (tarjeta) {
   } else {
     var recta = CB.ui.crear('div', 'fila-ordenar');
     for (i = d.desde; i <= d.hasta && i - d.desde < 20; i++) {
-      var h = CB.ui.crear('span', 'hueco-orden', i);
+      var h = CB.ui.crear('span', 'fila-ordenar__hueco', i);
       h.style.width = '48px'; h.style.height = '48px'; h.style.fontSize = '16px';
       if (i === d.marca) h.style.background = 'var(--deco-oro-cla)';
       recta.appendChild(h);
@@ -8720,8 +8722,8 @@ CB.ui.resaltarPasoDibujo = function (foco) {
 
 /* ── Barra de progreso genérica ─────────────────────────────────────────── */
 CB.ui.barra = function (fraccion) {
-  var b = CB.ui.crear('div', 'barra-progreso-mundo');
-  var i = CB.ui.crear('i');
+  var b = CB.ui.crear('div', 'tarjeta-mundo__barra');
+  var i = CB.ui.crear('i', 'tarjeta-mundo__relleno');
   i.style.width = Math.round(CB.util.clamp(fraccion, 0, 1) * 100) + '%';
   b.appendChild(i);
   return b;
@@ -9419,7 +9421,7 @@ CB.componentes.conectarToc = function (contenedor) {
        construcción no recibían ni el «toc» ni la sacudida: se tocaban y no pasaba
        nada de nada, ni siquiera el sonido de «aún no». */
     if (b && b.classList && (b.classList.contains('btn-bloque') ||
-        b.classList.contains('moneda') || b.classList.contains('billete'))) {
+        b.classList.contains('pieza'))) {
       b.classList.add('btn-bloque--toc');
       setTimeout(function () { b.classList.remove('btn-bloque--toc'); }, 260);
     }
@@ -9493,7 +9495,7 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   if (opciones.vaciar !== false) CB.ui.vaciar(cont);
   CB.componentes._valor = '';
 
-  var visor = CB.ui.crear('div', 'visor-respuesta');
+  var visor = CB.ui.crear('div', 'respuesta__visor');
   visor.id = 'visor-respuesta';
   visor.setAttribute('role', 'status');
   visor.setAttribute('aria-live', 'polite');
@@ -9531,7 +9533,12 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   var botonOK = null;
   for (i = 0; i < teclas.length; i++) {
     (function (t) {
-      var b = CB.ui.boton(t, t === 'OK' ? 'btn-bloque--primario' : '', function () {
+      /* La tecla lleva ADEMAS la clase de elemento del teclado. Antes el
+         tamano de las teclas salia de `.teclado-bloques .btn-bloque`, o sea del
+         contenedor estilando a un bloque ajeno: el boton cambiaba de tamano
+         segun donde estuviera, que es lo que un bloque no puede hacer. */
+      var b = CB.ui.boton(t, 'teclado-bloques__tecla' +
+        (t === 'OK' ? ' btn-bloque--primario' : ''), function () {
         pulsa(t, b);
       }, { tecla: t === '⌫' ? 'borrar' : (t === 'OK' ? 'ok' : t) });
       b.setAttribute('aria-label', t === '⌫' ? 'Borrar' : (t === 'OK' ? 'Confirmar' : t));
@@ -9604,7 +9611,7 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
         b.addEventListener('click', elegir);
       } else {
         var etiqueta = (op.texto != null) ? op.texto : String(op.valor);
-        b = CB.ui.boton(etiqueta, '', elegir, { posicion: idx });
+        b = CB.ui.boton(etiqueta, 'rejilla-respuestas__opcion', elegir, { posicion: idx });
         if (op.texto != null) b.style.fontSize = 'var(--tam-texto-min)';
       }
       rej.appendChild(b);
@@ -9639,7 +9646,7 @@ CB.componentes.selectorSigno = function (item, alResponder, opciones) {
 
   var fila = CB.ui.crear('div', 'rejilla-respuestas');
   ['+', '−'].forEach(function (s, idx) {
-    var b = CB.ui.boton(s, '', function () {
+    var b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
       if (CB.partida && CB.partida.bloqueado) return;
       /* La misma regla que el teclado y las opciones. Se la saltaba, y con ella
          tres formatos más: una regla aplicada en tres sitios de siete es
@@ -9670,7 +9677,7 @@ CB.componentes.balanza = function (item, alResponder, opciones) {
   var etiquetas = { '>': 'mayor que', '<': 'menor que', '=': 'igual que' };
 
   signos.forEach(function (s, idx) {
-    var b = CB.ui.boton(s, '', function () {
+    var b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
       if (CB.partida && CB.partida.bloqueado) return;
       CB.componentes.pedirConfirmacion(b, function () {
         alResponder(s, 'balanza', { posicion: idx });
@@ -9709,11 +9716,11 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   var huecos = CB.ui.crear('div', 'fila-ordenar');
   var i;
   for (i = 0; i < item.orden.length; i++) {
-    var h = CB.ui.crear('span', 'hueco-orden', '·');
+    var h = CB.ui.crear('span', 'fila-ordenar__hueco', '·');
     h.setAttribute('data-hueco', i);
     huecos.appendChild(h);
   }
-  cont.appendChild(CB.ui.crear('p', 'consigna-respuesta', 'Toca los números en orden.'));
+  cont.appendChild(CB.ui.crear('p', 'respuesta__consigna', 'Toca los números en orden.'));
   cont.appendChild(huecos);
 
   var piezas = CB.ui.crear('div', 'fila-ordenar');
@@ -9799,7 +9806,7 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
   /* Modo «pagar»: el niño elige piezas hasta el importe exacto. */
   if (item.modo === 'pagar') {
     var total = 0;
-    var marcador = CB.ui.crear('div', 'visor-respuesta', '0');
+    var marcador = CB.ui.crear('div', 'respuesta__visor', '0');
     cont.appendChild(marcador);
 
     /* LA FILA DE LO COGIDO: «2 € + 2 € + 1 €». Es lo que de verdad descarga la
@@ -9908,7 +9915,7 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     fase = 'operacion';
   }
 
-  var titulo = CB.ui.crear('p', 'consigna-respuesta', '');
+  var titulo = CB.ui.crear('p', 'respuesta__consigna', '');
   cont.appendChild(titulo);
   var zona = CB.ui.crear('div');
   cont.appendChild(zona);
@@ -9921,7 +9928,7 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
       var numeros = (item.enunciado.match(/\d+/g) || []).map(Number);
       var rej = CB.ui.crear('div', 'rejilla-respuestas');
       numeros.forEach(function (n, idx) {
-        var b = CB.ui.boton(String(n), '', function () {
+        var b = CB.ui.boton(String(n), 'rejilla-respuestas__opcion', function () {
           if (CB.partida && CB.partida.bloqueado) return;
           /* DESTOCAR. Antes este `if` salía sin hacer nada: el número elegido por
              error se quedaba elegido y el niño tenía que terminar mal el ítem a
@@ -9954,7 +9961,7 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
       titulo.textContent = '¿Qué hay que hacer?';
       var fila = CB.ui.crear('div', 'rejilla-respuestas');
       ['+', '−'].forEach(function (s, idx) {
-        var b = CB.ui.boton(s, '', function () {
+        var b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
           signoElegido = (s === '+') ? '+' : '-';
           fase = 'calculo';
           pintarFase();
@@ -11325,14 +11332,14 @@ CB.partida.microDescanso = function () {
   if (d.id === 'cofre') {
     /* Se ve la lista completa de premios ANTES de abrir: sin cofres opacos, que
        es un patrón oscuro prohibido en un juego infantil (§21.4). */
-    var aviso = CB.ui.crear('p', 'texto-menor', 'Tres cofres de piedra. Rómpelos todos.');
+    var aviso = CB.ui.crear('p', 'texto texto--menor', 'Tres cofres de piedra. Rómpelos todos.');
     tablero.appendChild(aviso);
   }
 
   var n = (d.id === 'cofre') ? 3 : 8, i;
   for (i = 0; i < n; i++) {
     (function () {
-      var b = CB.ui.crear('button', 'bloque-rompible');
+      var b = CB.ui.crear('button', 'tablero-descanso__bloque');
       b.type = 'button';
       b.setAttribute('aria-label', d.id === 'cofre' ? 'Cofre' : 'Bloque');
       b.addEventListener('click', function () {
@@ -11535,7 +11542,7 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
       dom.appendChild(fila);
     });
   } else {
-    dom.appendChild(CB.ui.crear('p', 'texto-menor',
+    dom.appendChild(CB.ui.crear('p', 'texto texto--menor',
       'Hoy has practicado. Mañana se notará en el mapa.'));
   }
 
@@ -11996,7 +12003,7 @@ CB.adulto.pintar = function () {
     (m.diasJugados === 1 ? ' día jugado' : ' días jugados')));
 
   /* Alcance declarado, LITERAL, en la primera pantalla del panel (§1.3). */
-  var aviso = CB.ui.crear('div', 'adulto-aviso');
+  var aviso = CB.ui.crear('div', 'adulto__aviso');
   aviso.appendChild(CB.ui.crear('h3', null, 'Qué mide y qué no mide este juego'));
   aviso.appendChild(CB.ui.crear('p', null, CB.LEGAL.ALCANCE));
   aviso.appendChild(CB.ui.crear('p', null, CB.LEGAL.SECUENCIACION));
@@ -12008,7 +12015,7 @@ CB.adulto.pintar = function () {
   cont.appendChild(aviso);
 
   if (CB.almacen.sinDisco) {
-    var alerta = CB.ui.crear('div', 'adulto-aviso');
+    var alerta = CB.ui.crear('div', 'adulto__aviso');
     alerta.appendChild(CB.ui.crear('h3', null, 'Aviso: no se está guardando en disco'));
     alerta.appendChild(CB.ui.crear('p', null,
       'El navegador no permite guardar. El progreso de esta sesión se perderá ' +
@@ -12017,7 +12024,7 @@ CB.adulto.pintar = function () {
   }
 
   /* ── Métricas 1-3 ──────────────────────────────────────────────────── */
-  var caja1 = CB.ui.crear('div', 'adulto-caja');
+  var caja1 = CB.ui.crear('div', 'adulto__caja');
   caja1.appendChild(CB.ui.crear('h2', null, 'De un vistazo'));
   CB.adulto.metrica(caja1, 'Tiempo de pantalla hoy',
     Math.round(m.m1_tiempoHoy / 60) + ' min');
@@ -12034,9 +12041,9 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja1);
 
   /* ── Métrica 4: semáforo ───────────────────────────────────────────── */
-  var caja2 = CB.ui.crear('div', 'adulto-caja');
+  var caja2 = CB.ui.crear('div', 'adulto__caja');
   caja2.appendChild(CB.ui.crear('h2', null, 'Por bloques de contenido'));
-  var tabla = CB.ui.crear('table', 'tabla-adulto');
+  var tabla = CB.ui.crear('table', 'adulto__tabla');
   var thead = CB.ui.crear('thead');
   var trh = CB.ui.crear('tr');
   ['Bloque', 'Situación', 'Preguntas'].forEach(function (t) {
@@ -12061,13 +12068,13 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja2);
 
   /* ── Métrica 6: la matriz de los 20 subtipos ───────────────────────── */
-  var caja3 = CB.ui.crear('div', 'adulto-caja');
+  var caja3 = CB.ui.crear('div', 'adulto__caja');
   caja3.appendChild(CB.ui.crear('h2', null, 'Problemas de enunciado, por tipo'));
   caja3.appendChild(CB.ui.crear('p', null,
     'Dos problemas con los mismos números y la misma operación tienen ' +
     'dificultades muy distintas según cómo estén contados. Esta tabla es la ' +
     'información más accionable del panel.'));
-  var t2 = CB.ui.crear('table', 'tabla-adulto matriz-subtipos');
+  var t2 = CB.ui.crear('table', 'adulto__tabla matriz-subtipos');
   var th2 = CB.ui.crear('tr');
   ['Tipo de problema', 'Intentos', 'Aciertos', 'Tiempo medio'].forEach(function (t) {
     th2.appendChild(CB.ui.crear('th', null, t));
@@ -12089,7 +12096,7 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja3);
 
   /* ── Métrica 7: errores frecuentes con su actividad de 10 minutos ──── */
-  var caja4 = CB.ui.crear('div', 'adulto-caja');
+  var caja4 = CB.ui.crear('div', 'adulto__caja');
   caja4.appendChild(CB.ui.crear('h2', null, 'Qué conviene trabajar'));
   var codigos = Object.keys(m.m7_errores).filter(function (c) {
     return m.m7_errores[c].vecesDiscriminante >= 2;
@@ -12109,7 +12116,7 @@ CB.adulto.pintar = function () {
       caja4.appendChild(CB.ui.crear('h3', null, rec.frase));
       caja4.appendChild(CB.ui.crear('p', null, '10 minutos: ' + rec.actividad));
       var ejemplos = (m.m7_errores[c].ejemplos || []).join(' · ');
-      if (ejemplos) caja4.appendChild(CB.ui.crear('p', 'texto-menor', 'Ejemplos: ' + ejemplos));
+      if (ejemplos) caja4.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Ejemplos: ' + ejemplos));
       caja4.appendChild(CB.ui.boton('Imprimir ficha de refuerzo', 'btn-adulto', function () {
         CB.adulto.fichaRefuerzo(perfil, c);
       }));
@@ -12118,10 +12125,10 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja4);
 
   /* ── Métricas 8-10 ─────────────────────────────────────────────────── */
-  var caja5 = CB.ui.crear('div', 'adulto-caja');
+  var caja5 = CB.ui.crear('div', 'adulto__caja');
   caja5.appendChild(CB.ui.crear('h2', null, 'Cómo está jugando'));
   CB.adulto.metrica(caja5, 'Respuestas muy rápidas sin acertar', String(m.m8_azares));
-  caja5.appendChild(CB.ui.crear('p', 'texto-menor',
+  caja5.appendChild(CB.ui.crear('p', 'texto texto--menor',
     'El juego no se lo reprocha nunca: solo deja de puntuar esa pregunta y da ' +
     'un momento de pausa. Si el número es alto, suele indicar cansancio o que ' +
     'la dificultad está por encima, no mala intención.'));
@@ -12148,13 +12155,13 @@ CB.adulto.pintar = function () {
      descargar 42 MB en el disco de un aparato escolar es una decisión informada
      de una persona adulta, no un efecto colateral de darle a jugar. */
   if (CB.offline && CB.offline.DISPONIBLE) {
-    var cajaSC = CB.ui.crear('div', 'adulto-caja');
+    var cajaSC = CB.ui.crear('div', 'adulto__caja');
     cajaSC.appendChild(CB.ui.crear('h2', null, 'Sin conexión'));
     cajaSC.appendChild(CB.ui.crear('p', null,
       'El juego ya funciona sin internet: no pide nada a la red. Lo único que ' +
       'no se guarda por su cuenta es la música, porque son 42 MB.'));
 
-    var estadoSC = CB.ui.crear('p', 'texto-menor', 'Comprobando…');
+    var estadoSC = CB.ui.crear('p', 'texto texto--menor', 'Comprobando…');
     cajaSC.appendChild(estadoSC);
     CB.offline.musicaGuardada(function (n) {
       estadoSC.textContent = n === 0
@@ -12205,7 +12212,7 @@ CB.adulto.pintar = function () {
   }
 
   /* ── Datos ─────────────────────────────────────────────────────────── */
-  var caja7 = CB.ui.crear('div', 'adulto-caja');
+  var caja7 = CB.ui.crear('div', 'adulto__caja');
   caja7.appendChild(CB.ui.crear('h2', null, 'Datos'));
   caja7.appendChild(CB.ui.crear('p', null, CB.LEGAL.PRIVACIDAD));
   caja7.appendChild(CB.ui.crear('p', null, CB.LEGAL.LIMITACION));
@@ -12236,7 +12243,7 @@ CB.adulto.pintar = function () {
   }));
   caja7.appendChild(fila);
 
-  var aviso = CB.ui.crear('p', 'texto-menor');
+  var aviso = CB.ui.crear('p', 'texto texto--menor');
   aviso.id = 'adulto-aviso-datos';
   aviso.setAttribute('role', 'status');
   caja7.appendChild(aviso);
@@ -12303,14 +12310,14 @@ CB.adulto.AJUSTES = [
 ];
 
 CB.adulto.cajaAjustes = function (perfil) {
-  var caja = CB.ui.crear('div', 'adulto-caja');
+  var caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Ajustes'));
 
   CB.adulto.AJUSTES.forEach(function (a) {
     var fila = CB.ui.crear('div', 'metrica');
     var izq = CB.ui.crear('span');
     izq.appendChild(CB.ui.crear('span', null, a.t));
-    if (a.nota) izq.appendChild(CB.ui.crear('p', 'texto-menor', a.nota));
+    if (a.nota) izq.appendChild(CB.ui.crear('p', 'texto texto--menor', a.nota));
     fila.appendChild(izq);
 
     if (a.tipo === 'bool') {
@@ -12379,7 +12386,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
     'Fecha: ' + CB.util.hoyISO() + ' · ' + m.diasJugados + ' días jugados · ' +
     m.m2_partidas + ' expediciones'));
 
-  var av = CB.ui.crear('div', 'adulto-aviso');
+  var av = CB.ui.crear('div', 'adulto__aviso');
   av.appendChild(CB.ui.crear('p', null, CB.LEGAL.ALCANCE));
   av.appendChild(CB.ui.crear('p', null, CB.LEGAL.SECUENCIACION));
   av.appendChild(CB.ui.crear('p', null,
@@ -12387,7 +12394,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
   cuerpo.appendChild(av);
 
   cuerpo.appendChild(CB.ui.crear('h2', null, 'Por bloques'));
-  var t = CB.ui.crear('table', 'tabla-adulto');
+  var t = CB.ui.crear('table', 'adulto__tabla');
   var trh = CB.ui.crear('tr');
   ['Bloque', 'Situación', 'Preguntas'].forEach(function (x) {
     trh.appendChild(CB.ui.crear('th', null, x));
@@ -12421,7 +12428,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
     });
   }
 
-  cuerpo.appendChild(CB.ui.crear('p', 'pie-informe',
+  cuerpo.appendChild(CB.ui.crear('p', 'informe__pie',
     CB.LEGAL.NORMA + ' — ' + CB.LEGAL.PRIVACIDAD));
 
   CB.pantallas.ir('p-informe');
@@ -12448,7 +12455,7 @@ CB.adulto.fichaRefuerzo = function (perfil, codigoError) {
   });
   var nivel = niveles[Math.floor(niveles.length / 2)] || niveles[0];
 
-  var rej = CB.ui.crear('div', 'rejilla-ejercicios');
+  var rej = CB.ui.crear('div', 'ficha-refuerzo__rejilla');
   var i;
   for (i = 0; i < 10 && nivel; i++) {
     var rng = CB.util.mulberry32(CB.util.hash32(perfil.id + codigoError + i));
@@ -12566,7 +12573,7 @@ CB.adulto.restaurar = function (cont) {
 };
 
 CB.adulto.confirmarBorrado = function (perfil, cont) {
-  var caja = CB.ui.crear('div', 'adulto-aviso');
+  var caja = CB.ui.crear('div', 'adulto__aviso');
   caja.appendChild(CB.ui.crear('p', null,
     'Esto borra para siempre el progreso de ' + perfil.mote +
     '. Escribe BORRAR para confirmar.'));
@@ -12673,7 +12680,7 @@ CB.jefes.pintarArmadura = function () {
   CB.ui.vaciar(cont);
   var i;
   for (i = 0; i < CB.jefes.BLOQUES; i++) {
-    var b = CB.ui.crear('b');
+    var b = CB.ui.crear('b', 'jefe__bloque');
     b.setAttribute('data-caido', i < (CB.jefes.BLOQUES - e.bloques) ? 'si' : 'no');
     cont.appendChild(b);
   }
@@ -12724,7 +12731,7 @@ CB.jefes.turno = function () {
     var sobra = CB.util.ent(e.rng, 1, 9);
     enun.appendChild(CB.ui.crear('p', 'enunciado',
       'Cristalina refleja: ' + a + ', ' + b + ' y ' + sobra + '.'));
-    enun.appendChild(CB.ui.crear('p', 'texto-menor',
+    enun.appendChild(CB.ui.crear('p', 'texto texto--menor',
       '¿Cuánto queda al quitar ' + b + ' de ' + a + '?'));
     CB.jefes.opciones(opc, a - b, [a + b, a - b + sobra, a - sobra]);
     return;
@@ -12736,7 +12743,7 @@ CB.jefes.turno = function () {
   enun.appendChild(CB.ui.crear('p', 'enunciado',
     'Brasita ha apagado la matriz de ' + f + ' × ' + g + '.'));
   enun.appendChild(CB.ui.matriz(f, g));
-  enun.appendChild(CB.ui.crear('p', 'texto-menor', '¿Cuántos bloques hay que restaurar?'));
+  enun.appendChild(CB.ui.crear('p', 'texto texto--menor', '¿Cuántos bloques hay que restaurar?'));
   CB.jefes.opciones(opc, f * g, [f * g - f, f * g + f, f + g]);
 };
 
@@ -12889,7 +12896,7 @@ CB.jefes.terminar = function (porBloques) {
   var opc = document.getElementById('jefe-opciones');
   CB.ui.vaciar(enun); CB.ui.vaciar(opc);
   enun.appendChild(CB.ui.crear('h2', null, '¡' + e.jefe + ' abre el paso!'));
-  enun.appendChild(CB.ui.crear('p', 'texto-lectura',
+  enun.appendChild(CB.ui.crear('p', 'texto texto--lectura',
     'Has ganado ' + gemas + ' gemas y el mundo queda cerrado con una victoria.'));
   opc.appendChild(CB.ui.boton('Volver al mapa', 'btn-bloque--primario btn-bloque--medio',
     function () { CB.pantallas.ir('p-mapa'); }));
@@ -12965,7 +12972,7 @@ CB.mapaDestrezas.pintar = function () {
     veta.setAttribute('aria-label', nivel.nombre + ': ' + CB.memoria.ETIQUETA[estado]);
     veta.appendChild(CB.ui.crear('span', 'veta__icono', CB.memoria.ICONO[estado]));
     veta.appendChild(CB.ui.crear('span', null, nivel.nombre));
-    veta.appendChild(CB.ui.crear('span', 'texto-menor', CB.memoria.ETIQUETA[estado]));
+    veta.appendChild(CB.ui.crear('span', 'texto texto--menor', CB.memoria.ETIQUETA[estado]));
 
     if (frontera.indexOf(id) !== -1) veta.classList.add('veta--frontera');
     if (estado === 'oxidada') veta.classList.add('veta--musgo');
@@ -12986,7 +12993,7 @@ CB.mapaDestrezas.pintar = function () {
       ley.appendChild(s);
     });
     if (conteo.oxidada) {
-      ley.appendChild(CB.ui.crear('p', 'texto-menor',
+      ley.appendChild(CB.ui.crear('p', 'texto texto--menor',
         'Las vetas con musgo se repasan en dos minutos.'));
     }
   }
@@ -13030,7 +13037,7 @@ CB.mapaDestrezas.pintarMundos = function () {
     var tarjeta = CB.ui.crear('div', 'tarjeta-mundo');
     tarjeta.setAttribute('data-bloqueado', estado.desbloqueado ? 'no' : 'si');
 
-    var cinta = CB.ui.crear('div', 'cinta-bioma');
+    var cinta = CB.ui.crear('div', 'tarjeta-mundo__cinta');
     cinta.setAttribute('data-bioma', m.bioma);
     tarjeta.appendChild(cinta);
 
@@ -13045,7 +13052,7 @@ CB.mapaDestrezas.pintarMundos = function () {
         CB.a11y.anunciar(CB.LEGAL.MULTIPLICACION);
         var nota = document.getElementById('nota-iniciacion');
         if (!nota) {
-          nota = CB.ui.crear('p', 'texto-menor');
+          nota = CB.ui.crear('p', 'texto texto--menor');
           nota.id = 'nota-iniciacion';
           tarjeta.appendChild(nota);
         }
@@ -13055,7 +13062,7 @@ CB.mapaDestrezas.pintarMundos = function () {
     }
 
     tarjeta.appendChild(CB.ui.barra(prog.fraccion));
-    tarjeta.appendChild(CB.ui.crear('p', 'texto-menor',
+    tarjeta.appendChild(CB.ui.crear('p', 'texto texto--menor',
       prog.hechos + ' de ' + prog.total + ' vetas abiertas'));
 
     if (estado.desbloqueado) {
@@ -13078,7 +13085,7 @@ CB.mapaDestrezas.pintarMundos = function () {
         tarjeta.appendChild(CB.ui.crear('span', 'distintivo', 'cerrado sin un fallo'));
       }
     } else {
-      tarjeta.appendChild(CB.ui.crear('p', 'texto-menor',
+      tarjeta.appendChild(CB.ui.crear('p', 'texto texto--menor',
         'Se abre al cavar más vetas del mundo anterior.'));
     }
     cont.appendChild(tarjeta);
@@ -13141,7 +13148,7 @@ CB.casa.pintar = function () {
     c.appendChild(icono);
     c.appendChild(CB.ui.crear('div', null, tiene ? CB.casa.NOMBRES_CROMO[id] : '???'));
     if (tiene) {
-      c.appendChild(CB.ui.crear('div', 'texto-menor', CB.casa.DESCRIPCION[id]));
+      c.appendChild(CB.ui.crear('div', 'texto texto--menor', CB.casa.DESCRIPCION[id]));
     }
     c.setAttribute('aria-label', tiene
       ? (CB.casa.NOMBRES_CROMO[id] + ': ' + CB.casa.DESCRIPCION[id])
@@ -13182,7 +13189,7 @@ CB.casa.pintarGlosario = function () {
     if (tiene) {
       fila.appendChild(CB.ui.crear('p', null, g.d));
     } else {
-      fila.appendChild(CB.ui.crear('p', 'texto-menor', 'Aún no la has encontrado.'));
+      fila.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Aún no la has encontrado.'));
     }
     cont.appendChild(fila);
   });
@@ -13421,7 +13428,8 @@ CB.calibracion.servir = function () {
 
   var enun = document.getElementById('cal-enunciado');
   CB.ui.vaciar(enun);
-  enun.appendChild(CB.ui.crear('p', it.teclado ? 'operacion' : 'enunciado', it.consigna));
+  enun.appendChild(CB.ui.crear('p',
+    'enunciado' + (it.teclado ? ' enunciado--operacion' : ''), it.consigna));
 
   /* Voz automática: la consigna se lee sola. En la primera partida de su vida,
      el niño no tiene por qué saber que existe el botón del altavoz. */
@@ -13536,7 +13544,7 @@ CB.perfiles.pintar = function () {
   var idx = CB.almacen.indice();
   idx.forEach(function (e) {
     var t = CB.ui.crear('div', 'tarjeta-perfil');
-    var av = CB.ui.crear('div', 'avatar-cubi');
+    var av = CB.ui.crear('div', 'tarjeta-perfil__avatar');
     var pal = CB.datos.AVATARES[CB.util.clamp(e.avatar || 0, 0, 15)];
     av.style.background = pal.casco;
     t.appendChild(av);
@@ -13600,7 +13608,7 @@ CB.perfiles.activar = function (id) {
     if (lista && lista.parentNode) {
       var aviso = document.getElementById('aviso-perfil-roto');
       if (!aviso) {
-        aviso = CB.ui.crear('p', 'texto-menor');
+        aviso = CB.ui.crear('p', 'texto texto--menor');
         aviso.id = 'aviso-perfil-roto';
         aviso.setAttribute('role', 'alert');
         lista.parentNode.insertBefore(aviso, lista);
@@ -13721,25 +13729,25 @@ CB.creditos = function () {
     mus.appendChild(CB.ui.crear('h2', null, 'Música'));
     CB.musica.CREDITOS.forEach(function (c) {
       var linea = CB.DONDE_SUENA[c.clave] + ' — ' + c.autor + ' (Pixabay ' + c.id + ')';
-      mus.appendChild(CB.ui.crear('p', 'texto-menor', linea));
+      mus.appendChild(CB.ui.crear('p', 'texto texto--menor', linea));
     });
-    mus.appendChild(CB.ui.crear('p', 'texto-menor', CB.musica.LICENCIA));
+    mus.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.musica.LICENCIA));
   }
   if (legal) {
     CB.ui.vaciar(legal);
     legal.appendChild(CB.ui.crear('h2', null, 'Aviso legal'));
-    legal.appendChild(CB.ui.crear('p', 'texto-menor', CB.LEGAL.AVISO));
+    legal.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.LEGAL.AVISO));
     /* La versión se enseña aquí y en ningún otro sitio del juego: es lo que un
        adulto necesita decir por teléfono cuando algo no le funciona. */
-    legal.appendChild(CB.ui.crear('p', 'texto-menor', 'Versión ' + CB.VERSION));
+    legal.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Versión ' + CB.VERSION));
   }
   if (curri) {
     CB.ui.vaciar(curri);
     curri.appendChild(CB.ui.crear('h2', null, 'Currículo'));
-    curri.appendChild(CB.ui.crear('p', 'texto-menor', CB.LEGAL.ALCANCE));
-    curri.appendChild(CB.ui.crear('p', 'texto-menor', CB.LEGAL.SECUENCIACION));
-    curri.appendChild(CB.ui.crear('p', 'texto-menor', CB.LEGAL.MULTIPLICACION));
-    curri.appendChild(CB.ui.crear('p', 'texto-menor', CB.datos.ORIGEN_GLOSARIO));
+    curri.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.LEGAL.ALCANCE));
+    curri.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.LEGAL.SECUENCIACION));
+    curri.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.LEGAL.MULTIPLICACION));
+    curri.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.datos.ORIGEN_GLOSARIO));
   }
 };
 
@@ -13857,7 +13865,7 @@ CB.arranque = function () {
   }
 
   /* Momento socioafectivo del fin de partida */
-  var caras = document.querySelectorAll('#fin-animo .cara-animo');
+  var caras = document.querySelectorAll('#fin-animo .animo__cara');
   var i;
   for (i = 0; i < caras.length; i++) {
     (function (b) {
@@ -13867,7 +13875,7 @@ CB.arranque = function () {
         CB.perfil.animo.push({ fechaISO: CB.util.hoyISO(), cara: v });
         var h = CB.perfil.historial;
         if (h.length) h[h.length - 1].animo = v;
-        var todas = document.querySelectorAll('#fin-animo .cara-animo');
+        var todas = document.querySelectorAll('#fin-animo .animo__cara');
         var j;
         for (j = 0; j < todas.length; j++) todas[j].setAttribute('aria-pressed', 'false');
         b.setAttribute('aria-pressed', 'true');

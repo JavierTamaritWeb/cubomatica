@@ -163,7 +163,7 @@
      E94 el «Salir» del mapa no hacía nada: atras() sacaba UNA    AQUÍ
          entrada de la pila, la descartaba por ser de flujo y
          caía al mapa estando ya en el mapa
-     E95 la .zona-superior centraba Y llevaba scroll: cuando el   AQUÍ
+     E95 la .zona-juego__alta (entonces .zona-superior) centraba Y  AQUÍ
          enunciado no cabía, el centrado repartía el sobrante a
          los dos lados y lo de arriba quedaba fuera del alcance
          de la barra (scrollTop no puede ser negativo)
@@ -190,6 +190,12 @@
      E103 la portada es `overflow: hidden`: a 320x480 la fila de  AQUÍ
          abajo —Ajustes, Ayuda, Créditos— caía fuera y no había
          forma de llegar. La barra la lleva ahora la pila
+     E104 la nomenclatura de las clases era disciplina: BEM se   auditar.mjs
+         aplicaba donde alguien se acordaba. Ahora la FORMA la
+         comprueba stylelint (bloque 9)
+     E105 siete selectores estilaban un bloque por quien lo       auditar.mjs
+         contenía (.panel-bloque .texto-menor y hermanos): un
+         bloque que cambia según dónde está no es un bloque
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -2550,8 +2556,8 @@ CB.pruebas.suite('E67 · tocar una moneda deja marca, y reiniciar la borra', fun
 
   return CB.pruebas._desbloqueo().then(function () {
     var cont = CB.componentes.contenedor();
-    var dos = cont.querySelector('.moneda[aria-label], .billete[aria-label]');
-    var piezas = cont.querySelectorAll('.moneda, .billete');
+    var dos = cont.querySelector('.pieza[aria-label]');
+    var piezas = cont.querySelectorAll('.pieza');
     if (!t.ok(piezas.length >= 3, 'E67 · se montan las piezas', String(piezas.length))) return;
 
     dos = piezas[1];                       // la de 2 €
@@ -2932,7 +2938,7 @@ CB.pruebas.suite('E74 · el cofre del descanso no promete gemas', function () {
   var gemasAntes = perfil.gemas, delEstadoAntes = estado.gemas;
   CB.partida.microDescanso();
   var tablero = document.getElementById('descanso-tablero');
-  var piezas = tablero ? tablero.querySelectorAll('.bloque-rompible') : [];
+  var piezas = tablero ? tablero.querySelectorAll('.tablero-descanso__bloque') : [];
   var i;
   for (i = 0; i < piezas.length; i++) piezas[i].click();
 
@@ -3618,7 +3624,7 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
 
   CB.componentes.opciones4(item, opciones, function () {}, { bloqueoMs: 0 });
 
-  var piezas = cont.querySelectorAll('.moneda, .billete');
+  var piezas = cont.querySelectorAll('.pieza');
   t.igual(piezas.length, 4, 'E89 · las cuatro opciones son piezas dibujadas',
     'encontradas ' + piezas.length);
   t.igual(cont.querySelectorAll('.rejilla-respuestas .btn-bloque').length, 0,
@@ -3630,7 +3636,7 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
   var correcta = null, i, v;
   for (i = 0; i < piezas.length; i++) {
     v = parseInt(piezas[i].textContent, 10);
-    t.ok(piezas[i].classList.contains(CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete'),
+    t.ok(piezas[i].classList.contains(CB.gen.dinero.esMoneda(v) ? 'pieza--moneda' : 'pieza--billete'),
       'E89 · el ' + v + ' € se dibuja como lo que es',
       piezas[i].className);
     /* Y el nombre accesible es el de la pieza entera, no el «2 €» escrito: quien
@@ -3689,7 +3695,7 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
   /* Y NO SE ROMPE LO DE ANTES: una pregunta normal sigue dando botones. */
   CB.componentes.opciones4({}, [{ valor: 3 }, { valor: 4 }, { valor: 5 }, { valor: 6 }],
     function () {}, { bloqueoMs: 0 });
-  t.igual(cont.querySelectorAll('.moneda, .billete').length, 0,
+  t.igual(cont.querySelectorAll('.pieza').length, 0,
     'E89 · sin piezas de dinero, las opciones siguen siendo botones');
   t.igual(cont.querySelectorAll('.rejilla-respuestas .btn-bloque').length, 4,
     'E89 · las cuatro de siempre');
@@ -4154,8 +4160,8 @@ CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo núme
   var cincoC = CB.ui.pieza('span', 'c5');        // la moneda de 5 céntimos
   caja.appendChild(cinco); caja.appendChild(cincoC);
 
-  t.igual(cinco.className, 'billete', 'E93 · el 5 a secas sigue siendo el billete');
-  t.igual(cincoC.className, 'moneda', 'E93 · y el c5 es una moneda');
+  t.igual(cinco.className, 'pieza pieza--billete', 'E93 · el 5 a secas sigue siendo el billete');
+  t.igual(cincoC.className, 'pieza pieza--moneda', 'E93 · y el c5 es una moneda');
   t.igual(cincoC.getAttribute('data-valor'), null,
     'E93 · la moneda de céntimo NO lleva data-valor: es el atributo que colisiona');
   t.igual(cincoC.getAttribute('data-centimos'), '5',
@@ -4327,7 +4333,8 @@ CB.pruebas.suite('E94 · Salir siempre lleva a alguna parte distinta', function 
 /* ══════════════════════════════════════════════════════════════════════════
    E95 · Lo que centra y además tiene scroll esconde por arriba
    ──────────────────────────────────────────────────────────────────────────
-   `.zona-superior` era a la vez caja centrada (`justify-content: center`) y caja
+   `.zona-juego__alta` —entonces `.zona-superior`— era a la vez caja centrada
+   (`justify-content: center`) y caja
    con barra (`overflow-y: auto`). Mientras el contenido cabe no pasa nada; en
    cuanto no cabe —el enunciado largo de un problema más el `.mensaje-resultado`,
    que tiene un suelo de tres líneas— el centrado reparte el desbordamiento a los
@@ -4357,7 +4364,7 @@ CB.pruebas.suite('E95 · con scroll arriba del todo no falta nada por arriba', f
   caja.style.minHeight = '200px'; caja.style.maxHeight = '200px';
   caja.style.width  = '260px';
   var sup = document.createElement('div');
-  sup.className = 'zona-superior';
+  sup.className = 'zona-juego__alta';
   var primero = document.createElement('p');
   primero.className = 'enunciado';
   primero.textContent = 'Primera línea del enunciado, la que se perdía.';
@@ -4431,8 +4438,8 @@ CB.pruebas.suite('Maquetación · el reparto cambia a dos columnas en pantalla a
   caja.className = 'zona-juego';
   caja.style.flex = 'none';
   caja.style.minHeight = '400px'; caja.style.maxHeight = '400px';
-  var sup = document.createElement('div'); sup.className = 'zona-superior';
-  var inf = document.createElement('div'); inf.className = 'zona-inferior';
+  var sup = document.createElement('div'); sup.className = 'zona-juego__alta';
+  var inf = document.createElement('div'); inf.className = 'zona-juego__baja';
   sup.appendChild(document.createElement('p'));
   sup.firstChild.className = 'enunciado';
   sup.firstChild.textContent = '9 − 6';
@@ -4510,9 +4517,9 @@ CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto',
   caja.style.flex = 'none';
   caja.style.width = window.innerWidth + 'px';
   var inf = document.createElement('div');
-  inf.className = 'zona-inferior';
+  inf.className = 'zona-juego__baja';
   var visor = document.createElement('div');
-  visor.className = 'visor-respuesta'; visor.textContent = '_';
+  visor.className = 'respuesta__visor'; visor.textContent = '_';
   var tec = document.createElement('div');
   tec.className = 'teclado-bloques';
   var teclas = ['1','2','3','4','5','6','7','8','9','⌫','0','OK'], k;
@@ -4565,7 +4572,7 @@ CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto',
 
     /* ── E98 ── Apretando la zona a la mitad de lo que necesita, el OK sigue
        alcanzable. El alto va en la PROPIA zona: puesto en la caja de fuera no
-       aprieta nada, porque .zona-inferior no se encoge (flex: 0 0 auto). */
+       aprieta nada, porque .zona-juego__baja no se encoge (flex: 0 0 auto). */
     var altoNecesario = inf.scrollHeight;
     inf.style.minHeight = Math.round(altoNecesario / 2) + 'px';
     inf.style.maxHeight = Math.round(altoNecesario / 2) + 'px';
@@ -4612,7 +4619,7 @@ CB.pruebas.suite('E99-E100 · en 320 px no se sale nada por los bordes', functio
   caja.hidden = false;
 
   var h = document.createElement('h1');
-  h.className = 'titulo-juego';
+  h.className = 'portada__titulo';
   h.textContent = 'CUBOMÁTICA';
   caja.appendChild(h);
 
@@ -4757,7 +4764,11 @@ CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', func
     };
 
     document.body.appendChild(marco);
-    setTimeout(function () { terminar('el marco no ha cargado en 4 s'); }, 4000);
+    /* Diez segundos, no cuatro: el plazo no mide nada del juego, solo evita que
+       la suite se quede colgada si el marco no carga. Con la máquina ocupada
+       —otra pestaña corriendo la suite, un navegador de capturas al lado— los
+       cuatro se agotaban y el rojo no decía nada verdadero. */
+    setTimeout(function () { terminar('el marco no ha cargado en 10 s'); }, 10000);
   });
 });
 
@@ -4787,9 +4798,9 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
   if (!t.ok(!!hoja, 'E103 · la página declara su hoja de estilo')) return;
 
   var cuerpo =
-    '<section class="pantalla pantalla--portada"><div class="pila-centro">' +
-    '<h1 class="titulo-juego">CUBOMÁTICA</h1>' +
-    '<p class="lema">«las Matemáticas son muy divertidas»</p>' +
+    '<section class="pantalla pantalla--portada"><div class="pila-centro portada__pila">' +
+    '<h1 class="portada__titulo">CUBOMÁTICA</h1>' +
+    '<p class="portada__lema">«las Matemáticas son muy divertidas»</p>' +
     '<button class="btn-bloque btn-bloque--primario btn-bloque--grande">JUGAR</button>' +
     '<button class="btn-bloque btn-bloque--medio">CANTERA TRANQUILA</button>' +
     '<div class="fila fila--centro">' +
@@ -4823,10 +4834,19 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
     marco.onload = function () {
       if (acabado) return;
       var w = marco.contentWindow, d = marco.contentDocument;
-      var pila = d.querySelector('.pila-centro');
+      var pila = d.querySelector('.portada__pila');
       var ultimo = d.getElementById('ultimo');
-      var titulo = d.querySelector('.titulo-juego');
+      var titulo = d.querySelector('.portada__titulo');
       if (!pila || !ultimo) return terminar('no está la pila dentro del marco');
+
+      /* SI FALTA UNA PIEZA, SE DICE. Antes solo se comprobaban `pila` y
+         `ultimo`, y `titulo` se medía sin mirar: al renombrar `.titulo-juego`
+         esta maqueta se quedó con el nombre viejo, `titulo` salió null, la
+         excepción murió dentro del onload y la promesa no se resolvió nunca.
+         El rojo decía «el marco no ha cargado en 4 s», que era falso: el marco
+         había cargado perfectamente. Un mensaje de fallo que miente cuesta más
+         que no tenerlo. */
+      if (!titulo) return terminar('la maqueta no trae .portada__titulo');
 
       var cs = w.getComputedStyle(pila);
       if (!t.ok(cs.overflowY === 'auto' && w.innerWidth === 320 && w.innerHeight === 480,
@@ -4856,6 +4876,10 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
     };
 
     document.body.appendChild(marco);
-    setTimeout(function () { terminar('el marco no ha cargado en 4 s'); }, 4000);
+    /* Diez segundos, no cuatro: el plazo no mide nada del juego, solo evita que
+       la suite se quede colgada si el marco no carga. Con la máquina ocupada
+       —otra pestaña corriendo la suite, un navegador de capturas al lado— los
+       cuatro se agotaban y el rojo no decía nada verdadero. */
+    setTimeout(function () { terminar('el marco no ha cargado en 10 s'); }, 10000);
   });
 });

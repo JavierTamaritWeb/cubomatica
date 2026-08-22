@@ -36,21 +36,21 @@
   <div class="nube" aria-hidden="true" style="top:26%"></div>
   <div class="nube" aria-hidden="true" style="top:6%"></div>
 
-  <div class="esquina-llave">
+  <div class="portada__llave">
     <button class="btn-bloque btn-bloque--icono" data-ir="p-adulto"
             aria-label="Panel de personas adultas">🔑</button>
   </div>
 
-  <div class="pila-centro">
-    <h1 class="titulo-juego">CUBOMÁTICA</h1>
-    <p class="lema">«las Matemáticas son muy divertidas»</p>
+  <div class="pila-centro portada__pila">
+    <h1 class="portada__titulo">CUBOMÁTICA</h1>
+    <p class="portada__lema">«las Matemáticas son muy divertidas»</p>
     <!-- El rótulo lo pone CB.arranque.rotuloJugar() según el estado: EMPEZAR la
          primera vez, SEGUIR JUGANDO si hay partida a medias, JUGAR el resto.
          Poner siempre «JUGAR» y aterrizar en cuatro preguntas sin reloj, sin
          luces y sin puntos es una promesa rota, y la primera impresión del
          juego era justo esa. -->
     <button id="btn-jugar" class="btn-bloque btn-bloque--primario btn-bloque--grande">JUGAR</button>
-    <p id="portada-pista" class="texto-menor portada__pista"></p>
+    <p id="portada-pista" class="texto texto--menor portada__pista"></p>
     <button id="btn-tranquila" class="btn-bloque btn-bloque--medio">CANTERA TRANQUILA</button>
     <div class="fila fila--centro">
       <button class="btn-bloque" data-ir="p-perfiles">¿Quién juega?</button>
@@ -80,9 +80,9 @@
        encontraba cuatro preguntas sueltas, sin título, sin saber cuántas eran y
        sin reloj, y concluía —con toda la razón— que la cuenta atrás estaba
        rota. Aquí NO hay reloj a propósito, y eso hay que decirlo. -->
-  <div class="cabecera-calibracion">
-    <h1>Vamos a empezar</h1>
-    <p id="cal-paso" class="texto-menor"></p>
+  <div class="calibracion__cabecera">
+    <h1 class="calibracion__titulo">Vamos a empezar</h1>
+    <p id="cal-paso" class="calibracion__paso texto texto--menor"></p>
   </div>
   <!-- Mismo decorado que la partida. Sin `bioma` ni `.cielo` esta zona quedaba
        con fondo transparente: la primera pantalla que ve un niño al pulsar
@@ -90,7 +90,7 @@
        después de una portada con cielo, nubes y hierba. -->
   <div class="zona-juego bioma bioma--pradera">
     <div class="cielo cielo--0" aria-hidden="true"></div>
-    <div class="zona-superior">
+    <div class="zona-juego__alta">
       <div id="cal-enunciado" class="panel-bloque enunciado"></div>
       <!-- La calibración necesita su PROPIO nodo de mensaje. Usaba el de la
            partida (#item-mensaje), que vive dentro de la pantalla p-partida y
@@ -102,7 +102,7 @@
         <div class="criatura criatura--flota" data-quien="cubi" aria-hidden="true">🧍</div>
       </div>
     </div>
-    <div class="zona-inferior">
+    <div class="zona-juego__baja">
       <div id="cal-respuesta"></div>
     </div>
   </div>
@@ -118,7 +118,7 @@
 <section id="p-mapa" class="pantalla pantalla--scroll" hidden>
   <div class="contenido">
     <h1>La Cantera</h1>
-    <p id="mapa-saludo" class="texto-menor"></p>
+    <p id="mapa-saludo" class="texto texto--menor"></p>
     <div id="rejilla-mundos" class="rejilla-mundos"></div>
     <div class="fila fila--centro">
       <button class="btn-bloque" data-ir="p-cantera">Mis vetas</button>
@@ -134,10 +134,10 @@
 <section id="p-cantera" class="pantalla pantalla--scroll" hidden>
   <div class="contenido">
     <h1>Mis vetas</h1>
-    <p id="cantera-pista" class="texto-menor">Lo siguiente que puedes cavar</p>
+    <p id="cantera-pista" class="texto texto--menor">Lo siguiente que puedes cavar</p>
     <div id="rejilla-vetas" class="rejilla-vetas"></div>
     <button id="btn-toda-cantera" class="btn-bloque">Ver toda la cantera</button>
-    <div id="leyenda-vetas" class="texto-menor"></div>
+    <div id="leyenda-vetas" class="texto texto--menor"></div>
     <button class="btn-bloque" data-salir>◀ Salir</button>
   </div>
 </section>
@@ -190,7 +190,7 @@
 
   <div class="zona-juego bioma bioma--pradera" id="zona-juego">
     <div class="cielo cielo--0" aria-hidden="true"></div>
-    <div class="zona-superior">
+    <div class="zona-juego__alta">
       <div id="item-enunciado" class="panel-bloque"></div>
       <div id="item-mensaje" class="mensaje-resultado" hidden></div>
       <div class="escena-criaturas">
@@ -200,7 +200,7 @@
         <div id="cri-chispa" class="criatura" data-quien="chispa" aria-hidden="true" hidden>✨</div>
       </div>
     </div>
-    <div class="zona-inferior">
+    <div class="zona-juego__baja">
       <div id="item-bono" class="hilera-bono" hidden></div>
       <div id="item-respuesta"></div>
     </div>
@@ -249,18 +249,18 @@
 </section>
 
 <!-- ══ 7. REPARACIÓN ═══════════════════════════════════════════════════════ -->
-<section id="p-reparacion" class="pantalla pantalla--scroll pantalla--reparacion" hidden>
+<section id="p-reparacion" class="pantalla pantalla--scroll" hidden>
   <div class="contenido">
     <h1>Vamos a verlo</h1>
     <div class="escena-criaturas">
       <div class="criatura criatura--asiente" data-quien="rocarr" aria-hidden="true">🪨</div>
     </div>
     <div id="rep-lienzo" class="lienzo-explicador panel-bloque"></div>
-    <div id="rep-pasos" class="pasos-reparacion"></div>
+    <div id="rep-pasos" class="reparacion__pasos"></div>
     <button id="btn-lo-pillo" class="btn-bloque btn-bloque--primario btn-bloque--medio" disabled>
       ¡Lo pillo!
     </button>
-    <p id="rep-ayuda" class="texto-menor">Toca los tres pasos para verlo entero.</p>
+    <p id="rep-ayuda" class="texto texto--menor">Toca los tres pasos para verlo entero.</p>
   </div>
 </section>
 
@@ -280,10 +280,10 @@
     <div class="escena-criaturas">
       <div id="jefe-criatura" class="criatura criatura--flota" aria-hidden="true">🌳</div>
     </div>
-    <div id="jefe-armadura" class="armadura-jefe" role="img" aria-label="Bloques del jefe"></div>
+    <div id="jefe-armadura" class="jefe__armadura" role="img" aria-label="Bloques del jefe"></div>
     <div id="jefe-enunciado" class="panel-bloque enunciado"></div>
-    <div id="jefe-opciones" class="opciones-jefe"></div>
-    <p id="jefe-aviso" class="texto-menor">Aquí no se apagan luces. Aquí solo se cavan bloques.</p>
+    <div id="jefe-opciones" class="jefe__opciones"></div>
+    <p id="jefe-aviso" class="texto texto--menor">Aquí no se apagan luces. Aquí solo se cavan bloques.</p>
     <button class="btn-bloque" data-salir>◀ Salir</button>
     <!-- La pantalla del jefe tiene su propia cinta. CB.ui.cinta.nodoDe()
          resuelve la de la pantalla visible en cada llamada. -->
@@ -299,7 +299,7 @@
   <div id="cinta-fin" class="cinta" aria-hidden="true" hidden><span class="cinta__texto"></span></div>
   <div class="contenido">
     <h1 id="fin-titulo">Fin de la expedición</h1>
-    <p id="fin-subtitulo" class="texto-lectura"></p>
+    <p id="fin-subtitulo" class="texto texto--lectura"></p>
 
     <div class="panel-bloque">
       <h2>Lo que has dominado hoy</h2>
@@ -319,17 +319,17 @@
     <div class="panel-bloque">
       <p class="gemas"><span class="gemas__icono" aria-hidden="true"></span>
         <span id="fin-gemas" class="cifra-viva">0</span> gemas</p>
-      <p id="fin-bono" class="texto-menor"></p>
+      <p id="fin-bono" class="texto texto--menor"></p>
     </div>
 
     <div id="fin-animo" class="panel-bloque" hidden>
       <h2>¿Cómo te has sentido hoy?</h2>
-      <div class="caras-animo">
-        <button class="cara-animo" data-animo="2" aria-label="Contento">☺</button>
-        <button class="cara-animo" data-animo="1" aria-label="Normal">·</button>
-        <button class="cara-animo" data-animo="0" aria-label="Me ha costado">☹</button>
+      <div class="animo">
+        <button class="animo__cara" data-animo="2" aria-label="Contento">☺</button>
+        <button class="animo__cara" data-animo="1" aria-label="Normal">·</button>
+        <button class="animo__cara" data-animo="0" aria-label="Me ha costado">☹</button>
       </div>
-      <p class="texto-menor">Esto lo guarda el juego para elegir tus retos de mañana. Nadie te pone nota.</p>
+      <p class="texto texto--menor">Esto lo guarda el juego para elegir tus retos de mañana. Nadie te pone nota.</p>
     </div>
 
     <div class="fila fila--centro">
@@ -344,7 +344,7 @@
 <section id="p-casa" class="pantalla pantalla--scroll" hidden>
   <div class="contenido">
     <h1>Mi álbum</h1>
-    <p id="casa-resumen" class="texto-menor"></p>
+    <p id="casa-resumen" class="texto texto--menor"></p>
     <div id="rejilla-cromos" class="rejilla-cromos"></div>
     <button class="btn-bloque" data-salir>◀ Salir</button>
   </div>
@@ -354,7 +354,7 @@
 <section id="p-glosario" class="pantalla pantalla--scroll" hidden>
   <div class="contenido">
     <h1>Diccionario de Bloques</h1>
-    <p id="glosario-resumen" class="texto-menor"></p>
+    <p id="glosario-resumen" class="texto texto--menor"></p>
     <div id="lista-glosario" class="lista-glosario"></div>
     <button class="btn-bloque" data-salir>◀ Salir</button>
   </div>
@@ -372,13 +372,13 @@
 <!-- ══ 14. PANEL DE PERSONAS ADULTAS ═══════════════════════════════════════ -->
 <section id="p-adulto" class="pantalla pantalla--scroll pantalla--documento" hidden>
   <div class="contenido">
-    <div id="adulto-puerta" class="puerta-parental">
+    <div id="adulto-puerta" class="adulto__puerta">
       <h1>Personas adultas</h1>
       <p id="adulto-pregunta"></p>
-      <input id="adulto-respuesta" type="text" inputmode="numeric" autocomplete="off"
+      <input id="adulto-respuesta" class="adulto__campo" type="text" inputmode="numeric" autocomplete="off"
              aria-label="Respuesta de la puerta parental">
       <button id="adulto-entrar" class="btn-adulto">Entrar</button>
-      <p id="adulto-error" class="texto-menor" hidden>No es correcto. Prueba otra vez.</p>
+      <p id="adulto-error" class="texto texto--menor" hidden>No es correcto. Prueba otra vez.</p>
       <button class="btn-bloque" data-salir>◀ Salir</button>
     </div>
     <div id="adulto-contenido" hidden></div>
@@ -409,8 +409,8 @@
     <h1>Créditos</h1>
     <div class="panel-bloque">
       <h2>Cubomática</h2>
-      <p class="texto-menor">Juego educativo de matemáticas para 2.º de Educación Primaria.</p>
-      <p class="texto-menor">Todo el arte y todos los efectos de sonido están generados
+      <p class="texto texto--menor">Juego educativo de matemáticas para 2.º de Educación Primaria.</p>
+      <p class="texto texto--menor">Todo el arte y todos los efectos de sonido están generados
         por código. Cero ficheros de imagen, cero peticiones de red. La música sí son
         ficheros, y es de otras personas: están abajo.</p>
     </div>
@@ -433,64 +433,64 @@
 <section id="p-ayuda" class="pantalla pantalla--scroll" hidden>
   <div class="contenido">
     <h1>Ayuda</h1>
-    <p class="texto-lectura">Aquí te contamos cómo se juega. Léelo con calma.
+    <p class="texto texto--lectura">Aquí te contamos cómo se juega. Léelo con calma.
       Si algo no lo entiendes, pregúntale a una persona mayor.</p>
 
     <div class="panel-bloque">
       <h2>¿Qué es este juego?</h2>
-      <p class="texto-lectura">Cubomática es un juego de mates.</p>
-      <p class="texto-lectura">Eres un minero. Cavas en una cantera. Cada vez que
+      <p class="texto texto--lectura">Cubomática es un juego de mates.</p>
+      <p class="texto texto--lectura">Eres un minero. Cavas en una cantera. Cada vez que
         aciertas, sacas una gema.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>Cómo se juega</h2>
-      <ul class="texto-lectura">
+      <ul class="texto texto--lectura">
         <li>Toca el botón JUGAR.</li>
         <li>Sale una pregunta.</li>
         <li>Escribe el número con las teclas.</li>
         <li>¿Te has colado al escribir? Toca ⌫ y borra.</li>
         <li>Cuando lo tengas, toca OK.</li>
       </ul>
-      <p class="texto-lectura">A veces no hay teclas. Entonces tocas la respuesta
+      <p class="texto texto--lectura">A veces no hay teclas. Entonces tocas la respuesta
         buena entre varias.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>La primera vez</h2>
-      <p class="texto-lectura">Al empezar te hacemos cuatro preguntas. Aquí no hay
+      <p class="texto texto--lectura">Al empezar te hacemos cuatro preguntas. Aquí no hay
         reloj y no se apaga ninguna luz. Solo queremos saber por dónde empezar
         contigo.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>Las luces del casco</h2>
-      <p class="texto-lectura">Arriba tienes tres luces.</p>
-      <p class="texto-lectura">Si fallas, te enseñamos cómo se hace y lo pruebas
+      <p class="texto texto--lectura">Arriba tienes tres luces.</p>
+      <p class="texto texto--lectura">Si fallas, te enseñamos cómo se hace y lo pruebas
         otra vez. Solo se apaga una luz si vuelves a fallar.</p>
-      <p class="texto-lectura">El reloj nunca apaga una luz.</p>
-      <p class="texto-lectura">Cuando se apagan las tres, la expedición se acaba.
+      <p class="texto texto--lectura">El reloj nunca apaga una luz.</p>
+      <p class="texto texto--lectura">Cuando se apagan las tres, la expedición se acaba.
         Te quedas con todas tus gemas. Y puedes empezar otra cuando quieras.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>El reloj de arena</h2>
-      <p class="texto-lectura">A veces verás un reloj de arena con 30 segundos.</p>
-      <p class="texto-lectura">Si te pone nervioso, se puede quitar. Ve a Ajustes y
+      <p class="texto texto--lectura">A veces verás un reloj de arena con 30 segundos.</p>
+      <p class="texto texto--lectura">Si te pone nervioso, se puede quitar. Ve a Ajustes y
         toca «El reloj» hasta que ponga «Sin prisa». Entonces tienes todo el
         tiempo que necesites.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>Las gemas</h2>
-      <p class="texto-lectura">Cada respuesta buena te da gemas. Si aciertas varias
+      <p class="texto texto--lectura">Cada respuesta buena te da gemas. Si aciertas varias
         seguidas, ganas más.</p>
-      <p class="texto-lectura">Las gemas no son una nota. Aquí nadie te pone nota.</p>
+      <p class="texto texto--lectura">Las gemas no son una nota. Aquí nadie te pone nota.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>Los botones de abajo</h2>
-      <ul class="texto-lectura">
+      <ul class="texto texto--lectura">
         <li>Pista: te echa una mano con esa pregunta.</li>
         <li>Pausa: para el juego. Vuelves cuando quieras con «Seguir cavando».</li>
         <li>Sonido: quita o pone los sonidos y la música.</li>
@@ -501,58 +501,58 @@
 
     <div class="panel-bloque">
       <h2>Cuando fallas</h2>
-      <p class="texto-lectura">No pasa nada por fallar. Fallando también se
+      <p class="texto texto--lectura">No pasa nada por fallar. Fallando también se
         aprende.</p>
-      <p class="texto-lectura">Sale la pantalla «Vamos a verlo». Toca los tres
+      <p class="texto texto--lectura">Sale la pantalla «Vamos a verlo». Toca los tres
         pasos y verás cómo se hace. Luego toca «¡Lo pillo!» y sigues jugando.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>La cantera y sus mundos</h2>
-      <p class="texto-lectura">En La Cantera hay cuatro mundos:</p>
-      <ul class="texto-lectura" id="ayuda-mundos">
+      <p class="texto texto--lectura">En La Cantera hay cuatro mundos:</p>
+      <ul class="texto texto--lectura" id="ayuda-mundos">
         <li>La Pradera de los Números</li>
         <li>El Bosque de las Llevadas</li>
         <li>El Río de los Problemas</li>
         <li>La Mina de las Veces</li>
       </ul>
-      <p class="texto-lectura">Empiezas por la Pradera. Los otros se abren cuando
+      <p class="texto texto--lectura">Empiezas por la Pradera. Los otros se abren cuando
         estés preparado.</p>
-      <p class="texto-lectura">En «Mis vetas» ves lo que ya sabes hacer y lo que
+      <p class="texto texto--lectura">En «Mis vetas» ves lo que ya sabes hacer y lo que
         viene después.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>Los guardianes</h2>
-      <p class="texto-lectura">Al final de cada mundo hay un guardián: Tronquete,
+      <p class="texto texto--lectura">Al final de cada mundo hay un guardián: Tronquete,
         Ranacubo, Cristalina y Brasita.</p>
-      <p class="texto-lectura">Con cada acierto le quitas un bloque. Aquí no se
+      <p class="texto texto--lectura">Con cada acierto le quitas un bloque. Aquí no se
         apaga ninguna luz, así que tranquilo.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>El descanso</h2>
-      <p class="texto-lectura">De vez en cuando el juego para y te deja descansar
+      <p class="texto texto--lectura">De vez en cuando el juego para y te deja descansar
         un ratito. A la cabeza le viene muy bien.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>Tu álbum y el diccionario</h2>
-      <p class="texto-lectura">En «Mi álbum» guardas los cromos que vas ganando.</p>
-      <p class="texto-lectura">En el «Diccionario de Bloques» están explicadas las
+      <p class="texto texto--lectura">En «Mi álbum» guardas los cromos que vas ganando.</p>
+      <p class="texto texto--lectura">En el «Diccionario de Bloques» están explicadas las
         palabras de mates que usamos.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>¿Quién juega?</h2>
-      <p class="texto-lectura">Cada niño tiene su minero. Toca «¿Quién juega?» y
+      <p class="texto texto--lectura">Cada niño tiene su minero. Toca «¿Quién juega?» y
         elige el tuyo. Así el juego se acuerda de ti y de lo que ya sabes.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>Ajustes</h2>
-      <p class="texto-lectura">En Ajustes puedes cambiar estas cosas:</p>
-      <ul class="texto-lectura">
+      <p class="texto texto--lectura">En Ajustes puedes cambiar estas cosas:</p>
+      <ul class="texto texto--lectura">
         <li>Sonido: sí o no.</li>
         <li>Música: más alta, más baja o nada.</li>
         <li>El reloj: «Con calma», «Normal» o «Sin prisa».</li>
@@ -563,14 +563,14 @@
 
     <div class="panel-bloque">
       <h2>La cantera tranquila</h2>
-      <p class="texto-lectura">Es para jugar sin reloj y sin luces. Solo cavar.</p>
-      <p class="texto-lectura">Si un día no te apetece que nada corra, empieza por
+      <p class="texto texto--lectura">Es para jugar sin reloj y sin luces. Solo cavar.</p>
+      <p class="texto texto--lectura">Si un día no te apetece que nada corra, empieza por
         aquí.</p>
     </div>
 
     <div class="panel-bloque">
       <h2>Si juegas con teclado</h2>
-      <ul class="texto-lectura">
+      <ul class="texto texto--lectura">
         <li>Los números escriben.</li>
         <li>La tecla Intro es como tocar OK.</li>
         <li>La tecla de borrar quita la última cifra.</li>
@@ -581,9 +581,9 @@
 
     <div class="panel-bloque">
       <h2>La llave de la portada</h2>
-      <p class="texto-lectura">La llave de arriba es para las personas mayores.
+      <p class="texto texto--lectura">La llave de arriba es para las personas mayores.
         Ahí tu familia o tu profe pueden ver cómo vas.</p>
-      <p class="texto-lectura">Para entrar hay que resolver una cuenta de mayores,
+      <p class="texto texto--lectura">Para entrar hay que resolver una cuenta de mayores,
         así que no es tu puerta.</p>
     </div>
 
@@ -595,9 +595,9 @@
 <section id="p-error" class="pantalla pantalla--error" hidden>
   <div class="pila-centro">
     <h1>Se ha soltado un bloque</h1>
-    <p class="texto-lectura">Volvemos al mapa. Tu progreso está guardado.</p>
+    <p class="texto texto--lectura">Volvemos al mapa. Tu progreso está guardado.</p>
     <button id="btn-error-mapa" class="btn-bloque btn-bloque--primario btn-bloque--medio">Volver</button>
-    <p id="error-detalle" class="texto-menor"></p>
+    <p id="error-detalle" class="texto texto--menor"></p>
   </div>
 </section>
 

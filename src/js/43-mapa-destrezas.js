@@ -66,7 +66,7 @@ CB.mapaDestrezas.pintar = function () {
     veta.setAttribute('aria-label', nivel.nombre + ': ' + CB.memoria.ETIQUETA[estado]);
     veta.appendChild(CB.ui.crear('span', 'veta__icono', CB.memoria.ICONO[estado]));
     veta.appendChild(CB.ui.crear('span', null, nivel.nombre));
-    veta.appendChild(CB.ui.crear('span', 'texto-menor', CB.memoria.ETIQUETA[estado]));
+    veta.appendChild(CB.ui.crear('span', 'texto texto--menor', CB.memoria.ETIQUETA[estado]));
 
     if (frontera.indexOf(id) !== -1) veta.classList.add('veta--frontera');
     if (estado === 'oxidada') veta.classList.add('veta--musgo');
@@ -87,7 +87,7 @@ CB.mapaDestrezas.pintar = function () {
       ley.appendChild(s);
     });
     if (conteo.oxidada) {
-      ley.appendChild(CB.ui.crear('p', 'texto-menor',
+      ley.appendChild(CB.ui.crear('p', 'texto texto--menor',
         'Las vetas con musgo se repasan en dos minutos.'));
     }
   }
@@ -131,7 +131,7 @@ CB.mapaDestrezas.pintarMundos = function () {
     var tarjeta = CB.ui.crear('div', 'tarjeta-mundo');
     tarjeta.setAttribute('data-bloqueado', estado.desbloqueado ? 'no' : 'si');
 
-    var cinta = CB.ui.crear('div', 'cinta-bioma');
+    var cinta = CB.ui.crear('div', 'tarjeta-mundo__cinta');
     cinta.setAttribute('data-bioma', m.bioma);
     tarjeta.appendChild(cinta);
 
@@ -146,7 +146,7 @@ CB.mapaDestrezas.pintarMundos = function () {
         CB.a11y.anunciar(CB.LEGAL.MULTIPLICACION);
         var nota = document.getElementById('nota-iniciacion');
         if (!nota) {
-          nota = CB.ui.crear('p', 'texto-menor');
+          nota = CB.ui.crear('p', 'texto texto--menor');
           nota.id = 'nota-iniciacion';
           tarjeta.appendChild(nota);
         }
@@ -156,7 +156,7 @@ CB.mapaDestrezas.pintarMundos = function () {
     }
 
     tarjeta.appendChild(CB.ui.barra(prog.fraccion));
-    tarjeta.appendChild(CB.ui.crear('p', 'texto-menor',
+    tarjeta.appendChild(CB.ui.crear('p', 'texto texto--menor',
       prog.hechos + ' de ' + prog.total + ' vetas abiertas'));
 
     if (estado.desbloqueado) {
@@ -179,7 +179,7 @@ CB.mapaDestrezas.pintarMundos = function () {
         tarjeta.appendChild(CB.ui.crear('span', 'distintivo', 'cerrado sin un fallo'));
       }
     } else {
-      tarjeta.appendChild(CB.ui.crear('p', 'texto-menor',
+      tarjeta.appendChild(CB.ui.crear('p', 'texto texto--menor',
         'Se abre al cavar más vetas del mundo anterior.'));
     }
     cont.appendChild(tarjeta);

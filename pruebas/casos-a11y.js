@@ -43,6 +43,12 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
   if (enPartida) {
     var orden = [].slice.call(enPartida.querySelectorAll(ENFOCABLE));
     var barra = enPartida.querySelector('.barra-herramientas');
+    /* SIN BARRA NO HAY COMPROBACIÓN, Y ESO HAY QUE DECIRLO. Antes, si el
+       selector no encontraba nada, `primeroDeBarra` valía -1, `hayFueraDespues`
+       salía false y la aserción pasaba sin haber mirado ningún orden de
+       tabulación. Un renombrado de `.barra-herramientas` la habría apagado en
+       verde. */
+    t.ok(!!barra, 'la partida tiene barra de herramientas que ordenar');
     var primeroDeBarra = orden.findIndex
       ? orden.findIndex(function (el) { return barra && barra.contains(el); })
       : -1;

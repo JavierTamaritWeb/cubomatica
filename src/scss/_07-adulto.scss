@@ -26,13 +26,13 @@
 .pantalla--documento h3 { font-size: 17px; }
 .pantalla--documento :is(p, li) { max-width: 68ch; }
 
-.adulto-caja {
+.adulto__caja {
   background: var(--blanco);
   padding: var(--e3);
   box-shadow: inset 2px 2px 0 0 var(--deco-piedra);
   margin-bottom: var(--e3);
 }
-.adulto-aviso {
+.adulto__aviso {
   background: var(--bg-texto-aviso);
   color: var(--texto-aviso);
   padding: var(--e3);
@@ -40,15 +40,15 @@
   margin-bottom: var(--e3);
 }
 
-.tabla-adulto { border-collapse: collapse; width: 100%; font-size: 15px; }
-.tabla-adulto th, .tabla-adulto td {
+.adulto__tabla { border-collapse: collapse; width: 100%; font-size: 15px; }
+.adulto__tabla th, .adulto__tabla td {
   border: 2px solid var(--deco-piedra);
   padding: var(--e2);
   text-align: left;
   vertical-align: top;
 }
-.tabla-adulto th { background: var(--bg-texto-aviso); font-weight: bold; }
-.tabla-adulto tr:nth-child(even) td { background: var(--crema-fila); }
+.adulto__tabla th { background: var(--bg-texto-aviso); font-weight: bold; }
+.adulto__tabla tr:nth-child(even) td { background: var(--crema-fila); }
 
 /* Semáforo: NUNCA solo color. Siempre símbolo + texto (§10.4, impresión B/N)
 
@@ -85,7 +85,7 @@
   padding: var(--e2) 0;
   border-bottom: 2px solid var(--deco-piedra);
 }
-.metrica .metrica__valor { font-weight: bold; white-space: nowrap; }
+.metrica__valor { font-weight: bold; white-space: nowrap; }
 
 .btn-adulto {
   font-family: var(--fuente-lectura);
@@ -101,8 +101,8 @@
 .btn-adulto:active { transform: translateY(2px); background: var(--btn-fondo-hundido); }
 .btn-adulto--peligro { background: var(--peligro-suave); }
 
-.puerta-parental { display: flex; flex-direction: column; gap: var(--e3); max-width: 480px; }
-.puerta-parental input {
+.adulto__puerta { display: flex; flex-direction: column; gap: var(--e3); max-width: 480px; }
+.adulto__campo {
   font-size: 20px; padding: var(--e2);
   background: var(--blanco); color: var(--texto-principal);
   box-shadow: inset 2px 2px 0 0 var(--deco-piedra);

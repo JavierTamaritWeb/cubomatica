@@ -54,7 +54,7 @@ CB.casa.pintar = function () {
     c.appendChild(icono);
     c.appendChild(CB.ui.crear('div', null, tiene ? CB.casa.NOMBRES_CROMO[id] : '???'));
     if (tiene) {
-      c.appendChild(CB.ui.crear('div', 'texto-menor', CB.casa.DESCRIPCION[id]));
+      c.appendChild(CB.ui.crear('div', 'texto texto--menor', CB.casa.DESCRIPCION[id]));
     }
     c.setAttribute('aria-label', tiene
       ? (CB.casa.NOMBRES_CROMO[id] + ': ' + CB.casa.DESCRIPCION[id])
@@ -95,7 +95,7 @@ CB.casa.pintarGlosario = function () {
     if (tiene) {
       fila.appendChild(CB.ui.crear('p', null, g.d));
     } else {
-      fila.appendChild(CB.ui.crear('p', 'texto-menor', 'Aún no la has encontrado.'));
+      fila.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Aún no la has encontrado.'));
     }
     cont.appendChild(fila);
   });

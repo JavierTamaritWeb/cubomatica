@@ -1,0 +1,40 @@
+{
+  "_": "SEGUNDA ACTA DE RENOMBRADO A BEM (1.23.0). Como la de 1.7.0 (mapa-bem.json), esto es el acta de algo YA APLICADO, no una entrada de nada. El codemod que lo ejecuto —herramientas/renombrar-bem.mjs— se borra despues de usarlo: volver a pasarlo sobre un arbol ya renombrado solo puede hacer dano. Cada entrada conserva su motivo, porque el renombrado es irreversible y dentro de seis meses el motivo es lo unico que queda. La gramatica entera esta en docs/convencion-bem.md.",
+
+  "_verificacion": "Este fichero NO lo lee ningun guardian, y es a proposito: uno que comprobara que los nombres viejos ya no aparecen seria un generador de falsos rojos, porque 'lema', 'luz', 'operacion' y 'animo' son palabras espanolas corrientes. Lo que si lo usa es herramientas/volcado-css.mjs --mapa: aplica estas sustituciones al volcado de CSS anterior y exige que de EXACTAMENTE el nuevo, declaracion a declaracion. Ese es el criterio con el que se cerro el renombrado de 1.7.0 y se repite aqui.",
+
+  "_1-elementos-disfrazados": "La familia grande. Eran hijos que no tienen sentido fuera de su bloque, escritos con nombre de bloque; en varios casos la jerarquia se insinuaba con plural/singular (luces/luz, pasos-reparacion/paso-reparacion, caras-animo/cara-animo), que es una convencion que solo existe en la cabeza de quien la escribio.",
+
+  "luz": { "a": "luces__luz", "por": "una luz del casco no existe fuera de .luces; el par plural/singular era toda la jerarquia que habia" },
+  "luz--recien-encendida": { "a": "luces__luz--recien-encendida", "por": "modificador del elemento, no de un bloque que no existe" },
+  "zona-superior": { "a": "zona-juego__alta", "por": "es una de las dos regiones de .zona-juego; 'superior' ademas describe posicion, y la posicion la decide el CSS" },
+  "zona-inferior": { "a": "zona-juego__baja", "por": "la otra region de .zona-juego" },
+  "pasos-reparacion": { "a": "reparacion__pasos", "por": "contenedor de los tres pasos de la tarjeta de reparacion" },
+  "paso-reparacion": { "a": "reparacion__paso", "por": "cada paso; el plural/singular no era una jerarquia, era una casualidad ortografica" },
+  "paso-reparacion__numero": { "a": "reparacion__numero", "por": "el numero del paso pasa a colgar del bloque bueno, sin dos niveles de __" },
+  "caras-animo": { "a": "animo", "por": "el bloque es el momento socioafectivo entero, no 'unas caras'" },
+  "cara-animo": { "a": "animo__cara", "por": "cada cara solo existe dentro de ese bloque" },
+  "bloque-rompible": { "a": "tablero-descanso__bloque", "por": "solo se pinta en el tablero del descanso y no se usa en ningun otro sitio" },
+  "barra-progreso-mundo": { "a": "tarjeta-mundo__barra", "por": "vive dentro de la tarjeta de mundo y en ninguna otra parte" },
+  "avatar-cubi": { "a": "tarjeta-perfil__avatar", "por": "el avatar es del perfil; 'cubi' es el personaje, no el sitio" },
+  "cinta-bioma": { "a": "tarjeta-mundo__cinta", "por": "ademas de ser un elemento, .cinta-bioma y .cinta eran dos bloques distintos con nombres casi iguales: uno es la franja de color de una tarjeta y el otro el cartel que cruza la pantalla" },
+  "esquina-llave": { "a": "portada__llave", "por": "solo existe en la portada, y 'esquina' nombra el sitio en vez de la cosa" },
+  "titulo-juego": { "a": "portada__titulo", "por": "se estilaba con .pantalla--portada .titulo-juego, o sea descendencia entre bloques (R4)" },
+  "lema": { "a": "portada__lema", "por": "mismo caso que el titulo, y 'lema' a secas es un nombre que cualquiera reutilizaria por error" },
+  "cabecera-calibracion": { "a": "calibracion__cabecera", "por": "cabecera de la pantalla de calibracion, con sus dos hijos" },
+  "armadura-jefe": { "a": "jefe__armadura", "por": "el sufijo -jefe estaba haciendo de __ desde el principio" },
+  "opciones-jefe": { "a": "jefe__opciones", "por": "igual que la armadura" },
+  "adulto-caja": { "a": "adulto__caja", "por": "prefijo adulto- convertido en el __ que ya era" },
+  "adulto-aviso": { "a": "adulto__aviso", "por": "igual" },
+  "puerta-parental": { "a": "adulto__puerta", "por": "la puerta parental es la entrada del panel de adultos y no aparece en ninguna otra pantalla" },
+  "tabla-adulto": { "a": "adulto__tabla", "por": "igual; ademas deja de competir con .matriz-subtipos, que si es un componente propio" },
+  "pie-informe": { "a": "informe__pie", "por": "pie del informe imprimible" },
+  "consigna-respuesta": { "a": "respuesta__consigna", "por": "la consigna y el visor son las dos piezas del bloque de respuesta" },
+  "visor-respuesta": { "a": "respuesta__visor", "por": "idem. El id #visor-respuesta NO cambia: los ids siguen siendo ids" },
+  "frase-enunciado": { "a": "enunciado__frase", "por": "cada frase de un enunciado de problema; se resalta al leer en voz alta" },
+  "hueco-orden": { "a": "fila-ordenar__hueco", "por": "los huecos solo existen dentro de la fila de ordenar" },
+
+  "_2-no-se-tocan": "Se quedan como estan, y conviene decir por que para que nadie los 'arregle': .btn-bloque, .panel-bloque, .tarjeta-mundo, .tarjeta-perfil, .barra-herramientas, .termino-glosario, .ficha-refuerzo, .matriz-subtipos, .hilera-cogidas y .rotulo-veta son BLOQUES con nombre compuesto —el guion forma parte del nombre— y varios ya tienen su propio __. Las utilidades .solo-lectores, .imprimible, .no-imprimir, .fila, .pila-centro y .contenido son bloques de una pieza. Los cuatro estados globales (.letra-grande, .modo-proyeccion, .alto-contraste, .sin-movimiento) viven en :root y no son bloques de nada. Y .lienzo-explicador se queda: lo pintan la reparacion, el informe y la ficha de refuerzo, asi que es reutilizable de verdad.",
+
+  "_3-cambios-que-no-son-renombrados": "Tres cosas de la misma refactorizacion NO caben en este mapa porque no son 1 a 1, y se hicieron a mano: (a) .moneda y .billete pasan a ser .pieza--moneda y .pieza--billete, lo que da por fin bloque a .pieza__cifra, que era un elemento huerfano; (b) .texto-menor y .texto-lectura pasan a .texto--menor y .texto--lectura, con .texto en el marcado; (c) .operacion pasa a .enunciado--operacion. En los tres casos una clase se convierte en dos, asi que el volcado de CSS cambia a proposito y hay que leerlo, no aplicarlo."
+}

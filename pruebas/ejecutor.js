@@ -45,6 +45,45 @@ CB.pruebas.saltar = function (texto, motivo) {
   if (CB.pruebas._actual) CB.pruebas._actual.appendChild(li);
 };
 
+/* ¿EXISTE ESA CLASE EN LA HOJA QUE SE HA CARGADO?
+   Nace para el renombrado a BEM, y tapa un modo de fallo que ya existía: varias
+   comprobaciones hacen `querySelector('.x')` y, si no encuentran nada, siguen
+   como si tal cosa. Renombra `.enunciado` y esa prueba no se pone roja: mide
+   otra cosa —o no mide nada— y sale verde, que es peor que no tenerla.
+
+   Se pregunta a `document.styleSheets`, es decir a las reglas REALMENTE
+   cargadas, no al fuente: sirve igual contra la hoja legible y contra la
+   minificada. Si el navegador no deja leerlas —pasa al abrir la página por
+   `file://`— devuelve null, y quien llama debe tratar ese null como un fallo
+   con instrucciones, nunca como un permiso para saltarse la comprobación. */
+CB.pruebas.claseEnHoja = function (nombre) {
+  var busca = '.' + nombre.replace(/^\./, '');
+  var i, j, hojas = document.styleSheets, reglas;
+  var visto = false;
+  for (i = 0; i < hojas.length; i++) {
+    try { reglas = hojas[i].cssRules; } catch (e) { continue; }   // otra procedencia
+    if (!reglas) continue;
+    visto = true;
+    if (CB.pruebas._buscaEn(reglas, busca)) return true;
+  }
+  return visto ? false : null;
+};
+
+CB.pruebas._buscaEn = function (reglas, busca) {
+  var k, r;
+  for (k = 0; k < reglas.length; k++) {
+    r = reglas[k];
+    if (r.selectorText && r.selectorText.indexOf(busca) !== -1) {
+      /* Que no case `.veta-larga` cuando se pregunta por `.veta`: detrás del
+         nombre solo puede venir algo que no sea letra, cifra, guion ni _. */
+      var re = new RegExp('\\' + busca.replace(/[-]/g, '\\-') + '(?![\\w-])');
+      if (re.test(r.selectorText)) return true;
+    }
+    if (r.cssRules && CB.pruebas._buscaEn(r.cssRules, busca)) return true;
+  }
+  return false;
+};
+
 /* Perfil sintético limpio para las pruebas que necesitan uno. */
 CB.pruebas.perfilNuevo = function () {
   var p = CB.almacen.perfilNuevo('p-test', 'Topo Cavador', 0, CB.util.hoyISO(), null);

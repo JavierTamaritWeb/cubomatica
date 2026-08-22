@@ -52,7 +52,7 @@
 }
 
 /* Los cuatro biomas salen del mapa $biomas. Cada uno es un material, y esa
-   correspondencia se escribia DOS veces: aqui y en .cinta-bioma[data-bioma],
+   correspondencia se escribia DOS veces: aqui y en .tarjeta-mundo__cinta[data-bioma],
    cuarenta lineas mas abajo. Dos sitios que hay que acordarse de cambiar a la
    vez es el mismo fallo que tenian las listas de movimiento reducido. */
 @each $bioma, $material in $biomas {
@@ -65,7 +65,7 @@
 
 /* Cintas de bioma de las tarjetas del mapa */
 @each $bioma, $material in $biomas {
-  .cinta-bioma[data-bioma="#{$bioma}"] {
+  .tarjeta-mundo__cinta[data-bioma="#{$bioma}"] {
     background-color: var(--deco-#{$material});
     background-image: var(--tex-#{$material});
   }

@@ -240,7 +240,7 @@ const literalPuro = a => /^'(?:[^'\\]|\\.)*'$/.test(a) ? a.slice(1, -1) : null;
    de enganche para querySelector, no estilo. Cada una necesita su motivo, y la
    lista es cerrada: cualquier clase nueva sin estilo es un hallazgo. */
 const GANCHOS_SIN_ESTILO = {
-  'frase-enunciado': 'engancha CB.ui.resaltarLinea; el <p> se pinta con las reglas de p',
+  'enunciado__frase': 'engancha CB.ui.resaltarLinea; el <p> se pinta con las reglas de p',
 };
 
 function universoJS() {
@@ -312,13 +312,20 @@ function universoJS() {
 
 /* Sin el CSS compilado, las clases que generan los @each no existen en ninguna
    parte y las dos direcciones darian una lista larguisima de falsos positivos.
-   Un fallo falso en una auditoria es peor que no comprobar: se desactiva. */
+   Un fallo falso en una auditoria es peor que no comprobar: se desactiva.
+
+   PERO SALIR 0 EN MODO ESTRICTO ERA PEOR TODAVIA. El bloque 8 de la auditoria
+   toma ese cero por bueno y escribe «cero clases muertas, cero fantasma» sin
+   que se haya cruzado nada: verde por no haber mirado, y precisamente en la
+   unica situacion en la que hay que mirar —un renombrado a medio construir—.
+   Suelto sigue saliendo 0 con su explicacion; con --estricto es rojo. */
 if (!existsSync(CSS_COMPILADO)) {
-  console.log('CRUCE DE CLASES  ·  saltado: no hay ' + corto(CSS_COMPILADO) +
+  console.log('CRUCE DE CLASES  ·  ' + (ESTRICTO ? 'ROJO' : 'saltado') +
+              ': no hay ' + corto(CSS_COMPILADO) +
               '\n  Las clases de .bioma--, .cielo-- y .veta[data-estado] las genera Sass' +
               '\n  con @each, y sin compilar no existen en ningun fichero.' +
               '\n  Ejecuta `npm run build`.');
-  process.exit(0);
+  process.exit(ESTRICTO ? 1 : 0);
 }
 
 const css = universoCSS();

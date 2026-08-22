@@ -3608,3 +3608,67 @@ salían plausibles y equivocadas, y una corrección ya aplicada parecía no func
 Es la misma familia que la caché de las páginas de prueba, y la misma lección: antes de
 creerse una medida, comprobar que la está tomando el código que se acaba de escribir. El
 guion lleva ahora un puerto por proceso y mata el grupo entero.
+
+---
+
+## D-1.23.0 — La segunda pasada de BEM, y por qué esta vez la vigila una herramienta
+
+En 1.7.0 se renombraron 43 clases y se pasó de cero `bloque__elemento` a 29. Lo
+que quedó fuera era la mayoría, y con ella el problema de fondo: **no había forma
+de saber, mirando un nombre, si era un bloque o el hijo de otra cosa**. Convivían
+`luces` y `luz`, `pasos-reparacion` y `paso-reparacion`, `caras-animo` y
+`cara-animo` — el plural y el singular haciendo de jerarquía, que es una
+convención que solo existe en la cabeza de quien la escribió. Y `.pieza__cifra`
+llevaba dos versiones siendo un elemento **huérfano**: no había ningún bloque
+`.pieza` en toda la hoja.
+
+**La gramática está en `docs/convencion-bem.md`** y son nueve reglas. Las tres que
+mandan: un solo nivel de `__`; cero descendencia entre bloques; cero estilado por
+etiqueta dentro de un bloque.
+
+**El reparto de quién comprueba qué es la parte que hay que recordar.** stylelint
+(E104) comprueba la FORMA de un nombre y no puede comprobar el SENTIDO: que `luz`
+debería llamarse `luces__luz` no lo sabe ninguna herramienta, lo decide una
+persona y queda escrito con su motivo en `pruebas/mapa-bem-2.json`. Presentar
+stylelint como «el guardián de BEM» habría sido exactamente el tipo de verde que
+este proyecto persigue: el que se da por comprobado sin comprobarse.
+
+**El sustituto de la descendencia es una variable, no un selector más largo.**
+`.panel-bloque .texto-menor` y sus seis hermanas hacían que un bloque cambiara de
+aspecto según quién lo contuviera. Ahora el contenedor declara `--texto-sec` y el
+bloque la consume con un valor por defecto. Es mejor por tres motivos concretos:
+funciona con contenedores que aún no existen, no depende del orden de la cascada
+—que aquí es carga útil y conviene no gastarla en esto—, y `casos-contraste.js`
+lo sigue midiendo igual porque mide valores calculados. El mismo remedio se
+aplicó al tamaño de las criaturas dentro de la pantalla de juego.
+
+**Las dos redes nuevas no dependen de los nombres, y por eso valen.**
+`retrato-pantallas.mjs` fotografía las 18 pantallas a tres anchos y compara
+sha256: si un renombrado cambia un píxel, se ve. `volcado-css.mjs` compara la
+hoja declaración a declaración y, con `--mapa`, exige que aplicar los
+renombrados al volcado viejo dé exactamente el nuevo — el criterio con el que se
+cerró 1.7.0. Las dos tuvieron que aprender lo suyo: los retratos salían idénticos
+porque el service worker servía el CSS de la pasada anterior, y el volcado
+comparaba `.a, .visor-respuesta` con `.a, .respuesta__visor` como si fueran
+reglas distintas por no reordenar la lista tras renombrar.
+
+**Lo que se arregló ANTES de tocar una sola clase, y no es un detalle.** Tres
+comprobaciones se ponían verdes solas cuando su selector dejaba de encontrar
+algo: `casos-contraste.js` se saltaba en silencio las ocho clases con texto —que
+son obligación legal—, `casos-a11y.js` daba por ordenada una barra ausente y
+`casos-fuente.js` medía la tipografía del `body`. Un renombrado las habría
+apagado sin que nadie se enterara. Arregladas primero, la primera cazó dos clases
+el mismo día. En la misma línea: el bloque 8 daba verde sin `dist/` construido,
+afirmando «cero clases muertas» sin haber cruzado nada.
+
+**Tres presupuestos de peso, no dos.** `herramientas/` deja de contar como fuente
+compilada. No se compila ni se entrega: es utillaje de verificación, de la misma
+naturaleza que `pruebas/`. Contarlo con `src/` hacía que comprobar más pareciera
+que el juego había engordado, que es lo contrario de lo que ese tope quiere
+decir. El que protege a quien juega sigue siendo el de la descarga de arranque.
+
+**El codemod se borra al terminar**, como el de 1.7.0: volver a pasarlo sobre un
+árbol ya renombrado solo puede hacer daño. Su regex aprendió tres exclusiones y
+las tres por un caso real —`$luz` es un parámetro de mixin, `#visor-respuesta` es
+un id (los ids no se renombran) y `@` empieza una at-rule—, y la del id la
+descubrió el guardián E68 poniéndose rojo, que es exactamente para lo que está.

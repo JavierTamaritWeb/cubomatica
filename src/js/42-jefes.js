@@ -87,7 +87,7 @@ CB.jefes.pintarArmadura = function () {
   CB.ui.vaciar(cont);
   var i;
   for (i = 0; i < CB.jefes.BLOQUES; i++) {
-    var b = CB.ui.crear('b');
+    var b = CB.ui.crear('b', 'jefe__bloque');
     b.setAttribute('data-caido', i < (CB.jefes.BLOQUES - e.bloques) ? 'si' : 'no');
     cont.appendChild(b);
   }
@@ -138,7 +138,7 @@ CB.jefes.turno = function () {
     var sobra = CB.util.ent(e.rng, 1, 9);
     enun.appendChild(CB.ui.crear('p', 'enunciado',
       'Cristalina refleja: ' + a + ', ' + b + ' y ' + sobra + '.'));
-    enun.appendChild(CB.ui.crear('p', 'texto-menor',
+    enun.appendChild(CB.ui.crear('p', 'texto texto--menor',
       '¿Cuánto queda al quitar ' + b + ' de ' + a + '?'));
     CB.jefes.opciones(opc, a - b, [a + b, a - b + sobra, a - sobra]);
     return;
@@ -150,7 +150,7 @@ CB.jefes.turno = function () {
   enun.appendChild(CB.ui.crear('p', 'enunciado',
     'Brasita ha apagado la matriz de ' + f + ' × ' + g + '.'));
   enun.appendChild(CB.ui.matriz(f, g));
-  enun.appendChild(CB.ui.crear('p', 'texto-menor', '¿Cuántos bloques hay que restaurar?'));
+  enun.appendChild(CB.ui.crear('p', 'texto texto--menor', '¿Cuántos bloques hay que restaurar?'));
   CB.jefes.opciones(opc, f * g, [f * g - f, f * g + f, f + g]);
 };
 
@@ -303,7 +303,7 @@ CB.jefes.terminar = function (porBloques) {
   var opc = document.getElementById('jefe-opciones');
   CB.ui.vaciar(enun); CB.ui.vaciar(opc);
   enun.appendChild(CB.ui.crear('h2', null, '¡' + e.jefe + ' abre el paso!'));
-  enun.appendChild(CB.ui.crear('p', 'texto-lectura',
+  enun.appendChild(CB.ui.crear('p', 'texto texto--lectura',
     'Has ganado ' + gemas + ' gemas y el mundo queda cerrado con una victoria.'));
   opc.appendChild(CB.ui.boton('Volver al mapa', 'btn-bloque--primario btn-bloque--medio',
     function () { CB.pantallas.ir('p-mapa'); }));

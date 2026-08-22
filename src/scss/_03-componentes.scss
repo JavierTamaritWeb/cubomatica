@@ -22,18 +22,21 @@
    algún día hace falta un panel oscuro, el color ya está medido. */
 .panel-bloque > :last-child { margin-bottom: 0; }
 
-/* Dentro de un panel crema, el texto secundario vuelve al par oscuro. */
-.panel-bloque .texto-menor,
-.tarjeta-mundo .texto-menor,
-.tarjeta-perfil .texto-menor,
-.termino-glosario .texto-menor,
-.cromo .texto-menor,
-.veta .texto-menor,
-.ajuste .texto-menor { color: var(--texto-secundario); }
+/* Dentro de un fondo crema, el texto secundario vuelve al par oscuro. Se
+   declara la variable, no se estila al hijo: el bloque `texto` la consume con
+   `var(--texto-sec, var(--texto-sec-claro))` y así nadie tiene que saber quién
+   lo contiene. Ver _02-base.scss. */
+.panel-bloque,
+.tarjeta-mundo,
+.tarjeta-perfil,
+.termino-glosario,
+.cromo,
+.veta,
+.ajuste { --texto-sec: var(--texto-secundario); }
 
 /* Todo contenedor de fondo claro fija su color de texto explícitamente: sin
    esto heredarían el claro del body y quedarían ilegibles. */
-.cromo, .hueco-orden, .columna-cdu, .balanza__cifra, .lienzo-explicador {
+.cromo, .fila-ordenar__hueco, .columna-cdu, .balanza__cifra, .lienzo-explicador {
   color: var(--texto-principal);
 }
 
@@ -65,8 +68,7 @@
 
 .btn-bloque:disabled,
 .btn-bloque[aria-disabled="true"] {
-  background: var(--btn-fondo-desactivado);
-  color: var(--btn-texto-desactivado);
+  @include apagado;
   @include bisel(var(--deco-piedra-osc), var(--deco-carbon));
   transform: translateY(var(--bisel));
 }
@@ -125,7 +127,7 @@
 
 /* ── Las 3 luces del casco (sustituyen a los corazones, §3.3) ───────────── */
 .luces { display: flex; gap: var(--e2); align-items: center; }
-.luz {
+.luces__luz {
   width: 48px; height: 48px;
   background: var(--cristal-claro);
   box-shadow:
@@ -133,14 +135,14 @@
     inset -8px -8px 0 0 var(--deco-cristal-osc);
   position: relative;
 }
-.luz[data-estado="apagada"] {
+.luces__luz[data-estado="apagada"] {
   background: var(--luz-apagada);
   box-shadow:
     inset 8px 8px 0 0 var(--gris-piedra),
     inset -8px -8px 0 0 var(--gris-carbon);
 }
-/* Nunca solo color: la luz apagada lleva además una marca de forma (§10.4) */
-.luz[data-estado="apagada"]::after {
+/* Nunca solo color: la luces__luz apagada lleva además una marca de forma (§10.4) */
+.luces__luz[data-estado="apagada"]::after {
   content: ""; position: absolute; inset: 40% 20%;
   height: 8px; background: var(--gris-carbon);
 }
@@ -149,7 +151,7 @@
   50%  { transform: scale(1.3); }
   100% { transform: scale(1); }
 }
-.luz.luz--recien-encendida { @include animar('luz-extra', 1500ms, 6, 1); }
+.luces__luz.luces__luz--recien-encendida { @include animar('luz-extra', 1500ms, 6, 1); }
 
 /* ── Reloj de arena de la cuenta atrás ──────────────────────────────────────
    Dibujado con bloques y dos triángulos de clip-path. Cero imágenes, cero
@@ -300,7 +302,7 @@
   text-shadow: 2px 2px 0 var(--sombra-honda);
 }
 
-/* ── El cartel: logro y luz extra ───────────────────────────────────────────
+/* ── El cartel: logro y luces__luz extra ───────────────────────────────────────────
    Un panel centrado con bisel, NO una franja de lado a lado. Esa diferencia de
    forma es la que hace que no se confunda con la cinta de un vistazo, que es
    justo lo que le faltaba a la primera versión: allí todo era la misma banda.
@@ -365,7 +367,7 @@
   gap: var(--e3);
   justify-content: center;
 }
-.rejilla-respuestas .btn-bloque {
+.rejilla-respuestas__opcion {
   width: var(--lado); height: var(--lado);
   /* La cifra sigue al boton: en 64px, 44px de digito no cabe. El techo lo pone
      --tam-numero-opcion, que es el token de diseno que casos-contraste.js
@@ -405,11 +407,11 @@
   gap: var(--e3);
   justify-content: center;
 }
-.teclado-bloques .btn-bloque {
+.teclado-bloques__tecla {
   width: var(--lado-respuesta); height: var(--lado-respuesta);
   font-size: min(var(--tam-numero-opcion), calc(var(--lado-respuesta) * 0.46));
 }
-.teclado-bloques .btn-bloque[data-tecla="ok"] {
+.teclado-bloques__tecla[data-tecla="ok"] {
   grid-column: span 1;
   background: var(--btn-primario);
   color: var(--btn-primario-texto);
@@ -423,10 +425,9 @@
    LOS DOS SELECTORES, no uno. La regla base cubre :disabled y
    [aria-disabled="true"], y dejar uno fuera reabre el agujero por la otra
    puerta. */
-.teclado-bloques .btn-bloque[data-tecla="ok"]:disabled,
-.teclado-bloques .btn-bloque[data-tecla="ok"][aria-disabled="true"] {
-  background: var(--btn-fondo-desactivado);
-  color: var(--btn-texto-desactivado);
+.teclado-bloques__tecla[data-tecla="ok"]:disabled,
+.teclado-bloques__tecla[data-tecla="ok"][aria-disabled="true"] {
+  @include apagado;
 }
 /* ── ESCALONES DE ALTURA ────────────────────────────────────────────────────
    Existen para UNA cosa: que la ultima fila del teclado 3x4 no se corte. Antes
@@ -448,7 +449,7 @@
    de la MISMA especificidad; en cuanto uno lleva clase deja de valer. */
 @include hasta-alto(alta)  { :root, :root.modo-proyeccion { --lado-techo: 80px; } }
 @include hasta-alto(media) { :root, :root.modo-proyeccion { --lado-techo: 72px; }
-                             .visor-respuesta { min-height: 60px; font-size: 36px; } }
+                             .respuesta__visor { min-height: 60px; font-size: 36px; } }
 @include hasta-alto(baja)  { :root, :root.modo-proyeccion { --lado-techo: 64px; } }
 
 /* Aqui SI decide columnas la altura, y es la excepcion documentada: en 660px de
@@ -464,7 +465,7 @@
 }
 
 /* Visor del resultado que se está tecleando */
-.visor-respuesta {
+.respuesta__visor {
   min-width: 160px; min-height: 76px;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--fuente-pixel);
@@ -474,14 +475,14 @@
   @include bisel(var(--btn-borde-sombra), var(--blanco));
   padding: 0 var(--e3);
 }
-.visor-respuesta:empty::before { content: "_"; color: var(--texto-secundario); }
+.respuesta__visor:empty::before { content: "_"; color: var(--texto-secundario); }
 
 /* ── Consigna de la zona de respuesta ───────────────────────────────────────
    La zona de respuesta se dibuja SOBRE EL BIOMA (cielo, hierba, piedra), no
    sobre un panel. Un texto suelto ahí queda claro-sobre-claro y es ilegible.
    Toda instrucción de esa zona va dentro de este chip de color plano, que es la
    misma regla de §10.1: ningún texto se dibuja jamás sobre una textura. */
-.consigna-respuesta {
+.respuesta__consigna {
   display: inline-block;
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
@@ -500,13 +501,13 @@
   max-width: var(--ancho-lectura);
   line-height: var(--interlineado);
 }
-.enunciado .enunciado__linea--activa { background: var(--deco-oro-cla); }
+.enunciado__linea--activa { background: var(--deco-oro-cla); }
 /* `.numero-dato` marcaba las cifras del enunciado como pulsables, con su estado
    [aria-pressed]. Nunca se llegó a generar ese marcado: el enunciado se pinta
-   en frases (.frase-enunciado) y el resaltado es por línea, no por número. */
+   en frases (.enunciado__frase) y el resaltado es por línea, no por número. */
 
 /* ── Operación en columna (para las cifras grandes) ─────────────────────── */
-.operacion {
+.enunciado--operacion {
   font-family: var(--fuente-pixel);
   font-size: calc(var(--tam-numero-opcion) + 8px);
   letter-spacing: .12em;
@@ -556,7 +557,12 @@
    NO SON FACSÍMILES NI PRETENDEN SERLO: son fotografías a un cuarto del tamaño
    real, de una sola cara, con una finalidad didáctica. Los billetes de 20 y 50
    llevan además la palabra MUESTRA impresa en el original. */
-.moneda, .billete {
+/* EL BLOQUE ES LA PIEZA, y las dos variantes son modificadores suyos. Antes
+   `.pieza--moneda` y `.pieza--billete` eran dos bloques hermanos que compartían esta regla por
+   enumeración, y `.pieza__cifra` —la cinta con el número— era un elemento
+   HUÉRFANO: no existía ningún bloque `.pieza` del que colgara. Son la misma
+   pieza de dinero con otra fotografía y otra escala, y ahora lo dicen. */
+.pieza {
   display: inline-flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -577,14 +583,14 @@
   font-size: var(--tam-texto-min);
   line-height: 1;
 }
-.moneda {
+.pieza--moneda {
   --lado-pieza: 72px;
   width: var(--lado-pieza);
   height: calc(var(--lado-pieza) + var(--cinta-pieza));
   background-size: var(--lado-pieza) var(--lado-pieza);
   background-color: var(--deco-oro);
 }
-.billete {
+.pieza--billete {
   --ancho-pieza: 113px;
   --alto-pieza: 61px;
   width: var(--ancho-pieza);
@@ -594,9 +600,9 @@
 }
 
 /* Las monedas de euro. La de 1 € es el ancla de la escala: 23,25 mm → 72 px. */
-.moneda[data-valor="1"] { --lado-pieza: 72px; background-image: var(--pieza-1);
+.pieza--moneda[data-valor="1"] { --lado-pieza: 72px; background-image: var(--pieza-1);
                           background-color: var(--deco-piedra-cla); }
-.moneda[data-valor="2"] { --lado-pieza: 80px; background-image: var(--pieza-2);
+.pieza--moneda[data-valor="2"] { --lado-pieza: 80px; background-image: var(--pieza-2);
                           background-color: var(--deco-piedra-cla); }
 
 /* Las monedas de céntimo. Se seleccionan por `data-centimos` y NO por
@@ -604,37 +610,37 @@
    la moneda de 5 céntimos, y con un solo atributo la de 5 céntimos habría salido
    con la foto del billete. Es el mismo motivo por el que en el JS la pieza se
    nombra 'c5' y no 5. */
-.moneda[data-centimos="1"]  { --lado-pieza: 50px; background-image: var(--pieza-c1);
+.pieza--moneda[data-centimos="1"]  { --lado-pieza: 50px; background-image: var(--pieza-c1);
                               background-color: var(--deco-cobre); }
-.moneda[data-centimos="5"]  { --lado-pieza: 66px; background-image: var(--pieza-c5);
+.pieza--moneda[data-centimos="5"]  { --lado-pieza: 66px; background-image: var(--pieza-c5);
                               background-color: var(--deco-cobre); }
-.moneda[data-centimos="10"] { --lado-pieza: 61px; background-image: var(--pieza-c10);
+.pieza--moneda[data-centimos="10"] { --lado-pieza: 61px; background-image: var(--pieza-c10);
                               background-color: var(--deco-oro); }
-.moneda[data-centimos="20"] { --lado-pieza: 69px; background-image: var(--pieza-c20);
+.pieza--moneda[data-centimos="20"] { --lado-pieza: 69px; background-image: var(--pieza-c20);
                               background-color: var(--deco-oro); }
-.moneda[data-centimos="50"] { --lado-pieza: 75px; background-image: var(--pieza-c50);
+.pieza--moneda[data-centimos="50"] { --lado-pieza: 75px; background-image: var(--pieza-c50);
                               background-color: var(--deco-oro); }
 
 /* Los billetes, a 0,85 px por milímetro de los tamaños reales del BCE. El más
    ancho es el de 100 con 125 px: con dos columnas y 16 px de hueco caben en los
    288 px útiles de la pantalla más estrecha del proyecto, que es el tope que
    manda aquí. */
-.billete[data-valor="5"]   { --ancho-pieza: 102px; --alto-pieza: 53px;
+.pieza--billete[data-valor="5"]   { --ancho-pieza: 102px; --alto-pieza: 53px;
                              background-image: var(--pieza-5);
                              background-color: var(--deco-piedra-cla); }
-.billete[data-valor="10"]  { --ancho-pieza: 108px; --alto-pieza: 57px;
+.pieza--billete[data-valor="10"]  { --ancho-pieza: 108px; --alto-pieza: 57px;
                              background-image: var(--pieza-10);
                              background-color: var(--deco-cobre); }
-.billete[data-valor="20"]  { --ancho-pieza: 113px; --alto-pieza: 61px;
+.pieza--billete[data-valor="20"]  { --ancho-pieza: 113px; --alto-pieza: 61px;
                              background-image: var(--pieza-20);
                              background-color: var(--deco-agua-cla); }
-.billete[data-valor="50"]  { --ancho-pieza: 119px; --alto-pieza: 65px;
+.pieza--billete[data-valor="50"]  { --ancho-pieza: 119px; --alto-pieza: 65px;
                              background-image: var(--pieza-50);
                              background-color: var(--deco-brasa-cla); }
-.billete[data-valor="100"] { --ancho-pieza: 125px; --alto-pieza: 70px;
+.pieza--billete[data-valor="100"] { --ancho-pieza: 125px; --alto-pieza: 70px;
                              background-image: var(--pieza-100);
                              background-color: var(--deco-hierba-cla); }
-.contenedor-dinero { display: flex; flex-wrap: wrap; gap: var(--e3); justify-content: center; }
+.contenedor-dinero { @include fila-envuelta; }
 /* ── Piezas ya cogidas ──────────────────────────────────────────────────────
    Esta regla estaba escrita para [aria-pressed="true"] y NADIE ponía nunca ese
    atributo sobre una moneda: era CSS muerto, y tocar una pieza no dejaba ninguna
@@ -644,7 +650,7 @@
    Se cuenta con data-veces en vez de aria-pressed a propósito: la misma moneda se
    toca varias veces, y decirle «pulsado» a un lector de pantalla de un botón que
    hay que seguir pulsando es mal uso de ARIA (WCAG 4.1.2). */
-.moneda[data-veces], .billete[data-veces] {
+.pieza[data-veces] {
   outline: var(--bisel) solid var(--foco-oro);
   outline-offset: var(--u);
   transform: translateY(calc(var(--bisel) * -1));
@@ -660,7 +666,7 @@
    el borde inferior de la pieza, así que en la esquina de abajo el «×2» caía
    justo encima del «2 €». Dos cifras superpuestas en el sitio donde el niño mira
    para saber cuánto lleva pagado. */
-.moneda[data-veces]::after, .billete[data-veces]::after {
+.pieza[data-veces]::after {
   content: "×" attr(data-veces);
   position: absolute;
   right: 0; top: 0;
@@ -671,14 +677,13 @@
   font-size: var(--tam-texto-min);
   line-height: 1.1;
 }
-.moneda[data-veces="1"]::after, .billete[data-veces="1"]::after { content: ""; padding: 0; }
+.pieza[data-veces="1"]::after { content: ""; padding: 0; }
 
 /* Y los estados que les faltaban: no son .btn-bloque, así que ni el hundido ni
    el bloqueado de arriba las alcanzaban. */
-.moneda:active, .billete:active { transform: translateY(var(--bisel)); }
-.moneda:disabled, .billete:disabled {
-  background: var(--btn-fondo-desactivado);
-  color: var(--btn-texto-desactivado);
+.pieza:active { transform: translateY(var(--bisel)); }
+.pieza:disabled {
+  @include apagado;
   transform: translateY(var(--bisel));
 }
 
@@ -700,8 +705,8 @@
 }
 .hilera-cogidas__mas { color: var(--texto-claro); }
 
-.fila-ordenar { display: flex; gap: var(--e3); justify-content: center; flex-wrap: wrap; }
-.hueco-orden {
+.fila-ordenar { @include fila-envuelta; }
+.fila-ordenar__hueco {
   width: 80px; height: 80px;
   background: var(--bg-texto-panel);
   box-shadow: inset 4px 4px 0 0 var(--btn-borde-sombra);
@@ -717,7 +722,7 @@
   text-align: center; font-size: 16px;
 }
 .cromo--bloqueado { background: var(--deco-piedra); color: var(--deco-carbon); }
-.rejilla-cromos { display: flex; flex-wrap: wrap; gap: var(--e3); justify-content: center; }
+.rejilla-cromos { @include fila-envuelta; }
 
 /* La barra de carga vivía aquí, pero el juego no la usa en ninguna pantalla:
    la única que la pinta es pruebas/pruebas.html, para su propio progreso. Se ha
@@ -735,7 +740,7 @@
   box-shadow: inset 4px 4px 0 0 var(--deco-piedra-cla),
               inset -4px -4px 0 0 var(--deco-piedra-osc);
 }
-.veta > .veta__icono { font-size: 26px; line-height: 1; }
+.veta__icono { font-size: 26px; line-height: 1; }
 /* Los 6 estados, del mapa $estados-veta. NUNCA solo color: la forma y el icono
    los pone js/43-mapa-destrezas.js, y el bloqueado ademas fija su color de texto
    porque su fondo es el unico oscuro de los seis. */
@@ -750,13 +755,16 @@
 }
 .veta.veta--frontera { box-shadow: 0 0 0 var(--bisel) var(--foco-oro),
                              inset 4px 4px 0 0 var(--blanco); }
-.rejilla-vetas { display: flex; flex-wrap: wrap; gap: var(--e3); justify-content: center; }
+.rejilla-vetas { @include fila-envuelta; }
 
 /* ── Criaturas ──────────────────────────────────────────────────────────── */
+/* El lado y el cuerpo de letra salen de dos variables con valor por defecto:
+   la pantalla de juego las reescribe y las criaturas encogen sin que ninguna
+   regla tenga que saber dónde está (ver _04-pantallas.scss). */
 .criatura {
-  width: 96px; height: 96px;
+  width: var(--lado-criatura, 96px); height: var(--lado-criatura, 96px);
   display: flex; align-items: center; justify-content: center;
-  font-size: 56px; line-height: 1;
+  font-size: var(--tam-criatura, 56px); line-height: 1;
   flex: 0 0 auto;
 }
 .criatura[data-quien="rocarr"] { filter: none; }
@@ -812,14 +820,7 @@
 
    No se usa display:none ni visibility:hidden: las dos lo esconden también del
    lector, que es exactamente lo contrario de lo que se busca. */
-.solo-lectores {
-  position: absolute;
-  width: 1px; height: 1px;
-  margin: -1px; padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
+.solo-lectores { @include oculto-visual; }
 
 /* ── El altavoz del enunciado ───────────────────────────────────────────────
    Va dentro del panel del problema, no en la barra: P3 retiró el de la barra a

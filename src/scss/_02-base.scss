@@ -1,3 +1,5 @@
+@use 'herramientas' as *;   /* @use NO es transitivo */
+
 /* ============================================================================
    02-base.css — Reset y reglas duras de estilo
    ----------------------------------------------------------------------------
@@ -115,14 +117,23 @@ button:focus:not(:focus-visible) { box-shadow: none; }
 .fila { display: flex; align-items: center; gap: var(--e3); flex-wrap: wrap; }
 .fila--centro   { justify-content: center; }
 
-.texto-lectura {
+/* UN BLOQUE `texto` CON DOS MODIFICADORES, y no dos bloques sueltos. Eran
+   `.texto-lectura` y `.texto-menor`, dos nombres que compartían la única
+   declaración que de verdad tenían en común —el ancho de lectura— por
+   casualidad, no por decirlo. En el marcado van las dos clases:
+   `class="texto texto--menor"`. */
+.texto { max-width: var(--ancho-lectura); }
+.texto--lectura {
   font-family: var(--fuente-lectura);
   font-size: var(--tam-enunciado);
-  max-width: var(--ancho-lectura);
 }
-/* Por defecto, sobre el fondo oscuro de pantalla. Dentro de un panel crema se
-   invierte (ver 03-componentes.css). */
-.texto-menor { font-size: var(--tam-texto-min); color: var(--texto-sec-claro); }
+/* EL COLOR LO PIDE, NO LO IMPONE EL SITIO. Antes había siete selectores del
+   tipo `.panel-bloque .texto-menor` en _03-componentes.scss: descendencia entre
+   bloques, que es justo lo que un bloque no puede tener —cambiaba de aspecto
+   según quién lo contuviera—. Ahora el contenedor declara `--texto-sec` y el
+   texto lo consume con un valor por defecto: funciona con contenedores que aún
+   no existen y no depende del orden de la cascada. */
+.texto--menor { font-size: var(--tam-texto-min); color: var(--texto-sec, var(--texto-sec-claro)); }
 
 /* Un texto NUNCA se dibuja sobre una textura (PLAN §10.1). Aquí había una
    utilidad `.sobre-textura > *` para forzarlo, sin un solo uso: la regla se
@@ -147,16 +158,10 @@ button:focus:not(:focus-visible) { box-shadow: none; }
   .aviso-gira { display: flex; }
 }
 
-/* ── Movimiento reducido ────────────────────────────────────────────────── */
+/* ── Movimiento reducido: UNA regla, DOS contextos ──────────────────────────
+   El del sistema y el del juego tienen que frenar exactamente lo mismo, y aquí
+   estaban las mismas tres declaraciones escritas dos veces. Ver el mixin. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: .001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .001ms !important;
-  }
+  @include frenar-todo;
 }
-:root.sin-movimiento *, :root.sin-movimiento *::before, :root.sin-movimiento *::after {
-  animation-duration: .001ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: .001ms !important;
-}
+@include frenar-todo(':root.sin-movimiento ');

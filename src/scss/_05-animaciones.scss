@@ -131,7 +131,7 @@
   0%, 100% { opacity: 1;   transform: translateY(0); }
   50%      { opacity: .35; transform: translateY(3px); }
 }
-.reloj .reloj__chorro { @include animar('reloj-chorro', 420ms, 2, infinite); }
+.reloj__chorro { @include animar('reloj-chorro', 420ms, 2, infinite); }
 
 /* Últimos 10 s: el reloj tiembla. Dos píxeles, no una sacudida. */
 @keyframes reloj-tiembla {
@@ -299,7 +299,7 @@
 .insignia.insignia--brota { @include animar('insignia-brota', 700ms, 5, 1, forwards); }
 
 /* ── VEHÍCULO 4 · EL CARTEL ─────────────────────────────────────────────────
-   Logro y luz extra. Crece desde el centro con un rebote. No cruza, no barre:
+   Logro y luces__luz extra. Crece desde el centro con un rebote. No cruza, no barre:
    aparece donde está y se queda. Es un panel, no una franja, y esa diferencia de
    silueta es la que hace que no se confunda con la cinta. */
 @keyframes cartel-brota {
@@ -349,7 +349,7 @@
 $animados:
   '.particula.particula--viva', '.criatura--flota', '.criatura--saltito', '.criatura--asiente', '.criatura--gotea', '.criatura--gira',
   '.nube', '.veta--musgo', '.btn-bloque--monta', '.btn-bloque--destello',
-  '.reloj__arena.reloj__arena--voltea', '.reloj .reloj__chorro', '.reloj--prisa .reloj__arena',
+  '.reloj__arena.reloj__arena--voltea', '.reloj__chorro', '.reloj--prisa .reloj__arena',
   '.reloj__cifra.reloj__cifra--late',
   /* UNA entrada cubre las cuatro coreografías de cinta: todas se disparan con la
      misma clase, y por eso añadir la cuarta (`sube`, 1.18.0) no ha hecho falta

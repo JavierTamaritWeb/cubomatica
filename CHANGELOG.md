@@ -12,6 +12,93 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.23.0] — 2026-08-22
+
+**Segunda cifra.** La hoja de estilo pasa a tener una sola gramática, y la
+comprueba una herramienta en vez de la memoria de quien escribe. **No cambia un
+solo píxel**: las 54 fotos de las 18 pantallas a tres anchos son idénticas antes
+y después. El perfil guardado no cambia.
+
+### Cambiado
+
+- **28 clases renombradas a BEM** (`pruebas/mapa-bem-2.json` es el acta, con el
+  motivo de cada una). La familia grande son elementos que llevaban nombre de
+  bloque, y en varios casos la jerarquía se insinuaba con plural/singular, que es
+  una convención que solo existía en la cabeza de quien la escribió:
+  `luz` → `luces__luz`, `paso-reparacion` → `reparacion__paso`,
+  `cara-animo` → `animo__cara`, `zona-superior` → `zona-juego__alta`.
+- **`.pieza__cifra` deja de ser un elemento huérfano.** No existía ningún bloque
+  `.pieza`; los bloques eran `.moneda` y `.billete`, que son la misma pieza con
+  otra fotografía. Ahora son `.pieza--moneda` y `.pieza--billete`, y la regla que
+  compartían por enumeración es el bloque.
+- **`.texto-menor` y `.texto-lectura`** pasan a `.texto--menor` y
+  `.texto--lectura`; **`.operacion`** a `.enunciado--operacion`.
+- **Siete selectores de descendencia entre bloques, fuera.** `.panel-bloque
+  .texto-menor` y sus hermanos hacían que un bloque cambiara de aspecto según
+  quién lo contuviera, que es justo lo que un bloque no puede hacer. Ahora el
+  contenedor **declara una variable** (`--texto-sec`) y el texto la consume con
+  un valor por defecto: funciona con contenedores que aún no existen y no depende
+  del orden de la cascada. Lo mismo con el tamaño de las criaturas en la pantalla
+  de juego (`--lado-criatura`).
+- **Cero estilado por etiqueta dentro de un bloque**: `.armadura-jefe > b`,
+  `.galeria-avance > b`, `.manojo-decena > b` y `.barra-progreso-mundo > i` pasan
+  a ser elementos con nombre. Una etiqueta no es un nombre: cambia por
+  accesibilidad o por maquetación y se lleva el estilo por delante.
+- **Cuatro duplicaciones a mixin**: la fila que envuelve y se centra (estaba
+  copiada **siete** veces), la ocultación visual (dos), el par de colores del
+  control apagado (tres) y el freno de movimiento reducido (dos contextos, la
+  misma forma que tenía E25 antes de romperse).
+
+### Añadido
+
+- **`docs/convencion-bem.md`**: las nueve reglas con su motivo, qué comprueba
+  cada herramienta y **qué no comprueba ninguna**, y el orden en que se renombra
+  una clase sin romper nada.
+- **stylelint** (`npm run estilo`) con la gramática BEM en un regex propio, y
+  cada regla apagada con su motivo escrito al lado en `stylelint.config.mjs` —por
+  eso es un `.mjs` y no un `.json`: un `"regla": null` sin explicación es
+  indistinguible de un descuido. La notación de rango en `@media` y el `:not()`
+  complejo se quedan apagados porque son Safari 16.4 y el suelo declarado es 15.4.
+- **E104** (bloque 9 de la auditoría): stylelint comprueba la **forma** de cada
+  nombre. **E105**: cero descendencia entre bloques en el CSS compilado, con la
+  lista blanca declarada —los cuatro estados de `:root` y el selector estructural
+  de `_06-biomas.scss`—. Los dos verificados sembrando la violación.
+- **`herramientas/retrato-pantallas.mjs`**: conduce Chrome por CDP, entra en las
+  18 pantallas a 320, 768 y 1200 px y guarda el sha256 de cada foto. Es lo único
+  que puede demostrar que un renombrado no cambió nada de lo que se ve. Va con
+  las cachés apagadas —el juego registra un service worker en cuanto no está en
+  `file://`— y con perfil de Chrome nuevo en cada pasada.
+- **`herramientas/volcado-css.mjs`**: la hoja compilada, declaración a
+  declaración. Con `--mapa` aplica los renombrados al volcado anterior y exige
+  que dé exactamente el nuevo, que es el criterio con el que se cerró el
+  renombrado de 1.7.0.
+
+### Corregido
+
+- **Tres comprobaciones que se ponían verdes solas.** `casos-contraste.js`
+  saltaba en silencio los selectores que no encontraba —ocho clases con texto que
+  son obligación legal—, `casos-a11y.js` daba por buena una barra de herramientas
+  ausente y `casos-fuente.js` medía la tipografía del `body` cuando `.enunciado`
+  no existía. Las tres se arreglaron **antes** de renombrar nada; si no, el
+  renombrado las habría apagado sin que nadie se enterara. La primera cazó dos
+  clases el mismo día.
+- **El bloque 8 daba verde sin `dist/`.** Sin CSS compilado, el cruce de clases
+  salía con código 0 y la auditoría escribía «cero clases muertas» sin haber
+  cruzado nada. Con `--estricto` ahora es rojo.
+- **El mensaje de fallo de E103 mentía**: decía «el marco no ha cargado» cuando
+  el marco había cargado y lo que faltaba era un elemento de su maqueta. Un
+  mensaje que miente cuesta más que no tenerlo.
+
+### Presupuestos
+
+- **Tres cubos, no dos**: `herramientas/` deja de contar como fuente compilada y
+  tiene el suyo (< 100 KB). No se compila ni se entrega: es utillaje de
+  verificación, de la misma naturaleza que `pruebas/`. Contarlo con `src/` hacía
+  que comprobar más pareciera que el juego había engordado. El techo que protege
+  a quien juega sigue siendo el de la descarga de arranque, < 400 KB.
+
+---
+
 ## [1.22.0] — 2026-08-22
 
 **Segunda cifra.** Una pantalla nueva, la decimoctava: **Ayuda**. El perfil

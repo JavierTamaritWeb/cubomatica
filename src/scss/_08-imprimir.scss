@@ -35,12 +35,12 @@
 
   a[href]::after { content: ""; }
 
-  h1 { font-size: 17pt !important; margin: 0 0 4mm 0 !important; }
-  h2 { font-size: 13pt !important; margin: 6mm 0 2mm 0 !important;
+  h1 { font-size: 17pt !important; margin: 0 0 4mm !important; }
+  h2 { font-size: 13pt !important; margin: 6mm 0 2mm !important;
        page-break-after: avoid; }
   h3 { font-size: 11pt !important; page-break-after: avoid; }
 
-  .adulto-caja, .adulto-aviso {
+  .adulto__caja, .adulto__aviso {
     box-shadow: none !important;
     border: 1pt solid var(--negro);
     padding: 3mm !important;
@@ -49,15 +49,15 @@
     page-break-inside: avoid;
   }
 
-  .tabla-adulto { width: 100%; border-collapse: collapse; font-size: 10pt; }
-  .tabla-adulto th, .tabla-adulto td {
+  .adulto__tabla { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  .adulto__tabla th, .adulto__tabla td {
     border: .6pt solid var(--negro) !important;
     padding: 1.6mm !important;
     background: var(--blanco) !important;
     color: var(--negro) !important;
   }
-  .tabla-adulto th { font-weight: bold; }
-  .tabla-adulto tr { page-break-inside: avoid; }
+  .adulto__tabla th { font-weight: bold; }
+  .adulto__tabla tr { page-break-inside: avoid; }
 
   /* El semáforo ya lleva símbolo y texto en ::before: en B/N sigue leyéndose */
   .semaforo { color: var(--negro) !important; }
@@ -66,24 +66,24 @@
 
   /* ── Ficha de refuerzo: 10 ítems para hacer a lápiz ────────────────────── */
   .ficha-refuerzo { page-break-before: always; }
-  .ficha-refuerzo .rejilla-ejercicios {
+  .ficha-refuerzo__rejilla {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8mm 12mm;
     margin-top: 6mm;
   }
-  .ficha-refuerzo .ficha-refuerzo__ejercicio {
+  .ficha-refuerzo__ejercicio {
     font-size: 20pt;
     font-family: Verdana, Geneva, sans-serif;
     border-bottom: .8pt solid var(--negro);
     padding-bottom: 12mm;
     page-break-inside: avoid;
   }
-  .ficha-refuerzo .ficha-refuerzo__pie {
+  .ficha-refuerzo__pie {
     margin-top: 8mm; font-size: 9pt; border-top: .6pt solid var(--negro); padding-top: 2mm;
   }
 
-  .pie-informe {
+  .informe__pie {
     margin-top: 6mm; font-size: 8.5pt; border-top: .6pt solid var(--negro); padding-top: 2mm;
   }
 }

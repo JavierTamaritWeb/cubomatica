@@ -65,7 +65,8 @@ CB.calibracion.servir = function () {
 
   var enun = document.getElementById('cal-enunciado');
   CB.ui.vaciar(enun);
-  enun.appendChild(CB.ui.crear('p', it.teclado ? 'operacion' : 'enunciado', it.consigna));
+  enun.appendChild(CB.ui.crear('p',
+    'enunciado' + (it.teclado ? ' enunciado--operacion' : ''), it.consigna));
 
   /* Voz automática: la consigna se lee sola. En la primera partida de su vida,
      el niño no tiene por qué saber que existe el botón del altavoz. */
@@ -180,7 +181,7 @@ CB.perfiles.pintar = function () {
   var idx = CB.almacen.indice();
   idx.forEach(function (e) {
     var t = CB.ui.crear('div', 'tarjeta-perfil');
-    var av = CB.ui.crear('div', 'avatar-cubi');
+    var av = CB.ui.crear('div', 'tarjeta-perfil__avatar');
     var pal = CB.datos.AVATARES[CB.util.clamp(e.avatar || 0, 0, 15)];
     av.style.background = pal.casco;
     t.appendChild(av);
@@ -244,7 +245,7 @@ CB.perfiles.activar = function (id) {
     if (lista && lista.parentNode) {
       var aviso = document.getElementById('aviso-perfil-roto');
       if (!aviso) {
-        aviso = CB.ui.crear('p', 'texto-menor');
+        aviso = CB.ui.crear('p', 'texto texto--menor');
         aviso.id = 'aviso-perfil-roto';
         aviso.setAttribute('role', 'alert');
         lista.parentNode.insertBefore(aviso, lista);
@@ -365,25 +366,25 @@ CB.creditos = function () {
     mus.appendChild(CB.ui.crear('h2', null, 'Música'));
     CB.musica.CREDITOS.forEach(function (c) {
       var linea = CB.DONDE_SUENA[c.clave] + ' — ' + c.autor + ' (Pixabay ' + c.id + ')';
-      mus.appendChild(CB.ui.crear('p', 'texto-menor', linea));
+      mus.appendChild(CB.ui.crear('p', 'texto texto--menor', linea));
     });
-    mus.appendChild(CB.ui.crear('p', 'texto-menor', CB.musica.LICENCIA));
+    mus.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.musica.LICENCIA));
   }
   if (legal) {
     CB.ui.vaciar(legal);
     legal.appendChild(CB.ui.crear('h2', null, 'Aviso legal'));
-    legal.appendChild(CB.ui.crear('p', 'texto-menor', CB.LEGAL.AVISO));
+    legal.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.LEGAL.AVISO));
     /* La versión se enseña aquí y en ningún otro sitio del juego: es lo que un
        adulto necesita decir por teléfono cuando algo no le funciona. */
-    legal.appendChild(CB.ui.crear('p', 'texto-menor', 'Versión ' + CB.VERSION));
+    legal.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Versión ' + CB.VERSION));
   }
   if (curri) {
     CB.ui.vaciar(curri);
     curri.appendChild(CB.ui.crear('h2', null, 'Currículo'));
-    curri.appendChild(CB.ui.crear('p', 'texto-menor', CB.LEGAL.ALCANCE));
-    curri.appendChild(CB.ui.crear('p', 'texto-menor', CB.LEGAL.SECUENCIACION));
-    curri.appendChild(CB.ui.crear('p', 'texto-menor', CB.LEGAL.MULTIPLICACION));
-    curri.appendChild(CB.ui.crear('p', 'texto-menor', CB.datos.ORIGEN_GLOSARIO));
+    curri.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.LEGAL.ALCANCE));
+    curri.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.LEGAL.SECUENCIACION));
+    curri.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.LEGAL.MULTIPLICACION));
+    curri.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.datos.ORIGEN_GLOSARIO));
   }
 };
 
@@ -501,7 +502,7 @@ CB.arranque = function () {
   }
 
   /* Momento socioafectivo del fin de partida */
-  var caras = document.querySelectorAll('#fin-animo .cara-animo');
+  var caras = document.querySelectorAll('#fin-animo .animo__cara');
   var i;
   for (i = 0; i < caras.length; i++) {
     (function (b) {
@@ -511,7 +512,7 @@ CB.arranque = function () {
         CB.perfil.animo.push({ fechaISO: CB.util.hoyISO(), cara: v });
         var h = CB.perfil.historial;
         if (h.length) h[h.length - 1].animo = v;
-        var todas = document.querySelectorAll('#fin-animo .cara-animo');
+        var todas = document.querySelectorAll('#fin-animo .animo__cara');
         var j;
         for (j = 0; j < todas.length; j++) todas[j].setAttribute('aria-pressed', 'false');
         b.setAttribute('aria-pressed', 'true');
