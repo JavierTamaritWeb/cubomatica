@@ -1,0 +1,15 @@
+// En colores forzados, bordes y formas sustituyen biseles y texturas.
+@media (forced-colors: active) {
+
+  .btn-bloque, .panel-bloque, .veta, .cromo, .tarjeta-mundo, .tarjeta-perfil,
+  .respuesta__visor, .adulto__caja, .btn-adulto {
+    box-shadow: none;
+    border: 2px solid ButtonBorder;
+  }
+
+  :focus-visible { outline: 3px solid Highlight; outline-offset: 2px; }
+
+  .luces__luz[data-estado="apagada"] { border-style: dashed; }
+
+  .bioma::after, .tarjeta-mundo__cinta { border: 1px solid CanvasText; }
+}

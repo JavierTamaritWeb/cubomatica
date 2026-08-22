@@ -1,199 +1,4 @@
 @charset "UTF-8";
-/* ============================================================================
-   cubomatica.scss — el único punto de entrada de la hoja de estilo
-   ----------------------------------------------------------------------------
-   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
-   7-1 al uso:
-
-   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
-      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
-      explicar que su `position: relative` gana por venir DESPUÉS de
-      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
-      esa relación y la rompe la primera vez que alguien reordena un @use.
-   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
-      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
-      activos externos» obliga a dejar vacío para siempre.
-   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
-      estos nombres. Mantenerlos convirtió la migración en un renombrado
-      mecánico verificable, y `git mv` conservó el historial de cada fichero.
-
-   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
-   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
-   primera línea. Es la causa número uno de errores al añadir mixins — pero
-   falla ruidosamente, en compilación, que es lo bueno.
-      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
-   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
-   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
-   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
-   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
-   con miembros es `herramientas`, y por eso es el único que importa de verdad.
-   ========================================================================== */
-/* ============================================================================
-   _herramientas.scss — mapas, funciones y mixins. EMITE CERO CSS.
-   ----------------------------------------------------------------------------
-   Regla de este fichero: aquí solo hay definiciones. Si compilarlo a solas
-   produjera una sola llave, algo está mal.
-
-   LO QUE HACE ESTE FICHERO, Y NO ES AHORRAR LÍNEAS. Dos de las tres reglas
-   duras del proyecto —cero desenfoque, cero easing— eran hasta ahora reglas de
-   DISCIPLINA: se cumplían porque quien escribía se acordaba, y la auditoría lo
-   comprobaba después con un grep. `bisel()` y `paso()` no tienen parámetro donde
-   meter un desenfoque ni una curva. A través de ellos escribir una sombra difusa
-   o una transición suave no es que esté prohibido: es que no se puede.
-
-   Un grep que falla te dice que te has equivocado. Un mixin sin ese parámetro
-   hace que no llegues a equivocarte.
-   ========================================================================== */
-/* ══════════════════════════════════════════════════════════════════════════
-   MAPAS — la paleta deja de escribirse a mano
-   ══════════════════════════════════════════════════════════════════════════ */
-/* 13 materiales × 3 tonos (base, oscuro, claro) = las 39 --deco-*.
-   El orden importa: es el que tendrán las custom properties emitidas, y el
-   comparador de árboles compara posición a posición. */
-/* Cielo: 6 pasos discretos, de día a noche. Los pinta js/30-ui.js con
-   `'cielo cielo--' + Math.floor(avance * 6)`. */
-/* Los ocho materiales que js/02-texturas.js sustituye por un data: URI al
-   arrancar. El valor inicial es el color plano, para que nunca se vea un hueco. */
-/* Cada bioma es un material. Se usa DOS veces —en `.bioma--X` y en
-   `.tarjeta-mundo__cinta[data-bioma=X]`— y antes se escribía dos veces. */
-/* Los 6 estados de una veta del Mapa de Destrezas, cada uno con su tono. */
-/* ══════════════════════════════════════════════════════════════════════════
-   PUNTOS DE RUPTURA
-   ──────────────────────────────────────────────────────────────────────────
-   DOS EJES, Y NO COMPITEN. Es la decisión de diseño de toda esta parte.
-
-   Hasta 1.6.0 el proyecto tenía CERO `min-width`: los cinco puntos de ruptura
-   que existían eran de ALTURA (900/780/660/600/420) y estaban ahí para una sola
-   cosa —que la última fila del teclado 3×4 no se corte—. Añadir anchura sin
-   pensarlo habría hecho que las dos se pisaran: un proyector de 1400×700
-   recibiría «grande» por anchura y «pequeño» por altura, y ganaría el que
-   estuviera escrito más abajo en el fichero, que no es una decisión, es un
-   accidente.
-
-   El reparto:
-       la ANCHURA decide CUÁNTAS COLUMNAS y el ancho del contenedor.
-       la ALTURA  decide EL LADO DEL BOTÓN.
-
-   Y cuando las dos tienen algo que decir sobre el mismo número, cada una escribe
-   su PROPIA variable y el valor final es el min() de las dos (ver
-   --lado-deseado / --lado-techo en _01-variables.scss). Así se combinan en vez
-   de competir, y el orden dentro del fichero deja de importar. Sin eso, cinco
-   anchuras × cinco alturas serían veinticinco combinaciones escritas a mano.
-   ══════════════════════════════════════════════════════════════════════════ */
-/* El @error no es adorno. Con cinco nombres en español, `desde(ordenador)` en
-   vez de `desde(escritorio)` compilaría a nada y no avisaría de nada. */
-/* ══════════════════════════════════════════════════════════════════════════
-   MIXINS
-   ══════════════════════════════════════════════════════════════════════════ */
-/* ── bisel() ────────────────────────────────────────────────────────────────
-   El relieve de mundo de cubos: una luces__luz arriba-izquierda y una sombra
-   abajo-derecha, las dos con desenfoque CERO.
-
-   NO HAY PARÁMETRO DE DESENFOQUE, y eso es el punto entero del mixin. El tercer
-   valor de cada capa lo pone él y siempre es 0. La regla del bloque 3 de la
-   auditoría deja de depender de que alguien se acuerde.
-
-   $extra permite añadir la sombra proyectada exterior que llevan los paneles,
-   que tampoco tiene desenfoque (es un desplazamiento sólido, estilo cubo). */
-/* Bisel de un solo lado: la barra de progreso, el aviso, el paso de reparación. */
-/* ── paso() y animar() ──────────────────────────────────────────────────────
-   Todo movimiento del juego es escalonado: `steps()`, nunca una curva. Es la
-   estética voxel, y es también una decisión de accesibilidad —un movimiento
-   discreto se sigue con la vista mejor que uno continuo.
-
-   Igual que bisel(): NO HAY PARÁMETRO donde meter `ease`, `linear` ni
-   `cubic-bezier`. El escalonado lo pone el mixin. */
-/* ── coreografia() ──────────────────────────────────────────────────────────
-   Como animar(), pero SIN DURACIÓN. La pone js/30-ui.js desde
-   CB.ui.cinta.COREOGRAFIAS, y por eso este mixin no la acepta: es la única
-   forma de que el número exista en un solo sitio.
-
-   El reparto es: el CSS es dueño de la FORMA (los fotogramas y el número de
-   pasos) y el JS es dueño del TIEMPO. Ningún número aparece dos veces, así que
-   no hay nada que sincronizar a mano.
-
-   Antes no era así. CB.ui.reloj.MS_CARTEL valía 1900 «porque es exactamente lo
-   que dura prisa-cruza», copiado a ojo de la hoja de animaciones, y el propio
-   comentario avisaba de que si divergían el cartel desaparecía a media pantalla
-   o se quedaba un rectángulo invisible tapando. Con una cinta eso era un número
-   duplicado; con ocho coreografías habrían sido ocho.
-
-   Sigue siendo imposible escribir una animación suavizada a través del mixin:
-   el tipo de tiempo es steps() y no se puede pasar otro. */
-/* ── frenar-todo() ─────────────────────────────────────────────────────────
-   El freno de mano: deja toda animación y toda transición en una milésima. Va
-   en DOS contextos —el ajuste del sistema y el del juego— y estaba escrito dos
-   veces a mano, veinte líneas más abajo el uno del otro. Es exactamente la
-   forma que tenía E25 antes de romperse: dos listas gemelas que nadie obliga a
-   seguir siéndolo. `desactivar-movimiento()` ya se arregló así; a esta le
-   faltaba el mismo remedio.
-
-   NO SUSTITUYE a desactivar-movimiento(): esto frena lo que ya está corriendo,
-   y aquel apaga las animaciones concretas y repone lo que la animación dejaba a
-   medias. Los dos hacen falta y se emiten juntos. */
-/* ── fila-envuelta() ───────────────────────────────────────────────────────
-   «Una fila que envuelve y se centra». Estaba copiada SIETE veces con las
-   mismas cuatro declaraciones y en tres ordenes distintos —contenedor de
-   dinero, fila de ordenar, rejilla de cromos, de vetas, de mundos, lista de
-   perfiles y opciones del jefe—, lo que ademas hacia imposible verlas como lo
-   mismo leyendo el fichero.
-
-   Existia ya la utilidad `.fila .fila--centro` con esas cuatro declaraciones y
-   no la usaba ninguna de las siete, porque son BLOQUES: mezclarles la utilidad
-   habria obligado a tocar siete sitios del JS y del HTML para no ganar nada. Un
-   mixin dice lo mismo sin mover el marcado. */
-/* ── apagado() ─────────────────────────────────────────────────────────────
-   El par de colores del control que no acepta toques. Estaba escrito tres veces
-   —el botón, el OK del teclado y la pieza de dinero— y son tres sitios donde
-   acordarse de cambiarlo a la vez. El par lo verifica casos-contraste.js, así
-   que separarse en uno solo de los tres es un rojo que llega tarde.
-
-   NO INCLUYE el hundido (`transform`) ni el bisel: dos de los tres lo llevan y
-   el tercero no, y meterlo aquí habría cambiado el aspecto del OK. Un mixin que
-   uniformiza de más es peor que tres copias honestas. */
-/* ── oculto-visual() ───────────────────────────────────────────────────────
-   Se ve con lector de pantalla y no se ve con los ojos. Estas siete
-   declaraciones estaban copiadas DOS veces —`.solo-lectores` y
-   `.rotulo-veta__mundo`— y el proyecto ya mató una tercera copia (`.oculto-visual`,
-   retirada por duplicar `.solo-lectores`). Copiar una receta de accesibilidad es
-   peor que copiar cualquier otra cosa: cuando una de las copias se queda corta,
-   lo que falla no se ve por definición.
-
-   `clip: rect(0 0 0 0)` está marcada como obsoleta y se queda: es la receta que
-   entienden también los lectores viejos, y aquí el suelo de soporte es una
-   obligación legal, no una preferencia. */
-/* ── desactivar-movimiento() ────────────────────────────────────────────────
-   UNA lista, DOS contextos. El ajuste del sistema (prefers-reduced-motion) y el
-   del propio juego (:root.sin-movimiento) tienen que apagar exactamente lo
-   mismo, y estuvieron desincronizados durante meses porque eran dos listas
-   escritas a mano a cuarenta líneas de distancia: la del sistema apagaba 21
-   animaciones y la del juego 11 (E25).
-
-   Con el mixin, la lista existe una sola vez y la desincronización deja de ser
-   posible. El guardián de E25 se queda igualmente: comprueba el CSS cargado, así
-   que sigue valiendo si algún día esto se escribe de otra manera. */
-/* solo definiciones: no emite ni una regla */
-/* ============================================================================
-   00-fuentes.css — Tipografía de Cubomática
-   ----------------------------------------------------------------------------
-   CASCADA DECLARADA (PLAN §10.2):
-       Silkscreen → Press Start 2P → cifras y signos en pixel, títulos en la pila
-       del sistema.
-
-   El proyecto NO incluye ningún fichero .woff2 suelto ni hace ninguna petición de
-   red (PLAN §4.4). Por eso las fuentes de mapa de bits se declaran con `local()`:
-   si el sistema las tiene instaladas se usan, y si no, la cascada cae en la pila
-   monoespaciada del sistema, que en las tres plataformas objetivo tiene cobertura
-   completa de ÁÉÍÓÚÜÑ¿¡«»€ y dígitos inequívocos.
-
-   `pruebas/casos-fuente.js` mide con canvas.measureText qué rama de la cascada
-   está activa y comprueba que ningún glifo crítico cae en .notdef. La rama activa
-   se anota en docs/decisiones.md: el juego NUNCA muestra un cuadrado vacío.
-
-   Los enunciados de problema NO usan fuente pixel en ningún caso (§10.2): van
-   siempre en la pila del sistema, porque las fuentes de mapa de bits confunden
-   6/8/9 y 1/7 y un lector de 7 años no puede permitírselo.
-   ========================================================================== */
 @font-face {
   font-family: "Bloque Pixel";
   src: local("Silkscreen"), local("Silkscreen-Regular"), local("Press Start 2P"), local("PressStart2P-Regular");
@@ -202,169 +7,59 @@
   font-style: normal;
 }
 :root {
-  /* Fuente de mapa de bits: SOLO títulos, cifras grandes y etiquetas cortas.
-     Prohibida en bloques de más de 6 palabras. */
   --fuente-pixel: 'Bloque Pixel', 'Silkscreen', 'Press Start 2P',
                   ui-monospace, 'SF Mono', Menlo, Consolas, 'Courier New', monospace;
-  /* Pila del sistema: TODA lectura larga, enunciados de problema y panel adulto.
-     Verdana encabeza la lista por su x-height alta y sus formas abiertas. */
   --fuente-lectura: Verdana, Geneva, 'DejaVu Sans', Tahoma, sans-serif;
-}
-
-/* ============================================================================
-   cubomatica.scss — el único punto de entrada de la hoja de estilo
-   ----------------------------------------------------------------------------
-   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
-   7-1 al uso:
-
-   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
-      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
-      explicar que su `position: relative` gana por venir DESPUÉS de
-      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
-      esa relación y la rompe la primera vez que alguien reordena un @use.
-   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
-      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
-      activos externos» obliga a dejar vacío para siempre.
-   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
-      estos nombres. Mantenerlos convirtió la migración en un renombrado
-      mecánico verificable, y `git mv` conservó el historial de cada fichero.
-
-   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
-   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
-   primera línea. Es la causa número uno de errores al añadir mixins — pero
-   falla ruidosamente, en compilación, que es lo bueno.
-      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
-   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
-   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
-   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
-   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
-   con miembros es `herramientas`, y por eso es el único que importa de verdad.
-   ========================================================================== */
-/* ============================================================================
-   01-variables.css — La única fuente de verdad de medidas y colores
-   ----------------------------------------------------------------------------
-   DOS GRUPOS DE COLOR QUE NUNCA SE MEZCLAN (PLAN §10.1):
-
-     --bg-texto-*   fondos PLANOS. TODO texto vive aquí.
-     --deco-* / --tex-*   bloques, biomas y texturas. NUNCA llevan texto encima.
-
-   Motivo: el contraste de un texto sobre ruido pseudoaleatorio de 16×16 no es un
-   par de colores y no se puede verificar. `pruebas/casos-contraste.js` comprueba
-   par a par los ratios WCAG de los fondos de texto.
-   ========================================================================== */
-/* @use NO es transitivo: hace falta aqui */
-:root {
-  /* ── Retícula ──────────────────────────────────────────────────────────── */
-  --u: 4px; /* unidad base. TODA medida es múltiplo de --u */
-  /* Escala de espaciado. Prohibido cualquier margin/padding/gap fuera de ella. */
-  --e1: calc(var(--u) * 1); /*  4px  separación interna mínima      */
-  --e2: calc(var(--u) * 2); /*  8px  entre elementos hermanos       */
-  --e3: calc(var(--u) * 4); /* 16px  separación entre botones (mín) */
-  --e4: calc(var(--u) * 8); /* 32px  margen de panel                */
-  --e5: calc(var(--u) * 12); /* 48px  separación entre bloques de UI */
-  --e6: calc(var(--u) * 16); /* 64px  margen de pantalla             */
-  /* ── Tamaños de texto ─────────────────────────────────────────────────── */
-  --tam-enunciado: 28px; /* enunciados de problema, pila del sistema   */
-  --tam-texto-min: 20px; /* SUELO ABSOLUTO de todo texto del niño      */
-  --tam-numero-opcion: 44px; /* dígitos de opciones y teclado, en pixel    */
+  --u: 4px;
+  --e1: calc(var(--u) * 1);
+  --e2: calc(var(--u) * 2);
+  --e3: calc(var(--u) * 4);
+  --e4: calc(var(--u) * 8);
+  --e5: calc(var(--u) * 12);
+  --e6: calc(var(--u) * 16);
+  --tam-enunciado: 28px;
+  --tam-texto-min: 20px;
+  --tam-numero-opcion: 44px;
   --tam-titulo: 40px;
-  --tam-adulto: 16px; /* única excepción al suelo: panel del adulto */
+  --tam-adulto: 16px;
   --interlineado: 1.6;
   --espaciado-letra: .05em;
   --espaciado-palabra: .16em;
-  --ancho-lectura: 34ch; /* en ch, no en px: sobrevive a «Letra grande» */
-  /* ── Tamaños de control ───────────────────────────────────────────────── */
-  /* EL LADO DEL BOTÓN LO DECIDEN DOS EJES QUE NO SE PISAN.
-     La anchura escribe --lado-deseado y solo esa; la altura escribe --lado-techo
-     y solo esa. El valor final es el menor de los dos, así que se COMBINAN en
-     vez de competir y da igual cuál esté escrito más abajo en el fichero.
-     Sin esto, cinco anchuras × cinco alturas serían veinticinco combinaciones
-     escritas a mano, y un proyector de 1400×700 recibiría «grande» por anchura y
-     «pequeño» por altura, ganando el accidente de orden.
-
-     min() es Baseline desde 2020 (Chrome 79, Safari 13.1), muy por debajo del
-     suelo declarado —Chromebook de 2019, iPad de 6.ª—.
-
-     SUELO ABSOLUTO 64 px (WCAG 2.5.8 pide 24; aquí el usuario tiene 7 años y el
-     diseño pide 96). Ninguna media query baja de 64, y no se confía: hay un
-     invariante estático en casos-reloj.js que lo lee del CSS compilado. */
+  --ancho-lectura: 34ch;
   --lado-deseado: 96px;
   --lado-techo: 96px;
   --lado-respuesta: min(var(--lado-deseado), var(--lado-techo));
   --lado-icono: 64px;
   --bisel: 4px;
-  /* La cinta con la cifra que lleva debajo cada moneda y cada billete. Se define
-     a partir del suelo de texto y no como número fijo: con «Letra grande» la
-     cifra pasa a 24px y la cinta a 28, y si no creciera se saldría. */
   --cinta-pieza: calc(var(--tam-texto-min) + var(--e1));
-  /* ══ GRUPO 1 — FONDOS DE TEXTO (planos, verificados) ═══════════════════ */
-  --bg-texto-panel: #FFF6E5; /* crema, NUNCA blanco puro */
+  --bg-texto-panel: #FFF6E5;
   --bg-texto-crema: #FFF6E5;
   --bg-texto-oscuro: #241C14;
   --bg-texto-aviso: #FFE9B8;
   --bg-pantalla: #2B2118;
-  --texto-principal: #241C14; /* 15,8:1 sobre crema */
-  --texto-secundario: #4A3A28; /* 10,3:1 sobre crema */
-  --texto-claro: #FFF6E5; /* 14,9:1 sobre --bg-pantalla */
-  --texto-sec-claro: #D9C9AE; /*  9,7:1 sobre --bg-pantalla */
+  --texto-principal: #241C14;
+  --texto-secundario: #4A3A28;
+  --texto-claro: #FFF6E5;
+  --texto-sec-claro: #D9C9AE;
   --texto-aviso: #241C14;
-  /* Los DOS pares de texto del proyecto, y cuándo se usa cada uno:
-       sobre --bg-pantalla (fondo oscuro de pantalla) → --texto-claro / --texto-sec-claro
-       dentro de un .panel-bloque (crema)             → --texto-principal / --texto-secundario
-     Mezclarlos produce texto oscuro sobre fondo oscuro. casos-contraste.js
-     verifica los cuatro pares. */
-  --btn-fondo: #D9B98C; /*  9,0:1 con --btn-texto */
-  --btn-fondo-hundido: #A88A5E; /*  5,2:1 con --btn-texto */
+  --btn-fondo: #D9B98C;
+  --btn-fondo-hundido: #A88A5E;
   --btn-texto: #241C14;
   --btn-borde-luz: #F0DDBE;
   --btn-borde-sombra: #7A5628;
-  /* EL BOTÓN BLOQUEADO, con su propio par. Existe porque el teclado se
-     deshabilita 800 ms en cada ítem (CB.componentes.MS_CONSTRUCCION) y durante
-     ese rato el niño mira los dígitos: si no se leen, no está esperando, está
-     adivinando. El texto era --deco-piedra-osc sobre --deco-piedra, que da
-     1,52:1 MEDIDO, muy por debajo del 4,5 de WCAG 1.4.3.
-
-     Ahora el texto es el mismo del botón activo, 4,99:1 sobre la piedra: entre
-     activo y bloqueado cambia el fondo, el bisel invertido y el hundido —tres
-     señales que no son el color— y no la legibilidad de la cifra.
-
-     --gris-carbon habría sido lo intuitivo y da 3,91:1. No llega, y este
-     proyecto ya se comió un fallo por creerse un contraste sin medirlo. */
   --btn-fondo-desactivado: var(--deco-piedra);
   --btn-texto-desactivado: var(--btn-texto);
   --btn-primario: #5AA02C;
   --btn-primario-hundido: #3F7A1E;
-  --btn-primario-texto: #241C14; /* 5,2:1 sobre --btn-primario.
-Texto OSCURO sobre el verde, no claro: el crema sobre #5AA02C da 3,05:1 y
-no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
+  --btn-primario-texto: #241C14;
   --ok-fondo: #E3F3D6;
   --ok-texto: #1E3D10;
-  --mal-fondo: #E8E4DE; /* gris, NUNCA rojo (§10.4) */
+  --mal-fondo: #E8E4DE;
   --mal-texto: #33302B;
   --foco-oro: #F5C518;
-  --foco-borde: #241C14; /* anillo exterior: ver nota abajo */
+  --foco-borde: #241C14;
   --alto-contraste-bg: #000000;
-  --alto-contraste-texto: #FFFFFF; /* 21:1 */
-  /* NOTA SOBRE EL FOCO (desviación documentada del PLAN §10.3).
-     El plan pedía el par [--foco-oro, --bg-texto-panel] ≥ 3,0. Es inalcanzable:
-     el oro #F5C518 sobre crema #FFF6E5 da 1,54:1 y ningún oro reconocible como
-     tal llega a 3:1 sobre un fondo claro. Se implementa un indicador de foco de
-     DOS TONOS (oro + anillo oscuro), que es la solución correcta para WCAG 2.4.11
-     y 1.4.11: el indicador contrasta con lo que tiene al lado en ambos sentidos.
-     Los pares que se verifican son [--foco-oro, --foco-borde] = 10,3:1 y
-     [--foco-borde, --bg-texto-panel] = 15,8:1. */
-  /* ══ GRUPO 2 — DECORACIÓN: 13 materiales × 3 tonos = 39 ════════════════
-     Las 39 salen del mapa $materiales de _herramientas.scss, que es ahora el
-     único sitio donde vive la paleta decorativa. Escribirlas a mano eran 13
-     líneas con 39 valores alineados a ojo, y bastaba equivocarse en un tono
-     —repetir el claro donde iba el oscuro— para que un bisel quedara plano sin
-     que nada lo denunciara.
-
-     SIGUEN SIENDO CUSTOM PROPERTIES, no variables Sass. Se leen en tiempo de
-     ejecución: js/02-texturas.js sustituye ocho de ellas por un data: URI, y
-     casos-contraste.js mide tres por nombre. Una variable Sass se resuelve al
-     compilar y nada de eso funcionaría. La regla es: pasa a Sass solo lo que
-     GENERA custom properties, nunca las custom properties mismas. */
+  --alto-contraste-texto: #FFFFFF;
   --deco-piedra: #8C8C8C;
   --deco-piedra-osc: #6E6E6E;
   --deco-piedra-cla: #ADADAD;
@@ -404,31 +99,20 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   --deco-oro: #E8B923;
   --deco-oro-osc: #B8900F;
   --deco-oro-cla: #F5D45C;
-  /* ── Blanco, negro y los tonos sueltos ────────────────────────────────
-     Estaban escritos a pelo en las hojas de componentes y pantallas: 42
-     literales hexadecimales repartidos por cinco ficheros, y la cabecera de
-     ESTE fichero declarando que aquí vive «la única fuente de verdad de
-     medidas y colores». Era falso desde hacía tiempo.
-
-     Importa más de lo que parece: `:root.alto-contraste` reescribe dieciséis
-     variables, y un #FFFFFF literal en un bisel no se entera. Con nombre, el
-     modo de alto contraste puede alcanzarlo el día que haga falta. */
   --blanco: #FFFFFF;
   --negro: #000000;
-  --gris-hueso: #E8E4DE; /* fondo de mensaje de ánimo, y texto sobre piedra */
+  --gris-hueso: #E8E4DE;
   --gris-carbon: #33302B;
   --gris-piedra: #7A766F;
   --sombra-honda: #1A1610;
-  --crema-fila: #F6F1E6; /* filas alternas de la tabla del panel adulto */
+  --crema-fila: #F6F1E6;
   --semaforo-verde: #1E3D10;
   --semaforo-ambar: #6B4526;
   --semaforo-rojo: #7A2010;
   --peligro-suave: #E8D3CE;
-  /* Alias semánticos de la interfaz de juego */
   --cristal-claro: var(--deco-cristal-cla);
   --luz-apagada: #59554F;
   --gema: var(--deco-cristal);
-  /* Cielo: 6 pasos discretos, base garantizada en TODO navegador del suelo */
   --cielo-0: #8FD3F4;
   --cielo-1: #7FC2E8;
   --cielo-2: #6BA6D6;
@@ -437,9 +121,6 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   --cielo-5: #1A2A48;
   --cielo-dia: #8FD3F4;
   --cielo-noche: #1A2A48;
-  /* Texturas: las rellena js/02-texturas.js con data: URI al arrancar.
-     Valor inicial: color plano del material, para que nunca se vea un hueco.
-     El orden de $texturados es el que espera 02-texturas.js. */
   --tex-piedra: var(--deco-piedra);
   --tex-tierra: var(--deco-tierra);
   --tex-hierba: var(--deco-hierba);
@@ -450,24 +131,6 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   --tex-cristal: var(--deco-cristal);
 }
 
-/* ── LOS CINCO ESCALONES DE ANCHURA ────────────────────────────────────────
-   Solo escriben --lado-deseado y los anchos de contenedor. Ni una de estas
-   reglas toca --lado-techo ni grid-template-columns: ese es el reparto.
-
-   Pasos discretos, todos múltiplos de --u = 4px: 64 / 80 / 96 / 112 / 128.
-   NADA de clamp() aquí. La estética es voxel: 90 capas de sombra con desenfoque
-   0 sobre una retícula de 4px. Un clamp() fluido da 83,4px y el bisel de 4px se
-   dibuja a 3,7 con antialias, que es exactamente lo que 1 721 líneas llevan
-   evitando. min() sí, porque elige entre dos valores ya discretos; no interpola.
-
-   VAN ANTES de los tres bloques :root.<clase> de abajo, y eso es obligatorio:
-   `:root` y `:root.modo-proyeccion` tienen la MISMA especificidad, así que gana
-   el orden de origen. La intención es que la clase gane al punto de ruptura
-   —modo-proyeccion sube el lado a 150px para una pizarra— y solo lo hace si se
-   emite después. */
-/* Base (320-479px). Es también el estado de ZOOM AL 400 % sobre 1280px, que no
-   es un escalón menor sino un criterio de conformidad: WCAG 1.4.10 exige que a
-   ese zoom no haya scroll en dos ejes. */
 :root {
   --lado-deseado: 64px;
 }
@@ -481,7 +144,7 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   :root {
     --lado-deseado: 96px;
   }
-} /* iPad 6.ª en vertical */
+}
 @media (min-width: 1024px) {
   :root {
     --lado-deseado: 96px;
@@ -496,38 +159,7 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   :root {
     --lado-deseado: 128px;
   }
-} /* pizarra digital */
-/* ── LAS DOCE PIEZAS DE DINERO, QUE AHORA SON FOTOGRAFÍAS ──────────────────
-   Hasta 1.19.0 las monedas y los billetes se DIBUJABAN: `js/03-sprites.js`
-   componía un SVG con el metal, las doce estrellas y un arco, lo publicaba como
-   data: URI en estas mismas variables y el CSS no sabía de dónde venía. El
-   motivo escrito entonces —«la auditoría no admite un solo binario»— era cierto
-   como regla del proyecto y falso como restricción técnica: una imagen es un
-   SUBRECURSO, igual que la hoja de estilos o los nueve MP3, y `file://` la sirve
-   sin pedir nada a la red. Lo que la prohibía era el bloque 4 de la auditoría, y
-   eso es una lista, no una ley.
-
-   Así que se abre la misma puerta que ya tiene la música: una LISTA CERRADA,
-   declarada en `pruebas/auditar.mjs`, comprobada en los dos sentidos. Doce
-   ficheros, ni uno más.
-
-   POR QUÉ MERECE LA PENA. Lo que hay que aprender en el saber A.5 es reconocer
-   una moneda de 2 € cuando la tiene en la mano, y un cuadrado de color con un 2
-   dentro no enseña eso: enseña a leer el 2, que es justo lo que no se pregunta.
-
-   PESAN 64 KB LAS DOCE, y no entran en el presupuesto de arranque porque
-   `index.html` no las referencia: las pide el CSS, y solo cuando sale una pieza
-   en pantalla. Sí entran en el armazón del service worker, para que el juego sin
-   red siga enseñando dinero.
-
-   CADA UNA MIDE LO QUE MIDE DE VERDAD (ver `_03-componentes.scss`): el fichero
-   se genera al DOBLE de su caja CSS, que es lo que necesita una tableta con
-   pantalla de doble densidad y ni un píxel más.
-
-   EL COLOR PLANO SE QUEDA DEBAJO. Si un navegador no entiende WebP —ninguno de
-   los dos aparatos de referencia, pero el fallo hay que preverlo—, la pieza
-   sigue teniendo su `background-color`, su tamaño y su cifra, que ya la
-   distinguen. Misma red de seguridad que las ocho texturas del terreno. */
+}
 :root {
   --pieza-c1: url('../img/pieza-c1.webp');
   --pieza-c5: url('../img/pieza-c5.webp');
@@ -543,7 +175,6 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   --pieza-100: url('../img/pieza-100.webp');
 }
 
-/* ── Ajuste «Letra grande» del panel del adulto ────────────────────────── */
 :root.letra-grande {
   --tam-enunciado: 34px;
   --tam-texto-min: 24px;
@@ -551,32 +182,15 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   --tam-titulo: 46px;
 }
 
-/* ── Modo proyección para pizarra digital (×1,6) ───────────────────────── */
 :root.modo-proyeccion {
   --tam-enunciado: 45px;
   --tam-texto-min: 32px;
   --tam-numero-opcion: 70px;
   --tam-titulo: 64px;
-  /* ESCRIBE LOS DOS EJES, NO --lado-respuesta. Escribir el resultado a mano se
-     salta el `min()` que combina anchura y altura, que es justo lo que toda esta
-     parte existe para evitar: en un proyector de 1200×700 el teclado 3×4 a
-     150 px mide más que la zona de juego, y como ahí abajo no hay barra de
-     desplazamiento, la fila del OK se quedaba fuera de la pantalla — sin nada
-     que fallara y sin forma de contestar.
-
-     Subiendo los dos, la pizarra de 1920×1080 sigue dando 150 px (ninguna
-     consulta de altura le pone techo) y el proyector bajo recibe el techo que le
-     corresponde por altura, que es lo que hace que quepa. Un botón de 72 px en
-     una pizarra se ve pequeño; uno de 150 que no se ve no se puede pulsar. */
   --lado-deseado: 150px;
   --lado-techo: 150px;
 }
 
-/* ── Alto contraste ────────────────────────────────────────────────────────
-   UNA lista, DOS contextos, por la misma razon que el movimiento reducido: el
-   ajuste del sistema (prefers-contrast) y el del juego (:root.alto-contraste)
-   tienen que hacer lo mismo, y dos listas de dieciseis lineas escritas a mano se
-   separan. Ya paso con las animaciones (E25) y costo meses verlo. */
 :root.alto-contraste {
   --bg-texto-panel: #000000;
   --bg-texto-crema: #000000;
@@ -586,10 +200,6 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   --btn-fondo: #000000;
   --btn-fondo-hundido:#333333;
   --btn-texto: #FFFFFF;
-  /* El bloqueado necesita SU PROPIA línea aquí. Este mixin reescribe --btn-texto
-     a blanco y NO toca --deco-piedra, así que sin esto el botón deshabilitado
-     quedaría en blanco sobre #8C8C8C: 3,36:1 medido, por debajo del 4,5. Se
-     reutiliza el fondo del hundido, que ya está en esta paleta: 12,63:1. */
   --btn-fondo-desactivado: #333333;
   --btn-texto-desactivado: #FFFFFF;
   --btn-borde-luz: #FFFFFF;
@@ -602,9 +212,6 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   --mal-texto: #FFFFFF;
 }
 
-/* Y el ajuste del SISTEMA, que antes no se atendia en absoluto: quien pide mas
-   contraste en macOS, Windows o Android tenia que ademas encontrar el ajuste
-   dentro del juego. */
 @media (prefers-contrast: more) {
   :root {
     --bg-texto-panel: #000000;
@@ -615,10 +222,6 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
     --btn-fondo: #000000;
     --btn-fondo-hundido:#333333;
     --btn-texto: #FFFFFF;
-    /* El bloqueado necesita SU PROPIA línea aquí. Este mixin reescribe --btn-texto
-       a blanco y NO toca --deco-piedra, así que sin esto el botón deshabilitado
-       quedaría en blanco sobre #8C8C8C: 3,36:1 medido, por debajo del 4,5. Se
-       reutiliza el fondo del hundido, que ya está en esta paleta: 12,63:1. */
     --btn-fondo-desactivado: #333333;
     --btn-texto-desactivado: #FFFFFF;
     --btn-borde-luz: #FFFFFF;
@@ -631,49 +234,9 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
     --mal-texto: #FFFFFF;
   }
 }
-/* ============================================================================
-   cubomatica.scss — el único punto de entrada de la hoja de estilo
-   ----------------------------------------------------------------------------
-   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
-   7-1 al uso:
-
-   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
-      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
-      explicar que su `position: relative` gana por venir DESPUÉS de
-      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
-      esa relación y la rompe la primera vez que alguien reordena un @use.
-   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
-      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
-      activos externos» obliga a dejar vacío para siempre.
-   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
-      estos nombres. Mantenerlos convirtió la migración en un renombrado
-      mecánico verificable, y `git mv` conservó el historial de cada fichero.
-
-   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
-   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
-   primera línea. Es la causa número uno de errores al añadir mixins — pero
-   falla ruidosamente, en compilación, que es lo bueno.
-      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
-   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
-   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
-   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
-   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
-   con miembros es `herramientas`, y por eso es el único que importa de verdad.
-   ========================================================================== */
-/* @use NO es transitivo */
-/* ============================================================================
-   02-base.css — Reset y reglas duras de estilo
-   ----------------------------------------------------------------------------
-   REGLAS DURAS VERIFICABLES POR REVISIÓN VISUAL (PLAN §4.2):
-     · border-radius: 0 GLOBAL. Una sola esquina redondeada suspende la revisión.
-     · Solo sombras DURAS. Ninguna sombra con desenfoque.
-     · Solo transiciones escalonadas con steps(). Ningún ease, ninguna suave.
-     · image-rendering: pixelated global.
-     · Foco de 4 px oro con outline-offset: var(--u).
-   ========================================================================== */
 *, *::before, *::after {
   box-sizing: border-box;
-  border-radius: 0; /* REGLA DURA: cero esquinas redondeadas */
+  border-radius: 0;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
@@ -683,16 +246,13 @@ html, body {
   padding: 0;
   height: 100%;
   background: var(--bg-pantalla);
-  /* El fondo de pantalla es OSCURO: el texto que va directamente sobre él tiene
-     que ser claro. El par oscuro (--texto-principal) solo se usa dentro de un
-     .panel-bloque, que es crema. */
   color: var(--texto-claro);
   font-family: var(--fuente-lectura);
-  font-size: var(--tam-texto-min); /* SUELO: ningún texto del niño baja de aquí */
+  font-size: var(--tam-texto-min);
   line-height: var(--interlineado);
   letter-spacing: var(--espaciado-letra);
   word-spacing: var(--espaciado-palabra);
-  text-align: left; /* sin justificar */
+  text-align: left;
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
 }
@@ -700,7 +260,7 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
-  touch-action: manipulation; /* sin doble toque para hacer zoom */
+  touch-action: manipulation;
 }
 
 h1, h2, h3 {
@@ -733,7 +293,6 @@ ul, ol {
   padding-left: var(--e4);
 }
 
-/* Nunca cursiva, nunca mayúsculas sostenidas en texto del niño */
 em, i {
   font-style: normal;
   font-weight: bold;
@@ -755,7 +314,6 @@ button:disabled {
   cursor: default;
 }
 
-/* ── Foco de DOS TONOS (ver nota en 01-variables.css) ───────────────────── */
 :focus {
   outline: none;
 }
@@ -766,7 +324,6 @@ button:disabled {
   box-shadow: 0 0 0 var(--e2) var(--foco-borde);
 }
 
-/* Respaldo para navegadores del suelo que no soporten :focus-visible */
 button:focus, [tabindex]:focus {
   outline: var(--bisel) solid var(--foco-oro);
   outline-offset: var(--u);
@@ -776,17 +333,11 @@ button:focus:not(:focus-visible) {
   box-shadow: none;
 }
 
-/* ── Solo transiciones escalonadas ──────────────────────────────────────── */
 * {
   transition-timing-function: steps(3, end);
   animation-timing-function: steps(4, end);
 }
 
-/* ── Utilidades ─────────────────────────────────────────────────────────── */
-/* Aquí vivía `.oculto-visual`, que hacía exactamente lo mismo que
-   `.solo-lectores` (03-componentes.css) y no la usaba nadie. Dos utilidades
-   para ocultar visualmente conservando el texto para el lector de pantalla es
-   una de más: la que se queda es la que usan los <h1>. */
 [hidden] {
   display: none !important;
 }
@@ -820,11 +371,6 @@ button:focus:not(:focus-visible) {
   justify-content: center;
 }
 
-/* UN BLOQUE `texto` CON DOS MODIFICADORES, y no dos bloques sueltos. Eran
-   `.texto-lectura` y `.texto-menor`, dos nombres que compartían la única
-   declaración que de verdad tenían en común —el ancho de lectura— por
-   casualidad, no por decirlo. En el marcado van las dos clases:
-   `class="texto texto--menor"`. */
 .texto {
   max-width: var(--ancho-lectura);
 }
@@ -834,22 +380,11 @@ button:focus:not(:focus-visible) {
   font-size: var(--tam-enunciado);
 }
 
-/* EL COLOR LO PIDE, NO LO IMPONE EL SITIO. Antes había siete selectores del
-   tipo `.panel-bloque .texto-menor` en _03-componentes.scss: descendencia entre
-   bloques, que es justo lo que un bloque no puede tener —cambiaba de aspecto
-   según quién lo contuviera—. Ahora el contenedor declara `--texto-sec` y el
-   texto lo consume con un valor por defecto: funciona con contenedores que aún
-   no existen y no depende del orden de la cascada. */
 .texto--menor {
   font-size: var(--tam-texto-min);
   color: var(--texto-sec, var(--texto-sec-claro));
 }
 
-/* Un texto NUNCA se dibuja sobre una textura (PLAN §10.1). Aquí había una
-   utilidad `.sobre-textura > *` para forzarlo, sin un solo uso: la regla se
-   cumple por construcción, separando los colores de fondo de texto de los
-   decorativos en 01-variables.css, y la verifica casos-contraste.js. */
-/* ── Viewport demasiado pequeño: se avisa, no se sigue encogiendo ───────── */
 .aviso-gira {
   display: none;
   position: fixed;
@@ -864,19 +399,11 @@ button:focus:not(:focus-visible) {
   font-family: var(--fuente-pixel);
 }
 
-/* WCAG 1.4.10 (reflow) exige que a zoom 400 % sobre 1280px no haya scroll en
-   dos ejes. A ese zoom el viewport CSS es EXACTAMENTE 320px, asi que el limite
-   de 319px dejaba UN pixel de margen: cualquier redondeo del navegador mostraba
-   «Gira el dispositivo» en un escritorio con la letra grande, que es justo el
-   usuario que mas necesita que NO aparezca. Baja a 299. */
 @media (max-width: 299px), (max-height: 419px) {
   .aviso-gira {
     display: flex;
   }
 }
-/* ── Movimiento reducido: UNA regla, DOS contextos ──────────────────────────
-   El del sistema y el del juego tienen que frenar exactamente lo mismo, y aquí
-   estaban las mismas tres declaraciones escritas dos veces. Ver el mixin. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -890,43 +417,6 @@ button:focus:not(:focus-visible) {
   transition-duration: 0.001ms !important;
 }
 
-/* ============================================================================
-   cubomatica.scss — el único punto de entrada de la hoja de estilo
-   ----------------------------------------------------------------------------
-   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
-   7-1 al uso:
-
-   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
-      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
-      explicar que su `position: relative` gana por venir DESPUÉS de
-      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
-      esa relación y la rompe la primera vez que alguien reordena un @use.
-   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
-      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
-      activos externos» obliga a dejar vacío para siempre.
-   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
-      estos nombres. Mantenerlos convirtió la migración en un renombrado
-      mecánico verificable, y `git mv` conservó el historial de cada fichero.
-
-   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
-   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
-   primera línea. Es la causa número uno de errores al añadir mixins — pero
-   falla ruidosamente, en compilación, que es lo bueno.
-      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
-   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
-   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
-   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
-   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
-   con miembros es `herramientas`, y por eso es el único que importa de verdad.
-   ========================================================================== */
-/* ============================================================================
-   03-componentes.css — Piezas de interfaz de bloques
-   ----------------------------------------------------------------------------
-   Todo el aspecto de «mundo de cubos» se construye con biseles duros de
-   box-shadow escalonado. Ni una sombra con desenfoque, ni un degradado continuo.
-   ========================================================================== */
-/* @use NO es transitivo */
-/* ── Panel de bloque (9-slice hecho con biseles) ────────────────────────── */
 .panel-bloque {
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
@@ -936,18 +426,10 @@ button:focus:not(:focus-visible) {
   width: 100%;
 }
 
-/* Aquí había dos modificadores del panel, `--oscuro` y `--aviso`, que no
-   aplicaba nadie. Los pares de color que usaban (--bg-texto-oscuro y
-   --bg-texto-aviso) siguen declarados y verificados en casos-contraste.js: si
-   algún día hace falta un panel oscuro, el color ya está medido. */
 .panel-bloque > :last-child {
   margin-bottom: 0;
 }
 
-/* Dentro de un fondo crema, el texto secundario vuelve al par oscuro. Se
-   declara la variable, no se estila al hijo: el bloque `texto` la consume con
-   `var(--texto-sec, var(--texto-sec-claro))` y así nadie tiene que saber quién
-   lo contiene. Ver _02-base.scss. */
 .panel-bloque,
 .tarjeta-mundo,
 .tarjeta-perfil,
@@ -958,13 +440,10 @@ button:focus:not(:focus-visible) {
   --texto-sec: var(--texto-secundario);
 }
 
-/* Todo contenedor de fondo claro fija su color de texto explícitamente: sin
-   esto heredarían el claro del body y quedarían ilegibles. */
 .cromo, .fila-ordenar__hueco, .columna-cdu, .balanza__cifra, .lienzo-explicador {
   color: var(--texto-principal);
 }
 
-/* ── Botón de bloque con bisel 3D ───────────────────────────────────────── */
 .btn-bloque {
   display: inline-flex;
   align-items: center;
@@ -986,7 +465,6 @@ button:focus:not(:focus-visible) {
   background: var(--btn-fondo-hundido);
 }
 
-/* Se hunde 4 px al pulsar: criterio de HECHO de F0 */
 .btn-bloque:active:not(:disabled),
 .btn-bloque.btn-bloque--hundido {
   transform: translateY(var(--bisel));
@@ -1012,7 +490,7 @@ button:focus:not(:focus-visible) {
   background: var(--btn-primario-hundido);
 }
 
-.btn-bloque--grande { /* JUGAR: 200 × 96 */
+.btn-bloque--grande {
   width: 200px;
   min-height: 96px;
   font-size: calc(var(--tam-texto-min) + 8px);
@@ -1036,10 +514,6 @@ button:focus:not(:focus-visible) {
   max-width: 320px;
 }
 
-/* Botón de barra con icono ARRIBA y palabra DEBAJO. Un icono suelto de 26 px no
-   dice qué hace el botón: «leer en voz alta» y «silenciar» eran dos altavoces
-   indistinguibles, y sustituir un emoji por otro solo cambia de qué se duda.
-   Se mantiene el lado mínimo de 64 px del resto de botones táctiles. */
 .btn-bloque--rotulado {
   display: flex;
   flex-direction: column;
@@ -1066,7 +540,6 @@ button:focus:not(:focus-visible) {
   white-space: nowrap;
 }
 
-/* Sacudida corta de 2 px al tocar antes de tiempo («toc» de madera, §3.5) */
 @keyframes toc-madera {
   0% {
     transform: translateX(0);
@@ -1082,7 +555,6 @@ button:focus:not(:focus-visible) {
   animation: toc-madera 120ms steps(2, end) 2;
 }
 
-/* ── HUD ────────────────────────────────────────────────────────────────── */
 .hud {
   display: flex;
   align-items: center;
@@ -1096,7 +568,6 @@ button:focus:not(:focus-visible) {
   flex: 0 0 auto;
 }
 
-/* ── Las 3 luces del casco (sustituyen a los corazones, §3.3) ───────────── */
 .luces {
   display: flex;
   gap: var(--e2);
@@ -1116,7 +587,6 @@ button:focus:not(:focus-visible) {
   box-shadow: inset 8px 8px 0 0 var(--gris-piedra), inset -8px -8px 0 0 var(--gris-carbon);
 }
 
-/* Nunca solo color: la luces__luz apagada lleva además una marca de forma (§10.4) */
 .luces__luz[data-estado=apagada]::after {
   content: "";
   position: absolute;
@@ -1141,15 +611,6 @@ button:focus:not(:focus-visible) {
   animation: luz-extra 1500ms steps(6, end) 1;
 }
 
-/* ── Reloj de arena de la cuenta atrás ──────────────────────────────────────
-   Dibujado con bloques y dos triángulos de clip-path. Cero imágenes, cero
-   border-radius: los bulbos son conos rectos, que es como se dibuja un reloj de
-   arena en una rejilla de píxeles.
-
-   La arena de arriba baja y la de abajo sube, y ambas se mueven a saltos de un
-   veinteavo (js/30-ui.js redondea): un descenso continuo se vería como una
-   barra de progreso, y esto tiene que verse como arena cayendo.
-   ────────────────────────────────────────────────────────────────────────── */
 .reloj {
   display: flex;
   align-items: center;
@@ -1166,7 +627,6 @@ button:focus:not(:focus-visible) {
   flex: 0 0 auto;
 }
 
-/* Las dos tapas de madera */
 .reloj__tapa {
   position: absolute;
   left: 0;
@@ -1184,7 +644,6 @@ button:focus:not(:focus-visible) {
   bottom: 0;
 }
 
-/* Los dos bulbos de cristal: conos opuestos */
 .reloj__bulbo {
   position: absolute;
   left: 2px;
@@ -1206,7 +665,6 @@ button:focus:not(:focus-visible) {
   clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
 }
 
-/* La arena. El alto lo fija js/30-ui.js con un porcentaje redondeado. */
 .reloj__grano {
   position: absolute;
   left: 0;
@@ -1226,7 +684,6 @@ button:focus:not(:focus-visible) {
   height: 0;
 }
 
-/* El chorro del cuello */
 .reloj__chorro {
   position: absolute;
   left: 18px;
@@ -1236,17 +693,12 @@ button:focus:not(:focus-visible) {
   background: var(--deco-arena-cla);
 }
 
-/* La cifra. Ancho fijo en dos caracteres: si no, el HUD entero se desplaza al
-   pasar de 10 a 9 y el niño ve saltar las luces y las gemas. */
 .reloj__cifra {
   min-width: 2.2ch;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-/* Últimos 10 segundos. NUNCA solo color (§10.4): cambia el color de la arena,
-   engorda la cifra, el reloj tiembla y encima sale el cartel. Quien no
-   distinga el naranja del amarillo tiene otros tres avisos. */
 .reloj--prisa .reloj__grano {
   background: var(--deco-brasa);
   box-shadow: inset 0 2px 0 0 var(--deco-brasa-cla);
@@ -1261,32 +713,6 @@ button:focus:not(:focus-visible) {
   font-size: calc(var(--tam-texto-min) + 6px);
 }
 
-/* ── La cinta: un solo cartel para los nueve momentos ───────────────────────
-   Empezó siendo el «Hurry up!» del reloj y ahora lo comparten las felicitaciones,
-   los ánimos, los logros y el jefe. Es UN SOLO NODO por pantalla, y eso no es
-   ahorro: dos cintas superpuestas son ilegibles, y con un único nodo la colisión
-   deja de ser algo que haya que evitar y pasa a ser imposible.
-
-   El tono cambia según qué celebra, pero el tono NUNCA es lo único que cambia
-   (§10.4, y es obligación legal): cada coreografía tiene su recorrido, su
-   duración y su número de pasos, y el glifo de delante repite el mismo par de
-   formas que ya usa .mensaje-resultado: ◆ para lo que sale bien, ■ para el ánimo.
-
-   El texto va dentro de .cinta__texto para que el parpadeo del «Hurry up!»
-   pueda animarse aparte sin pisar la animación del recorrido, que es la única
-   cuya duración manda el JS.
-   EL 38 % NO SE BAJA, Y ESTA ES LA RAZÓN. La primera versión dejaba el cartel
-   quieto encima de la zona de respuesta, y en la primera prueba en pantalla se
-   vio el problema: caía justo sobre la fila del ⌫, el 0 y el OK. Es decir, el
-   aviso tapaba el botón con el que se contesta. Tenía pointer-events:none, así
-   que se podía pulsar a ciegas, pero no se veía lo que se estaba pulsando.
-   Ninguna coreografía nueva puede bajar de ahí, y hay un guardián que lo mide
-   (E47), porque este es un fallo que ya se cometió una vez.
-
-   Es una cinta con fondo sólido, no texto suelto. El cartel cae sobre el cielo,
-   sobre la hierba, sobre la piedra o sobre la lava según el bioma, y con solo
-   contorno habría cuatro fondos distintos que validar. Con cinta, uno.
-   ────────────────────────────────────────────────────────────────────────── */
 .cinta {
   position: absolute;
   left: 0;
@@ -1306,8 +732,6 @@ button:focus:not(:focus-visible) {
   text-shadow: 3px 3px 0 var(--sombra-honda);
 }
 
-/* El glifo repite las dos formas de .mensaje-resultado: ◆ lo que sale bien,
-   ■ el ánimo. Es lo que hace que la cinta no dependa del color. */
 .cinta::before {
   content: "◆ ";
 }
@@ -1316,9 +740,6 @@ button:focus:not(:focus-visible) {
   content: "■ ";
 }
 
-/* Tres tonos para las tres coreografías que quedan. Acompañan; no distinguen:
-   lo que distingue es el VEHÍCULO. Los tres van sobre --bg-texto-oscuro y están
-   muy por encima de 4,5:1, que es lo que exige la norma para texto grande. */
 .cinta--prisa {
   color: var(--deco-oro-cla);
 }
@@ -1331,11 +752,6 @@ button:focus:not(:focus-visible) {
   color: var(--deco-oro-cla);
 }
 
-/* ── La insignia: «+1» junto al contador de gemas ───────────────────────────
-   La celebración del acierto de todos los días, que es el 60 % de los casos.
-   Es lo más pequeño del juego a propósito: lo que se ve veinte veces por sesión
-   no puede parar la pantalla. No tapa nada, no mueve nada y no espera a nadie.
-   ────────────────────────────────────────────────────────────────────────── */
 .insignia {
   margin-left: var(--e2);
   font-family: var(--fuente-pixel);
@@ -1344,20 +760,8 @@ button:focus:not(:focus-visible) {
   text-shadow: 2px 2px 0 var(--sombra-honda);
 }
 
-/* ── El cartel: logro y luces__luz extra ───────────────────────────────────────────
-   Un panel centrado con bisel, NO una franja de lado a lado. Esa diferencia de
-   forma es la que hace que no se confunda con la cinta de un vistazo, que es
-   justo lo que le faltaba a la primera versión: allí todo era la misma banda.
-
-   Se queda muy por encima de la zona de respuesta, como la cinta, y por la
-   misma razón: taparle a un niño el botón con el que contesta ya pasó una vez.
-   ────────────────────────────────────────────────────────────────────────── */
 .cartel {
   position: absolute;
-  /* 12 %, no 30: a 30 el borde inferior llegaba a rozar la fila alta del
-     teclado en una pantalla de 812 px. Medido, no supuesto. Y de paso lo separa
-     más de la cinta, que cruza por el 38: dos siluetas a dos alturas distintas
-     se distinguen mejor que dos siluetas a la misma. */
   left: 50%;
   top: 12%;
   transform: translateX(-50%);
@@ -1378,7 +782,6 @@ button:focus:not(:focus-visible) {
   content: "✦ ";
 }
 
-/* ── Contador de gemas: solo sube, nunca es negativo ────────────────────── */
 .gemas {
   display: flex;
   align-items: center;
@@ -1398,8 +801,6 @@ button:focus:not(:focus-visible) {
   animation: parpadeo-gris 200ms steps(2, end) 1;
 }
 
-/* La cifra que sube. `inline-block` no es cosmético: un <span> en flujo de línea
-   ignora `transform`, así que sin esto el salto no se ve y nada falla. */
 .cifra-viva {
   display: inline-block;
 }
@@ -1412,7 +813,6 @@ button:focus:not(:focus-visible) {
     opacity: 0.35;
   }
 }
-/* ── Hilera de bono retrospectivo: «+2 por rapidez» ─────────────────────── */
 .hilera-bono {
   display: flex;
   align-items: center;
@@ -1421,7 +821,6 @@ button:focus:not(:focus-visible) {
   color: var(--deco-oro-osc);
 }
 
-/* ── Rejilla de respuestas y degradación responsive (PLAN §10.5) ────────── */
 .rejilla-respuestas {
   --lado: var(--lado-respuesta);
   display: grid;
@@ -1433,14 +832,9 @@ button:focus:not(:focus-visible) {
 .rejilla-respuestas__opcion {
   width: var(--lado);
   height: var(--lado);
-  /* La cifra sigue al boton: en 64px, 44px de digito no cabe. El techo lo pone
-     --tam-numero-opcion, que es el token de diseno que casos-contraste.js
-     verifica y que :root.modo-proyeccion sube a 70px para la pizarra. */
   font-size: min(var(--tam-numero-opcion), var(--lado) * 0.46);
 }
 
-/* En apaisado y bajo, las cuatro opciones pasan a una fila: es el unico caso en
-   que la ALTURA decide columnas, y es a proposito —no caben en dos filas—. */
 @media (orientation: landscape) and (max-height: 420px) {
   .rejilla-respuestas {
     grid-template-columns: repeat(4, 1fr);
@@ -1450,30 +844,15 @@ button:focus:not(:focus-visible) {
     overflow: auto;
   }
 }
-/* Desde el portatil, las cuatro opciones en una sola fila: se leen de un
-   vistazo en vez de en dos barridos. Con altura suficiente, claro. */
 @media (min-width: 1024px) and (min-height: 620px) {
   .rejilla-respuestas {
     grid-template-columns: repeat(4, var(--lado));
   }
 }
-/* ── Cuando las opciones SON piezas de dinero ───────────────────────────────
-   La pregunta de reconocer una moneda o un billete pinta las cuatro opciones con
-   la forma que tienen —la fotografía de la pieza más su cinta—, y esas formas
-   traen su propio tamaño: de 50×74 la moneda de 1 céntimo a 125×94 el billete de
-   100. Las columnas de --lado-respuesta valen 64 px en la pantalla más estrecha,
-   así que un billete desbordaría su celda. Aquí el ancho lo manda el contenido.
-
-   VA DESPUÉS DE LAS DOS CONSULTAS DE ARRIBA A PROPÓSITO: las dos reescriben
-   `grid-template-columns` de `.rejilla-respuestas` y tienen la misma
-   especificidad que esta, así que lo único que decide es el orden. Con las
-   piezas se queda en dos columnas también en apaisado y en el portátil, porque
-   cuatro billetes en fila no caben en ninguna de las dos. */
 .rejilla-respuestas--dinero {
   grid-template-columns: repeat(2, auto);
 }
 
-/* ── Teclado de bloques 3×4 ─────────────────────────────────────────────── */
 .teclado-bloques {
   display: grid;
   grid-template-columns: repeat(3, var(--lado-respuesta));
@@ -1494,38 +873,12 @@ button:focus:not(:focus-visible) {
   font-size: var(--tam-texto-min);
 }
 
-/* EL OK TAMBIÉN SE APAGA. La regla de arriba tiene especificidad (0,3,0) y
-   .btn-bloque:disabled (0,2,0), así que durante los 800 ms de construcción once
-   teclas quedaban de piedra y hundidas y el OK seguía verde y brillante: la
-   única que el niño quiere pulsar era la única que mentía.
-
-   LOS DOS SELECTORES, no uno. La regla base cubre :disabled y
-   [aria-disabled="true"], y dejar uno fuera reabre el agujero por la otra
-   puerta. */
 .teclado-bloques__tecla[data-tecla=ok]:disabled,
 .teclado-bloques__tecla[data-tecla=ok][aria-disabled=true] {
   background: var(--btn-fondo-desactivado);
   color: var(--btn-texto-desactivado);
 }
 
-/* ── ESCALONES DE ALTURA ────────────────────────────────────────────────────
-   Existen para UNA cosa: que la ultima fila del teclado 3x4 no se corte. Antes
-   fijaban ancho, alto y font-size a mano en cada escalon; ahora escriben
-   --lado-techo y ya esta, porque el teclado mide con --lado-respuesta, que es
-   el min() de lo que pide la anchura y lo que permite la altura.
-
-   El minimo absoluto de 64x64 NUNCA se cruza: por debajo de 320x420 de viewport
-   se muestra «Gira el dispositivo». */
-/* LOS TRES ESCALONES NOMBRAN TAMBIÉN `:root.modo-proyeccion`, Y NO ES UNA
-   REPETICIÓN OCIOSA. El modo proyección sube los dos ejes a 150 px, y lo hace
-   desde un selector CON CLASE: `:root.modo-proyeccion` (0,2,0) le gana a `:root`
-   (0,1,0) por ESPECIFICIDAD, no por orden, así que un `:root { --lado-techo }`
-   escrito más abajo no lo baja nunca. Sin nombrar la clase aquí, un proyector de
-   1200×700 dibujaba el teclado 3×4 a 150 px, la última fila —la del OK— se
-   quedaba fuera de la zona de juego, y ahí abajo no hay barra que la recupere.
-
-   La nota de _01-variables.scss («gana el orden de origen») vale entre selectores
-   de la MISMA especificidad; en cuanto uno lleva clase deja de valer. */
 @media (max-height: 900px) {
   :root, :root.modo-proyeccion {
     --lado-techo: 80px;
@@ -1545,20 +898,11 @@ button:focus:not(:focus-visible) {
     --lado-techo: 64px;
   }
 }
-/* Aqui SI decide columnas la altura, y es la excepcion documentada: en 660px de
-   alto el 3x4 no cabe de ninguna manera, asi que se despliega a 6x2.
-
-   PERO PIDE ANCHURA, Y ANTES NO LA PEDIA. Seis columnas de 64 px mas sus huecos
-   son 424 px; en un movil de 360x640 —que entra por altura— dos de las seis
-   columnas se salian de la pantalla, sin barra horizontal que las alcanzara: el
-   9, el 0 y el OK quedaban fuera y la pregunta no se podia contestar. La
-   excepcion se pedia por altura y se pagaba en anchura. */
 @media (max-height: 660px) and (min-width: 480px) {
   .teclado-bloques {
     grid-template-columns: repeat(6, var(--lado-respuesta));
   }
 }
-/* Visor del resultado que se está tecleando */
 .respuesta__visor {
   min-width: 160px;
   min-height: 76px;
@@ -1578,11 +922,6 @@ button:focus:not(:focus-visible) {
   color: var(--texto-secundario);
 }
 
-/* ── Consigna de la zona de respuesta ───────────────────────────────────────
-   La zona de respuesta se dibuja SOBRE EL BIOMA (cielo, hierba, piedra), no
-   sobre un panel. Un texto suelto ahí queda claro-sobre-claro y es ilegible.
-   Toda instrucción de esa zona va dentro de este chip de color plano, que es la
-   misma regla de §10.1: ningún texto se dibuja jamás sobre una textura. */
 .respuesta__consigna {
   display: inline-block;
   background: var(--bg-texto-panel);
@@ -1594,7 +933,6 @@ button:focus:not(:focus-visible) {
   text-align: center;
 }
 
-/* ── Enunciado: pila del sistema, nunca pixel ───────────────────────────── */
 .enunciado {
   font-family: var(--fuente-lectura);
   font-size: var(--tam-enunciado);
@@ -1606,10 +944,6 @@ button:focus:not(:focus-visible) {
   background: var(--deco-oro-cla);
 }
 
-/* `.numero-dato` marcaba las cifras del enunciado como pulsables, con su estado
-   [aria-pressed]. Nunca se llegó a generar ese marcado: el enunciado se pinta
-   en frases (.enunciado__frase) y el resaltado es por línea, no por número. */
-/* ── Operación en columna (para las cifras grandes) ─────────────────────── */
 .enunciado--operacion {
   font-family: var(--fuente-pixel);
   font-size: calc(var(--tam-numero-opcion) + 8px);
@@ -1618,7 +952,6 @@ button:focus:not(:focus-visible) {
   color: var(--texto-principal);
 }
 
-/* ── Balanza, signo, monedas, ordenar ───────────────────────────────────── */
 .balanza {
   display: flex;
   align-items: flex-end;
@@ -1646,42 +979,6 @@ button:focus:not(:focus-visible) {
   font-size: var(--tam-numero-opcion);
 }
 
-/* ══ LAS PIEZAS DE DINERO ═══════════════════════════════════════════════════
-   LA PIEZA ES LA FOTOGRAFÍA MÁS UNA CINTA CON LA CIFRA, y son dos zonas que no
-   se pisan: la imagen ocupa arriba su caja exacta, la cinta va debajo. Antes la
-   cifra iba ENCIMA del dibujo y el dibujo se apartaba —el SVG dejaba libre la
-   franja central a propósito—; sobre una fotografía eso no se puede hacer,
-   porque el hueco lo decide el grabado del billete y no nosotros. Apilándolas
-   se gana además que la imagen no se deforme nunca: `background-size` es el
-   tamaño real de su caja, no `100% 100%`.
-
-   LA CIFRA SIGUE SIENDO DEL DOM y no del fichero, por lo mismo de siempre: crece
-   con `letra-grande` y con `modo-proyeccion`, se mide en los pares de contraste
-   y sigue estando si la imagen no llega. Y es la razón de que la cinta mida
-   `--tam-texto-min + 4px` en vez de un número fijo: si creciera la letra y no la
-   cinta, la cifra se saldría.
-
-   CADA PIEZA MIDE LO QUE MIDE DE VERDAD, a escala. Las monedas van a 3,1 px por
-   milímetro tomando como ancla la de 1 €, que sigue en los 72 px de siempre; los
-   billetes a 0,85 px/mm. De ahí salen dos cosas que un niño usa sin que nadie se
-   las explique: que el billete crece con el valor, y que la moneda de 10
-   céntimos es MÁS PEQUEÑA que la de 5 —que es verdad, y es la trampa que tiene
-   el dinero de verdad—.
-
-   EL COLOR PLANO SE QUEDA DEBAJO, como red de seguridad: sin la imagen, la pieza
-   conserva color, tamaño y cifra. Lo que se ha ido son los biseles `inset` que
-   simulaban el bimetal: sobre la foto de la moneda dibujaban un marco cuadrado
-   encima del canto redondo. El bimetal ya lo trae la foto, que es de donde tenía
-   que haber venido siempre.
-
-   NO SON FACSÍMILES NI PRETENDEN SERLO: son fotografías a un cuarto del tamaño
-   real, de una sola cara, con una finalidad didáctica. Los billetes de 20 y 50
-   llevan además la palabra MUESTRA impresa en el original. */
-/* EL BLOQUE ES LA PIEZA, y las dos variantes son modificadores suyos. Antes
-   `.pieza--moneda` y `.pieza--billete` eran dos bloques hermanos que compartían esta regla por
-   enumeración, y `.pieza__cifra` —la cinta con el número— era un elemento
-   HUÉRFANO: no existía ningún bloque `.pieza` del que colgara. Son la misma
-   pieza de dinero con otra fotografía y otra escala, y ahora lo dicen. */
 .pieza {
   display: inline-flex;
   flex-direction: column;
@@ -1691,7 +988,6 @@ button:focus:not(:focus-visible) {
   background-position: top center;
   padding: 0;
   border: 0;
-  /* Ancla la esquina donde va el contador de veces cogida. */
   position: relative;
 }
 
@@ -1724,7 +1020,6 @@ button:focus:not(:focus-visible) {
   background-color: var(--deco-hierba-cla);
 }
 
-/* Las monedas de euro. La de 1 € es el ancla de la escala: 23,25 mm → 72 px. */
 .pieza--moneda[data-valor="1"] {
   --lado-pieza: 72px;
   background-image: var(--pieza-1);
@@ -1737,11 +1032,6 @@ button:focus:not(:focus-visible) {
   background-color: var(--deco-piedra-cla);
 }
 
-/* Las monedas de céntimo. Se seleccionan por `data-centimos` y NO por
-   `data-valor`, porque los valores chocan: «5» es a la vez el billete de 5 € y
-   la moneda de 5 céntimos, y con un solo atributo la de 5 céntimos habría salido
-   con la foto del billete. Es el mismo motivo por el que en el JS la pieza se
-   nombra 'c5' y no 5. */
 .pieza--moneda[data-centimos="1"] {
   --lado-pieza: 50px;
   background-image: var(--pieza-c1);
@@ -1772,10 +1062,6 @@ button:focus:not(:focus-visible) {
   background-color: var(--deco-oro);
 }
 
-/* Los billetes, a 0,85 px por milímetro de los tamaños reales del BCE. El más
-   ancho es el de 100 con 125 px: con dos columnas y 16 px de hueco caben en los
-   288 px útiles de la pantalla más estrecha del proyecto, que es el tope que
-   manda aquí. */
 .pieza--billete[data-valor="5"] {
   --ancho-pieza: 102px;
   --alto-pieza: 53px;
@@ -1818,32 +1104,12 @@ button:focus:not(:focus-visible) {
   justify-content: center;
 }
 
-/* ── Piezas ya cogidas ──────────────────────────────────────────────────────
-   Esta regla estaba escrita para [aria-pressed="true"] y NADIE ponía nunca ese
-   atributo sobre una moneda: era CSS muerto, y tocar una pieza no dejaba ninguna
-   marca. El niño tocaba tres veces la moneda de 2 € para pagar 6 € y las tres
-   piezas seguían exactamente iguales.
-
-   Se cuenta con data-veces en vez de aria-pressed a propósito: la misma moneda se
-   toca varias veces, y decirle «pulsado» a un lector de pantalla de un botón que
-   hay que seguir pulsando es mal uso de ARIA (WCAG 4.1.2). */
 .pieza[data-veces] {
   outline: var(--bisel) solid var(--foco-oro);
   outline-offset: var(--u);
   transform: translateY(calc(var(--bisel) * -1));
 }
 
-/* Cuántas veces se ha cogido, para quien no distingue el contorno dorado: nunca
-   solo color, tampoco aquí.
-
-   Va en una ESQUINA, colocada aparte, y no dentro del texto de la pieza: metido
-   en el flujo, el «×2» partía en dos líneas el «2 €» de la moneda y la dejaba
-   ilegible. Se vio mirando la pantalla, que es la única forma de ver esto.
-
-   Y va ARRIBA, no abajo: desde 1.20.0 la cifra vive en una cinta que ocupa todo
-   el borde inferior de la pieza, así que en la esquina de abajo el «×2» caía
-   justo encima del «2 €». Dos cifras superpuestas en el sitio donde el niño mira
-   para saber cuánto lleva pagado. */
 .pieza[data-veces]::after {
   content: "×" attr(data-veces);
   position: absolute;
@@ -1862,8 +1128,6 @@ button:focus:not(:focus-visible) {
   padding: 0;
 }
 
-/* Y los estados que les faltaban: no son .btn-bloque, así que ni el hundido ni
-   el bloqueado de arriba las alcanzaban. */
 .pieza:active {
   transform: translateY(var(--bisel));
 }
@@ -1874,15 +1138,12 @@ button:focus:not(:focus-visible) {
   transform: translateY(var(--bisel));
 }
 
-/* ── La fila de lo cogido: «2 € + 2 € + 1 €» ────────────────────────────── */
 .hilera-cogidas {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--e2);
   flex-wrap: wrap;
-  /* Separación real: las piezas cogidas se levantan 4 px con translateY, y sin
-     este margen la fila se les montaba encima. */
   margin: var(--e2) 0 var(--e3);
   min-height: calc(var(--tam-texto-min) + var(--e2));
   font-family: var(--fuente-pixel);
@@ -1918,7 +1179,6 @@ button:focus:not(:focus-visible) {
   font-size: 32px;
 }
 
-/* ── Cromos y álbum ─────────────────────────────────────────────────────── */
 .cromo {
   width: 128px;
   padding: var(--e2);
@@ -1940,11 +1200,6 @@ button:focus:not(:focus-visible) {
   justify-content: center;
 }
 
-/* La barra de carga vivía aquí, pero el juego no la usa en ninguna pantalla:
-   la única que la pinta es pruebas/pruebas.html, para su propio progreso. Se ha
-   mudado a la hoja en línea de esa página, que es de la herramienta y no del
-   juego. */
-/* ── Vetas del Mapa de Destrezas: 6 estados, nunca solo color ───────────── */
 .veta {
   width: 96px;
   min-height: 96px;
@@ -1966,50 +1221,29 @@ button:focus:not(:focus-visible) {
   line-height: 1;
 }
 
-/* Los 6 estados, del mapa $estados-veta. NUNCA solo color: la forma y el icono
-   los pone js/43-mapa-destrezas.js, y el bloqueado ademas fija su color de texto
-   porque su fondo es el unico oscuro de los seis. */
 .veta[data-estado=bloqueado] {
   background: var(--deco-piedra-osc);
-  /* El bloqueado es el unico de los seis con fondo oscuro, asi que es el unico
-     que tiene que fijar su color de texto: sin esto heredaria el oscuro del
-     panel y quedaria ilegible. */
   color: var(--gris-hueso);
 }
 
 .veta[data-estado=nuevo] {
   background: var(--deco-piedra);
-  /* El bloqueado es el unico de los seis con fondo oscuro, asi que es el unico
-     que tiene que fijar su color de texto: sin esto heredaria el oscuro del
-     panel y quedaria ilegible. */
 }
 
 .veta[data-estado=aprendiendo] {
   background: var(--deco-arena);
-  /* El bloqueado es el unico de los seis con fondo oscuro, asi que es el unico
-     que tiene que fijar su color de texto: sin esto heredaria el oscuro del
-     panel y quedaria ilegible. */
 }
 
 .veta[data-estado=afianzada] {
   background: var(--deco-hierba-cla);
-  /* El bloqueado es el unico de los seis con fondo oscuro, asi que es el unico
-     que tiene que fijar su color de texto: sin esto heredaria el oscuro del
-     panel y quedaria ilegible. */
 }
 
 .veta[data-estado=dominada] {
   background: var(--deco-cristal-cla);
-  /* El bloqueado es el unico de los seis con fondo oscuro, asi que es el unico
-     que tiene que fijar su color de texto: sin esto heredaria el oscuro del
-     panel y quedaria ilegible. */
 }
 
 .veta[data-estado=oxidada] {
   background: var(--deco-musgo-cla);
-  /* El bloqueado es el unico de los seis con fondo oscuro, asi que es el unico
-     que tiene que fijar su color de texto: sin esto heredaria el oscuro del
-     panel y quedaria ilegible. */
 }
 
 .veta.veta--frontera {
@@ -2023,10 +1257,6 @@ button:focus:not(:focus-visible) {
   justify-content: center;
 }
 
-/* ── Criaturas ──────────────────────────────────────────────────────────── */
-/* El lado y el cuerpo de letra salen de dos variables con valor por defecto:
-   la pantalla de juego las reescribe y las criaturas encogen sin que ninguna
-   regla tenga que saber dónde está (ver _04-pantallas.scss). */
 .criatura {
   width: var(--lado-criatura, 96px);
   height: var(--lado-criatura, 96px);
@@ -2049,20 +1279,10 @@ button:focus:not(:focus-visible) {
   align-items: flex-end;
 }
 
-/* ── Mensajes de acierto y de ánimo ─────────────────────────────────────── */
 .mensaje-resultado {
   padding: var(--e3);
   font-size: var(--tam-texto-min);
   max-width: var(--ancho-lectura);
-  /* TRES LÍNEAS, Y ANTES ERAN UNA. `box-sizing: border-box` es global, así que
-     los 60 px de `--tam-texto-min * 3` incluían los 32 de relleno: quedaban 28,
-     que es UNA línea. Y el `min-height` no solo es un suelo — bajo presión de
-     flex es también lo que permite que la caja se encoja hasta ahí, así que en
-     una ventana de portátil el mensaje se recortaba a la primera línea.
-
-     Lo que se perdía no era decoración: el mensaje de acierto lleva la frase de
-     procedimiento, que es la única parte que enseña algo. Se medía cuánto tiempo
-     hacía falta para leerla (1.15.0) sin comprobar que cupiera. */
   min-height: calc(var(--tam-texto-min) * 3 + var(--e3) * 2);
 }
 
@@ -2076,18 +1296,11 @@ button:focus:not(:focus-visible) {
   color: var(--mal-texto);
 }
 
-/* «aviso» es NEUTRO, y hace falta que lo sea: lo usa la presentación de cada
-   componente la primera vez que se ve —«Toca la moneda de 2 euros»— y eso no es
-   ni un acierto ni un error. Pintarlo con el par del fallo, que es lo primero
-   que se probó, lo convertía en una reprimenda por estrenar una pantalla.
-   Reutiliza el par del panel, ya medido en casos-contraste.js: cero pares
-   nuevos que verificar. */
 .mensaje-resultado[data-tipo=aviso] {
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
 }
 
-/* Nunca solo color: cada tipo lleva además su marca de forma */
 .mensaje-resultado[data-tipo=acierto]::before {
   content: "◆ ";
 }
@@ -2100,7 +1313,6 @@ button:focus:not(:focus-visible) {
   content: "▶ ";
 }
 
-/* ── Partículas (pool de 24 divs, §14.5) ────────────────────────────────── */
 .particula {
   position: fixed;
   width: 12px;
@@ -2110,7 +1322,6 @@ button:focus:not(:focus-visible) {
   display: none;
 }
 
-/* ── Región viva para lectores de pantalla ──────────────────────────────── */
 .region-viva {
   position: absolute;
   width: 1px;
@@ -2119,17 +1330,6 @@ button:focus:not(:focus-visible) {
   clip: rect(0 0 0 0);
 }
 
-/* Visible para un lector de pantalla, invisible para todo lo demás.
-
-   La pantalla de partida y la de calibración no tenían encabezado ninguno. Eso
-   rompía dos cosas a la vez: CB.pantallas.ir() busca el <h1> para llevarle el
-   foco al entrar, y al no encontrarlo dejaba el foco en <body>; y quien navega
-   por encabezados con un lector de pantalla no tenía forma de saber que había
-   cambiado de sitio. Poner un título VISIBLE encima del enunciado habría
-   robado espacio a lo único que importa en esa pantalla, así que va aquí.
-
-   No se usa display:none ni visibility:hidden: las dos lo esconden también del
-   lector, que es exactamente lo contrario de lo que se busca. */
 .solo-lectores {
   position: absolute;
   width: 1px;
@@ -2141,10 +1341,6 @@ button:focus:not(:focus-visible) {
   white-space: nowrap;
 }
 
-/* ── El altavoz del enunciado ───────────────────────────────────────────────
-   Va dentro del panel del problema, no en la barra: P3 retiró el de la barra a
-   petición expresa y esto no lo devuelve. Aquí está donde se lee, que es donde
-   se busca. Conserva el lado táctil mínimo de 64 px como todo lo demás. */
 .enunciado__altavoz {
   display: block;
   margin: var(--e3) auto 0;
@@ -2154,57 +1350,11 @@ button:focus:not(:focus-visible) {
   padding: 0 var(--e3);
 }
 
-/* ============================================================================
-   cubomatica.scss — el único punto de entrada de la hoja de estilo
-   ----------------------------------------------------------------------------
-   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
-   7-1 al uso:
-
-   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
-      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
-      explicar que su `position: relative` gana por venir DESPUÉS de
-      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
-      esa relación y la rompe la primera vez que alguien reordena un @use.
-   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
-      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
-      activos externos» obliga a dejar vacío para siempre.
-   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
-      estos nombres. Mantenerlos convirtió la migración en un renombrado
-      mecánico verificable, y `git mv` conservó el historial de cada fichero.
-
-   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
-   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
-   primera línea. Es la causa número uno de errores al añadir mixins — pero
-   falla ruidosamente, en compilación, que es lo bueno.
-      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
-   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
-   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
-   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
-   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
-   con miembros es `herramientas`, y por eso es el único que importa de verdad.
-   ========================================================================== */
-/* ============================================================================
-   04-pantallas.css — Disposición de las 17 pantallas (PLAN §14.3)
-   ========================================================================== */
-/* @use NO es transitivo */
-/* ── 1. Portada ─────────────────────────────────────────────────────────── */
 .pantalla--portada {
   position: relative;
   overflow: hidden;
 }
 
-/* LA PORTADA SE RECORRE POR DENTRO. El `overflow: hidden` de arriba es
-   deliberado y se queda: las nubes y el cielo van fuera de flujo y sacarían
-   barras por decorado, no por contenido. Pero entonces lo que no cabe a lo alto
-   no se alcanza de ninguna manera, y a 320x480 —tamaño soportado: el aviso de
-   girar el aparato solo salta por debajo de 320x420— la pila mide 968 px, o sea
-   que la fila de abajo (Ajustes, Ayuda, Creditos) quedaba fuera y sin forma de
-   llegar. La barra la lleva la pila, que es quien tiene el contenido.
-
-   `safe center`, no `center`, y por la razon de E95: una caja que centra Y
-   desborda parte lo que sobra en DOS lados, y lo de arriba no se recupera nunca
-   porque scrollTop no puede ser negativo. Con `safe` centra mientras cabe y se
-   comporta como `start` en cuanto deja de caber. */
 .portada__pila {
   overflow-y: auto;
   justify-content: safe center;
@@ -2219,15 +1369,6 @@ button:focus:not(:focus-visible) {
   padding: var(--e3) var(--e4);
   box-shadow: inset var(--bisel) var(--bisel) 0 0 var(--blanco), inset calc(var(--bisel) * -1) calc(var(--bisel) * -1) 0 0 var(--btn-borde-sombra), var(--e2) var(--e2) 0 0 rgba(0, 0, 0, 0.5);
   margin: 0;
-  /* NO SE SALE NUNCA DE LA PANTALLA. «CUBOMÁTICA» en la tipografía de píxel a
-     40 px, más los dos rellenos de 32, mide 337: en una ventana de 320 —tamaño
-     soportado, el aviso de «gira el aparato» solo salta por debajo de 320×420—
-     se comía ocho píxeles por cada lado y el título aparecía descabezado.
-
-     Se arregla dejando que se parta, no bajando el tamaño a un número fijo: el
-     tamaño lo mandan «Letra grande» y el modo proyección a través de
-     --tam-titulo, y escribir aquí un valor literal para pantallas estrechas
-     habría anulado los dos ajustes justo donde más falta hacen. */
   max-width: 100%;
   overflow-wrap: anywhere;
 }
@@ -2256,7 +1397,6 @@ button:focus:not(:focus-visible) {
   right: var(--e3);
 }
 
-/* ── 2. Perfiles ────────────────────────────────────────────────────────── */
 .lista-perfiles {
   display: flex;
   flex-wrap: wrap;
@@ -2284,52 +1424,21 @@ button:focus:not(:focus-visible) {
   box-shadow: inset 8px 8px 0 0 rgba(255, 255, 255, 0.5), inset -8px -8px 0 0 rgba(0, 0, 0, 0.35);
 }
 
-/* ── 3. Calibración y 6. Partida comparten el armazón de juego ──────────── */
-/* Sin relleno de pantalla: el HUD y la barra de herramientas van a ras, y los
-   64 px que se ahorran son justo los que le faltaban a la última fila del
-   teclado de bloques. */
 .pantalla--juego {
   padding: 0;
 }
 
-/* En la partida las criaturas son acompañamiento, no protagonistas: no pueden
-   robarle altura a la zona de respuesta. */
-/* EL TAMAÑO LO PIDE LA CRIATURA Y LO DECIDE LA PANTALLA, por variable y no por
-   descendencia: una criatura no puede cambiar según quién la contenga (R4). La
-   pantalla de juego declara el valor y cualquier criatura que se añada mañana lo
-   hereda sin que nadie tenga que acordarse. */
 .pantalla--juego {
   --lado-criatura: 56px;
   --tam-criatura: 34px;
 }
 
-/* ── EL RÓTULO DE VETA: en qué se está ──────────────────────────────────────
-   Una sola línea, y las dos partes se distinguen por FORMA, no por color: el
-   mundo va en versalitas espaciadas y pequeñas, la veta en la tipografía de
-   lectura al tamaño mínimo. Los dos colores son de los pares ya medidos sobre
-   fondo oscuro (--texto-claro y --texto-sec-claro), así que no aparece ningún
-   par de contraste nuevo que nadie haya verificado.
-
-   ALTURA: 20 px de texto + 2×4 de relleno = 28. Se paga de la zona superior,
-   nunca de la inferior, que es donde está el teclado; y por debajo de 660 px de
-   alto —donde la última fila del 3×4 va justa— el relleno vertical desaparece y
-   quedan 20. Medido en 1366×768 y en 1024×768, que son los dos aparatos reales
-   del aula. */
 .rotulo-veta {
   flex: 0 0 auto;
   display: flex;
   align-items: baseline;
   gap: var(--e2);
   margin: 0;
-  /* MEDIDO, Y NO SE VE EN LAS PRUEBAS. `_02-base.scss` limita TODO <p> a
-     --ancho-lectura (34ch) porque es la medida de lectura cómoda para un texto
-     corrido, y esto no es un texto corrido: es una banda. Sin esta línea el
-     rótulo mide 432 px en una ventana de 1170, la banda oscura se corta a media
-     pantalla y «Monedas y billetes: reconocerlos» se queda en «M.».
-
-     Y no salía rojo en ninguna prueba: la maqueta de pruebas vive dentro de un
-     <div hidden>, donde nada tiene caja y por tanto ningún ancho se puede medir.
-     Lo cazó mirar la pantalla, que es la lección E14-E17 otra vez. */
   max-width: none;
   padding: var(--e1) var(--e3);
   background: var(--bg-texto-oscuro);
@@ -2337,15 +1446,6 @@ button:focus:not(:focus-visible) {
   overflow: hidden;
 }
 
-/* POR DEBAJO DE 480 px EL MUNDO NO SE ESCONDE: SE APARTA. El nombre del mundo no
-   cabe ahí junto al de la veta, y el que contesta a la pregunta es el de la
-   veta. Pero con `display: none` el nombre del mundo saldría también del árbol
-   de accesibilidad, y entonces quien navega con lector de pantalla tendría MENOS
-   información en la pantalla estrecha que en la ancha. Se usan las mismas
-   declaraciones que `.solo-lectores`: sigue leyéndose, solo que no se ve.
-
-   La alternativa —un aria-label en el <p>— está descartada a propósito: ARIA
-   prohíbe nombrar un párrafo, y axe-core lo marca. */
 .rotulo-veta__mundo {
   position: absolute;
   width: 1px;
@@ -2358,18 +1458,9 @@ button:focus:not(:focus-visible) {
 }
 
 @media (max-width: 479px) {
-  /* Un relleno lateral menos generoso en la pantalla más estrecha: son 32 px
-     que el título necesita para caber entero en una línea. */
   .portada__titulo {
     padding: var(--e3);
   }
-  /* Y LA MISMA FAMILIA QUE E99-E100, UN NIVEL MÁS ADENTRO. A 320 px una línea
-     dentro de un panel se queda en unos 145 px —diez caracteres de esta
-     tipografía—, así que «expedición», «guardianes» o «Cubomática» no caben, y
-     una palabra que no cabe NO se parte sola: se sale, sin barra horizontal y
-     sin error, exactamente igual que se salía el título de la portada. Se
-     permite partirla solo aquí, solo cuando no cabe, y la lista devuelve la
-     mitad de su sangría, que son otros 16 px de texto. */
   .contenido p,
   .contenido li,
   .contenido h2,
@@ -2395,9 +1486,6 @@ button:focus:not(:focus-visible) {
     letter-spacing: 1px;
   }
 }
-/* La flecha va en ::after y no en el HTML porque es puntuación de la maqueta,
-   no contenido: un lector de pantalla lee «La Pradera de los Números Contar y
-   recontar» sin tropezarse con un símbolo que no sabe nombrar. */
 .rotulo-veta__mundo::after {
   content: " ▸";
 }
@@ -2428,34 +1516,10 @@ button:focus:not(:focus-visible) {
   min-height: 0;
 }
 
-/* REPARTO VERTICAL: la zona de respuesta manda.
-   Es la parte con la que el niño INTERACTÚA; si algo tiene que encogerse o
-   desplazarse es el enunciado, nunca los botones. Con el reparto 45/55 fijo, en
-   una ventana de 800 px el teclado de bloques quedaba cortado por abajo y la
-   fila del OK no se veía. */
 .zona-juego__alta {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  /* `safe center`, NO `center` a secas, Y ES UNA CORRECCIÓN, no un adorno.
-     Esta caja es a la vez contenedor centrado y contenedor con scroll, y esas
-     dos cosas se llevan mal: mientras el contenido cabe, `center` lo centra y no
-     pasa nada; en cuanto NO cabe —el enunciado largo de un problema más el
-     .mensaje-resultado, que tiene un suelo de tres líneas— el centrado reparte
-     el desbordamiento a los DOS lados, y lo que sobresale por arriba queda fuera
-     del alcance de la barra: `scrollTop` no puede ser negativo, así que las
-     primeras líneas del enunciado no se recuperan de ninguna manera. Se ve
-     cortado y el scroll solo llega hasta donde ya estabas.
-
-     `safe` es la palabra clave pensada para exactamente esto: centra mientras
-     quepa y se comporta como `start` en cuanto desborda. Un navegador que no la
-     entienda descarta la declaración entera y se queda en `start`, que es
-     justamente la degradación que queremos.
-
-     VA EN LOS DOS EJES. Con `overflow-y: auto` y el eje horizontal en `visible`,
-     el horizontal pasa a `auto` también (así lo manda CSS), así que un hijo más
-     ancho que la columna —una fila de piezas de dinero— se recortaba por la
-     izquierda por el mismo motivo y con el mismo remedio. */
   align-items: safe center;
   justify-content: safe center;
   gap: var(--e3);
@@ -2465,12 +1529,8 @@ button:focus:not(:focus-visible) {
   position: relative;
 }
 
-.zona-juego__baja { /* SIEMPRE la mitad inferior: alcance del pulgar */
+.zona-juego__baja {
   flex: 0 0 auto;
-  /* `safe center` por el mismo motivo que arriba: aquí no hay barra que
-     recuperar lo que se salga, así que un teclado más alto que su hueco se
-     perdería por arriba —y arriba está el visor, que es donde se lee lo que el
-     niño lleva escrito—. */
   display: flex;
   flex-direction: column;
   align-items: safe center;
@@ -2478,63 +1538,15 @@ button:focus:not(:focus-visible) {
   gap: var(--e2);
   padding: var(--e2) var(--e3) var(--e3);
   min-height: 0;
-  /* Y BARRA, COMO LA DE ARRIBA. El suelo de 64 px por tecla no se negocia (WCAG
-     2.5.8 y un niño de siete años), así que hay ventanas donde el teclado 3×4
-     más su visor NO CABEN: en 320×480 —tamaño soportado, el aviso de «gira el
-     aparato» solo salta por debajo de 320×420— la fila del OK quedaba casi cien
-     píxeles por debajo del borde, y sin barra no había manera de llegar a ella:
-     la pregunta no se podía contestar. Con el modo proyección encendido pasaba
-     lo mismo en cualquier móvil.
-
-     Antes esto quedaba tapado a medias por la excepción de seis columnas, que se
-     pedía por altura sin mirar la anchura: cabía por abajo y se salía por la
-     derecha. Un recorte por otro. */
   overflow-y: auto;
 }
 
-/* ── DOS COLUMNAS DESDE 1200 px: enunciado a la izquierda, respuesta a la
-      derecha ────────────────────────────────────────────────────────────────
-   En vertical el reparto arriba/abajo es el correcto: el pulgar llega al tercio
-   inferior y el enunciado queda a la vista por encima. En una pantalla ancha —
-   portátil, proyector, pizarra— ese mismo reparto deja dos franjas de aire a los
-   lados y obliga a un barrido vertical largo entre la pregunta y el teclado, que
-   es justo el recorrido que el niño hace en cada ítem.
-
-   Puestos en fila, la pregunta y la respuesta caben en un solo golpe de vista y
-   el enunciado deja de competir por la altura con la última fila del teclado.
-
-   POR QUÉ LA ANCHURA Y NO LA ALTURA: es la regla de los dos ejes
-   (_herramientas.scss) — la anchura decide CUÁNTAS COLUMNAS, la altura decide el
-   lado del botón. Esto es una columna más, así que va por anchura, y por eso no
-   toca ni --lado ni ningún tamaño.
-
-   Y por qué 1200 y no 1024: por debajo de eso el sitio es de una tableta
-   apaisada, que se sujeta con las dos manos, y ahí el alcance del pulgar sigue
-   mandando sobre el barrido de la vista.
-
-   La `.cinta`, el `.cartel` y el `.cielo` no se enteran de este cambio: están
-   fuera del flujo (absolute), que es lo que dice la lista de exclusiones de
-   _06-biomas.scss. */
 @media (min-width: 1200px) {
   .zona-juego {
     flex-direction: row;
     align-items: stretch;
     gap: var(--e5);
   }
-  /* LAS DOS MITADES SE ARRIMAN AL CENTRO, no se centran cada una en su mitad.
-     Con las dos columnas centradas en sí mismas, en 1440 px el enunciado queda
-     a 360 y el teclado a 1080: setecientos píxeles de barrido, más que los
-     cuatrocientos que había en vertical. Se habría cambiado un recorrido largo
-     por otro más largo. Alineando el enunciado a la derecha de su mitad y el
-     teclado a la izquierda de la suya, el par queda junto en el centro y el aire
-     sobrante se va a los lados, que es donde no estorba.
-
-     `flex: 1 1 0` y no `1 1 auto`: con la base en `auto` un enunciado largo se
-     queda con el ancho que pida y empuja al teclado contra el borde. */
-  /* `safe flex-end` y no `flex-end`: arrimar al centro es una preferencia, y
-     como toda alineación posicional en una caja con scroll, en cuanto el hijo es
-     más ancho que la columna manda el desbordamiento hacia el lado que la barra
-     no alcanza. Con `safe` la preferencia se cae sola y vuelve a `start`. */
   .zona-juego__alta {
     flex: 1 1 0;
     align-items: safe flex-end;
@@ -2551,10 +1563,6 @@ button:focus:not(:focus-visible) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* ENVUELVE. Los cuatro controles —Pista, Salir, Pausa, Sonido— no caben en una
-     fila de 320 px: el de Sonido se salía nueve píxeles por la derecha y quedaba
-     cortado contra el borde, que es el único que apaga la música. Antes que
-     encoger botones por debajo del suelo de 64 px, se pasan a dos filas. */
   flex-wrap: wrap;
   gap: var(--e2);
   padding: var(--e2) var(--e3);
@@ -2567,7 +1575,6 @@ button:focus:not(:focus-visible) {
   gap: var(--e2);
 }
 
-/* ── 4. Mapa de mundos ──────────────────────────────────────────────────── */
 .rejilla-mundos {
   display: flex;
   flex-wrap: wrap;
@@ -2621,7 +1628,6 @@ button:focus:not(:focus-visible) {
   background: var(--deco-hierba);
 }
 
-/* ── 7. Reparación ──────────────────────────────────────────────────────── */
 .reparacion__pasos {
   display: flex;
   flex-direction: column;
@@ -2704,7 +1710,6 @@ button:focus:not(:focus-visible) {
   display: block;
 }
 
-/* ── 8. Descanso ────────────────────────────────────────────────────────── */
 .tablero-descanso {
   display: flex;
   flex-wrap: wrap;
@@ -2727,7 +1732,6 @@ button:focus:not(:focus-visible) {
   visibility: hidden;
 }
 
-/* ── 9. Jefe ────────────────────────────────────────────────────────────── */
 .jefe__armadura {
   display: flex;
   gap: var(--e1);
@@ -2755,7 +1759,6 @@ button:focus:not(:focus-visible) {
   justify-content: center;
 }
 
-/* ── 10. Fin de la expedición ───────────────────────────────────────────── */
 .bloque-dominado {
   display: flex;
   align-items: center;
@@ -2787,7 +1790,6 @@ button:focus:not(:focus-visible) {
   background: var(--deco-oro-cla);
 }
 
-/* ── 11. Casa/álbum · 12. Glosario ──────────────────────────────────────── */
 .lista-glosario {
   display: flex;
   flex-direction: column;
@@ -2816,7 +1818,6 @@ button:focus:not(:focus-visible) {
   padding: 2px var(--e1);
 }
 
-/* ── 13. Ajustes ────────────────────────────────────────────────────────── */
 .lista-ajustes {
   display: flex;
   flex-direction: column;
@@ -2841,18 +1842,15 @@ button:focus:not(:focus-visible) {
   flex: 1 1 auto;
 }
 
-/* ── 17. Error ──────────────────────────────────────────────────────────── */
 .pantalla--error {
   background: var(--bg-texto-oscuro);
   color: var(--texto-claro);
 }
 
-/* ── Pantallas de pila larga con desplazamiento ─────────────────────────── */
 .pantalla--scroll {
   overflow-y: auto;
 }
 
-/* ── Wrapper general de contenido centrado ──────────────────────────────── */
 .contenido {
   display: flex;
   flex-direction: column;
@@ -2863,9 +1861,6 @@ button:focus:not(:focus-visible) {
   max-width: 720px;
 }
 
-/* Cabecera de la calibración. Su h1 era `solo-lectores` y la pantalla se
-   quedaba sin explicar: cuatro preguntas sueltas, sin reloj, que parecían una
-   partida averiada. */
 .calibracion__cabecera {
   flex: 0 0 auto;
   padding: var(--e2) var(--e3);
@@ -2885,9 +1880,6 @@ button:focus:not(:focus-visible) {
   color: var(--texto-sec-claro);
 }
 
-/* La pista bajo el botón principal. Va sobre fondo de TEXTO, nunca sobre el
-   cielo: los colores decorativos no llevan texto encima (regla de
-   01-variables.css) y sobre el azul del cielo esta línea era ilegible. */
 .portada__pista {
   font-family: var(--fuente-lectura);
   font-size: var(--tam-texto-min);
@@ -2903,36 +1895,21 @@ button:focus:not(:focus-visible) {
   display: none;
 }
 
-/* La cinta de la pantalla de fin necesita un antepasado posicionado: sin esto
-   caería al 38 % del VIEWPORT, encima del panel de gemas, en la única pantalla
-   cuyo trabajo es que se lea. Se comprueba en E71 con la position calculada. */
 .pantalla--fin {
   position: relative;
 }
 
-/* ── La galería del HUD: cuánto se lleva cavado ─────────────────────────────
-   Mismo dibujo que la armadura del jefe —bisel de 4 px sin desenfoque, que pasa
-   la regla dura— pero más pequeño, porque aquí caben hasta 20 y compite por el
-   sitio con el reloj. `flex-wrap: wrap` a propósito: con 20 bloques en la
-   anchura más estrecha, antes que empujar el reloj prefiere hacer dos filas. */
 .galeria-avance {
-  /* flex-shrink: 0. MEDIDO: sin esto, a 320 px el HUD aprieta la galería hasta
-     10 px de ancho, los 20 bloques se apilan en UNA COLUMNA y el HUD pasa de 72
-     a 254 px de alto. El `max-width: 40%` no lo impedía: el que manda cuando no
-     hay sitio es el encogimiento, no el máximo. */
   display: flex;
   gap: 2px;
   flex-wrap: wrap;
   align-items: center;
   flex: 0 0 auto;
-  width: 128px; /* 12 bloques por fila: 20 caben en dos */
-  max-height: 22px; /* dos filas y ni una más */
+  width: 128px;
+  max-height: 22px;
   overflow: hidden;
 }
 
-/* Y por debajo de la anchura más estrecha de referencia, ni 128 px hay: las
-   luces solas ocupan 160. Ahí la misma información va en texto, que ocupa una
-   cuarta parte. No se esconde: se dice de otra manera. */
 .galeria-avance__bloque {
   display: none;
 }
@@ -2963,46 +1940,11 @@ button:focus:not(:focus-visible) {
   box-shadow: inset 2px 2px 0 0 var(--deco-piedra-cla), inset -2px -2px 0 0 var(--deco-piedra-osc);
 }
 
-/* Caído = ya cavado. Se apaga el relieve y queda el hueco, igual que en el jefe. */
 .galeria-avance__bloque[data-caido=si] {
   background: var(--deco-oro);
   box-shadow: inset 2px 2px 0 0 var(--deco-oro-cla), inset -2px -2px 0 0 var(--deco-oro-osc);
 }
 
-/* ============================================================================
-   cubomatica.scss — el único punto de entrada de la hoja de estilo
-   ----------------------------------------------------------------------------
-   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
-   7-1 al uso:
-
-   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
-      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
-      explicar que su `position: relative` gana por venir DESPUÉS de
-      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
-      esa relación y la rompe la primera vez que alguien reordena un @use.
-   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
-      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
-      activos externos» obliga a dejar vacío para siempre.
-   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
-      estos nombres. Mantenerlos convirtió la migración en un renombrado
-      mecánico verificable, y `git mv` conservó el historial de cada fichero.
-
-   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
-   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
-   primera línea. Es la causa número uno de errores al añadir mixins — pero
-   falla ruidosamente, en compilación, que es lo bueno.
-      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
-   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
-   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
-   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
-   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
-   con miembros es `herramientas`, y por eso es el único que importa de verdad.
-   ========================================================================== */
-/* ============================================================================
-   05-animaciones.css — Todo escalonado con steps(). Ninguna transición suave.
-   ========================================================================== */
-/* @use NO es transitivo */
-/* Partícula de bloque al romperse: cae en 6 saltos discretos */
 @keyframes particula-cae {
   0% {
     transform: translate(0, 0) scale(1);
@@ -3018,26 +1960,6 @@ button:focus:not(:focus-visible) {
   animation: particula-cae 620ms steps(6, end) 1 forwards;
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   CINCO ANIMACIONES RETIRADAS (v1.7.0), con sus @keyframes:
-
-     .estalla / bloque-estalla    el bloque estalla al acertar
-     .agrieta / bloque-agrieta    el bloque se agrieta al fallar
-     .veta-sube / veta-sube       la veta se ilumina al subir de nivel
-     .brillo-cofre / brillo-cofre latido del cofre
-     .bloque-raro / bloque-raro   parpadeo del bloque poco común
-
-   Ninguna la aplicaba nadie: se diseñaron y nunca se cablearon. La
-   realimentación de acierto que SÍ existe es `.btn-bloque--destello` sobre el botón más el
-   surtidor de partículas (30-ui.js), y la de fallo es la tarjeta de reparación,
-   que sustituyó al bloque agrietado cuando se fijó la regla de las luces.
-
-   Se retiran, y no se «desactivan comentadas», por la misma doctrina que ya
-   aplica 06-biomas.css a los tres biomas de v2: no se guarda CSS muerto. El
-   diseño queda registrado aquí y en docs/decisiones.md; el historial de git lo
-   conserva entero.
-   ──────────────────────────────────────────────────────────────────────────── */
-/* Flotar: criaturas y nubes */
 @keyframes flotar {
   0%, 100% {
     transform: translateY(0);
@@ -3065,7 +1987,6 @@ button:focus:not(:focus-visible) {
   animation: saltito 520ms steps(4, end) 2;
 }
 
-/* Rocarr asiente despacio: movimiento grave y lento, muy distinto de Gluglú */
 @keyframes asiente {
   0%, 100% {
     transform: translateY(0) rotate(0deg);
@@ -3078,8 +1999,6 @@ button:focus:not(:focus-visible) {
   animation: asiente 1100ms steps(3, end) 2;
 }
 
-/* Gluglú: gota rápida y nerviosa. Criterio de HECHO de F5: tratamiento
-   visual claramente distinto del de Rocarr. */
 @keyframes gotea {
   0% {
     transform: translateY(-24px) scaleY(1.25);
@@ -3098,7 +2017,6 @@ button:focus:not(:focus-visible) {
   animation: gotea 420ms steps(5, end) 1;
 }
 
-/* Chispa gira a toda velocidad al encadenar racha */
 @keyframes gira {
   from {
     transform: rotate(0deg);
@@ -3111,7 +2029,6 @@ button:focus:not(:focus-visible) {
   animation: gira 500ms steps(8, end) 2;
 }
 
-/* Nubes cúbicas de la portada */
 @keyframes nube-cruza {
   from {
     transform: translateX(-140px);
@@ -3140,7 +2057,6 @@ button:focus:not(:focus-visible) {
   animation-delay: -34s;
 }
 
-/* Musgo que crece sobre una veta oxidada */
 @keyframes musgo-crece {
   0% {
     box-shadow: inset 0 0 0 0 var(--deco-musgo);
@@ -3153,7 +2069,6 @@ button:focus:not(:focus-visible) {
   animation: musgo-crece 900ms steps(4, end) 1 forwards;
 }
 
-/* Construcción visible de los botones: bloque a bloque, 200 ms cada uno */
 @keyframes monta-bloque {
   0% {
     transform: translateY(-32px);
@@ -3184,7 +2099,6 @@ button:focus:not(:focus-visible) {
   animation-delay: 600ms;
 }
 
-/* Destello de habilitación: los biseles suben a la vez */
 @keyframes destello {
   0% {
     filter: brightness(1);
@@ -3200,15 +2114,6 @@ button:focus:not(:focus-visible) {
   animation: destello 100ms steps(2, end) 1;
 }
 
-/* La mano-cursor que señalaba el primer ítem de la vida del niño (.mano-cursor
-   y @keyframes mano-señala) se retira por lo mismo: nadie la pintaba nunca. El
-   tutorial de hecho lo hace la calibración, que es sin reloj y sin puntos. */
-/* ── Reloj de arena ─────────────────────────────────────────────────────────
-   La vuelta de campana da la vuelta ENTERA, 360°, no media. Con 180° el reloj
-   se quedaría boca abajo y la arena de arriba se vería abajo: habría que
-   invertir el dibujo cada ítem para nada. Da la vuelta, vuelve a su sitio y la
-   arena empieza llena. Ocho pasos: se ve girar, no deslizarse.
-   ────────────────────────────────────────────────────────────────────────── */
 @keyframes reloj-voltea {
   0% {
     transform: rotate(0deg);
@@ -3221,7 +2126,6 @@ button:focus:not(:focus-visible) {
   animation: reloj-voltea 640ms steps(8, end) 1;
 }
 
-/* Los granos del cuello: parpadean para que el chorro parezca caer */
 @keyframes reloj-chorro {
   0%, 100% {
     opacity: 1;
@@ -3236,7 +2140,6 @@ button:focus:not(:focus-visible) {
   animation: reloj-chorro 420ms steps(2, end) infinite;
 }
 
-/* Últimos 10 s: el reloj tiembla. Dos píxeles, no una sacudida. */
 @keyframes reloj-tiembla {
   0%, 100% {
     transform: translate(0, 0);
@@ -3259,7 +2162,6 @@ button:focus:not(:focus-visible) {
   animation: reloj-chorro 180ms steps(2, end) infinite;
 }
 
-/* La cifra late en cada segundo de los últimos diez */
 @keyframes cifra-late {
   0% {
     transform: scale(1);
@@ -3275,31 +2177,6 @@ button:focus:not(:focus-visible) {
   animation: cifra-late 400ms steps(4, end) 1;
 }
 
-/* ── LAS CELEBRACIONES: SEIS VEHÍCULOS, NO SEIS RECORRIDOS ──────────────────
-   Aquí hubo nueve coreografías de cinta, una por momento, y estaba mal. Todas
-   eran la MISMA banda: mismo ancho, mismo sitio, misma letra, mismo tamaño. Un
-   niño no veía nueve celebraciones; veía el mismo rectángulo entrando de nueve
-   maneras, veinte veces por sesión. Cambiar la trayectoria no cambia la forma, y
-   la forma es lo que se reconoce.
-
-   Ahora lo que cambia es el VEHÍCULO. La cinta se queda en tres momentos —el
-   aviso de tiempo, la superación y el jefe— y el resto usa otra cosa: una
-   insignia junto al contador, una criatura que reacciona, un cartel centrado con
-   bisel, o la cantera entera temblando. Se distinguen sin leer nada.
-
-   La regla que ordena la tabla no cambia, y ahora sí se cumple: EL ESPECTÁCULO
-   ES INVERSAMENTE PROPORCIONAL A LA FRECUENCIA. Lo que sale en el 60 % de los
-   aciertos es un «+1» de un renglón junto a las gemas. La banda se reserva.
-
-   NINGUNA COREOGRAFÍA DE CINTA LLEVA DURACIÓN: la pone js/30-ui.js. Las de los
-   demás vehículos sí la llevan aquí, porque su temporizador no lo controla la
-   tabla de la cinta sino CB.ui.festejo, que lee su propio `ms`. Es la excepción
-   y por eso está dicha.
-   ────────────────────────────────────────────────────────────────────────── */
-/* 1 · PRISA — «Hurry up!», el único que no celebra nada: avisa. Entra por debajo
-   del borde inferior, se pasa de largo, rebota, se queda quieto un segundo en el
-   centro y sale por arriba. 18 pasos: bastantes para que se lea el recorrido,
-   pocos para que se vea a saltos. Todo el juego se mueve a saltos. */
 @keyframes cinta-prisa {
   0% {
     transform: translateY(340%) scale(0.55);
@@ -3341,13 +2218,6 @@ button:focus:not(:focus-visible) {
   animation-fill-mode: forwards;
 }
 
-/* Y mientras cruza, arde: oro, brasa, blanco. Es lo que hace que se vea
-   «encendido» y no solo «movido».
-
-   Va sobre el hijo .cinta__texto, no sobre la cinta, y no es un capricho: si
-   fuese sobre la cinta habría que declarar dos animaciones en la misma
-   propiedad, y entonces la duración que escribe el JS afectaría también al
-   parpadeo. Sobre el hijo, los 300 ms viven aquí y solo aquí. */
 @keyframes cinta-arde {
   0%, 100% {
     color: var(--deco-oro-cla);
@@ -3363,13 +2233,6 @@ button:focus:not(:focus-visible) {
   animation: cinta-arde 300ms steps(3, end) 6;
 }
 
-/* 4 · JUNTA — categoría C, la superación: acierta tras haber fallado o tras una
-   tarjeta de reparación. Es el acierto que más pesa de todos, y por eso tiene la
-   única forma que no existe en ningún otro sitio del juego: dos mitades que
-   entran por los lados y se encuentran en el centro. Lo que estaba roto encaja.
-
-   Se hace con clip-path porque no hay dos nodos: son los dos bordes del mismo
-   rectángulo acercándose. Sin desenfoque y sin curva, como todo aquí. */
 @keyframes cinta-junta {
   0% {
     clip-path: inset(0 50% 0 50%);
@@ -3407,22 +2270,6 @@ button:focus:not(:focus-visible) {
   animation-fill-mode: forwards;
 }
 
-/* 5 · SUBE — se ha terminado una veta y empieza otra. Sube UN PELDAÑO cada vez,
-   y se para en cada uno: tres plataformas visibles, no un deslizamiento. Esa es
-   toda la idea de la forma —subir un escalón— y es lo que la distingue de
-   `prisa`, que también va de abajo arriba pero de un tirón y sin pararse.
-
-   No lleva rebote ni cambio de escala: no está celebrando un acierto, está
-   diciendo dónde estamos. La fiesta del acierto ya ha pasado hace un segundo y
-   media, y dos fiestas seguidas no son el doble de fiesta. */
-/* LOS TRES PELDAÑOS CABEN EN 28 %, y no es una elección estética: por debajo del
-   30 % de la altura empieza la zona con la que se contesta, y E47 prohíbe que
-   ningún fotograma VISIBLE baje de ahí. La primera versión de esta coreografía
-   entraba desde el 180 % y se paraba en el 120 y en el 60 —es decir, se sentaba
-   encima del teclado durante más de medio segundo—, y el guardián la paró antes
-   de que llegara a la pantalla. El tramo que sí baja del tope es el 0 %, que va
-   con opacidad 0: por debajo de la zona de respuesta solo se puede estar
-   invisible. */
 @keyframes cinta-sube {
   0% {
     transform: translateY(56%);
@@ -3464,10 +2311,6 @@ button:focus:not(:focus-visible) {
   animation-fill-mode: forwards;
 }
 
-/* 7 · BANDERA — el jefe cede y el mundo queda cerrado. Se despliega a lo ancho,
-   como una tela que se estira desde el centro. Se ve una vez por mundo: cuatro
-   veces en toda la vida de un perfil, y por eso puede permitirse ser la más
-   larga de las que se ven jugando. */
 @keyframes cinta-bandera {
   0% {
     transform: scaleX(0) scaleY(0.4);
@@ -3501,13 +2344,6 @@ button:focus:not(:focus-visible) {
   animation-fill-mode: forwards;
 }
 
-/* ── LA CIFRA DEL MARCADOR ──────────────────────────────────────────────────
-   Acompaña a la cuenta de js/30-ui.js: mientras el número sube de uno en uno, la
-   cifra da un salto y vuelve. Cuatro pasos, 400 ms — más corto que la cuenta, a
-   propósito: lo que tiene que durar es el número cambiando, no el brinco.
-
-   No cambia de color: el marcador está sobre --bg-texto-oscuro y cualquier tono
-   nuevo sería un par de contraste que nadie ha medido. La señal es de forma. */
 @keyframes cifra-sube {
   0% {
     transform: translateY(0) scale(1);
@@ -3526,11 +2362,6 @@ button:focus:not(:focus-visible) {
   animation: cifra-sube 400ms steps(4, end) 1;
 }
 
-/* ── VEHÍCULO 2 · LA INSIGNIA ───────────────────────────────────────────────
-   El acierto de todos los días. Brota del contador de gemas, sube un poco y se
-   apaga. Cinco pasos y 700 ms: lo justo para verlo, no lo bastante para
-   esperarlo. Es la celebración más frecuente del juego y la más pequeña, que es
-   exactamente el orden correcto. */
 @keyframes insignia-brota {
   0% {
     transform: translateY(6px) scale(0.6);
@@ -3557,10 +2388,6 @@ button:focus:not(:focus-visible) {
   animation: insignia-brota 700ms steps(5, end) 1 forwards;
 }
 
-/* ── VEHÍCULO 4 · EL CARTEL ─────────────────────────────────────────────────
-   Logro y luces__luz extra. Crece desde el centro con un rebote. No cruza, no barre:
-   aparece donde está y se queda. Es un panel, no una franja, y esa diferencia de
-   silueta es la que hace que no se confunda con la cinta. */
 @keyframes cartel-brota {
   0% {
     transform: translateX(-50%) scale(0.2);
@@ -3591,11 +2418,6 @@ button:focus:not(:focus-visible) {
   animation: cartel-brota 1600ms steps(10, end) 1 forwards;
 }
 
-/* ── VEHÍCULO 5 · LA SACUDIDA ───────────────────────────────────────────────
-   El bloque raro, uno de cada veinte. No hay cartel ninguno: tiembla la cantera
-   entera. Es lo más distinto que puede hacer esta pantalla sin añadir un nodo, y
-   por eso se reserva a lo más raro. Seis píxeles, no un terremoto: el suelo de
-   la retícula es de cuatro. */
 @keyframes zona-sacude {
   0%, 100% {
     transform: translate(0, 0);
@@ -3620,34 +2442,10 @@ button:focus:not(:focus-visible) {
   animation: zona-sacude 1200ms steps(12, end) 1;
 }
 
-/* ── Movimiento reducido: SIEMPRE al final del fichero ──────────────────────
-   DOS CONTEXTOS, UNA SOLA LISTA. El ajuste del sistema
-   (prefers-reduced-motion) y el del propio juego (:root.sin-movimiento, que
-   enciende js/06-a11y.js) tienen que apagar EXACTAMENTE lo mismo.
-
-   E25: estuvieron desincronizados durante meses. Eran dos listas escritas a
-   mano a cuarenta líneas de distancia; la del sistema apagaba 21 selectores y la
-   del juego 11. Quien apagaba el movimiento desde los ajustes —el único sitio al
-   que llega un niño de 7 años— seguía viendo diez animaciones: las criaturas
-   flotando, saltando, asintiendo, girando y goteando, el musgo creciendo y el
-   destello del botón. El ajuste visible era el que menos hacía.
-
-   Ahora la lista existe UNA vez y el mixin la emite en los dos contextos, así
-   que desincronizarlas ya no es posible por construcción. El guardián de E25 se
-   queda de todos modos: lee el CSS realmente cargado, no el fuente, y por tanto
-   sigue valiendo si mañana esto se escribe de otra manera.
-   ────────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .particula.particula--viva, .criatura--flota, .criatura--saltito, .criatura--asiente, .criatura--gotea, .criatura--gira, .nube, .veta--musgo, .btn-bloque--monta, .btn-bloque--destello, .reloj__arena.reloj__arena--voltea, .reloj__chorro, .reloj--prisa .reloj__arena, .reloj__cifra.reloj__cifra--late, .cinta.cinta--entra, .cinta--prisa.cinta--entra .cinta__texto, .insignia.insignia--brota, .cartel.cartel--brota, .cifra-viva.cifra-viva--sube, .zona-juego.zona-juego--sacude {
     animation: none !important;
   }
-  /* Sin animación, los botones aparecerían grises y cambiarían de color de golpe */
-  /* :not(:disabled) NO ES DECORACIÓN. Con el prefijo `:root.sin-movimiento ` esta
-     regla vale (0,2,1) y le gana a `.btn-bloque:disabled` (0,2,0), así que
-     anulaba también el hundido del botón bloqueado. Para quien juega con el
-     movimiento apagado —el ajuste que más lo necesita— el color quedaba como
-     única señal de que el teclado aún no acepta toques. Quitar movimiento no
-     puede quitar información. */
   .btn-bloque--monta:not(:disabled) {
     opacity: 1;
     transform: none;
@@ -3655,20 +2453,10 @@ button:focus:not(:focus-visible) {
   .particula.particula--viva {
     display: none;
   }
-  /* La cinta sigue APARECIENDO: quitarle el movimiento no puede quitarle el
-     mensaje, porque el mensaje es información y el movimiento solo es la gracia.
-     Se queda quieta en el centro el mismo tiempo y se va sin recorrido.
-
-     UNA sola línea cubre las nueve coreografías, porque todas se disparan con
-     la misma clase .cinta--entra. Cuando cada cartel tenía su propio par de
-     clases, añadir uno y olvidarse de su excepción dejaba un mensaje invisible
-     para quien juega con el movimiento apagado: el modo que más lo necesita. */
   .cinta.cinta--entra {
     transform: none;
     opacity: 1;
   }
-  /* Y lo mismo para los otros vehículos de celebración: el «+1» y el cartel se
-     quedan quietos, pero se VEN. */
   .insignia.insignia--brota {
     transform: none;
     opacity: 1;
@@ -3677,10 +2465,6 @@ button:focus:not(:focus-visible) {
     transform: translateX(-50%);
     opacity: 1;
   }
-  /* La sacudida del bloque raro es la única cuya informacion ESTÁ en el
-     movimiento: sin temblor no queda nada que ver. Se sustituye por un marco de
-     oro, que es estático y dice lo mismo — «aquí ha pasado algo». Sin desenfoque
-     y sin radio, como todo. */
   .zona-juego.zona-juego--sacude {
     transform: none;
     box-shadow: inset 0 0 0 8px var(--deco-oro);
@@ -3690,13 +2474,6 @@ button:focus:not(:focus-visible) {
   animation: none !important;
 }
 
-/* Sin animación, los botones aparecerían grises y cambiarían de color de golpe */
-/* :not(:disabled) NO ES DECORACIÓN. Con el prefijo `:root.sin-movimiento ` esta
-   regla vale (0,2,1) y le gana a `.btn-bloque:disabled` (0,2,0), así que
-   anulaba también el hundido del botón bloqueado. Para quien juega con el
-   movimiento apagado —el ajuste que más lo necesita— el color quedaba como
-   única señal de que el teclado aún no acepta toques. Quitar movimiento no
-   puede quitar información. */
 :root.sin-movimiento .btn-bloque--monta:not(:disabled) {
   opacity: 1;
   transform: none;
@@ -3706,21 +2483,11 @@ button:focus:not(:focus-visible) {
   display: none;
 }
 
-/* La cinta sigue APARECIENDO: quitarle el movimiento no puede quitarle el
-   mensaje, porque el mensaje es información y el movimiento solo es la gracia.
-   Se queda quieta en el centro el mismo tiempo y se va sin recorrido.
-
-   UNA sola línea cubre las nueve coreografías, porque todas se disparan con
-   la misma clase .cinta--entra. Cuando cada cartel tenía su propio par de
-   clases, añadir uno y olvidarse de su excepción dejaba un mensaje invisible
-   para quien juega con el movimiento apagado: el modo que más lo necesita. */
 :root.sin-movimiento .cinta.cinta--entra {
   transform: none;
   opacity: 1;
 }
 
-/* Y lo mismo para los otros vehículos de celebración: el «+1» y el cartel se
-   quedan quietos, pero se VEN. */
 :root.sin-movimiento .insignia.insignia--brota {
   transform: none;
   opacity: 1;
@@ -3731,55 +2498,11 @@ button:focus:not(:focus-visible) {
   opacity: 1;
 }
 
-/* La sacudida del bloque raro es la única cuya informacion ESTÁ en el
-   movimiento: sin temblor no queda nada que ver. Se sustituye por un marco de
-   oro, que es estático y dice lo mismo — «aquí ha pasado algo». Sin desenfoque
-   y sin radio, como todo. */
 :root.sin-movimiento .zona-juego.zona-juego--sacude {
   transform: none;
   box-shadow: inset 0 0 0 8px var(--deco-oro);
 }
 
-/* ============================================================================
-   cubomatica.scss — el único punto de entrada de la hoja de estilo
-   ----------------------------------------------------------------------------
-   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
-   7-1 al uso:
-
-   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
-      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
-      explicar que su `position: relative` gana por venir DESPUÉS de
-      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
-      esa relación y la rompe la primera vez que alguien reordena un @use.
-   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
-      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
-      activos externos» obliga a dejar vacío para siempre.
-   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
-      estos nombres. Mantenerlos convirtió la migración en un renombrado
-      mecánico verificable, y `git mv` conservó el historial de cada fichero.
-
-   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
-   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
-   primera línea. Es la causa número uno de errores al añadir mixins — pero
-   falla ruidosamente, en compilación, que es lo bueno.
-      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
-   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
-   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
-   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
-   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
-   con miembros es `herramientas`, y por eso es el único que importa de verdad.
-   ========================================================================== */
-/* ============================================================================
-   06-biomas.css — Los 4 biomas de v1 y el cielo día→noche
-   ========================================================================== */
-/* @use NO es transitivo */
-/* ── Cielo: CAPA 1, base garantizada en TODO navegador del suelo (§10.7) ──
-   JS aplica la clase según Math.floor(avance * 6). Sin @property ni color-mix
-   no hay interpolación animable, y color-mix exige Chrome 111+ / Safari 16.2+,
-   por encima del suelo declarado en §2.3. El efecto estrella no puede depender
-   de eso. */
-/* z-index 0, no -1: con -1 el cielo se pinta DETRÁS del fondo del body y no se
-   ve nunca. El contenido de la pantalla sube a 1. */
 .cielo {
   position: absolute;
   inset: 0;
@@ -3787,20 +2510,6 @@ button:focus:not(:focus-visible) {
   background: var(--cielo-0);
 }
 
-/* La .cinta y el .cartel se excluyen de las dos reglas: son lo ÚNICO que va
-   superpuesto sobre la zona de juego en vez de dentro del flujo. Sin excluirlos,
-   el `position: relative` de aquí le gana a su `position: absolute` por orden de
-   cascada (misma especificidad, este fichero va después), su `top` pasa a ser un
-   desplazamiento relativo y el cartel aparece cientos de píxeles por debajo del
-   borde inferior de la pantalla. Es decir: no se ve, y nada falla.
-
-   ESTO SE VOLVIÓ A ROMPER al añadir el cartel en 1.8.1: se le puso `absolute` y
-   se olvidó apuntarlo aquí, y quedó a 887 px de altura, fuera de la vista, con
-   la suite entera en verde. Lo cazó mirar la pantalla, no una prueba — que es la
-   lección E14-E17 otra vez. Ahora hay guardián (E47) que compara la `position`
-   calculada, así que la lista de exclusiones no puede volver a quedarse corta en
-   silencio. Quien añada un tercer superpuesto tiene que apuntarlo en LOS DOS
-   selectores de aquí abajo. */
 .pantalla > *:not(.cielo):not(.cinta):not(.cartel) {
   position: relative;
   z-index: 1;
@@ -3835,7 +2544,6 @@ button:focus:not(:focus-visible) {
   background: var(--cielo-5);
 }
 
-/* ── CAPA 2 — mejora progresiva, solo donde de verdad está soportada ────── */
 @supports (color: color-mix(in srgb, red, blue)) {
   @property --avance {
     syntax: "<number>";
@@ -3847,13 +2555,10 @@ button:focus:not(:focus-visible) {
     transition: --avance 600ms steps(6, end);
   }
 }
-/* ── Los 4 biomas de v1 ─────────────────────────────────────────────────── */
 .bioma {
   position: relative;
 }
 
-/* z-index 0 por el mismo motivo que el cielo: con -1 el suelo se pinta detrás
-   del fondo del documento y no se ve nunca. */
 .bioma::after {
   content: "";
   position: absolute;
@@ -3867,10 +2572,6 @@ button:focus:not(:focus-visible) {
   box-shadow: inset 0 var(--bisel) 0 0 rgba(255, 255, 255, 0.35);
 }
 
-/* Los cuatro biomas salen del mapa $biomas. Cada uno es un material, y esa
-   correspondencia se escribia DOS veces: aqui y en .tarjeta-mundo__cinta[data-bioma],
-   cuarenta lineas mas abajo. Dos sitios que hay que acordarse de cambiar a la
-   vez es el mismo fallo que tenian las listas de movimiento reducido. */
 .bioma--pradera {
   --tinte-bioma: var(--deco-hierba);
 }
@@ -3907,7 +2608,6 @@ button:focus:not(:focus-visible) {
   background-image: var(--tex-piedra);
 }
 
-/* Cintas de bioma de las tarjetas del mapa */
 .tarjeta-mundo__cinta[data-bioma=pradera] {
   background-color: var(--deco-hierba);
   background-image: var(--tex-hierba);
@@ -3928,52 +2628,6 @@ button:focus:not(:focus-visible) {
   background-image: var(--tex-piedra);
 }
 
-/* `.bandas-terreno` (bandas duras con repeating-linear-gradient) se retira: la
-   declaraba esta hoja y no la pintaba ninguna pantalla. Misma doctrina que los
-   tres biomas de v2 de aquí abajo — no se guarda CSS muerto. */
-/* ============================================================================
-   v2 — biomas documentados y NO entregados. No se activa CSS muerto (§5.2).
-
-   .bioma--cueva  { background-color: var(--deco-carbon);  background-image: var(--tex-piedra); }
-   .bioma--volcan { background-color: var(--deco-brasa);   background-image: var(--tex-piedra); }
-   .bioma--taller { background-color: var(--deco-madera);  background-image: var(--tex-madera); }
-   ========================================================================== */
-/* ============================================================================
-   cubomatica.scss — el único punto de entrada de la hoja de estilo
-   ----------------------------------------------------------------------------
-   POR QUÉ SE CONSERVAN LOS NUEVE NOMBRES NUMERADOS y no se adopta la estructura
-   7-1 al uso:
-
-   1. LA NUMERACIÓN *ES* LA CASCADA, y aquí la cascada es carga útil, no un
-      efecto secundario. `_06-biomas.scss` dedica seis líneas de comentario a
-      explicar que su `position: relative` gana por venir DESPUÉS de
-      `_04-pantallas.scss`. Una estructura `components/ layout/ pages/` esconde
-      esa relación y la rompe la primera vez que alguien reordena un @use.
-   2. 7-1 organiza cien ficheros. Aquí hay nueve y 1 721 líneas. Daría siete
-      carpetas con un fichero dentro y un `vendor/` que la regla de «cero
-      activos externos» obliga a dejar vacío para siempre.
-   3. La auditoría, las dos páginas de pruebas y decenas de comentarios citan
-      estos nombres. Mantenerlos convirtió la migración en un renombrado
-      mecánico verificable, y `git mv` conservó el historial de cada fichero.
-
-   TRAMPA QUE HAY QUE SABER: `@use` NO es transitivo. Cada parcial que use un
-   mixin de `herramientas` necesita su propio `@use 'herramientas' as *;` en su
-   primera línea. Es la causa número uno de errores al añadir mixins — pero
-   falla ruidosamente, en compilación, que es lo bueno.
-      SEGUNDA TRAMPA: los nueve van con `as *`. Sass deriva el espacio de nombres
-   del nombre del fichero, y «00-fuentes» no es un identificador válido —empieza
-   por dígito—, así que sin la cláusula la compilación falla en la primera línea.
-   `as *` es además lo correcto aquí: estos nueve solo EMITEN CSS y no exportan
-   ningún miembro, de modo que no hay nada que pueda colisionar. El único fichero
-   con miembros es `herramientas`, y por eso es el único que importa de verdad.
-   ========================================================================== */
-/* ============================================================================
-   07-adulto.css — Panel de personas adultas
-   ----------------------------------------------------------------------------
-   Tipografía del sistema, sin pixel. Es el único lugar del proyecto exento del
-   suelo de --tam-texto-min: aquí hay tablas densas y quien lee es adulto.
-   ========================================================================== */
-/* @use NO es transitivo */
 .pantalla--documento {
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
@@ -4044,26 +2698,6 @@ button:focus:not(:focus-visible) {
   background: var(--crema-fila);
 }
 
-/* Semáforo: NUNCA solo color. Siempre símbolo + texto (§10.4, impresión B/N)
-
-   E27 · AQUÍ SE LEÍA «●਍ominado», Y ASÍ LLEVABA DESDE EL PRINCIPIO.
-   Estas cuatro líneas se escribían con la primera letra de cada palabra pegada
-   al escape: "\25CF\00A0dominado". Un escape CSS consume hasta SEIS dígitos
-   hexadecimales, y la «d» de «dominado» es un dígito hexadecimal: el navegador
-   leía \00A0D —U+0A0D, un carácter devanagari— y se comía la letra. Con «datos»
-   era peor: «da» son dos dígitos, así que \00A0da daba U+A0DA y desaparecían
-   dos. Los cuatro rótulos de la leyenda del informe salían con basura.
-
-   No lo vio nadie porque el informe del adulto se mira poco y porque el color y
-   el símbolo, que son lo que de verdad transmite el estado, sí salían bien.
-   Lo destapó la migración a Sass: al reserializar, Sass resuelve los escapes y
-   escribió el resultado real, que se comparó con el anterior.
-
-   Se arregla escribiendo los caracteres tal cual. El fichero es UTF-8, el HTML
-   declara <meta charset="utf-8"> y Sass emite @charset "UTF-8": no hay ninguna
-   razón para escapar un espacio duro, y escaparlo es justo lo que rompía.
-   Se conservan los espacios DUROS de verdad (U+00A0), que es lo que el autor
-   quería: así la leyenda no se parte aunque alguien quite el `nowrap`. */
 .semaforo {
   font-weight: bold;
   white-space: nowrap;
@@ -4151,10 +2785,6 @@ button:focus:not(:focus-visible) {
   width: 100%;
 }
 
-/* `.rejilla-adulto` declaraba una rejilla envolvente para el panel del adulto
-   que ningún contenedor llevaba puesta. El panel apila sus secciones en flujo
-   normal. Cuando la fase responsive le dé columnas de verdad, se las dará al
-   contenedor que el panel crea, no a una clase que nadie aplica. */
 .matriz-subtipos {
   font-size: 14px;
 }
@@ -4164,12 +2794,6 @@ button:focus:not(:focus-visible) {
   white-space: nowrap;
 }
 
-/* ============================================================================
-   08-imprimir.css — Informe A4 y ficha de refuerzo en papel (PLAN §17.4)
-   ----------------------------------------------------------------------------
-   Criterio de HECHO de F8: el informe A4 sale legible en 3 clics, sin HUD, y el
-   semáforo se distingue en blanco y negro porque lleva símbolo y texto.
-   ========================================================================== */
 @media print {
   @page {
     size: A4 portrait;
@@ -4185,7 +2809,6 @@ button:focus:not(:focus-visible) {
     word-spacing: normal !important;
     height: auto !important;
   }
-  /* Solo se imprime la pantalla marcada como imprimible */
   .pantalla:not(.imprimible) {
     display: none !important;
   }
@@ -4197,7 +2820,6 @@ button:focus:not(:focus-visible) {
     padding: 0 !important;
     overflow: visible !important;
   }
-  /* Fuera todo lo que no sea contenido */
   .hud, .barra-herramientas, .btn-bloque, .btn-adulto,
   .no-imprimir, .region-viva, .particula, .cielo, .nube,
   .criatura, .suelo-hierba {
@@ -4244,14 +2866,12 @@ button:focus:not(:focus-visible) {
   .adulto__tabla tr {
     page-break-inside: avoid;
   }
-  /* El semáforo ya lleva símbolo y texto en ::before: en B/N sigue leyéndose */
   .semaforo {
     color: var(--negro) !important;
   }
   .metrica {
     border-bottom: 0.6pt solid var(--negro) !important;
   }
-  /* ── Ficha de refuerzo: 10 ítems para hacer a lápiz ────────────────────── */
   .ficha-refuerzo {
     page-break-before: always;
   }
@@ -4281,47 +2901,19 @@ button:focus:not(:focus-visible) {
     padding-top: 2mm;
   }
 }
-/* ============================================================================
-   09-forzado.scss — modo de alto contraste forzado del sistema
-   ----------------------------------------------------------------------------
-   ESTE PROYECTO ES ESPECIALMENTE VULNERABLE A `forced-colors`, y por una razón
-   concreta: TODO su relieve son `box-shadow` inset. Hay 55 declaraciones con 90
-   capas, y son lo que hace que un botón parezca un botón.
-
-   `forced-colors: active` sustituye `background` y `color` por la paleta del
-   sistema, pero NO toca `box-shadow`. El resultado sin este fichero sería lo
-   peor de los dos mundos: fondos del sistema con biseles de la paleta del juego
-   encima, y botones sin relieve reconocible sobre ellos.
-
-   Lo correcto es dejar que el sistema mande y cambiar el relieve por BORDES
-   reales, que sí se traducen a los colores del sistema. `box-sizing: border-box`
-   ya es global (_02-base.scss), así que el borde no desplaza nada.
-
-   HONESTIDAD: esto NO se puede probar automáticamente. Chrome tiene «Emulate
-   forced-colors: active» en las herramientas de desarrollo y ahí queda, en la
-   lista de revisión manual. Decirlo es mejor que fingir lo contrario.
-   ========================================================================== */
 @media (forced-colors: active) {
-  /* El relieve, a borde real */
   .btn-bloque, .panel-bloque, .veta, .cromo, .tarjeta-mundo, .tarjeta-perfil,
   .respuesta__visor, .adulto__caja, .btn-adulto {
     box-shadow: none;
     border: 2px solid ButtonBorder;
   }
-  /* El foco de dos tonos no sobrevive: se sustituye por el del sistema, que es
-     el que el usuario ya reconoce. */
   :focus-visible {
     outline: 3px solid Highlight;
     outline-offset: 2px;
   }
-  /* NUNCA SOLO COLOR, y aquí menos que nunca: en forced-colors el color lo elige
-     el sistema, así que la forma es lo ÚNICO que queda. La luces__luz apagada se
-     distingue por el trazo discontinuo, no por su gris. */
   .luces__luz[data-estado=apagada] {
     border-style: dashed;
   }
-  /* Las texturas de fondo desaparecen en forced-colors; sin esto, los biomas
-     quedarían como rectángulos planos indistinguibles. Se marcan por borde. */
   .bioma::after, .tarjeta-mundo__cinta {
     border: 1px solid CanvasText;
   }

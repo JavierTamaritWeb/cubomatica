@@ -63,9 +63,9 @@ export default {
     'property-no-deprecated': null,
     'property-no-vendor-prefix': null,
 
-    /* ESTILO DE LA CASA, deliberado y consistente en 2 864 líneas: una regla
+    /* ESTILO DE LA CASA, deliberado y consistente en todas las hojas: una regla
        corta cabe en una línea, los colores se escriben enteros en
-       `_01-variables.scss` —el único fichero que puede escribirlos— y las
+       `_variables.scss` —el único fichero que puede escribirlos— y las
        líneas en blanco las decide quien lee, no una regla. Cambiar esto serían
        ~390 modificaciones cosméticas en el mismo commit que el renombrado, que
        es la mejor manera de esconder un error de verdad. */

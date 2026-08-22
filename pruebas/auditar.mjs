@@ -74,6 +74,8 @@ const corto = (f) => relative(RAIZ, f);
 const leer = (f) => readFileSync(f, 'utf8');
 const listar = (dir, ext) =>
   existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(ext)).sort().map((f) => join(dir, f)) : [];
+const listarRecursivo = (dir, ext) =>
+  existsSync(dir) ? [...recorrer(dir)].filter((f) => f.endsWith(ext)).sort() : [];
 
 /* Despiece de comentarios. Existe porque el comentario que DOCUMENTA una
    prohibición hacía saltar el grep que la persigue: la auditoría se ponía roja
@@ -283,8 +285,8 @@ if (!HAY_DIST) {
      es quien tiene derecho a escribir `transition:`; y esa misma lista se
      reutilizaba para los colores, así que los 39 hex del mapa de materiales de
      _herramientas.scss quedaban sin mirar POR ACCIDENTE, mientras el verde
-     seguía diciendo «todos con nombre en _01-variables.scss». Verde y falso. */
-  const SCSS = listar(D('src/scss'), '.scss');
+     seguía diciendo «todos con nombre en _variables.scss». Verde y falso. */
+  const SCSS = listarRecursivo(D('src/scss'), '.scss');
   const salvo = (lista, ...nombres) => lista.filter((f) => !nombres.some((n) => f.includes(n)));
 
   /* SOLO `transition:`, no `animation:`. La puerta única existe para las
@@ -299,14 +301,13 @@ if (!HAY_DIST) {
   juzgar(!aMano.length, 'ninguna transición escrita a mano: todas pasan por @include paso()',
     'hay transiciones fuera del mixin', aMano.join('\n'));
 
-  /* Dos ficheros DECLARAN color y por eso pueden escribir hex: _01-variables
-     (la paleta) y _herramientas (el mapa de materiales, que genera los --deco-*
-     con un @each). Los otros diez lo consumen por nombre. */
-  const sueltos = buscar(salvo(SCSS, '_01-variables', '_herramientas'),
+  /* Un solo fichero DECLARA color y por eso puede escribir hex: _variables.
+     Los demás parciales consumen la paleta por nombre. */
+  const sueltos = buscar(salvo(SCSS, '_variables'),
     /#[0-9A-Fa-f]{3,8}\b/, sinComentariosCSS);
   juzgar(!sueltos.length,
-    'cero colores sueltos: solo los declaran _01-variables.scss y _herramientas.scss',
-    'hay colores escritos a mano fuera de los dos ficheros que declaran la paleta',
+    'cero colores sueltos: solo los declara _variables.scss',
+    'hay colores escritos a mano fuera del fichero de variables',
     sueltos.join('\n'));
 
   /* El suelo táctil de 64px. El riesgo no es incumplirlo hoy: es que un punto de
@@ -436,7 +437,7 @@ if (HAY_AUDIO) {
 
 /* Cero red. Se filtran las citas legales y las referencias en comentarios: lo
    que se persigue es una PETICIÓN, no una URL escrita. */
-const fuentes = TODO_JS.concat(listar(D('src/scss'), '.scss')).concat([D('src/index.html')]);
+const fuentes = TODO_JS.concat(listarRecursivo(D('src/scss'), '.scss')).concat([D('src/index.html')]);
 const red = buscar(fuentes, /https?:\/\//, sinComentariosJS)
   .filter((l) => !/boe\.es|localhost|w3\.org|claude/i.test(l))
   .filter((l) => /src=|url\(|fetch|XMLHttpRequest/.test(l));

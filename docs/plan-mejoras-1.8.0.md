@@ -53,9 +53,9 @@ Es la petición explícita del usuario y la fase más detallada del plan.
 
 | Pieza | Dónde | Qué hace hoy |
 |---|---|---|
-| `.aviso-prisa` | `src/scss/_03-componentes.scss:251` | cinta de fondo sólido, ancho completo, `top: 38%`, `z-index: 620`, `pointer-events: none` |
-| `prisa-cruza` | `src/scss/_05-animaciones.scss:164` | 1900 ms, `steps(18, end)`: entra por abajo, rebota, se para en el centro, sale por arriba |
-| `prisa-arde` | `src/scss/_05-animaciones.scss:177` | 300 ms × 6: oro → brasa → blanco |
+| `.aviso-prisa` | `src/scss/components/_03-componentes.scss:251` | cinta de fondo sólido, ancho completo, `top: 38%`, `z-index: 620`, `pointer-events: none` |
+| `prisa-cruza` | `src/scss/base/_05-animaciones.scss:164` | 1900 ms, `steps(18, end)`: entra por abajo, rebota, se para en el centro, sale por arriba |
+| `prisa-arde` | `src/scss/base/_05-animaciones.scss:177` | 300 ms × 6: oro → brasa → blanco |
 | `CB.ui.reloj.gritar()` | `src/js/30-ui.js:678` | quita la clase, fuerza reflow con `void offsetWidth`, la repone, `sfx('prisa')`, `CB.a11y.urgente()`, oculta a los `MS_CARTEL = 1900` |
 | `CB.ui.mensaje()` | `src/js/30-ui.js:216` | escribe `textContent` en un nodo **quieto** y anuncia por la región *polite* |
 
@@ -177,7 +177,7 @@ CB.ui.cinta.COREOGRAFIAS = {
 `CB.ui.cinta.mostrar()` escribe `el.style.animationDuration = ms + 'ms'`. El CSS define solo
 los `@keyframes` y el `steps()`; la duración la pone JS. Así no hay dos números que
 mantener. Y como el mixin `desactivar-movimiento()` emite `animation: none !important`
-(`src/scss/_herramientas.scss:167`), **el `!important` sigue ganándole al estilo en línea**:
+(`src/scss/abstracts/_herramientas.scss:167`), **el `!important` sigue ganándole al estilo en línea**:
 el movimiento reducido se impone igual.
 
 ## 1.5 Un solo nodo, o la colisión es inevitable
@@ -192,8 +192,8 @@ Es un renombrado de clase, y en este proyecto un renombrado a medias no da ning�
 único capaz de verlo. Va en su propio sub-commit, antes de añadir ninguna coreografía.
 
 Sitios a tocar, todos: `src/index.html:184`, `src/js/30-ui.js:590,678,680,699`,
-`src/scss/_03-componentes.scss:251`, `src/scss/_05-animaciones.scss:183,209`,
-`src/scss/_herramientas.scss:175`.
+`src/scss/components/_03-componentes.scss:251`, `src/scss/base/_05-animaciones.scss:183,209`,
+`src/scss/abstracts/_herramientas.scss:175`.
 
 **Y las páginas de prueba montan `<section>` reducidas: hay que añadir `#cinta` a los mocks**
 o `CB.ui.cinta.montar()` cacheará `null` y todos los guardianes nuevos pasarán en verde sin
@@ -205,13 +205,13 @@ de coreografía, `void offsetWidth`, poner la nueva. Mismo patrón que `gritar()
 ## 1.6 Lo que no varía nunca
 
 - **No tapar la fila del borrado, el 0 y el OK.** Ya pasó una vez y está contado en
-  `src/scss/_03-componentes.scss:236-250`: el aviso de que quedaba poco tiempo caía justo
+  `src/scss/components/_03-componentes.scss:236-250`: el aviso de que quedaba poco tiempo caía justo
   encima del botón con el que se contesta. Ninguna coreografía baja del 38 % de altura, y
   todas conservan `pointer-events: none`.
 - **Nunca color solo.** La variedad está en el recorrido, la duración y el número de pasos.
   El tono acompaña; no distingue.
 - **Movimiento apagado.** Las ocho entran en la lista `$animados` de
-  `src/scss/_05-animaciones.scss:206-210` — una sola lista, dos contextos, por el mixin. Y
+  `src/scss/base/_05-animaciones.scss:206-210` — una sola lista, dos contextos, por el mixin. Y
   cada una necesita su línea de excepción como la que ya tiene el cartel de prisa en
   `_herramientas.scss:175`: **la cinta sigue apareciendo, quieta en el centro, el mismo
   tiempo, y se va sin recorrido.** El grito es información; el movimiento solo es la gracia.
@@ -572,20 +572,20 @@ los verificados.**
 ## 7.1 El OK es la única tecla que sigue pareciendo viva
 
 `.btn-bloque:disabled, .btn-bloque[aria-disabled="true"]`
-(`src/scss/_03-componentes.scss:66-72`) tiene especificidad (0,2,0).
-`.teclado-bloques .btn-bloque[data-tecla="ok"]` (`src/scss/_03-componentes.scss:362-367`)
+(`src/scss/components/_03-componentes.scss:66-72`) tiene especificidad (0,2,0).
+`.teclado-bloques .btn-bloque[data-tecla="ok"]` (`src/scss/components/_03-componentes.scss:362-367`)
 tiene (0,3,0) y pone `background: var(--btn-primario)`. En `dist/css/cubomatica.css` están
 en las líneas 820 y 1271, en ese orden. **Gana el verde.** Once teclas de piedra hundidas y
 la que el niño quiere pulsar, brillante y mentirosa.
 
 Y hay un agravante legal que nadie había visto: `desactivar-movimiento()` emite
 `#{$prefijo}.btn-bloque--monta { opacity: 1; transform: none; }`
-(`src/scss/_herramientas.scss:194`). Con el prefijo `:root.sin-movimiento ` eso es (0,2,1),
+(`src/scss/abstracts/_herramientas.scss:194`). Con el prefijo `:root.sin-movimiento ` eso es (0,2,1),
 que gana a `.btn-bloque:disabled` (0,2,0) y **anula también el hundido**. Para quien juega
 con el movimiento apagado —el ajuste que más lo necesita— el color queda como única señal.
 Quitar movimiento no puede quitar información.
 
-**Qué se hace.** En `src/scss/_03-componentes.scss`, después de la línea 367:
+**Qué se hace.** En `src/scss/components/_03-componentes.scss`, después de la línea 367:
 
 ```scss
 .teclado-bloques .btn-bloque[data-tecla="ok"]:disabled,
@@ -596,7 +596,7 @@ Quitar movimiento no puede quitar información.
 ```
 
 Los dos selectores, porque la regla base de `:66-67` cubre los dos y dejar uno fuera reabre
-el agujero por la otra puerta. Y en `src/scss/_herramientas.scss:194`, restringir la
+el agujero por la otra puerta. Y en `src/scss/abstracts/_herramientas.scss:194`, restringir la
 excepción a `.btn-bloque--monta:not(:disabled)`, para que el hundido no dependa del ajuste
 de movimiento.
 
@@ -620,8 +620,8 @@ mide `dist/`, no `src/`.
 ## 7.2 Los dígitos deshabilitados están a 1,5:1
 
 `.btn-bloque:disabled` pinta `color: var(--deco-piedra-osc)` sobre
-`background: var(--deco-piedra)` (`src/scss/_03-componentes.scss:69-70`). Los valores salen
-de `piedra: (#8C8C8C, #6E6E6E, #ADADAD)` (`src/scss/_herramientas.scss:29`): **#6E6E6E sobre
+`background: var(--deco-piedra)` (`src/scss/components/_03-componentes.scss:69-70`). Los valores salen
+de `piedra: (#8C8C8C, #6E6E6E, #ADADAD)` (`src/scss/abstracts/_herramientas.scss:29`): **#6E6E6E sobre
 #8C8C8C = 1,52:1**, medido. Durante 800 ms por ítem no se distingue el 7 del 1.
 `pruebas/casos-contraste.js:109` solo comprueba que `--deco-piedra` sea un color plano; no
 mide este par.
@@ -631,18 +631,18 @@ mide este par.
 que entre activo y bloqueado solo cambia el fondo más el bisel invertido y el hundido, que
 es justo lo que se quiere decir.
 
-`--gris-carbon` (#33302B, `src/scss/_01-variables.scss:143`) da **3,91:1**, no 4,9: no llega
+`--gris-carbon` (#33302B, `src/scss/abstracts/_variables.scss:143`) da **3,91:1**, no 4,9: no llega
 al 4,5 de WCAG 1.4.3 y este proyecto ya se comió un fallo por creerse un contraste sin
 medirlo. No se usa.
 
 Y el modo de alto contraste necesita su propia línea: el mixin de
-`src/scss/_01-variables.scss:217-234` reescribe `--btn-texto` a `#FFFFFF` y **no toca**
+`src/scss/abstracts/_variables.scss:217-234` reescribe `--btn-texto` a `#FFFFFF` y **no toca**
 `--deco-piedra`, con lo que blanco sobre #8C8C8C son 2,9:1, peor que hoy. Se le da al estado
 deshabilitado fondo `#333333` y texto `#FFFFFF`, que es lo que ya usa para
 `--btn-fondo-hundido`.
 
 **Guardián E60** · `pruebas/casos-contraste.js` (ampliación deliberada del conjunto de
-pares; hoy son los cuatro de texto de `src/scss/_01-variables.scss:75-79`), con la entrada
+pares; hoy son los cuatro de texto de `src/scss/abstracts/_variables.scss:75-79`), con la entrada
 correspondiente anotada en la cabecera de `pruebas/casos-regresiones.js`.
 Medir el par del botón deshabilitado real —`getComputedStyle` sobre un botón montado, no los
 tokens a mano— y exigir ≥ 4,5:1. Y repetirlo con `:root.alto-contraste` puesto.
@@ -702,9 +702,9 @@ tiene que ponerse roja la aserción de la pieza rehabilitada, no solo la de `_se
 ## 8.2 La confirmación de dos toques del antiazar es muda
 
 `CB.componentes.pedirConfirmacion` (`src/js/32-componentes.js:119-133`) hunde el botón
-300 ms —indistinguible del `:active` normal de `src/scss/_03-componentes.scss:59-64`— y
+300 ms —indistinguible del `:active` normal de `src/scss/components/_03-componentes.scss:59-64`— y
 `CB.a11y.anunciar('Toca otra vez para confirmar.')` (`:132`), que va a `#region-viva`, con
-`clip: rect(0 0 0 0)` (`src/scss/_03-componentes.scss:556`). Justo después de decidir que el
+`clip: rect(0 0 0 0)` (`src/scss/components/_03-componentes.scss:556`). Justo después de decidir que el
 niño va al tuntún, el juego le cambia la regla de entrada **y solo se lo cuenta a un lector
 de pantalla**.
 
@@ -779,10 +779,10 @@ olvida y la que atrapa el latch que nunca se suelta.
 
 `src/js/32-componentes.js:387-395`: el `click` suma a `total`, escribe el marcador y suena
 `gema`. La pieza sigue idéntica. Y `.moneda`/`.billete` no son `.btn-bloque`, así que ni
-`:disabled` (`src/scss/_03-componentes.scss:66`) ni el «toc» de `src/js/32-componentes.js:85`
+`:disabled` (`src/scss/components/_03-componentes.scss:66`) ni el «toc» de `src/js/32-componentes.js:85`
 las alcanzan durante los 800 ms. Hay además una regla muerta:
 `.moneda[aria-pressed="true"], .billete[aria-pressed="true"]`
-(`src/scss/_03-componentes.scss:468-472`), y ningún `aria-pressed` se pone nunca sobre una
+(`src/scss/components/_03-componentes.scss:468-472`), y ningún `aria-pressed` se pone nunca sobre una
 moneda.
 
 **Qué se hace — contar, no marcar.** `disponibles: CB.gen.dinero.MONEDAS.concat([5, 10, 20])`
@@ -941,7 +941,7 @@ qué.
 que hace `return` en `:105` —si no, no se vería nunca en los problemas, que es justo donde
 `D === 3` es más probable—: `if (item.esRetoBonus) cont.appendChild(CB.ui.crear('span',
 'distintivo', 'reto'));` La clase `.distintivo` ya existe
-(`src/scss/_04-pantallas.scss:110`) y ya se usa en JS (`src/js/43-mapa-destrezas.js:139`):
+(`src/scss/layout/_04-pantallas.scss:110`) y ya se usa en JS (`src/js/43-mapa-destrezas.js:139`):
 cero CSS nuevo, cero riesgo en el cruce de clases. Es texto: cumple «nunca color solo».
 
 Nada de anunciarlo por separado: `servirItem` anuncia la consigna en
@@ -978,7 +978,7 @@ nombre solo lo oye un lector de pantalla. Si caen dos a la vez, el bucle de `:89
 1. **El grito de la cinta sigue siendo corto y fijo** (`'¡Logro!'` / `'¡Luz extra!'`). Usar
    `l.nombre` no cabe: «Reto bonus superado» y «Guardián del bloque»
    (`src/js/24-logros.js:34-37` y `:55-58`) son 19 caracteres, la cinta va a
-   `font-size: clamp(26px, 6vw, 52px)` (`src/scss/_03-componentes.scss:271`) y el tope del
+   `font-size: clamp(26px, 6vw, 52px)` (`src/scss/components/_03-componentes.scss:271`) y el tope del
    proyecto para el texto de cinta es 16 (`pruebas/casos-mensajes.js:64-66`). Lo que se añade
    es `CB.ui.mensaje('Logro: ' + l.nombre, 'acierto')` en la rama sin luz
    (`src/js/40-partida.js:894-897`), junto al anuncio que ya existe. Ahí deja de haber
@@ -989,7 +989,7 @@ nombre solo lo oye un lector de pantalla. Si caen dos a la vez, el bucle de `:89
    `<div class="cinta" aria-hidden="true" hidden><span class="cinta__texto"></span></div>`,
    hermano de `.contenido`, más los dos mocks (`pruebas/pruebas.html:112` y
    `pruebas/pruebas-min.html`). **Y antes, medir dónde cae**: `.cinta` es
-   `position: absolute; top: 38%` (`src/scss/_03-componentes.scss:261-263`) y en `p-fin` no
+   `position: absolute; top: 38%` (`src/scss/components/_03-componentes.scss:261-263`) y en `p-fin` no
    hay ningún antepasado posicionado, así que cae al 38 % del viewport, encima del panel de
    gemas, en la única pantalla cuyo trabajo es que se lea — y `p-fin` es `pantalla--scroll`.
    Si tapa, `.pantalla--fin { position: relative; }` y una posición propia para
@@ -1463,7 +1463,7 @@ explica por qué se añadió. En la expedición de siete minutos no se aplicó.
 2. **El nodo**, dentro del `.hud` de `src/index.html:146`:
    `<div id="hud-galeria" class="galeria-avance" role="img"></div>`, con `aria-label`
    «Bloque 3 de 12» actualizado en cada pintado. Reutiliza el dibujo de `.armadura-jefe > b` /
-   `[data-caido="si"]` (`src/scss/_04-pantallas.scss:180-187`), cuyo
+   `[data-caido="si"]` (`src/scss/layout/_04-pantallas.scss:180-187`), cuyo
    `box-shadow: inset 4px 4px 0 0` no lleva desenfoque y pasa la auditoría.
 3. **Los bloques CAEN, no quedan.** Un contador que baja se lee como cuenta atrás. Se pinta lo
    hecho.

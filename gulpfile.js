@@ -50,12 +50,13 @@ const FUENTE = 'src';
    donde más se toca al ajustar el diseño, y `npm run dev` no reconstruía al
    guardarlo. El síntoma no es un error: es que la pantalla no cambia, que se lee
    como «el mixin no funciona». */
-const SCSS_EXTRA = [FUENTE + '/scss/cubomatica.scss', FUENTE + '/scss/_herramientas.scss'];
+const SCSS_EXTRA = [FUENTE + '/' + M.entradaEstilos,
+                    FUENTE + '/scss/abstracts/_herramientas.scss'];
 const RUTAS = {
   html: FUENTE + '/index.html',
   guiones: M.guiones.map((f) => FUENTE + '/' + f),
   estilos: M.estilos.map((f) => FUENTE + '/' + f).concat(SCSS_EXTRA),
-  entradaScss: FUENTE + '/scss/cubomatica.scss',
+  entradaScss: FUENTE + '/' + M.entradaEstilos,
   estaticos: ['LEEME.txt', 'AVISO-LEGAL.txt', 'LICENSE', 'LICENCIAS-TERCEROS.md'],
   salida: 'dist',
 };

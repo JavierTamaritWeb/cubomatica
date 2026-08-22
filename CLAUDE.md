@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Cubomática 1.23.0** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
+**Cubomática 1.23.1** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
 
 ## A build step, but the same target: double-click, no network
 
@@ -15,6 +15,10 @@ Until 1.6.0 there was no `package.json`, no bundler and no server. 1.7.0 adds Gu
 - **`dist/` is committed to git.** That is the only reason "clone the repo and double-click" stays true for a teacher with no tooling.
 
 **`manifiesto.json` owns the load order.** It used to live in three places at once. `gulpfile.js`, `gulp html`, the test pages and the audit all read it; nothing repeats it.
+
+**SCSS follows a 7-1-style layout** (1.23.1). `src/scss/app.scss` is the only entry point; the ten cascade-bearing partials are declared in `manifiesto.json`, while `abstracts/_herramientas.scss` contains mixins. Global Sass configuration and global custom properties belong in `abstracts/_variables.scss`; component-scoped custom properties stay with their component because moving them to `:root` changes behaviour. SCSS comments use silent `//` syntax and explain only non-obvious constraints. Long history belongs in `docs/decisiones.md`.
+
+**Development commands keep watching** (1.23.1). `npm run dev`, `npx gulp watch` and bare `npx gulp` build first and then wait for changes. The watcher covers all ten manifest partials plus `app.scss` and `_herramientas.scss`. A change to `manifiesto.json` requires restarting Gulp because it is loaded once through `require()`.
 
 ## Commands
 
@@ -126,7 +130,7 @@ Reordering is what breaks; concatenating is safe. There are exactly **three hard
 
 **320 px wide is a supported size, and things that don't fit there clip silently** (1.21.0, E99-E100). No horizontal scrollbar appears, nothing throws — the content is just cut off against the edge. Two cases: the portada's «CUBOMÁTICA» title (337 px with its padding, so eight px off each side) and the fourth toolbar button, Sonido, the only control that mutes the music. The title is fixed by letting it wrap plus a tighter side padding under 480 px — **not** by writing a font size for narrow screens, because `--tam-titulo` is what «Letra grande» and `modo-proyeccion` steer, and a literal there would disable both settings exactly where they matter most. The toolbar wraps to two rows rather than shrinking keys below the 64 px floor. Both guards measure inside a 320 px box, never against the real window: a window-conditional assertion is green on every wide machine for the wrong reason.
 
-**The keypad must fit across, and where it cannot, it must be reachable** (1.21.0, E96-E98). Three defects found by measuring the game screen at fifteen window sizes crossed with «Letra grande» and «Modo proyección» — all three green under everything the project checks today, none visible by reading the stylesheet. (1) `:root.modo-proyeccion` wrote `--lado-respuesta: 150px` directly — the *result* of the two-axis `min()` — so a 1200×700 projector put the OK row outside the play area; it now writes both axes, and because a class selector beats `:root` on **specificity, not order**, the three height steps name `:root.modo-proyeccion` too. The note in `_01-variables.scss` that says "origin order wins" only holds between selectors of equal specificity. (2) The documented 6×2 exception was asked by height and never checked width: six 64 px columns plus gaps are 424 px, so a 360×640 phone lost two columns off the right edge; it now also requires `min-width: 480px`. (3) The 64 px floor per key is non-negotiable, so at supported sizes like 320×480 the keypad simply does not fit — and `.zona-juego__baja` (then `.zona-inferior`) had no scrollbar, which made the OK unreachable and the question unanswerable. It now scrolls, like the enunciado's zone, with the same `safe` alignment.
+**The keypad must fit across, and where it cannot, it must be reachable** (1.21.0, E96-E98). Three defects found by measuring the game screen at fifteen window sizes crossed with «Letra grande» and «Modo proyección» — all three green under everything the project checks today, none visible by reading the stylesheet. (1) `:root.modo-proyeccion` wrote `--lado-respuesta: 150px` directly — the *result* of the two-axis `min()` — so a 1200×700 projector put the OK row outside the play area; it now writes both axes, and because a class selector beats `:root` on **specificity, not order**, the three height steps name `:root.modo-proyeccion` too. The note in `_variables.scss` that says "origin order wins" only holds between selectors of equal specificity. (2) The documented 6×2 exception was asked by height and never checked width: six 64 px columns plus gaps are 424 px, so a 360×640 phone lost two columns off the right edge; it now also requires `min-width: 480px`. (3) The 64 px floor per key is non-negotiable, so at supported sizes like 320×480 the keypad simply does not fit — and `.zona-juego__baja` (then `.zona-inferior`) had no scrollbar, which made the OK unreachable and the question unanswerable. It now scrolls, like the enunciado's zone, with the same `safe` alignment.
 
 **From 1200 px the game screen is two columns: enunciado left, answer right** (1.21.0). `.zona-juego` turns `row` at `desde(escritorio)`. By width, not height — the two-axis rule: width decides how many columns, height decides the button side. The two halves *hug the centre* (`safe flex-end` / `flex-start`), because centring each half in itself puts 700 px between question and keypad on a 1440 screen, which is a longer sweep than the vertical layout it replaced. Below 1200 the device is a landscape tablet held in two hands, where thumb reach still outranks eye sweep. `.cinta`, `.cartel` and `.cielo` are unaffected: they are out of flow, which is what the exclusion list in `_06-biomas.scss` is for.
 
@@ -136,7 +140,7 @@ Reordering is what breaks; concatenating is safe. There are exactly **three hard
 
 Changing any of these numbers means changing the test that asserts it, on purpose:
 
-- **45 sources** on disk *and* in `manifiesto.json` — equality is checked both ways, so a new file nobody declared is a failure · **18 screens** · **10 SCSS partials** in the manifest, **12 `.scss` files** on disk (the manifest owns the ten that get `@use`d, in order; `cubomatica.scss` and `_herramientas.scss` are the entry point and the mixins) · **9 music tracks** · **13 SFX** · **12 money pieces** in `dist/img/`, listed identically in `gulpfile.js` (service-worker shell) and `auditar.mjs`
+- **45 sources** on disk *and* in `manifiesto.json` — equality is checked both ways, so a new file nobody declared is a failure · **18 screens** · **10 SCSS partials** in the manifest, **12 `.scss` files** on disk (the manifest owns the ten that get `@use`d, in order; `app.scss` and `abstracts/_herramientas.scss` are the entry point and the mixins) · **9 music tracks** · **13 SFX** · **12 money pieces** in `dist/img/`, listed identically in `gulpfile.js` (service-worker shell) and `auditar.mjs`
 - **92 levels** across **4 worlds**, no repeats and no orphans (`casos-curriculo.js`, CU1–CU8)
 - **24 error codes = 24 recommendations**, same key set
 - **30 exact scoring cases**, no tolerance (`casos-formulas.js`)
@@ -177,7 +181,7 @@ This is school material subject to **EN 301 549 / WCAG 2.2 AA**:
 
 - Any time limit must be disableable — `CB.partida.SEGUNDOS_ITEM.sinPrisa === 0` is asserted by `casos-reloj.js`.
 - Never colour alone: every state that uses colour also changes shape, size, text or motion.
-- `prefers-reduced-motion` and `:root.sin-movimiento` must both be handled, at the end of `src/scss/_05-animaciones.scss`. They come from **one list** through `desactivar-movimiento()` emitted twice, because for months they were two hand-kept lists and the in-game setting silently missed ten animations (E27). Removing motion may not remove information.
+- `prefers-reduced-motion` and `:root.sin-movimiento` must both be handled, at the end of `src/scss/base/_05-animaciones.scss`. They come from **one list** through `desactivar-movimiento()` emitted twice, because for months they were two hand-kept lists and the in-game setting silently missed ten animations (E27). Removing motion may not remove information.
 - Contrast pairs are measured against computed CSS variables in `casos-contraste.js`, not asserted by hand.
 
 ## Before changing behaviour, read `docs/decisiones.md`

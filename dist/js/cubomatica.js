@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.23.0';
+CB.VERSION = '1.23.1';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -2292,7 +2292,7 @@ CB.sprites.precalentar = function () {
    dibujo y de un arranque que ya no compone nada—.
 
    El porqué del cambio está escrito donde ahora se decide, que es
-   `src/scss/_01-variables.scss`. Se anota aquí porque el motivo que se dio en su
+   `src/scss/abstracts/_variables.scss`. Se anota aquí porque el motivo que se dio en su
    día para dibujarlas —«la auditoría no admite un solo binario»— sigue siendo
    verdad y no era la razón que parecía: lo que prohíbe binarios es una lista del
    bloque 4 de `auditar.mjs`, no `file://`. Una imagen es un subrecurso y se abre

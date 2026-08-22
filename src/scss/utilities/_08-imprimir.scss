@@ -1,10 +1,4 @@
-/* ============================================================================
-   08-imprimir.css — Informe A4 y ficha de refuerzo en papel (PLAN §17.4)
-   ----------------------------------------------------------------------------
-   Criterio de HECHO de F8: el informe A4 sale legible en 3 clics, sin HUD, y el
-   semáforo se distingue en blanco y negro porque lleva símbolo y texto.
-   ========================================================================== */
-
+// La impresión conserva solo el informe y la ficha de refuerzo en blanco y negro.
 @media print {
   @page { size: A4 portrait; margin: 14mm 12mm; }
 
@@ -19,7 +13,6 @@
     height: auto !important;
   }
 
-  /* Solo se imprime la pantalla marcada como imprimible */
   .pantalla:not(.imprimible) { display: none !important; }
   .imprimible[hidden] { display: block !important; }
   .imprimible {
@@ -28,7 +21,6 @@
     overflow: visible !important;
   }
 
-  /* Fuera todo lo que no sea contenido */
   .hud, .barra-herramientas, .btn-bloque, .btn-adulto,
   .no-imprimir, .region-viva, .particula, .cielo, .nube,
   .criatura, .suelo-hierba { display: none !important; }
@@ -59,12 +51,10 @@
   .adulto__tabla th { font-weight: bold; }
   .adulto__tabla tr { page-break-inside: avoid; }
 
-  /* El semáforo ya lleva símbolo y texto en ::before: en B/N sigue leyéndose */
   .semaforo { color: var(--negro) !important; }
 
   .metrica { border-bottom: .6pt solid var(--negro) !important; }
 
-  /* ── Ficha de refuerzo: 10 ítems para hacer a lápiz ────────────────────── */
   .ficha-refuerzo { page-break-before: always; }
   .ficha-refuerzo__rejilla {
     display: grid;

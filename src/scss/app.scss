@@ -1,0 +1,12 @@
+// Único punto de entrada. El orden de @use define la cascada y coincide con manifiesto.json.
+@use 'base/00-fuentes' as *;
+@use 'abstracts/variables' as *;
+@use 'abstracts/herramientas' as *;
+@use 'base/02-base' as *;
+@use 'components/03-componentes' as *;
+@use 'layout/04-pantallas' as *;
+@use 'base/05-animaciones' as *;
+@use 'themes/06-biomas' as *;
+@use 'pages/07-adulto' as *;
+@use 'utilities/08-imprimir' as *;
+@use 'utilities/09-forzado' as *;

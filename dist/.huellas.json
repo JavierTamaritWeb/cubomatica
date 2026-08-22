@@ -1,17 +1,17 @@
 {
   "_": "lo escribe gulp; lo verifica la auditoria",
   "fuentes": {
-    "src/scss/_00-fuentes.scss": "aa93cbff2a9c2950c537ff8324616ddd9d0b270a",
-    "src/scss/_01-variables.scss": "9b0f7f056d8fc67564b7101553407ee6304e4962",
-    "src/scss/_02-base.scss": "c797694828eec993da36fdc4e32d31cd81a58e35",
-    "src/scss/_03-componentes.scss": "48403e69b1f4e6fdffcba9c7314c332a1cdcbd98",
-    "src/scss/_04-pantallas.scss": "4998686d6ac40798675be8fc00c4aaa4d549d201",
-    "src/scss/_05-animaciones.scss": "eee9f2962845985a3bd5533fced8888a749b0704",
-    "src/scss/_06-biomas.scss": "c6c90d813cd5115d351a0591123d3b0416905eae",
-    "src/scss/_07-adulto.scss": "7c779d3acc39de7c6d9ba8ae4ae05dfd95c16a24",
-    "src/scss/_08-imprimir.scss": "ee35482df2d9678317670d9367733b088128c5e6",
-    "src/scss/_09-forzado.scss": "afcedae9f868ec97b2290f7c085b27657324293f",
-    "src/scss/cubomatica.scss": "ef7e5a5b49d407356ac37dc0bc17079f59693fd3",
-    "src/scss/_herramientas.scss": "22d1cb72a37d0b2c1f736a80cc58ba27c9a8d57e"
+    "src/scss/base/_00-fuentes.scss": "047b2661693b08fb5b222acf18355b74489f926e",
+    "src/scss/abstracts/_variables.scss": "a70d5960af2638429528edee37238f6dafb7ea32",
+    "src/scss/base/_02-base.scss": "ce45ccba14d4521ddc7e91a0d3d8163a48d50f70",
+    "src/scss/components/_03-componentes.scss": "07648d802a0ace719bdb3473eba933e154310f1d",
+    "src/scss/layout/_04-pantallas.scss": "753ea55b91d72465371020c6c2b217971a734590",
+    "src/scss/base/_05-animaciones.scss": "6684d8ce6e83d2d6cb77b60b20a88d722b5eb0c2",
+    "src/scss/themes/_06-biomas.scss": "f2478d43b38b77e0ca3331ea48ff7fe226aebdb1",
+    "src/scss/pages/_07-adulto.scss": "dc4a15ef57474b5f50220bb9f114bbc1b685c4d8",
+    "src/scss/utilities/_08-imprimir.scss": "d7517886443f5d4411da002d0b1566cf1a86f9c8",
+    "src/scss/utilities/_09-forzado.scss": "b285a72e7703af57a6cdf853cd4ca3212c79cdfe",
+    "src/scss/app.scss": "8d3178d38cb7867f5e89c35d4f4adf8913d1c72a",
+    "src/scss/abstracts/_herramientas.scss": "7585b7e603b456438e500731c4a2de75a67be5c0"
   }
 }

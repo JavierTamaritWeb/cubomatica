@@ -3,7 +3,7 @@ NOTA SOBRE LA TIPOGRAFIA
 
 Cubomatica NO distribuye ningun fichero de fuente. Ni .woff2, ni .ttf, ni base64.
 
-El @font-face de src/scss/_00-fuentes.scss declara la familia "Bloque Pixel" usando
+El @font-face de src/scss/base/_00-fuentes.scss declara la familia "Bloque Pixel" usando
 EXCLUSIVAMENTE la funcion local(): si el sistema tiene instalada Silkscreen o
 Press Start 2P, se usa; si no, la cascada cae en la pila monoespaciada del
 sistema, que en las tres plataformas objetivo (macOS, Windows, ChromeOS) tiene

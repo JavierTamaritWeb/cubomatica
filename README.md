@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 1.23.0**
+**Versión 1.23.1**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.
@@ -9,7 +9,7 @@ Sin instalación, sin servidor, sin red, sin cuentas y sin datos personales.
 **Se abre con doble clic sobre `index.html`.**
 
 Lo que trae cada versión está en [`CHANGELOG.md`](CHANGELOG.md). El número de
-versión vive en `CB.VERSION` (`js/00-nucleo.js`) y se ve en la pantalla de
+versión vive en `CB.VERSION` (`src/js/00-nucleo.js`) y se ve en la pantalla de
 Créditos del juego.
 
 ---
@@ -121,7 +121,12 @@ dist/               LO QUE SE JUEGA. Se versiona en git a propósito.
   sw.js               Service worker (solo actúa servido por HTTP)
 src/                LAS FUENTES. No se sirven tal cual.
   index.html          Plantilla; gulp sustituye los bloques marcados
-  scss/               11 parciales + el punto de entrada
+  scss/               Sass organizado por responsabilidad
+    abstracts/          variables globales y mixins
+    base/ components/   base, animaciones y componentes
+    layout/ pages/      pantallas y estilos de página
+    themes/ utilities/  biomas, impresión y colores forzados
+    app.scss            único punto de entrada
   js/  datos/         45 guiones en orden contratado
 manifiesto.json     FUENTE ÚNICA del orden de carga
 gulpfile.js         El paso de construcción
@@ -138,7 +143,7 @@ moneda de 2 € es literalmente lo que pide el currículo y un cuadrado de color
 un 2 dentro no enseña eso.
 
 **Peso: unos 43 MB**, de los cuales 42 MB son música. Lo que el navegador
-descarga al arrancar son **361 KB**. Cabe de sobra en cualquier memoria USB, pero
+descarga al arrancar son **368 KB**. Cabe de sobra en cualquier memoria USB, pero
 **no cabe en un correo**: para repartirlo en un centro, usa un USB o una carpeta
 compartida.
 
@@ -159,10 +164,21 @@ Hace falta [Node 20 o superior](https://nodejs.org).
 ```bash
 npm install          # una vez
 npm run build        # compila src/ → dist/
-npm run dev          # build + servidor con recarga
+npm run dev          # build + servidores + vigilancia y recarga
 npm run entregar     # build + auditoría: LA PUERTA DE ENTREGA
 npm run autoprueba   # ¿ve la auditoría lo que dice que ve?
 ```
+
+`npm run dev`, `npx gulp watch` y `npx gulp` permanecen activos esperando
+cambios. Vigilan los diez parciales del manifiesto, `app.scss` y
+`abstracts/_herramientas.scss`; al guardar reconstruyen `dist/` y recargan el
+juego. Si cambia `manifiesto.json`, hay que reiniciar el proceso porque Gulp lo
+lee una sola vez al arrancar.
+
+El SCSS sigue una estructura 7-1 adaptada al proyecto. Los comentarios usan
+`//` para documentar únicamente decisiones no evidentes y no se incluyen en el
+CSS compilado. El historial y las justificaciones extensas viven en
+`docs/decisiones.md`.
 
 Desde 1.7.0 el proyecto tiene compilación. Hasta 1.6.0 no la tenía, y la razón de
 que ahora sí es concreta: SCSS con BEM, minificado, responsive y caché sin

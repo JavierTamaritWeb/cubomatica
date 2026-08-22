@@ -1,0 +1,9 @@
+// Fuentes locales únicamente: el juego debe funcionar sin red.
+@font-face {
+  font-family: 'Bloque Pixel';
+  src: local('Silkscreen'), local('Silkscreen-Regular'),
+       local('Press Start 2P'), local('PressStart2P-Regular');
+  font-display: swap;
+  font-weight: 400;
+  font-style: normal;
+}

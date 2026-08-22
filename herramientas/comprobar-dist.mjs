@@ -30,7 +30,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -47,6 +47,14 @@ const ok = (m) => console.log('  \x1b[32m✔\x1b[0m ' + m);
 const mal = (m, d) => { fallos++; console.log('  \x1b[31m✘ ' + m + '\x1b[0m'); if (d) console.log('      ' + d); };
 const salto = (m) => console.log('  \x1b[33m–\x1b[0m ' + m);
 const juzgar = (cond, bien, mensajeMal, detalle) => (cond ? ok(bien) : mal(mensajeMal, detalle));
+
+function listarRecursivo(dir, ext) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const ruta = join(dir, e.name);
+    return e.isDirectory() ? listarRecursivo(ruta, ext) : (e.name.endsWith(ext) ? [ruta] : []);
+  }).sort();
+}
 
 /* ── 1. El manifiesto no se contradice ─────────────────────────────────── */
 const dup = M.guiones.filter((f, i) => M.guiones.indexOf(f) !== i);
@@ -72,10 +80,9 @@ juzgar(!sobran.length && !faltan.length,
   (sobran.length ? 'en disco y no declarados: ' + sobran.join(', ') + '  ' : '') +
   (faltan.length ? 'declarados y sin fichero: ' + faltan.join(', ') : ''));
 
-const cssDisco = existsSync(join(BASE, 'scss'))
-  ? readdirSync(join(BASE, 'scss')).filter((f) => /^_\d\d-.*\.scss$/.test(f))
-      .map((f) => 'scss/' + f).sort()
-  : [];
+const cssDisco = listarRecursivo(join(BASE, 'scss'), '.scss')
+  .filter((f) => !['app.scss', '_herramientas.scss'].includes(basename(f)))
+  .map((f) => relative(BASE, f).replaceAll('\\', '/'));
 juzgar(JSON.stringify(cssDisco) === JSON.stringify([...M.estilos].sort()),
   'los ' + M.estilos.length + ' parciales del manifiesto son los que hay en disco',
   'los parciales del manifiesto no coinciden con el disco',
@@ -83,7 +90,7 @@ juzgar(JSON.stringify(cssDisco) === JSON.stringify([...M.estilos].sort()),
 
 /* EL ORDEN DE LAS HOJAS YA NO LO DECLARA index.html. Antes eran nueve <link> y
    la cascada era el orden de las etiquetas; ahora Sass compila una sola hoja y
-   la cascada es el orden de los @use de cubomatica.scss. Se verifica ahi, que
+   la cascada es el orden de los @use de app.scss. Se verifica ahi, que
    es donde vive de verdad — y se sigue verificando contra el manifiesto, que es
    el unico dueño del orden en todo el proyecto. */
 const entrada = join(BASE, M.entradaEstilos);
@@ -92,10 +99,11 @@ if (!existsSync(entrada)) {
 } else {
   const scss = readFileSync(entrada, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
   const usados = [...scss.matchAll(/@use\s+'([^']+)'/g)].map((m) => m[1])
-    .filter((n) => n !== 'herramientas');
-  const esperados = M.estilos.map((f) => f.replace(/^scss\/_/, '').replace(/\.scss$/, ''));
+    .filter((n) => n !== 'abstracts/herramientas');
+  const esperados = M.estilos.map((f) => f.replace(/^scss\//, '')
+    .replace(/(^|\/)_(?=[^/]+$)/, '$1').replace(/\.scss$/, ''));
   juzgar(JSON.stringify(usados) === JSON.stringify(esperados),
-    'cubomatica.scss carga los ' + esperados.length + ' parciales en el orden del manifiesto',
+    'app.scss carga los ' + esperados.length + ' parciales en el orden del manifiesto',
     'el orden de @use no coincide con el manifiesto: la cascada cambiaria',
     'scss: ' + usados.join(' ') + ' | manifiesto: ' + esperados.join(' '));
 }

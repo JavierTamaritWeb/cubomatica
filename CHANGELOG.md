@@ -12,6 +12,43 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.23.1] — 2026-08-22
+
+**Tercera cifra.** Reorganización interna de Sass y documentación; no cambia el
+formato del perfil guardado ni el funcionamiento del juego.
+
+### Cambiado
+
+- **SCSS organizado por responsabilidad**: `app.scss` sustituye a
+  `cubomatica.scss` como único punto de entrada y los parciales pasan a
+  `abstracts/`, `base/`, `components/`, `layout/`, `pages/`, `themes/` y
+  `utilities/`. El orden de la cascada continúa declarado por
+  `manifiesto.json` y se comprueba contra el disco y los `@use`.
+- **`abstracts/_variables.scss` es la fuente única de variables globales.**
+  Reúne mapas de materiales, cielos, biomas, estados, puntos de ruptura, la
+  lista de movimiento reducido y las propiedades personalizadas globales. Las
+  variables temporales de mixins y las propiedades privadas de componentes
+  conservan su alcance local.
+- **Comentarios SCSS reducidos a decisiones útiles**: 2.915 líneas pasan a
+  1.829. Los 40 comentarios restantes usan `//`, explican restricciones no
+  evidentes y no se publican dentro del CSS compilado. El historial extenso se
+  mantiene en `docs/decisiones.md`.
+- **El modo de desarrollo vigila la estructura nueva.** `npm run dev`,
+  `npx gulp watch` y `npx gulp` permanecen activos; observan los diez parciales
+  del manifiesto, `app.scss` y `_herramientas.scss`.
+
+### Corregido
+
+- La auditoría y el comprobador de `dist/` recorren las carpetas SCSS de forma
+  recursiva. La regla de color exige ahora que los literales se declaren solo en
+  `_variables.scss`.
+- `package-lock.json` deja de declarar la versión obsoleta 1.22.0 y vuelve a
+  coincidir con el paquete y la aplicación.
+- README y LEEME reflejan la estructura actual, el modo vigilancia y la descarga
+  de arranque medida: 368 KB.
+
+---
+
 ## [1.23.0] — 2026-08-22
 
 **Segunda cifra.** La hoja de estilo pasa a tener una sola gramática, y la
@@ -192,7 +229,7 @@ teclado 3×4 a 150 px no cabe: la fila del OK quedaba fuera de la zona de juego.
 Ahora escribe los dos ejes. Y como `:root.modo-proyeccion` le gana a `:root` por
 **especificidad** —no por orden—, los tres escalones de altura nombran también la
 clase; sin eso, ningún techo posterior podía bajarla. La nota de
-`_01-variables.scss` que decía «gana el orden de origen» vale entre selectores de
+`_variables.scss` que decía «gana el orden de origen» vale entre selectores de
 la misma especificidad, y en cuanto uno lleva clase deja de valer.
 
 **Las seis columnas se pedían por altura sin mirar la anchura (E97).** La
@@ -1626,7 +1663,7 @@ cuatro agujeros.
 
 Además: el grep de colores excluía `_herramientas.scss` **por accidente** —
 heredaba la exclusión puesta para `transition:` — mientras el verde afirmaba
-«todos con nombre en `_01-variables.scss`»; y la comprobación del aviso de girar
+«todos con nombre en `_variables.scss`»; y la comprobación del aviso de girar
 exigía que **ningún** `max-width` del proyecto pasara de 300px, así que el primer
 punto de ruptura legítimo habría tumbado la construcción con un mensaje sobre
 otra cosa.

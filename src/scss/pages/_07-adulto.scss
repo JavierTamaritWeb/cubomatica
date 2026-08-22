@@ -1,12 +1,6 @@
-/* ============================================================================
-   07-adulto.css — Panel de personas adultas
-   ----------------------------------------------------------------------------
-   Tipografía del sistema, sin pixel. Es el único lugar del proyecto exento del
-   suelo de --tam-texto-min: aquí hay tablas densas y quien lee es adulto.
-   ========================================================================== */
+@use '../abstracts/herramientas' as *;
 
-@use 'herramientas' as *;   /* @use NO es transitivo */
-
+// El panel adulto usa una escala tipográfica más compacta que el área infantil.
 .pantalla--documento {
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
@@ -50,26 +44,7 @@
 .adulto__tabla th { background: var(--bg-texto-aviso); font-weight: bold; }
 .adulto__tabla tr:nth-child(even) td { background: var(--crema-fila); }
 
-/* Semáforo: NUNCA solo color. Siempre símbolo + texto (§10.4, impresión B/N)
-
-   E27 · AQUÍ SE LEÍA «●਍ominado», Y ASÍ LLEVABA DESDE EL PRINCIPIO.
-   Estas cuatro líneas se escribían con la primera letra de cada palabra pegada
-   al escape: "\25CF\00A0dominado". Un escape CSS consume hasta SEIS dígitos
-   hexadecimales, y la «d» de «dominado» es un dígito hexadecimal: el navegador
-   leía \00A0D —U+0A0D, un carácter devanagari— y se comía la letra. Con «datos»
-   era peor: «da» son dos dígitos, así que \00A0da daba U+A0DA y desaparecían
-   dos. Los cuatro rótulos de la leyenda del informe salían con basura.
-
-   No lo vio nadie porque el informe del adulto se mira poco y porque el color y
-   el símbolo, que son lo que de verdad transmite el estado, sí salían bien.
-   Lo destapó la migración a Sass: al reserializar, Sass resuelve los escapes y
-   escribió el resultado real, que se comparó con el anterior.
-
-   Se arregla escribiendo los caracteres tal cual. El fichero es UTF-8, el HTML
-   declara <meta charset="utf-8"> y Sass emite @charset "UTF-8": no hay ninguna
-   razón para escapar un espacio duro, y escaparlo es justo lo que rompía.
-   Se conservan los espacios DUROS de verdad (U+00A0), que es lo que el autor
-   quería: así la leyenda no se parte aunque alguien quite el `nowrap`. */
+// Símbolo y texto mantienen el significado sin depender del color.
 .semaforo { font-weight: bold; white-space: nowrap; }
 .semaforo[data-nivel="verde"]::before   { content: "● dominado — "; }
 .semaforo[data-nivel="ambar"]::before   { content: "▲ en proceso — "; }
@@ -108,11 +83,6 @@
   box-shadow: inset 2px 2px 0 0 var(--deco-piedra);
   min-height: 48px; width: 100%;
 }
-
-/* `.rejilla-adulto` declaraba una rejilla envolvente para el panel del adulto
-   que ningún contenedor llevaba puesta. El panel apila sus secciones en flujo
-   normal. Cuando la fase responsive le dé columnas de verdad, se las dará al
-   contenedor que el panel crea, no a una clase que nadie aplica. */
 
 .matriz-subtipos { font-size: 14px; }
 .matriz-subtipos td.matriz-subtipos__dato { text-align: right; white-space: nowrap; }

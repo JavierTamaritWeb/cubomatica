@@ -1,0 +1,220 @@
+@use 'sass:list';
+
+// Configuración Sass compartida. Las variables temporales permanecen dentro de sus mixins.
+$materiales: (
+  piedra:  (#8C8C8C, #6E6E6E, #ADADAD),
+  tierra:  (#8B5E3C, #6B4526, #A87850),
+  hierba:  (#5AA02C, #3F7A1E, #7BC44A),
+  madera:  (#A0763F, #7A5628, #C29A62),
+  arena:   (#E0D08A, #C4B067, #F0E4AE),
+  agua:    (#3C7BD4, #2A5CA8, #5C9BE8),
+  hielo:   (#A8D8E8, #7FB8CC, #CDECF5),
+  carbon:  (#3A3A3A, #232323, #545454),
+  cobre:   (#C87137, #9E5525, #E08F55),
+  cristal: (#7FD4E8, #55AEC4, #B0EAF5),
+  musgo:   (#4E7A3A, #3A5C2A, #6D9B54),
+  brasa:   (#E8642A, #B84618, #F58B52),
+  oro:     (#E8B923, #B8900F, #F5D45C)
+);
+
+$cielos: (#8FD3F4, #7FC2E8, #6BA6D6, #4F7BA8, #2E4A72, #1A2A48);
+
+$texturados: piedra, tierra, hierba, madera, arena, agua, musgo, cristal;
+
+$biomas: (pradera: hierba, bosque: musgo, rio: agua, mina: piedra);
+$estados-veta: (
+  bloqueado:   piedra-osc,
+  nuevo:       piedra,
+  aprendiendo: arena,
+  afianzada:   hierba-cla,
+  dominada:    cristal-cla,
+  oxidada:     musgo-cla
+);
+
+$puntos: (movil: 480px, tableta: 768px, portatil: 1024px,
+          escritorio: 1200px, ancho: 1400px);
+$alturas: (alta: 900px, media: 780px, baja: 660px, corta: 600px, minima: 420px);
+
+$animados:
+  '.particula.particula--viva', '.criatura--flota', '.criatura--saltito', '.criatura--asiente', '.criatura--gotea', '.criatura--gira',
+  '.nube', '.veta--musgo', '.btn-bloque--monta', '.btn-bloque--destello',
+  '.reloj__arena.reloj__arena--voltea', '.reloj__chorro', '.reloj--prisa .reloj__arena',
+  '.reloj__cifra.reloj__cifra--late',
+  '.cinta.cinta--entra', '.cinta--prisa.cinta--entra .cinta__texto',
+  '.insignia.insignia--brota', '.cartel.cartel--brota',
+  '.cifra-viva.cifra-viva--sube',
+  '.zona-juego.zona-juego--sacude';
+
+// Tokens globales. Las custom properties privadas de componentes conservan su alcance local.
+:root {
+
+  --fuente-pixel: 'Bloque Pixel', 'Silkscreen', 'Press Start 2P',
+                  ui-monospace, 'SF Mono', Menlo, Consolas, 'Courier New', monospace;
+
+  --fuente-lectura: Verdana, Geneva, 'DejaVu Sans', Tahoma, sans-serif;
+
+  --u: 4px;
+
+  --e1: calc(var(--u) * 1);
+  --e2: calc(var(--u) * 2);
+  --e3: calc(var(--u) * 4);
+  --e4: calc(var(--u) * 8);
+  --e5: calc(var(--u) * 12);
+  --e6: calc(var(--u) * 16);
+
+  --tam-enunciado:     28px;
+  --tam-texto-min:     20px;
+  --tam-numero-opcion: 44px;
+  --tam-titulo:        40px;
+  --tam-adulto:        16px;
+
+  --interlineado:  1.6;
+  --espaciado-letra: .05em;
+  --espaciado-palabra: .16em;
+  --ancho-lectura: 34ch;
+
+  --lado-deseado: 96px;
+  --lado-techo:   96px;
+  --lado-respuesta: min(var(--lado-deseado), var(--lado-techo));
+  --lado-icono: 64px;
+  --bisel: 4px;
+
+  --cinta-pieza: calc(var(--tam-texto-min) + var(--e1));
+
+  // El texto solo usa fondos planos; las texturas se reservan para decoración.
+  --bg-texto-panel:   #FFF6E5;
+  --bg-texto-crema:   #FFF6E5;
+  --bg-texto-oscuro:  #241C14;
+  --bg-texto-aviso:   #FFE9B8;
+  --bg-pantalla:      #2B2118;
+
+  --texto-principal:  #241C14;
+  --texto-secundario: #4A3A28;
+  --texto-claro:      #FFF6E5;
+  --texto-sec-claro:  #D9C9AE;
+  --texto-aviso:      #241C14;
+
+  --btn-fondo:         #D9B98C;
+  --btn-fondo-hundido: #A88A5E;
+  --btn-texto:         #241C14;
+  --btn-borde-luz:     #F0DDBE;
+  --btn-borde-sombra:  #7A5628;
+
+  --btn-fondo-desactivado: var(--deco-piedra);
+  --btn-texto-desactivado: var(--btn-texto);
+
+  --btn-primario:         #5AA02C;
+  --btn-primario-hundido: #3F7A1E;
+  --btn-primario-texto:   #241C14;
+
+  --ok-fondo:    #E3F3D6;
+  --ok-texto:    #1E3D10;
+  --mal-fondo:   #E8E4DE;
+  --mal-texto:   #33302B;
+
+  --foco-oro:   #F5C518;
+  --foco-borde: #241C14;
+
+  --alto-contraste-bg:    #000000;
+  --alto-contraste-texto: #FFFFFF;
+
+  // Cada material publica tonos base, oscuro y claro para formar biseles.
+  @each $nombre, $tonos in $materiales {
+    --deco-#{$nombre}:      #{list.nth($tonos, 1)};
+    --deco-#{$nombre}-osc:  #{list.nth($tonos, 2)};
+    --deco-#{$nombre}-cla:  #{list.nth($tonos, 3)};
+  }
+
+  --blanco: #FFFFFF;
+  --negro:  #000000;
+  --gris-hueso:   #E8E4DE;
+  --gris-carbon:  #33302B;
+  --gris-piedra:  #7A766F;
+  --sombra-honda: #1A1610;
+  --crema-fila:   #F6F1E6;
+  --semaforo-verde: #1E3D10;
+  --semaforo-ambar: #6B4526;
+  --semaforo-rojo:  #7A2010;
+  --peligro-suave:  #E8D3CE;
+
+  --cristal-claro: var(--deco-cristal-cla);
+  --luz-apagada:   #59554F;
+  --gema:          var(--deco-cristal);
+
+  @for $i from 0 through 5 { --cielo-#{$i}: #{list.nth($cielos, $i + 1)}; }
+  --cielo-dia:   #{list.nth($cielos, 1)};
+  --cielo-noche: #{list.nth($cielos, 6)};
+
+  @each $m in $texturados { --tex-#{$m}: var(--deco-#{$m}); }
+}
+
+// La anchura propone un tamaño y la altura impone el techo en componentes.
+:root { --lado-deseado: 64px; }
+
+@media (min-width: 480px)  { :root { --lado-deseado: 80px;  } }
+@media (min-width: 768px)  { :root { --lado-deseado: 96px;  } }
+@media (min-width: 1024px) { :root { --lado-deseado: 96px;  } }
+@media (min-width: 1200px) { :root { --lado-deseado: 112px; } }
+@media (min-width: 1400px) { :root { --lado-deseado: 128px; } }
+
+// Recursos de las piezas de dinero; las rutas son relativas al CSS compilado.
+:root {
+  --pieza-c1:  url('../img/pieza-c1.webp');
+  --pieza-c5:  url('../img/pieza-c5.webp');
+  --pieza-c10: url('../img/pieza-c10.webp');
+  --pieza-c20: url('../img/pieza-c20.webp');
+  --pieza-c50: url('../img/pieza-c50.webp');
+  --pieza-1:   url('../img/pieza-1.webp');
+  --pieza-2:   url('../img/pieza-2.webp');
+  --pieza-5:   url('../img/pieza-5.webp');
+  --pieza-10:  url('../img/pieza-10.webp');
+  --pieza-20:  url('../img/pieza-20.webp');
+  --pieza-50:  url('../img/pieza-50.webp');
+  --pieza-100: url('../img/pieza-100.webp');
+}
+
+:root.letra-grande {
+  --tam-enunciado:     34px;
+  --tam-texto-min:     24px;
+  --tam-numero-opcion: 52px;
+  --tam-titulo:        46px;
+}
+
+:root.modo-proyeccion {
+  --tam-enunciado:     45px;
+  --tam-texto-min:     32px;
+  --tam-numero-opcion: 70px;
+  --tam-titulo:        64px;
+
+  --lado-deseado:      150px;
+  --lado-techo:        150px;
+}
+
+// La misma paleta se aplica al ajuste interno y a la preferencia del sistema.
+@mixin alto-contraste {
+  --bg-texto-panel:   #000000;
+  --bg-texto-crema:   #000000;
+  --bg-pantalla:      #000000;
+  --texto-principal:  #FFFFFF;
+  --texto-secundario: #FFFFFF;
+  --btn-fondo:        #000000;
+  --btn-fondo-hundido:#333333;
+  --btn-texto:        #FFFFFF;
+
+  --btn-fondo-desactivado: #333333;
+  --btn-texto-desactivado: #FFFFFF;
+  --btn-borde-luz:    #FFFFFF;
+  --btn-borde-sombra: #FFFFFF;
+  --btn-primario:     #000000;
+  --btn-primario-texto:#FFFFFF;
+  --ok-fondo:         #000000;
+  --ok-texto:         #FFFFFF;
+  --mal-fondo:        #000000;
+  --mal-texto:        #FFFFFF;
+}
+
+:root.alto-contraste { @include alto-contraste; }
+
+@media (prefers-contrast: more) {
+  :root { @include alto-contraste; }
+}

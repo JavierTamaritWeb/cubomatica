@@ -48,16 +48,16 @@
     "js/99-arranque.js"
   ],
   "estilos": [
-    "scss/_00-fuentes.scss",
-    "scss/_01-variables.scss",
-    "scss/_02-base.scss",
-    "scss/_03-componentes.scss",
-    "scss/_04-pantallas.scss",
-    "scss/_05-animaciones.scss",
-    "scss/_06-biomas.scss",
-    "scss/_07-adulto.scss",
-    "scss/_08-imprimir.scss",
-    "scss/_09-forzado.scss"
+    "scss/base/_00-fuentes.scss",
+    "scss/abstracts/_variables.scss",
+    "scss/base/_02-base.scss",
+    "scss/components/_03-componentes.scss",
+    "scss/layout/_04-pantallas.scss",
+    "scss/base/_05-animaciones.scss",
+    "scss/themes/_06-biomas.scss",
+    "scss/pages/_07-adulto.scss",
+    "scss/utilities/_08-imprimir.scss",
+    "scss/utilities/_09-forzado.scss"
   ],
   "puros": [
     "js/00-nucleo.js",
@@ -82,5 +82,5 @@
     "js/29-grafo.js",
     "js/2A-escalera.js"
   ],
-  "entradaEstilos": "scss/cubomatica.scss"
+  "entradaEstilos": "scss/app.scss"
 }

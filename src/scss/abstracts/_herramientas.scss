@@ -1,0 +1,99 @@
+@use 'sass:map';
+@use 'sass:list';
+@use 'variables' as variables;
+
+// Los nombres inválidos fallan durante la compilación en vez de omitir una media query.
+@mixin desde($punto) {
+  @if not map.has-key(variables.$puntos, $punto) {
+    @error 'Punto de ruptura desconocido: #{$punto}. Validos: #{map.keys(variables.$puntos)}.';
+  }
+  @media (min-width: map.get(variables.$puntos, $punto)) { @content; }
+}
+
+@mixin hasta-alto($punto) {
+  @if not map.has-key(variables.$alturas, $punto) {
+    @error 'Altura desconocida: #{$punto}. Validas: #{map.keys(variables.$alturas)}.';
+  }
+  @media (max-height: map.get(variables.$alturas, $punto)) { @content; }
+}
+
+@mixin bisel($luz, $sombra, $grosor: var(--bisel), $extra: null) {
+  $capas: (inset #{$grosor} #{$grosor} 0 0 #{$luz},
+           inset calc(#{$grosor} * -1) calc(#{$grosor} * -1) 0 0 #{$sombra});
+  @if $extra { $capas: list.append($capas, $extra, $separator: comma); }
+  box-shadow: $capas;
+}
+
+@mixin bisel-lateral($color, $grosor: var(--bisel)) {
+  box-shadow: inset #{$grosor} 0 0 0 #{$color};
+}
+
+// Las transiciones creadas con este mixin siempre son discretas.
+@mixin paso($propiedades, $ms: 90ms, $pasos: 2) {
+  $t: ();
+  @each $p in $propiedades {
+    $t: list.append($t, #{$p} #{$ms} steps(#{$pasos}, end), $separator: comma);
+  }
+  transition: $t;
+}
+
+@mixin animar($nombre, $ms, $pasos, $repite: 1, $relleno: null) {
+  animation: #{$nombre} #{$ms} steps(#{$pasos}, end) #{$repite} #{$relleno};
+}
+
+// JavaScript establece la duración; Sass conserva la forma de la coreografía.
+@mixin coreografia($nombre, $pasos) {
+  animation-name: #{$nombre};
+  animation-timing-function: steps(#{$pasos}, end);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+@mixin frenar-todo($prefijo: '') {
+  #{$prefijo}*, #{$prefijo}*::before, #{$prefijo}*::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+@mixin fila-envuelta($hueco: var(--e3)) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $hueco;
+  justify-content: center;
+}
+
+@mixin apagado {
+  background: var(--btn-fondo-desactivado);
+  color: var(--btn-texto-desactivado);
+}
+
+@mixin oculto-visual {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// Al quitar movimiento se conserva toda la información visual en un estado estático.
+@mixin desactivar-movimiento($lista, $prefijo: '') {
+  $sel: ();
+  @each $s in $lista { $sel: list.append($sel, '#{$prefijo}#{$s}', $separator: comma); }
+  #{$sel} { animation: none !important; }
+
+  #{$prefijo}.btn-bloque--monta:not(:disabled) { opacity: 1; transform: none; }
+  #{$prefijo}.particula.particula--viva { display: none; }
+
+  #{$prefijo}.cinta.cinta--entra { transform: none; opacity: 1; }
+
+  #{$prefijo}.insignia.insignia--brota { transform: none; opacity: 1; }
+  #{$prefijo}.cartel.cartel--brota { transform: translateX(-50%); opacity: 1; }
+
+  #{$prefijo}.zona-juego.zona-juego--sacude {
+    transform: none;
+    box-shadow: inset 0 0 0 8px var(--deco-oro);
+  }
+}

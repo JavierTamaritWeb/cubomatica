@@ -1254,7 +1254,7 @@ contra el bundle legible como contra el minificado.
 
 ### CSS → SCSS sin tocar una sola clase (fase 3)
 
-`git mv` de los nueve `.css` a `src/scss/_NN-*.scss`, más `cubomatica.scss` como
+`git mv` de los nueve `.css` a parciales numerados, más `app.scss` como
 único punto de entrada y `_herramientas.scss` **vacío a propósito**: los mixins
 son la fase siguiente. Separar los dos pasos no es ceremonia, es lo único que
 permite distinguir «Sass lo compila distinto» de «he escrito mal un mixin», que
@@ -1331,7 +1331,7 @@ estilo y la auditoría lo recalcula. Cero dependencias, y detecta igualmente un
 
 Y muere el último de los cuatro contadores: `ls css/*.css == 9`. Medía que la
 cascada estuviera completa cuando la cascada **era** la lista de `<link>`. Ahora
-la declara el orden de los `@use` de `cubomatica.scss`, y se verifica en dos
+la declara el orden de los `@use` de `app.scss`, y se verifica en dos
 direcciones contra el manifiesto. Contar ficheros habría seguido pasando en verde
 con un `@use` olvidado.
 
@@ -1352,7 +1352,7 @@ es que esté prohibido; es que no se puede.
 Un grep que falla te dice que te has equivocado. Un mixin sin ese parámetro hace
 que no llegues a equivocarte. La auditoría gana las dos reglas **en positivo y
 sobre la fuente**: cero `transition:` fuera del mixin, cero color suelto fuera de
-`_01-variables.scss`.
+`_variables.scss`.
 
 #### El criterio, otra vez: diff vacío
 
@@ -1375,7 +1375,7 @@ nadie lo habría visto, y la próxima vez podría no dar igual.
 
 #### Los 42 colores sueltos
 
-La cabecera de `_01-variables.scss` lleva desde 1.0.0 declarando que allí vive
+La cabecera de `_variables.scss` lleva desde 1.0.0 declarando que allí vive
 «la única fuente de verdad de medidas y colores». Había **42 literales
 hexadecimales repartidos por cinco hojas**: 21 blancos, 11 negros y 10 tonos
 sueltos.
@@ -1956,7 +1956,7 @@ Dos más de la misma familia, encontradas de paso:
 - El grep de colores excluía `_herramientas.scss` **por accidente**: heredaba la
   exclusión puesta para que el mixin `paso()` pudiera escribir `transition:`. Los
   39 hex del mapa de materiales llevaban meses sin mirarse mientras el verde
-  afirmaba «todos con nombre en `_01-variables.scss`». Ahora cada exclusión se
+  afirmaba «todos con nombre en `_variables.scss`». Ahora cada exclusión se
   nombra por su motivo y no se hereda.
 - La comprobación del aviso de girar exigía que **ningún** `max-width` del
   proyecto pasara de 300px. Pasaba solo porque hoy hay uno. El primer
@@ -3576,7 +3576,7 @@ entonces y en el cruce de clases. Ninguno se ve leyendo la hoja de estilos:
   del `min()` de los dos ejes. En un proyector de 1200×700 la fila del OK caía fuera. Y como
   el selector lleva clase, ganaba por **especificidad**: ningún `:root { --lado-techo }`
   posterior podía bajarlo, así que los tres escalones de altura nombran ahora también la
-  clase. La nota de `_01-variables.scss` que decía «gana el orden de origen» vale entre
+  clase. La nota de `_variables.scss` que decía «gana el orden de origen» vale entre
   selectores de la misma especificidad, y solo ahí.
 - **E97** — la excepción documentada del 6×2 se pedía por altura sin mirar la anchura. Seis
   columnas de 64 px con sus huecos son 424: en 360×640 dos columnas se salían.
@@ -3672,3 +3672,33 @@ decir. El que protege a quien juega sigue siendo el de la descarga de arranque.
 las tres por un caso real —`$luz` es un parámetro de mixin, `#visor-respuesta` es
 un id (los ids no se renombran) y `@` empieza una at-rule—, y la del id la
 descubrió el guardián E68 poniéndose rojo, que es exactamente para lo que está.
+
+---
+
+## D-1.23.1 — La estructura Sass y dónde debe vivir cada explicación
+
+La carpeta plana de SCSS mezclaba orden de cascada y responsabilidad. Se adopta
+una estructura 7-1 ajustada al tamaño real del proyecto: `app.scss` es la única
+entrada; `manifiesto.json` conserva el orden de los diez parciales que emiten la
+cascada; `_herramientas.scss` contiene los mixins; el resto se reparte entre
+`abstracts`, `base`, `components`, `layout`, `pages`, `themes` y `utilities`.
+Las carpetas clasifican, pero no deciden el orden.
+
+`abstracts/_variables.scss` es la fuente única de configuración Sass y de
+propiedades personalizadas globales. No se llevan allí las variables temporales
+de un algoritmo ni las propiedades personalizadas privadas de un componente:
+las primeras no son configuración y mover las segundas a `:root` cambiaría su
+alcance. Los consumidores de mapas importan `variables` explícitamente para que
+la dependencia sea visible.
+
+Los comentarios de las hojas habían acumulado decisiones, relatos de fallos ya
+cerrados y descripciones literales del selector siguiente. Eso duplicaba esta
+documentación y publicaba el texto interno en el CSS expandido. El criterio queda
+así: en SCSS solo `//`, solo para explicar un porqué no evidente —accesibilidad,
+compatibilidad, especificidad, orden o contrato con JavaScript—. La historia y
+las alternativas descartadas viven aquí.
+
+El modo vigilancia sigue el mismo contrato: los diez parciales del manifiesto,
+la entrada y los mixins forman las doce fuentes que pueden cambiar el CSS. Gulp
+vigila las doce; `manifiesto.json` requiere reiniciar el proceso porque se carga
+una sola vez al arrancar.
