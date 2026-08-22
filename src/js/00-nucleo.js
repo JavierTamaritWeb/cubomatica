@@ -7,10 +7,10 @@ CB.util = CB.util || {};
 
 /* mulberry32: generador de 32 bits, rápido y con semilla. Devuelve [0,1). */
 CB.util.mulberry32 = function (semilla) {
-  var s = semilla >>> 0;
+  let s = semilla >>> 0;
   return function () {
     s = (s + 0x6D2B79F5) >>> 0;
-    var t = s;
+    let t = s;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
@@ -19,7 +19,7 @@ CB.util.mulberry32 = function (semilla) {
 
 /* hash32: cadena → entero de 32 bits sin signo. Para derivar semillas. */
 CB.util.hash32 = function (texto) {
-  var h = 2166136261 >>> 0, i;
+  let h = 2166136261 >>> 0, i;
   texto = String(texto);
   for (i = 0; i < texto.length; i++) {
     h ^= texto.charCodeAt(i);
@@ -30,7 +30,7 @@ CB.util.hash32 = function (texto) {
 
 /* Entero en [min, max], ambos incluidos. */
 CB.util.ent = function (rng, min, max) {
-  if (max < min) { var t = min; min = max; max = t; }
+  if (max < min) { const t = min; min = max; max = t; }
   return min + Math.floor(rng() * (max - min + 1));
 };
 
@@ -41,7 +41,8 @@ CB.util.elegir = function (rng, lista) {
 
 /* Fisher-Yates. Devuelve una copia; no muta la entrada. */
 CB.util.barajar = function (lista, rng) {
-  var a = lista.slice(), i, j, t;
+  const a = lista.slice();
+  let i, j, t;
   for (i = a.length - 1; i > 0; i--) {
     j = Math.floor(rng() * (i + 1));
     t = a[i]; a[i] = a[j]; a[j] = t;
@@ -50,7 +51,8 @@ CB.util.barajar = function (lista, rng) {
 };
 
 CB.util.rango = function (n) {
-  var a = [], i;
+  const a = [];
+  let i;
   for (i = 0; i < n; i++) a.push(i);
   return a;
 };
@@ -74,7 +76,7 @@ CB.util.BolsaBarajada.prototype.sacar = function (evitar) {
   if (!this.restantes.length) this.rellenar();
   evitar = evitar || [];
 
-  var i;
+  let i;
   for (i = this.restantes.length - 1; i >= 0; i--) {
     if (evitar.indexOf(this.restantes[i]) === -1) {
       return this.restantes.splice(i, 1)[0];
@@ -96,14 +98,14 @@ CB.util.clamp = function (v, a, b) {
 
 CB.util.mediana = function (arr) {
   if (!arr || !arr.length) return 0;
-  var a = arr.slice().sort(function (x, y) { return x - y; });
-  var m = Math.floor(a.length / 2);
+  const a = arr.slice().sort(function (x, y) { return x - y; });
+  const m = Math.floor(a.length / 2);
   return (a.length % 2) ? a[m] : Math.round((a[m - 1] + a[m]) / 2);
 };
 
 CB.util.media = function (arr) {
   if (!arr || !arr.length) return 0;
-  var s = 0, i;
+  let s = 0, i;
   for (i = 0; i < arr.length; i++) s += arr[i];
   return s / arr.length;
 };
@@ -120,21 +122,21 @@ CB.util.mediaIncremental = function (medio, n, valor) {
 
 CB.util.hoyISO = function (d) {
   d = d || new Date();
-  var m = d.getMonth() + 1, x = d.getDate();
+  const m = d.getMonth() + 1, x = d.getDate();
   return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (x < 10 ? '0' : '') + x;
 };
 
 /* Compara a MEDIODÍA LOCAL: inmune al cambio de hora. */
 CB.util.diasEntre = function (a, b) {
   if (!a || !b) return 0;
-  var A = new Date(a + 'T12:00:00');
-  var B = new Date(b + 'T12:00:00');
-  var d = Math.round((B - A) / 86400000);
+  const A = new Date(a + 'T12:00:00');
+  const B = new Date(b + 'T12:00:00');
+  const d = Math.round((B - A) / 86400000);
   return isFinite(d) ? d : 0;
 };
 
 CB.util.sumarDias = function (iso, dias) {
-  var d = new Date(iso + 'T12:00:00');
+  const d = new Date(iso + 'T12:00:00');
   d.setDate(d.getDate() + dias);
   return CB.util.hoyISO(d);
 };
@@ -171,7 +173,7 @@ CB.util.normalizar = function (t) {
 };
 
 CB.util.palabras = function (t) {
-  var s = String(t).trim();
+  const s = String(t).trim();
   return s ? s.split(/\s+/) : [];
 };
 
@@ -179,9 +181,10 @@ CB.util.palabras = function (t) {
    fácil DEBEN usar este mismo algoritmo, o el invariante 7 mide una cosa y la
    pantalla muestra otra (§9.3). */
 CB.util.cortarLineas = function (texto, ancho) {
-  var palabras = CB.util.palabras(texto), lineas = [], actual = '', i;
+  const palabras = CB.util.palabras(texto), lineas = [];
+  let actual = '', i;
   for (i = 0; i < palabras.length; i++) {
-    var cand = actual ? (actual + ' ' + palabras[i]) : palabras[i];
+    const cand = actual ? (actual + ' ' + palabras[i]) : palabras[i];
     if (cand.length > ancho && actual) {
       lineas.push(actual);
       actual = palabras[i];
@@ -198,16 +201,35 @@ CB.util.mayus1 = function (t) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 };
 
+/* Eleva fallos capturados al puente global de 99-arranque.js. Se hace en la
+   siguiente tarea para no convertir un callback interno en una excepción de
+   quien emitió el evento. */
+CB.util.reportarError = function (causa, contexto) {
+  const error = causa instanceof Error ? causa : new Error(String(causa || 'error sin detalle'));
+  error.cbContexto = contexto || '';
+  setTimeout(function () { throw error; }, 0);
+};
+
 /* EventoSimple: pub/sub mínimo, sin dependencias */
 CB.util.EventoSimple = function () { this.oyentes = {}; };
 CB.util.EventoSimple.prototype.escuchar = function (nombre, fn) {
   (this.oyentes[nombre] = this.oyentes[nombre] || []).push(fn);
 };
 CB.util.EventoSimple.prototype.emitir = function (nombre, dato) {
-  var l = this.oyentes[nombre], i;
+  const l = this.oyentes[nombre];
   if (!l) return;
-  for (i = 0; i < l.length; i++) {
-    try { l[i](dato); } catch (e) { /* un oyente roto no tumba la partida */ }
+  const copia = l.slice();
+  let i, indice;
+  for (i = 0; i < copia.length; i++) {
+    try {
+      copia[i](dato);
+    } catch (e) {
+      /* Retirarlo antes de informar evita que un oyente roto de `pantalla`
+         vuelva a fallar cuando la pantalla global de error emita ese evento. */
+      indice = l.indexOf(copia[i]);
+      if (indice !== -1) l.splice(indice, 1);
+      CB.util.reportarError(e, 'evento ' + nombre);
+    }
   }
 };
 
@@ -215,7 +237,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '1.23.3';
+CB.VERSION = '1.23.4';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +

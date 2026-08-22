@@ -19,17 +19,17 @@ CB.texturas.RECETAS = [
 ];
 
 CB.texturas.pintar = function (receta) {
-  var semilla = receta[1];
-  var base = receta[2], claro = receta[3], oscuro = receta[4], patron = receta[5];
-  var L = CB.texturas.LADO;
+  const semilla = receta[1];
+  const base = receta[2], claro = receta[3], oscuro = receta[4], patron = receta[5];
+  const L = CB.texturas.LADO;
 
-  var lienzo = document.createElement('canvas');
+  const lienzo = document.createElement('canvas');
   lienzo.width = L; lienzo.height = L;
-  var g = lienzo.getContext('2d');
+  const g = lienzo.getContext('2d');
   if (!g) return null;
 
-  var rng = CB.util.mulberry32(semilla);
-  var x, y, r;
+  const rng = CB.util.mulberry32(semilla);
+  let x, y, r;
 
   g.fillStyle = base;
   g.fillRect(0, 0, L, L);
@@ -72,7 +72,8 @@ CB.texturas.pintar = function (receta) {
 };
 
 CB.texturas.generarTodas = function () {
-  var raiz = document.documentElement, i, receta, url;
+  const raiz = document.documentElement;
+  let i, receta, url;
   for (i = 0; i < CB.texturas.RECETAS.length; i++) {
     receta = CB.texturas.RECETAS[i];
     if (CB.texturas.cache[receta[0]]) continue;

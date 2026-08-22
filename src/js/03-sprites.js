@@ -205,7 +205,7 @@ CB.sprites.PALETAS = {
 CB.sprites.IDS = Object.keys(CB.sprites.MAPAS);
 
 CB.sprites.encendidos = function (mapa) {
-  var n = 0, y, x;
+  let n = 0, y, x;
   for (y = 0; y < mapa.length; y++) {
     for (x = 0; x < mapa[y].length; x++) if (mapa[y].charAt(x) !== '.') n++;
   }
@@ -214,7 +214,8 @@ CB.sprites.encendidos = function (mapa) {
 
 /* Cadena de box-shadow: solo para sprites estáticos pequeños. */
 CB.sprites.aBoxShadow = function (mapa, paleta, px) {
-  var partes = [], y, x, c;
+  const partes = [];
+  let y, x, c;
   for (y = 0; y < mapa.length; y++) {
     for (x = 0; x < mapa[y].length; x++) {
       c = mapa[y].charAt(x);
@@ -227,12 +228,12 @@ CB.sprites.aBoxShadow = function (mapa, paleta, px) {
 
 /* Rasterización a canvas: para sprites animados o grandes. */
 CB.sprites.aDataURL = function (mapa, paleta, px) {
-  var ancho = 0, y, x, c;
+  let ancho = 0, y, x, c;
   for (y = 0; y < mapa.length; y++) ancho = Math.max(ancho, mapa[y].length);
 
-  var lienzo = document.createElement('canvas');
+  const lienzo = document.createElement('canvas');
   lienzo.width = ancho * px; lienzo.height = mapa.length * px;
-  var g = lienzo.getContext('2d');
+  const g = lienzo.getContext('2d');
   if (!g) return null;
 
   for (y = 0; y < mapa.length; y++) {
@@ -252,24 +253,24 @@ CB.sprites.aDataURL = function (mapa, paleta, px) {
  */
 CB.sprites.desdeMapa = function (nombre, opciones) {
   opciones = opciones || {};
-  var px = opciones.px || 8;
-  var clave = nombre + '@' + px + (opciones.paletaId != null ? ('#' + opciones.paletaId) : '');
+  const px = opciones.px || 8;
+  const clave = nombre + '@' + px + (opciones.paletaId != null ? ('#' + opciones.paletaId) : '');
   if (CB.sprites.cache[clave]) return CB.sprites.cache[clave];
 
-  var mapa = CB.sprites.MAPAS[nombre];
+  const mapa = CB.sprites.MAPAS[nombre];
   if (!mapa) return null;
-  var paleta = opciones.paleta || CB.sprites.PALETAS[nombre] || ['#000'];
+  const paleta = opciones.paleta || CB.sprites.PALETAS[nombre] || ['#000'];
 
-  var n = CB.sprites.encendidos(mapa);
-  var ancho = 0, y;
+  const n = CB.sprites.encendidos(mapa);
+  let ancho = 0, y;
   for (y = 0; y < mapa.length; y++) ancho = Math.max(ancho, mapa[y].length);
 
-  var res;
+  let res;
   if (!opciones.animado && n <= CB.sprites.UMBRAL_BOXSHADOW) {
     res = { tipo: 'sombra', valor: CB.sprites.aBoxShadow(mapa, paleta, px),
             ancho: ancho * px, alto: mapa.length * px, px: px };
   } else {
-    var url = CB.sprites.aDataURL(mapa, paleta, px);
+    const url = CB.sprites.aDataURL(mapa, paleta, px);
     res = url
       ? { tipo: 'imagen', valor: url, ancho: ancho * px, alto: mapa.length * px, px: px }
       : { tipo: 'sombra', valor: CB.sprites.aBoxShadow(mapa, paleta, px),
@@ -282,9 +283,9 @@ CB.sprites.desdeMapa = function (nombre, opciones) {
 
 /* Los 16 avatares por permutación de paleta sobre los 2 mapas base. */
 CB.sprites.avatar = function (indice, px) {
-  var i = CB.util.clamp(parseInt(indice, 10) || 0, 0, 15);
-  var pal = CB.datos.AVATARES[i];
-  var base = (i % 2 === 0) ? 'avatarBase1' : 'avatarBase2';
+  const i = CB.util.clamp(parseInt(indice, 10) || 0, 0, 15);
+  const pal = CB.datos.AVATARES[i];
+  const base = (i % 2 === 0) ? 'avatarBase1' : 'avatarBase2';
   return CB.sprites.desdeMapa(base, {
     px: px || 8, paletaId: i,
     paleta: [pal.casco, pal.piel, '#241C14', pal.ropa, '#3A3A3A']
@@ -293,7 +294,7 @@ CB.sprites.avatar = function (indice, px) {
 
 /* Aplica un sprite a un elemento del DOM sin usar innerHTML. */
 CB.sprites.aplicar = function (el, nombre, opciones) {
-  var s = (nombre === 'avatar')
+  const s = (nombre === 'avatar')
     ? CB.sprites.avatar(opciones.indice, opciones.px)
     : CB.sprites.desdeMapa(nombre, opciones);
   if (!el || !s) return null;
@@ -313,7 +314,7 @@ CB.sprites.aplicar = function (el, nombre, opciones) {
 };
 
 CB.sprites.precalentar = function () {
-  var i, n = 0;
+  let i, n = 0;
   for (i = 0; i < CB.sprites.IDS.length; i++) {
     if (CB.sprites.desdeMapa(CB.sprites.IDS[i], { px: 8 })) n++;
   }

@@ -49,25 +49,25 @@ CB.gen.problemas.nuevoEstadoBolsas = function () {
 CB.gen.problemas.elegirActores = function (rng, bolsas) {
   bolsas = bolsas || CB.gen.problemas.nuevoEstadoBolsas();
 
-  var bG = new CB.util.BolsaBarajada(2, rng, bolsas.genero);
-  var g1 = bG.sacar([]);
+  const bG = new CB.util.BolsaBarajada(2, rng, bolsas.genero);
+  const g1 = bG.sacar([]);
   bolsas.genero = bG.estado();
 
-  var listaA = (g1 === 0) ? CB.datos.NOMBRES_F : CB.datos.NOMBRES_M;
-  var listaB = (g1 === 0) ? CB.datos.NOMBRES_M : CB.datos.NOMBRES_F;
-  var claveA = (g1 === 0) ? 'nombreF' : 'nombreM';
-  var claveB = (g1 === 0) ? 'nombreM' : 'nombreF';
+  const listaA = (g1 === 0) ? CB.datos.NOMBRES_F : CB.datos.NOMBRES_M;
+  const listaB = (g1 === 0) ? CB.datos.NOMBRES_M : CB.datos.NOMBRES_F;
+  const claveA = (g1 === 0) ? 'nombreF' : 'nombreM';
+  const claveB = (g1 === 0) ? 'nombreM' : 'nombreF';
 
-  var bA = new CB.util.BolsaBarajada(listaA.length, rng, bolsas[claveA]);
-  var iA = bA.sacar([]); bolsas[claveA] = bA.estado();
-  var bB = new CB.util.BolsaBarajada(listaB.length, rng, bolsas[claveB]);
-  var iB = bB.sacar([]); bolsas[claveB] = bB.estado();
+  const bA = new CB.util.BolsaBarajada(listaA.length, rng, bolsas[claveA]);
+  const iA = bA.sacar([]); bolsas[claveA] = bA.estado();
+  const bB = new CB.util.BolsaBarajada(listaB.length, rng, bolsas[claveB]);
+  const iB = bB.sacar([]); bolsas[claveB] = bB.estado();
 
-  var bO = new CB.util.BolsaBarajada(CB.datos.OBJETOS.length, rng, bolsas.objeto);
-  var iO = bO.sacar([]); bolsas.objeto = bO.estado();
+  const bO = new CB.util.BolsaBarajada(CB.datos.OBJETOS.length, rng, bolsas.objeto);
+  const iO = bO.sacar([]); bolsas.objeto = bO.estado();
 
-  var bR = new CB.util.BolsaBarajada(2, rng, bolsas.rol);
-  var rol = bR.sacar([]); bolsas.rol = bR.estado();
+  const bR = new CB.util.BolsaBarajada(2, rng, bolsas.rol);
+  const rol = bR.sacar([]); bolsas.rol = bR.estado();
 
   return {
     n1: listaA[iA < 0 ? 0 : iA],
@@ -309,7 +309,7 @@ CB.gen.problemas.PLANTILLAS = {
 
 /* resolver(): recálculo INDEPENDIENTE de la plantilla */
 CB.gen.problemas.resolver = function (subtipo, d) {
-  var x = d[0], y = d[1];
+  const x = d[0], y = d[1];
   switch (subtipo) {
     case 'CAMBIO_1':      return x + y;
     case 'CAMBIO_2':      return x - y;
@@ -337,9 +337,9 @@ CB.gen.problemas.resolver = function (subtipo, d) {
 
 /* Elección de números por subtipo, respetando el techo del trimestre */
 CB.gen.problemas.numeros = function (subtipo, rng, D, techo) {
-  var max = Math.min(techo || 99, (D === 1) ? 20 : (D === 2 ? 60 : techo || 99));
+  let max = Math.min(techo || 99, (D === 1) ? 20 : (D === 2 ? 60 : techo || 99));
   if (max < 6) max = 6;
-  var a, b, c, k = 0;
+  let a, b, c, k = 0;
 
   switch (subtipo) {
     case 'CAMBIO_1': case 'COMBINACION_1': case 'COMPARACION_3': case 'COMPARACION_6':
@@ -368,7 +368,8 @@ CB.gen.problemas.numeros = function (subtipo, rng, D, techo) {
 
 /* Dato sobrante (§9.4) */
 CB.gen.problemas.datoSobrante = function (datos, respuesta, rng, techo) {
-  var a = datos[0], b = datos[1], k = 0, c;
+  const a = datos[0], b = datos[1];
+  let k = 0, c;
   while (k < 40) {
     k++;
     c = CB.util.ent(rng, 1, Math.min(techo || 99, 40));
@@ -411,7 +412,7 @@ CB.gen.problemas.validacion = {
     return palabras.some(function (palabra, indice) {
       if (CB.gen.problemas.SUBORDINANTES.indexOf(palabra) !== -1) return true;
       if (palabra !== 'que') return false;
-      var anterior = indice > 0 ? palabras[indice - 1] : '';
+      const anterior = indice > 0 ? palabras[indice - 1] : '';
       return CB.gen.problemas.ANTES_DE_QUE.indexOf(anterior) === -1;
     });
   },
@@ -425,14 +426,14 @@ CB.gen.problemas.validacion = {
   repiteSujeto: function (frases) {
     return frases.some(function (frase, indice) {
       if (indice === 0) return false;
-      var anterior = CB.util.palabras(frases[indice - 1])[0];
-      var actual = CB.util.palabras(frase)[0];
+      const anterior = CB.util.palabras(frases[indice - 1])[0];
+      const actual = CB.util.palabras(frase)[0];
       return !!(anterior && actual && anterior === actual && /^[A-ZÁÉÍÓÚÑ]/.test(anterior));
     });
   },
 
   fueraDeLista: function (palabras) {
-    var invalida = palabras.find(function (palabra) {
+    const invalida = palabras.find(function (palabra) {
       if (/^\d+$/.test(palabra)) return false;
       return !CB.datos.enListaBlanca(palabra);
     });
@@ -441,15 +442,15 @@ CB.gen.problemas.validacion = {
 };
 
 CB.gen.problemas.validar = function (item) {
-  var motivos = [];
-  var frases = item.frases || [];
-  var texto = frases.join(' ');
+  const motivos = [];
+  const frases = item.frases || [];
+  const texto = frases.join(' ');
 
   /* 1. Número de frases y forma de la pregunta */
   if (frases.length > 3) motivos.push('frases');
   if (!frases.length) { motivos.push('frases'); return { ok: false, motivos: motivos }; }
 
-  var ultima = frases[frases.length - 1];
+  const ultima = frases[frases.length - 1];
   if (ultima.indexOf('¿') !== 0 || ultima.charAt(ultima.length - 1) !== '?') {
     motivos.push('pregunta');
   }
@@ -460,17 +461,17 @@ CB.gen.problemas.validar = function (item) {
   if (CB.util.palabras(texto).length > 25) motivos.push('total');
 
   /* 3. Ancho de línea, con el MISMO algoritmo que usa la interfaz */
-  var lineas = CB.util.cortarLineas(texto, 34);
+  const lineas = CB.util.cortarLineas(texto, 34);
   if (CB.gen.problemas.validacion.excedeAncho(lineas, 34)) motivos.push('ancho');
   if (lineas.length > 5) motivos.push('demasiadasLineas');
 
   /* 4. Datos numéricos */
-  var numeros = texto.match(/\d+/g) || [];
-  var maxDatos = item.datoSobrante ? 3 : 2;
+  const numeros = texto.match(/\d+/g) || [];
+  const maxDatos = item.datoSobrante ? 3 : 2;
   if (numeros.length > maxDatos) motivos.push('datos');
 
   /* 5. Subordinación prohibida */
-  var palabras = CB.util.palabras(texto.toLowerCase().replace(/[¿?.,!¡]/g, ''));
+  const palabras = CB.util.palabras(texto.toLowerCase().replace(/[¿?.,!¡]/g, ''));
   if (CB.gen.problemas.validacion.tieneSubordinacion(palabras)) motivos.push('subordinacion');
 
   /* 6. Tildes obligatorias */
@@ -483,7 +484,7 @@ CB.gen.problemas.validar = function (item) {
   if (CB.gen.problemas.validacion.repiteSujeto(frases)) motivos.push('sujetoRepetido');
 
   /* 8. Lista blanca */
-  var fueraDeLista = CB.gen.problemas.validacion.fueraDeLista(palabras);
+  const fueraDeLista = CB.gen.problemas.validacion.fueraDeLista(palabras);
   if (fueraDeLista) motivos.push('listaBlanca:' + fueraDeLista);
 
   /* 9. Rango de la respuesta */
@@ -511,24 +512,24 @@ CB.gen.problemas.PROBLEMAS_SEGUROS = [
 /* Generación */
 CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
   ctx = ctx || {};
-  var techo = ctx.techo || 99;
-  var conSobrante = !!ctx.datoSobrante;
-  var intentos = 0, item;
+  const techo = ctx.techo || 99;
+  const conSobrante = !!ctx.datoSobrante;
+  let intentos = 0, item;
 
   while (intentos < 20) {
     intentos++;
-    var act = CB.gen.problemas.elegirActores(rng, ctx.bolsas);
+    const act = CB.gen.problemas.elegirActores(rng, ctx.bolsas);
     if (ctx.bolsas) ctx.bolsas = act.bolsas;
 
-    var verbos = CB.gen.problemas.VERBOS_PROBLEMA[act.obj.cat];
-    var vg = CB.util.elegir(rng, verbos.ganar);
-    var vp = CB.util.elegir(rng, verbos.perder);
+    const verbos = CB.gen.problemas.VERBOS_PROBLEMA[act.obj.cat];
+    const vg = CB.util.elegir(rng, verbos.ganar);
+    const vp = CB.util.elegir(rng, verbos.perder);
 
-    var d = CB.gen.problemas.numeros(subtipo, rng, D, techo);
-    var plantilla = CB.gen.problemas.PLANTILLAS[subtipo];
+    const d = CB.gen.problemas.numeros(subtipo, rng, D, techo);
+    const plantilla = CB.gen.problemas.PLANTILLAS[subtipo];
     if (!plantilla) break;
 
-    var base = plantilla(d[0], d[1], act, vg, vp);
+    const base = plantilla(d[0], d[1], act, vg, vp);
     if (base.respuesta < 0 || base.respuesta > 999) continue;
 
     item = {
@@ -548,7 +549,7 @@ CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
     };
 
     if (conSobrante) {
-      var c = CB.gen.problemas.datoSobrante(base.datos, base.respuesta, rng, techo);
+      const c = CB.gen.problemas.datoSobrante(base.datos, base.respuesta, rng, techo);
       if (c != null) {
         item.datoSobrante = true;
         item.numeroSobrante = c;
@@ -556,7 +557,7 @@ CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
                        base.frases[2]];
         /* El dato sobrante se inserta como una coletilla de la 2.ª frase, sin
            subordinación y sin pasar de 12 palabras. */
-        var extra = 'También tiene ' + c + ' ' + act.obj.plur + ' de otro color.';
+        const extra = 'También tiene ' + c + ' ' + act.obj.plur + ' de otro color.';
         if (CB.util.palabras(extra).length <= 12) {
           item.frases = [base.frases[0], extra, base.frases[2]];
           item.datos = base.datos.slice();
@@ -567,13 +568,13 @@ CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
       }
     }
 
-    var v = CB.gen.problemas.validar(item);
+    const v = CB.gen.problemas.validar(item);
     if (v.ok) { item.validado = true; return item; }
     item.motivos = v.motivos;
   }
 
   /* Ningún intento ha validado: se sirve un enunciado seguro. */
-  var seguro = CB.gen.problemas.PROBLEMAS_SEGUROS.filter(function (p) {
+  const seguro = CB.gen.problemas.PROBLEMAS_SEGUROS.filter(function (p) {
     return p.subtipo === subtipo;
   })[0] || CB.gen.problemas.PROBLEMAS_SEGUROS[0];
 
@@ -595,11 +596,11 @@ CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
 
 /* siguienteSubtipo(): deuda de cobertura PONDERADA (§9.2) */
 CB.gen.problemas.disponibles = function (perfil) {
-  var trimestre = (perfil && perfil.trimestreDeducido) ? perfil.trimestreDeducido : 1;
-  var out = CB.gen.problemas.NUCLEAR.slice(), i, p, nuclearOk = true;
+  const trimestre = (perfil && perfil.trimestreDeducido) ? perfil.trimestreDeducido : 1;
+  let out = CB.gen.problemas.NUCLEAR.slice(), i, p, nuclearOk = true;
 
   /* Los INTERMEDIOS solo desde T2 y solo con ≥80 % en los nucleares. */
-  var aciertos = 0, intentos = 0;
+  let aciertos = 0, intentos = 0;
   for (i = 0; i < CB.gen.problemas.NUCLEAR.length; i++) {
     p = (perfil && perfil.problemas) ? perfil.problemas[CB.gen.problemas.NUCLEAR[i]] : null;
     if (p) { aciertos += p.aciertos || 0; intentos += p.intentos || 0; }
@@ -615,9 +616,9 @@ CB.gen.problemas.disponibles = function (perfil) {
  */
 CB.gen.problemas.siguienteSubtipo = function (perfil, ctx) {
   ctx = ctx || {};
-  var lista = CB.gen.problemas.disponibles(perfil);
+  let lista = CB.gen.problemas.disponibles(perfil);
 
-  var trimestre = (perfil && perfil.trimestreDeducido) ? perfil.trimestreDeducido : 1;
+  const trimestre = (perfil && perfil.trimestreDeducido) ? perfil.trimestreDeducido : 1;
   if (trimestre >= 3 && (ctx.lucesActuales == null || ctx.lucesActuales >= 3)) {
     lista = lista.concat(CB.gen.problemas.AMPLIACION.filter(function (s) {
       return !ctx.soloNucleares;
@@ -625,30 +626,30 @@ CB.gen.problemas.siguienteSubtipo = function (perfil, ctx) {
   }
   if (!lista.length) lista = CB.gen.problemas.NUCLEAR.slice();
 
-  var totalPeso = 0, i;
+  let totalPeso = 0, i;
   for (i = 0; i < lista.length; i++) totalPeso += CB.gen.problemas.PESO(lista[i]);
 
-  var servidasTotal = 0;
+  let servidasTotal = 0;
   for (i = 0; i < lista.length; i++) {
-    var pr = (perfil && perfil.problemas) ? perfil.problemas[lista[i]] : null;
+    const pr = (perfil && perfil.problemas) ? perfil.problemas[lista[i]] : null;
     servidasTotal += pr ? (pr.intentos || 0) : 0;
   }
 
-  var mejor = null, mejorDeuda = -Infinity;
+  let mejor = null, mejorDeuda = -Infinity;
   for (i = 0; i < lista.length; i++) {
-    var sub = lista[i];
-    var peso = CB.gen.problemas.PESO(sub);
-    var esperadas = (servidasTotal + 1) * (peso / totalPeso);
-    var pr2 = (perfil && perfil.problemas) ? perfil.problemas[sub] : null;
-    var servidas = pr2 ? (pr2.intentos || 0) : 0;
-    var deuda = peso * (esperadas - servidas);
+    const sub = lista[i];
+    const peso = CB.gen.problemas.PESO(sub);
+    const esperadas = (servidasTotal + 1) * (peso / totalPeso);
+    const pr2 = (perfil && perfil.problemas) ? perfil.problemas[sub] : null;
+    const servidas = pr2 ? (pr2.intentos || 0) : 0;
+    const deuda = peso * (esperadas - servidas);
 
     if (deuda > mejorDeuda) {
       mejorDeuda = deuda; mejor = sub;
     } else if (deuda === mejorDeuda && mejor) {
       /* Empate: el de menor tiempo medio, para no encadenar los más lentos. */
-      var a = (perfil && perfil.problemas && perfil.problemas[mejor]) ? perfil.problemas[mejor].rtMedioMs : 0;
-      var b = pr2 ? pr2.rtMedioMs : 0;
+      const a = (perfil && perfil.problemas && perfil.problemas[mejor]) ? perfil.problemas[mejor].rtMedioMs : 0;
+      const b = pr2 ? pr2.rtMedioMs : 0;
       if (b < a) mejor = sub;
     }
   }
@@ -666,7 +667,7 @@ CB.gen.problemas.SUBTIPO_DE_NIVEL = {
 
 /* Los generadores P1..P20 que consume el catálogo. */
 (function () {
-  var k;
+  let k;
   for (k in CB.gen.problemas.SUBTIPO_DE_NIVEL) {
     if (!Object.prototype.hasOwnProperty.call(CB.gen.problemas.SUBTIPO_DE_NIVEL, k)) continue;
     (function (nivelId, subtipo) {

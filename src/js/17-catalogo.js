@@ -139,28 +139,29 @@ CB.catalogo._porId = {};
 CB.catalogo._ids = [];
 
 (function () {
-  var familiaDe = { N: 'numeracion', S: 'sumas', R: 'restas', M: 'multiplicacion',
+  const familiaDe = { N: 'numeracion', S: 'sumas', R: 'restas', M: 'multiplicacion',
                     P: 'problemas', E: 'dinero', V: 'vocabulario' };
-  var contadorFamilia = {};
+  const contadorFamilia = {};
 
   CB.catalogo.TABLA.forEach(function (fila) {
-    var id = fila[0];
-    var letra = id.charAt(0);
-    var fam = CB.catalogo.FAMILIAS[letra];
+    const id = fila[0];
+    const letra = id.charAt(0);
+    const fam = CB.catalogo.FAMILIAS[letra];
     contadorFamilia[letra] = (contadorFamilia[letra] || 0) + 1;
 
     /* betaBase repartida por la familia: los primeros niveles en la parte baja
        del rango, los últimos en la alta. */
-    var total = CB.catalogo.TABLA.filter(function (f) {
+    const total = CB.catalogo.TABLA.filter(function (f) {
       return f[0].charAt(0) === letra;
     }).length;
-    var pos = (total > 1) ? (contadorFamilia[letra] - 1) / (total - 1) : 0;
-    var beta = Math.round(fam.beta[0] + pos * (fam.beta[1] - fam.beta[0]));
+    const pos = (total > 1) ? (contadorFamilia[letra] - 1) / (total - 1) : 0;
+    const beta = Math.round(fam.beta[0] + pos * (fam.beta[1] - fam.beta[0]));
 
-    var tI = fam.tIdeal, tL = fam.tLimite;
+    const tI = fam.tIdeal;
+    let tL = fam.tLimite;
     if (tL - tI < 500) tL = tI + 500;          // guarda obligatoria (§8.1)
 
-    var nivel = {
+    const nivel = {
       id: id,
       nombre: fila[1],
       familia: familiaDe[letra],
@@ -187,15 +188,15 @@ CB.catalogo._ids = [];
     };
 
     /* El generador se resuelve por familia y por id. */
-    var mod = { N: CB.gen.numeracion, S: CB.gen.sumas, R: CB.gen.restas,
+    const mod = { N: CB.gen.numeracion, S: CB.gen.sumas, R: CB.gen.restas,
                 M: CB.gen.multiplicacion, P: CB.gen.problemas,
                 E: CB.gen.dinero, V: CB.gen.vocabulario }[letra];
 
     nivel.generar = (function (m, i) {
       return function (rng, D, ctx) {
-        var fn = m[i];
+        const fn = m[i];
         if (!fn) return null;
-        var base = fn(rng, D || 2, ctx || {});
+        const base = fn(rng, D || 2, ctx || {});
         if (!base) return null;
         base.nivelId = i;
         base.destreza = base.destreza || nivel.destreza;
@@ -231,7 +232,7 @@ CB.catalogo.porTrimestreSugerido = function (t) {
 };
 
 CB.catalogo.tIdealDe = function (slug) {
-  var l = CB.catalogo.porDestreza(slug);
+  const l = CB.catalogo.porDestreza(slug);
   return l.length ? l[0].tIdeal : 8000;
 };
 
@@ -241,14 +242,15 @@ CB.catalogo.desbloqueados = function (perfil) {
 
 /* candidatos() NUNCA devuelve []. */
 CB.catalogo.candidatos = function (slug, banda, perfil) {
-  var abiertos = CB.catalogo.porDestreza(slug).filter(function (n) {
+  const abiertos = CB.catalogo.porDestreza(slug).filter(function (n) {
     if (CB.grafo.estado(n.id, perfil) !== 'abierta') return false;
-    var e = perfil && perfil.niveles ? perfil.niveles[n.id] : null;
+    const e = perfil && perfil.niveles ? perfil.niveles[n.id] : null;
     if (e && e.enPausa) return false;                  // escalón 5 de la escalera
     return true;
   });
 
-  var min = banda[0], max = banda[1], i, sel;
+  const min = banda[0], max = banda[1];
+  let i, sel;
 
   /* 1) dentro de la banda */
   sel = abiertos.filter(function (n) { return n.betaBase >= min && n.betaBase <= max; });
@@ -264,7 +266,7 @@ CB.catalogo.candidatos = function (slug, banda, perfil) {
 
   /* 3) el abierto de esa destreza con β más cercana a θ */
   if (abiertos.length) {
-    var centro = (min + max) / 2;
+    const centro = (min + max) / 2;
     abiertos.sort(function (a, b) {
       return Math.abs(a.betaBase - centro) - Math.abs(b.betaBase - centro);
     });
@@ -272,7 +274,7 @@ CB.catalogo.candidatos = function (slug, banda, perfil) {
   }
 
   /* 4) la destreza no tiene ningún nivel abierto: se cae a la frontera global */
-  var frontera = CB.grafo.frontera(perfil);
+  const frontera = CB.grafo.frontera(perfil);
   if (frontera.length) return [CB.catalogo.get(frontera[0])];
 
   /* 5) solo posible si el perfil no tiene NINGÚN nivel abierto, situación
@@ -313,7 +315,7 @@ CB.MUNDOS = [
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {
-  var i;
+  let i;
   for (i = 0; i < CB.MUNDOS.length; i++) {
     if (CB.MUNDOS[i].niveles.indexOf(nivelId) !== -1) return CB.MUNDOS[i];
   }
@@ -321,7 +323,7 @@ CB.catalogo.mundoDe = function (nivelId) {
 };
 
 CB.catalogo.getMundo = function (id) {
-  var i;
+  let i;
   for (i = 0; i < CB.MUNDOS.length; i++) if (CB.MUNDOS[i].id === id) return CB.MUNDOS[i];
   return null;
 };
@@ -330,16 +332,17 @@ CB.catalogo.getMundo = function (id) {
    desbloquea al completar el 60 % de los nucleares del anterior (§5.3): no el
    100 %, porque bloquear por perfección es un muro. */
 CB.catalogo.nuclearesDe = function (mundoId) {
-  var m = CB.catalogo.getMundo(mundoId);
+  const m = CB.catalogo.getMundo(mundoId);
   if (!m) return [];
   return m.niveles.filter(function (id) {
-    var n = CB.catalogo.get(id);
+    const n = CB.catalogo.get(id);
     return n && !n.ampliacion;
   });
 };
 
 CB.catalogo.progresoMundo = function (mundoId, perfil) {
-  var nucleares = CB.catalogo.nuclearesDe(mundoId), hechos = 0, i;
+  const nucleares = CB.catalogo.nuclearesDe(mundoId);
+  let hechos = 0, i;
   for (i = 0; i < nucleares.length; i++) {
     if (CB.grafo.superado(nucleares[i], perfil)) hechos++;
   }
@@ -349,19 +352,19 @@ CB.catalogo.progresoMundo = function (mundoId, perfil) {
 
 /* INVARIANTE 12 (variedad) — reformulado */
 CB.catalogo.unicosEsperados = function (cardinalidad, tiradas) {
-  var C = Math.max(1, cardinalidad);
+  const C = Math.max(1, cardinalidad);
   return C * (1 - Math.pow(1 - 1 / C, tiradas));
 };
 
 CB.catalogo.variedadSuficiente = function (nivelId, unicos, tiradas) {
-  var n = CB.catalogo.get(nivelId);
+  const n = CB.catalogo.get(nivelId);
   if (!n) return true;
-  var esperados = CB.catalogo.unicosEsperados(n.cardinalidad, tiradas);
+  const esperados = CB.catalogo.unicosEsperados(n.cardinalidad, tiradas);
   return unicos >= 0.75 * esperados;
 };
 
 CB.catalogo.mundoDesbloqueado = function (mundoId, perfil) {
-  var i, idx = -1;
+  let i, idx = -1;
   for (i = 0; i < CB.MUNDOS.length; i++) if (CB.MUNDOS[i].id === mundoId) idx = i;
   if (idx <= 0) return true;                       // M1 abierto desde el minuto 1
   return CB.catalogo.progresoMundo(CB.MUNDOS[idx - 1].id, perfil).fraccion >= 0.6;

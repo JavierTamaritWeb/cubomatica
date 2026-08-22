@@ -27,10 +27,10 @@ const dormir = (ms) => new Promise((resolver) => {
 
 /* El guion que se evalúa DENTRO de la página */
 const PREPARAR = `(async function () {
-  var esperar = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  const esperar = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
   document.documentElement.classList.add('sin-movimiento');
   if (CB.audio) CB.audio.silenciar(true);
-  var p = CB.almacen.perfilNuevo('p-retrato', 'Topo Cavador', 0, '2026-01-01', null);
+  const p = CB.almacen.perfilNuevo('p-retrato', 'Topo Cavador', 0, '2026-01-01', null);
   p.calibrado = true;
   p.trimestreDeducido = 3;
   p.ajustes.modoTiempo = 'sinPrisa';
@@ -44,8 +44,8 @@ const PREPARAR = `(async function () {
 /* Cada pantalla se deja en su estado de verdad: entrar a pelo en la partida
    pinta una zona de juego vacía, y una foto de la nada no prueba nada. */
 const guionDe = (id) => `(async function () {
-  var esperar = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
-  var id = ${JSON.stringify(id)};
+  const esperar = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  const id = ${JSON.stringify(id)};
   try {
     if (id === 'p-partida') { CB.partida.iniciar({ mundoId: 'M1' }); await esperar(900); }
     else if (id === 'p-jefe') { CB.partida.iniciar({ mundoId: 'M1' }); await esperar(400); CB.jefes.iniciar('M1'); await esperar(400); }

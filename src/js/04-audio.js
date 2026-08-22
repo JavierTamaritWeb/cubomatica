@@ -22,7 +22,7 @@ CB.audio.iniciar = function () {
     if (CB.audio.ctx.state === 'suspended') { try { CB.audio.ctx.resume(); } catch (e) { } }
     return CB.audio.ctx;
   }
-  var AC = (typeof AudioContext !== 'undefined') ? AudioContext
+  const AC = (typeof AudioContext !== 'undefined') ? AudioContext
          : (typeof webkitAudioContext !== 'undefined') ? webkitAudioContext : null;
   if (!AC) return null;
   try {
@@ -52,14 +52,14 @@ CB.audio.volumen = function (v) {
 
 /* Una nota chiptune: onda cuadrada con envolvente corta. */
 CB.audio.nota = function (frec, cuando, duracion, tipo, ganancia) {
-  var c = CB.audio.ctx;
+  const c = CB.audio.ctx;
   if (!c || CB.audio.silenciado) return;
   try {
-    var osc = c.createOscillator();
-    var g = c.createGain();
+    const osc = c.createOscillator();
+    const g = c.createGain();
     osc.type = tipo || 'square';
     osc.frequency.setValueAtTime(frec, c.currentTime + cuando);
-    var pico = (ganancia == null ? 0.22 : ganancia);
+    const pico = (ganancia == null ? 0.22 : ganancia);
     g.gain.setValueAtTime(0.0001, c.currentTime + cuando);
     g.gain.exponentialRampToValueAtTime(pico, c.currentTime + cuando + 0.008);
     g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + cuando + duracion);
@@ -71,20 +71,20 @@ CB.audio.nota = function (frec, cuando, duracion, tipo, ganancia) {
 
 /* Ruido filtrado: piedra, madera, partículas. */
 CB.audio.ruido = function (cuando, duracion, frecFiltro, ganancia) {
-  var c = CB.audio.ctx;
+  const c = CB.audio.ctx;
   if (!c || CB.audio.silenciado) return;
   try {
-    var n = Math.floor(c.sampleRate * duracion);
-    var buf = c.createBuffer(1, Math.max(1, n), c.sampleRate);
-    var datos = buf.getChannelData(0);
-    var rng = CB.util.mulberry32(0x5EED + Math.floor(frecFiltro));
-    var i;
+    const n = Math.floor(c.sampleRate * duracion);
+    const buf = c.createBuffer(1, Math.max(1, n), c.sampleRate);
+    const datos = buf.getChannelData(0);
+    const rng = CB.util.mulberry32(0x5EED + Math.floor(frecFiltro));
+    let i;
     for (i = 0; i < n; i++) datos[i] = (rng() * 2 - 1) * (1 - i / n);
 
-    var src = c.createBufferSource(); src.buffer = buf;
-    var filtro = c.createBiquadFilter();
+    const src = c.createBufferSource(); src.buffer = buf;
+    const filtro = c.createBiquadFilter();
     filtro.type = 'lowpass'; filtro.frequency.value = frecFiltro || 900;
-    var g = c.createGain(); g.gain.value = (ganancia == null ? 0.2 : ganancia);
+    const g = c.createGain(); g.gain.value = (ganancia == null ? 0.2 : ganancia);
     src.connect(filtro); filtro.connect(g); g.connect(CB.audio.maestro);
     src.start(c.currentTime + cuando);
   } catch (e) { }
@@ -170,7 +170,7 @@ CB.audio.EFECTOS = {
 };
 
 CB.audio.sfx = function (nombre) {
-  var f = CB.audio.EFECTOS[nombre];
+  const f = CB.audio.EFECTOS[nombre];
   if (!f) return false;
   CB.audio.emitidos++;                    // la petición, y antes que el contexto
   if (!CB.audio.ctx) return false;

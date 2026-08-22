@@ -25,11 +25,11 @@ CB.offline.registrar = function () {
 /* La música, bajo control de un adulto */
 /* Escribirlas otra vez sería una cuarta copia de la misma lista —ya hay tres: dist/audio/, la tabla de 07-musica.js y CREDITOS.txt— y la cuarta es la peligrosa, porque es la única que nadie mira al renombrar un fichero: la música seguiría… */
 CB.offline.urlesPistas = function () {
-  var m = CB.musica;
+  const m = CB.musica;
   if (!m || !m.PISTAS) return [];
-  var raiz = m.RAIZ || 'audio/';
-  var urles = [];
-  for (var k in m.PISTAS) {
+  const raiz = m.RAIZ || 'audio/';
+  const urles = [];
+  for (const k in m.PISTAS) {
     if (Object.prototype.hasOwnProperty.call(m.PISTAS, k)) urles.push(raiz + m.PISTAS[k].fichero);
   }
   return urles;
@@ -40,14 +40,14 @@ CB.offline._cancelar = false;
 
 /* CONTAR LO QUE FALLA, NO SOLO LO QUE TERMINA. */
 CB.offline.descargarMusica = function (alAvanzar, alTerminar) {
-  var urles = CB.offline.urlesPistas();
+  const urles = CB.offline.urlesPistas();
   if (!CB.offline.DISPONIBLE || typeof caches === 'undefined' || !urles.length) {
     if (alTerminar) alTerminar({ ok: false, motivo: 'no-disponible', hechas: 0, fallos: 0 });
     return;
   }
   CB.offline._cancelar = false;
-  var total = urles.length;
-  var i = 0, guardadas = 0, fallos = 0;
+  const total = urles.length;
+  let i = 0, guardadas = 0, fallos = 0;
 
   caches.open(CB.offline.CACHE_MUSICA + '-' + CB.offline.mayor()).then(function (c) {
     function siguiente() {
@@ -63,7 +63,7 @@ CB.offline.descargarMusica = function (alAvanzar, alTerminar) {
         }
         return;
       }
-      var url = urles[i];
+      const url = urles[i];
       /* Una pista que falla no tira las otras ocho —por eso no se usa addAll,
          que es atómico—, pero SÍ se cuenta y sale en el resultado. */
       c.add(url).then(function () {
@@ -97,9 +97,9 @@ CB.offline.mayor = function () {
 CB.offline.olvidarTodo = function (alTerminar) {
   if (typeof caches === 'undefined') { if (alTerminar) alTerminar(false); return; }
   caches.keys().then(function (claves) {
-    var pendientes = claves.filter(function (k) { return k.indexOf('cubomatica-') === 0; });
+    const pendientes = claves.filter(function (k) { return k.indexOf('cubomatica-') === 0; });
     if (!pendientes.length) { if (alTerminar) alTerminar(true); return; }
-    var n = 0;
+    let n = 0;
     pendientes.forEach(function (k) {
       caches['delete'](k).then(function () {
         if (++n === pendientes.length && alTerminar) alTerminar(true);

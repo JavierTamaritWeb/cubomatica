@@ -13,8 +13,8 @@ CB.vidas.TIMEOUTS_FIN = 6;           // en la partida
 CB.vidas.tope = function () { return CB.vidas.TOPE; };
 
 CB.vidas.nuevoEstado = function (reserva) {
-  var r = Math.max(0, Math.min(CB.vidas.RESERVA_MAX, reserva || 0));
-  var luces = CB.vidas.INICIALES + r;
+  const r = Math.max(0, Math.min(CB.vidas.RESERVA_MAX, reserva || 0));
+  let luces = CB.vidas.INICIALES + r;
   if (luces > CB.vidas.TOPE) luces = CB.vidas.TOPE;
   return {
     luces: luces,
@@ -76,8 +76,8 @@ CB.vidas.timeout = function (est) {
   est.timeoutsConsecutivos = (est.timeoutsConsecutivos || 0) + 1;
   est.timeoutsPartida = (est.timeoutsPartida || 0) + 1;
 
-  var cambiaModo = est.timeoutsConsecutivos >= CB.vidas.TIMEOUTS_CAMBIA_MODO;
-  var finAmable  = est.timeoutsPartida >= CB.vidas.TIMEOUTS_FIN;
+  const cambiaModo = est.timeoutsConsecutivos >= CB.vidas.TIMEOUTS_CAMBIA_MODO;
+  const finAmable  = est.timeoutsPartida >= CB.vidas.TIMEOUTS_FIN;
 
   return {
     luces: est.luces,                 // SIN CAMBIO

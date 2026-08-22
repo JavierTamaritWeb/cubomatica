@@ -21,10 +21,10 @@ CB.puntuacion.calcular = function (item, rtMs, estado) {
   item = item || {};
   estado = estado || {};
 
-  var Pb = item.puntosBase;
+  let Pb = item.puntosBase;
   if (!isFinite(Pb) || Pb <= 0) Pb = 100;
 
-  var tI = item.tIdeal, tL = item.tLimite;
+  let tI = item.tIdeal, tL = item.tLimite;
   if (!isFinite(tI) || tI <= 0) tI = 8000;
   if (!isFinite(tL) || tL <= 0) tL = tI * 3;
   /* Guarda de división por cero: sin ella la fórmula revienta (§8.1). */
@@ -32,7 +32,7 @@ CB.puntuacion.calcular = function (item, rtMs, estado) {
 
   if (!isFinite(rtMs) || rtMs < 0) rtMs = tI;
 
-  var mT;
+  let mT;
   if (estado.modoTiempo === 'sinPrisa') {
     mT = CB.puntuacion.M_SIN_PRISA;
   } else {
@@ -43,7 +43,7 @@ CB.puntuacion.calcular = function (item, rtMs, estado) {
     );
   }
 
-  var puntos = 0, gemas = 0, fIntento = 1.0;
+  let puntos = 0, gemas = 0, fIntento = 1.0;
 
   if (estado.azar) {
     /* Requisito 7: responder al azar no puntúa. Pero no resta, no apaga luz y
@@ -79,7 +79,7 @@ CB.puntuacion.gemasDeRapidez = function (mTiempo) {
 
 /* Acumulación: delta siempre ≥ 0, el marcador nunca baja. */
 CB.puntuacion.acumular = function (estado, delta) {
-  var d = (isFinite(delta) && delta > 0) ? delta : 0;
+  const d = (isFinite(delta) && delta > 0) ? delta : 0;
   estado.puntos = Math.max(estado.puntos || 0, (estado.puntos || 0) + d);
   return estado.puntos;
 };
@@ -98,16 +98,17 @@ CB.puntuacion.bonoFinal = function (precision1er, sinDanio, maraton, preguntas, 
      del perfil da NaN para siempre (§11.2). */
   if (!preguntas || preguntas === 0) return { factor: 1, extras: [], total: 0 };
 
-  var factor = 1.0, extras = [];
-  var p = isFinite(precision1er) ? precision1er : 0;
-  var ps = isFinite(puntosSesion) ? puntosSesion : 0;
+  let factor = 1.0;
+  const extras = [];
+  const p = isFinite(precision1er) ? precision1er : 0;
+  const ps = isFinite(puntosSesion) ? puntosSesion : 0;
 
   if (p >= 0.90)      { factor += 0.20; extras.push('precision90'); }
   else if (p >= 0.75) { factor += 0.10; extras.push('precision75'); }
   if (sinDanio)       { factor += 0.15; extras.push('sinDanio'); }
   if (maraton)        { factor += 0.10; extras.push('maraton'); }
 
-  var total = Math.max(0, Math.round(ps * (factor - 1)));
+  let total = Math.max(0, Math.round(ps * (factor - 1)));
   if (!isFinite(total)) total = 0;
 
   return { factor: factor, extras: extras, total: total };

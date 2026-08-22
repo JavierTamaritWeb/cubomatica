@@ -38,7 +38,7 @@ CB.adaptativo.nuevaDestreza = function (hoyISO) {
 };
 
 CB.adaptativo.theta = function (destreza, perfil) {
-  var d = (perfil && perfil.destrezas) ? perfil.destrezas[destreza] : null;
+  const d = (perfil && perfil.destrezas) ? perfil.destrezas[destreza] : null;
   if (!d || !isFinite(d.theta)) return CB.adaptativo.THETA_INICIAL;
   return CB.util.clamp(d.theta, CB.adaptativo.THETA_MIN, CB.adaptativo.THETA_MAX);
 };
@@ -74,11 +74,11 @@ CB.adaptativo.actualizar = function (destreza, acierto, beta, perfil) {
                     '». Se espera uno de los 13 slugs, no el objeto de destreza.');
   }
 
-  var d = perfil.destrezas[destreza];
+  let d = perfil.destrezas[destreza];
   if (!d) d = perfil.destrezas[destreza] = CB.adaptativo.nuevaDestreza(null);
 
-  var K = CB.adaptativo.K(d.n || 0);
-  var nuevo = CB.util.clamp(
+  const K = CB.adaptativo.K(d.n || 0);
+  const nuevo = CB.util.clamp(
     d.theta + K * (acierto - CB.adaptativo.OBJETIVO_ACIERTO),
     CB.adaptativo.THETA_MIN, CB.adaptativo.THETA_MAX
   );
@@ -91,14 +91,14 @@ CB.adaptativo.BANDA_INFERIOR = 420;
 CB.adaptativo.BANDA_SUPERIOR = 260;
 
 CB.adaptativo.elegirBeta = function (destreza, perfil) {
-  var th = CB.adaptativo.theta(destreza, perfil);
+  const th = CB.adaptativo.theta(destreza, perfil);
   return [th - CB.adaptativo.BANDA_INFERIOR, th - CB.adaptativo.BANDA_SUPERIOR];
 };
 
 /* Registro completo de una respuesta en la destreza. */
 CB.adaptativo.registrar = function (destreza, datos, perfil, hoyISO) {
   if (!perfil.destrezas) perfil.destrezas = {};
-  var d = perfil.destrezas[destreza];
+  let d = perfil.destrezas[destreza];
   if (!d) d = perfil.destrezas[destreza] = CB.adaptativo.nuevaDestreza(hoyISO);
 
   d.n = (d.n || 0) + 1;
@@ -125,7 +125,7 @@ CB.adaptativo.registrar = function (destreza, datos, perfil, hoyISO) {
   d.ventana10.push(datos.correcto ? 1 : 0);
   if (d.ventana10.length > 10) d.ventana10.shift();
 
-  var peso = datos.correcto
+  const peso = datos.correcto
     ? (datos.intento === 1 ? 1 : CB.adaptativo.PESO_INTENTO_2)
     : 0;
   CB.adaptativo.actualizar(destreza, peso, datos.beta, perfil);
@@ -140,11 +140,12 @@ CB.adaptativo.precision1er = function (d) {
 
 /* Regla simple de respaldo (§13.2) */
 CB.adaptativo.reglaSimple = function (nivelEstado) {
-  var v = nivelEstado.ventanaSimple || [];
-  var n = v.length, i, seguidos = 0;
+  const v = nivelEstado.ventanaSimple || [];
+  const n = v.length;
+  let i, seguidos = 0;
   for (i = n - 1; i >= 0; i--) { if (v[i] === 1) seguidos++; else break; }
   if (seguidos >= 3) return +1;
-  var fallos = 0;
+  let fallos = 0;
   for (i = n - 1; i >= 0 && i >= n - 2; i--) if (v[i] === 0) fallos++;
   if (fallos >= 2) return -1;
   return 0;

@@ -6,11 +6,11 @@ CB.a11y = CB.a11y || {};
 CB.a11y.ultimoAnuncio = '';
 
 CB.a11y.anunciar = function (texto) {
-  var r = document.getElementById('region-viva');
+  const r = document.getElementById('region-viva');
   if (!r || !texto) return;
   /* Si el texto es idéntico al anterior, el lector de pantalla no lo repite.
      Se alterna un espacio final para forzar el anuncio. */
-  var t = (texto === CB.a11y.ultimoAnuncio) ? (texto + ' ') : texto;
+  const t = (texto === CB.a11y.ultimoAnuncio) ? (texto + ' ') : texto;
   CB.a11y.ultimoAnuncio = t;
   r.textContent = t;
 };
@@ -19,9 +19,9 @@ CB.a11y.anunciar = function (texto) {
 CB.a11y.ultimaUrgencia = '';
 
 CB.a11y.urgente = function (texto) {
-  var r = document.getElementById('region-urgente');
+  const r = document.getElementById('region-urgente');
   if (!r || !texto) return;
-  var t = (texto === CB.a11y.ultimaUrgencia) ? (texto + ' ') : texto;
+  const t = (texto === CB.a11y.ultimaUrgencia) ? (texto + ' ') : texto;
   CB.a11y.ultimaUrgencia = t;
   r.textContent = t;
 };
@@ -62,7 +62,7 @@ CB.a11y.conectarTeclado = function () {
         CB.pantallas.actual !== 'p-calibracion' &&
         CB.pantallas.actual !== 'p-jefe') return;
 
-    var k = ev.key;
+    const k = ev.key;
 
     if (CB.a11y.MAPA.leer.indexOf(k) !== -1) {
       ev.preventDefault();
@@ -85,25 +85,25 @@ CB.a11y.conectarTeclado = function () {
 CB.a11y.conectarFlechas = function (contenedor, columnas) {
   if (!contenedor) return;
   contenedor.addEventListener('keydown', function (ev) {
-    var teclas = ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'];
+    const teclas = ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'];
     if (teclas.indexOf(ev.key) === -1) return;
-    var botones = [].slice.call(contenedor.querySelectorAll('button:not([disabled])'));
-    var i = botones.indexOf(document.activeElement);
+    const botones = [].slice.call(contenedor.querySelectorAll('button:not([disabled])'));
+    const i = botones.indexOf(document.activeElement);
     if (i === -1) return;
     ev.preventDefault();
-    var d = 0;
+    let d = 0;
     if (ev.key === 'ArrowRight') d = 1;
     if (ev.key === 'ArrowLeft') d = -1;
     if (ev.key === 'ArrowDown') d = columnas;
     if (ev.key === 'ArrowUp') d = -columnas;
-    var j = CB.util.clamp(i + d, 0, botones.length - 1);
+    const j = CB.util.clamp(i + d, 0, botones.length - 1);
     CB.a11y.enfocar(botones[j]);
   });
 };
 
 /* Ajustes de accesibilidad sobre la raíz del documento */
 CB.a11y.aplicarAjustes = function (ajustes, ajustesAparato) {
-  var raiz = document.documentElement;
+  const raiz = document.documentElement;
   ajustes = ajustes || {};
   ajustesAparato = ajustesAparato || {};
 
@@ -111,8 +111,8 @@ CB.a11y.aplicarAjustes = function (ajustes, ajustesAparato) {
   raiz.classList.toggle('alto-contraste', !!ajustes.altoContraste);
   raiz.classList.toggle('modo-proyeccion', !!ajustesAparato.modoProyeccion);
 
-  var rm = ajustes.reduceMotion;
-  var prefiereReducir = false;
+  const rm = ajustes.reduceMotion;
+  let prefiereReducir = false;
   try {
     prefiereReducir = (typeof matchMedia !== 'undefined') &&
       matchMedia('(prefers-reduced-motion: reduce)').matches;

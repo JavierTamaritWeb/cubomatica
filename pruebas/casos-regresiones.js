@@ -1,22 +1,68 @@
 /* casos-regresiones.js — REGISTRO DE FALLOS YA CORREGIDOS */
 
+CB.pruebas.suite('E108 · los callbacks rotos se detectan y se aíslan', function () {
+  const t = CB.pruebas;
+  const reportarReal = CB.util.reportarError;
+  const reportes = [];
+  CB.util.reportarError = function (error, contexto) {
+    reportes.push({ error: error, contexto: contexto });
+  };
+
+  const pantallaPrevia = CB.pantallas.actual;
+  const pilaPrevia = CB.pantallas.pila.slice();
+  CB.pantallas.ir('p-mapa');
+  const salirPrevio = CB.pantallas.alSalir['p-mapa'];
+  CB.pantallas.alSalir['p-mapa'] = function () { throw new Error('salida rota'); };
+
+  const resultado = CB.pantallas.ir('p-cantera');
+  t.igual(resultado, false,
+    'E108 · una limpieza de salida rota cancela la transición');
+  t.igual(CB.pantallas.actual, 'p-mapa',
+    'E108 · y conserva la pantalla cuyo estado no pudo limpiar');
+  t.ok(reportes.length === 1 && reportes[0].contexto === 'salida de p-mapa',
+    'E108 · el fallo de salida llega al reportador global');
+
+  if (salirPrevio) CB.pantallas.alSalir['p-mapa'] = salirPrevio;
+  else delete CB.pantallas.alSalir['p-mapa'];
+
+  const bus = new CB.util.EventoSimple();
+  let roto = 0, sano = 0;
+  bus.escuchar('auditoria', function () { roto++; throw new Error('oyente roto'); });
+  bus.escuchar('auditoria', function () { sano++; });
+  bus.emitir('auditoria');
+  bus.emitir('auditoria');
+
+  t.igual(roto, 1, 'E108 · el bus retira al oyente roto tras el primer fallo');
+  t.igual(sano, 2, 'E108 · los demás oyentes siguen funcionando');
+  t.ok(reportes.length === 2 && reportes[1].contexto === 'evento auditoria',
+    'E108 · el fallo del bus también llega al reportador global');
+
+  CB.util.reportarError = reportarReal;
+  CB.pantallas.pila = pilaPrevia;
+  CB.pantallas.actual = pantallaPrevia;
+  CB.pantallas.IDS.forEach(function (id) {
+    const seccion = document.getElementById(id);
+    if (seccion) seccion.hidden = id !== pantallaPrevia;
+  });
+});
+
 CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   /* E11 · Una respuesta por intento */
-  var perfilPrevio = CB.perfil;
-  var estadoPrevio = CB.partida.estado;
+  const perfilPrevio = CB.perfil;
+  const estadoPrevio = CB.partida.estado;
 
   CB.perfil = CB.pruebas.perfilNuevo();
   CB.perfil.calibrado = true;
 
-  var e = {
+  const e = {
     itemActual: { respuesta: 7, destreza: 'suma_sin_llevar', nivelId: 'S1',
                   expr: '3+4', itemId: 'S1#3+4@1.0' },
     respondido: false, respuestas: [], intento: 1
   };
-  var llamadas = 0;
-  var responderReal = CB.partida.responder;
+  let llamadas = 0;
+  const responderReal = CB.partida.responder;
 
   /* Se comprueba el CERROJO, no la contabilidad entera: basta con contar
      cuántas veces pasa de la primera línea. */
@@ -28,15 +74,15 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     e.respondido = true;
     llamadas++;
   };
-  var i;
+  let i;
   for (i = 0; i < 8; i++) CB.partida.responder(7, 'teclado', {});
   CB.partida.responder = responderReal;
 
   t.igual(llamadas, 1, 'E11 · ocho envíos del mismo ítem registran UNA respuesta');
 
   /* La lección vale para todo el fichero: leer el fuente de una función solo es válido para LITERALES DE CADENA y NOMBRES DE PROPIEDAD, que terser conserva (mangle.properties está prohibido). */
-  var itemAbrir = { respuesta: 7 };
-  var eAbrir = { itemActual: itemAbrir, respondido: true, respuestas: [], intento: 2 };
+  const itemAbrir = { respuesta: 7 };
+  const eAbrir = { itemActual: itemAbrir, respondido: true, respuestas: [], intento: 2 };
   CB.partida.estado = eAbrir;
   try {
     itemAbrir.tipo = 'opciones'; itemAbrir.opciones = [7, 8];
@@ -48,12 +94,12 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'respondido sigue en ' + eAbrir.respondido);
 
   /* Y el cerrojo sigue en la función REAL, no solo en el doble de arriba: con el ítem ya respondido, responder() no puede llegar a registrar nada. */
-  var eCerrado = { itemActual: { respuesta: 7, destreza: 'suma_sin_llevar', nivelId: 'S1',
+  const eCerrado = { itemActual: { respuesta: 7, destreza: 'suma_sin_llevar', nivelId: 'S1',
                                  expr: '3+4', itemId: 'S1#3+4@1.0' },
                    respondido: true, respuestas: [], intento: 1 };
   CB.partida.estado = eCerrado;
   CB.partida.bloqueado = false;
-  var siguioAdelante = false;
+  let siguioAdelante = false;
   try { CB.partida.responder(7, 'teclado', {}); } catch (errResp) { siguioAdelante = true; }
   t.ok(!siguioAdelante && eCerrado.respuestas.length === 0,
     'E11 · el cerrojo sigue estando en la responder() de verdad',
@@ -63,14 +109,14 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
      una partida nueva. Este era un error real y asíncrono: la pantalla de error
      aparecía 2,6 s después de salir, mientras la suite seguía toda verde. */
   CB.partida.estado = null;
-  var pintarSinEstado;
+  let pintarSinEstado;
   try { pintarSinEstado = CB.partida.pintarRespuesta(itemAbrir); }
   catch (errCaducado) { pintarSinEstado = 'lanzo'; }
   t.igual(pintarSinEstado, false,
     'E106 · un repintado tardío de una partida terminada se descarta sin lanzar');
 
-  var itemNuevo = { respuesta: 9 };
-  var estadoNuevo = { itemActual: itemNuevo, respondido: true };
+  const itemNuevo = { respuesta: 9 };
+  const estadoNuevo = { itemActual: itemNuevo, respondido: true };
   CB.partida.estado = estadoNuevo;
   t.igual(CB.partida.pintarRespuesta(itemAbrir), false,
     'E106 · un repintado tardío tampoco altera una partida nueva');
@@ -79,8 +125,8 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
 
   /* La sección de datos repetía literalmente el mismo aviso legal. Además de
      ruido visual, duplicar una limitación parecía un error de maquetación. */
-  var seccionDatos = CB.adulto.crearSeccionDatos(CB.pruebas.perfilNuevo());
-  var aparicionesLimitacion = seccionDatos.textContent.split(CB.LEGAL.LIMITACION).length - 1;
+  const seccionDatos = CB.adulto.crearSeccionDatos(CB.pruebas.perfilNuevo());
+  const aparicionesLimitacion = seccionDatos.textContent.split(CB.LEGAL.LIMITACION).length - 1;
   t.igual(aparicionesLimitacion, 1,
     'E107 · la limitación de almacenamiento aparece una sola vez en el panel adulto');
 
@@ -88,13 +134,13 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.perfil = perfilPrevio;
 
   /* E8 · La jerarquía de encabezados no salta niveles */
-  var saltos = [];
+  const saltos = [];
   CB.pantallas.IDS.forEach(function (id) {
-    var sec = document.getElementById(id);
+    const sec = document.getElementById(id);
     if (!sec) return;
-    var niveles = [].slice.call(sec.querySelectorAll('h1,h2,h3,h4,h5,h6'))
+    const niveles = [].slice.call(sec.querySelectorAll('h1,h2,h3,h4,h5,h6'))
       .map(function (h) { return parseInt(h.tagName.charAt(1), 10); });
-    var previo = 0;
+    let previo = 0;
     niveles.forEach(function (n) {
       if (previo && n > previo + 1) saltos.push(id + ': h' + previo + ' → h' + n);
       previo = n;
@@ -104,8 +150,8 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E8 · ninguna pantalla salta un nivel de encabezado', saltos.join(' · '));
 
   /* Contra el bundle minificado terser escribe las cadenas con comillas dobles, así que el texto buscado no aparece nunca y la afirmación pasaba en verde sin haber comprobado nada. */
-  var rejilla = document.getElementById('rejilla-mundos');
-  var perfilMapa = CB.perfil;
+  const rejilla = document.getElementById('rejilla-mundos');
+  const perfilMapa = CB.perfil;
   CB.perfil = CB.pruebas.perfilNuevo();          // pintarMundos() necesita uno
   try {
     CB.mapaDestrezas.pintarMundos();
@@ -120,15 +166,16 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.perfil = perfilMapa;
 
   /* E5 · Las reglas de estilo se comprueban sin comentarios */
-  var conRadio = [], j, hojas = document.styleSheets;
+  const conRadio = [], hojas = document.styleSheets;
+  let j;
   for (i = 0; i < hojas.length; i++) {
-    var reglas = null;
+    let reglas = null;
     try { reglas = hojas[i].cssRules; } catch (err) { continue; }
     if (!reglas) continue;
     for (j = 0; j < reglas.length; j++) {
-      var r = reglas[j];
+      const r = reglas[j];
       if (!r.style || !r.style.borderRadius) continue;
-      var v = r.style.borderRadius.trim();
+      const v = r.style.borderRadius.trim();
       if (v && v !== '0' && v !== '0px') conRadio.push(r.selectorText + ' → ' + v);
     }
   }
@@ -137,20 +184,20 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     conRadio.slice(0, 5).join(' · '));
 
   /* E12 · Una destreza mal escrita ya no se cuela en el perfil */
-  var perfilPrueba = CB.almacen.perfilNuevo('p-reg', 'Topo Cavador', 0, CB.util.hoyISO(), null);
-  var lanzo = false;
+  const perfilPrueba = CB.almacen.perfilNuevo('p-reg', 'Topo Cavador', 0, CB.util.hoyISO(), null);
+  let lanzo = false;
   try {
     CB.adaptativo.actualizar({ theta: 1000, n: 0 }, 1, 900, perfilPrueba);
   } catch (err) { lanzo = true; }
   t.ok(lanzo, 'E12 · pasar el objeto de destreza en vez del slug lanza un error');
 
-  var basura = Object.keys(perfilPrueba.destrezas).filter(function (k) {
+  const basura = Object.keys(perfilPrueba.destrezas).filter(function (k) {
     return CB.adaptativo.SLUGS.indexOf(k) === -1;
   });
   t.ok(basura.length === 0,
     'E12 · y no deja ninguna destreza inventada en el perfil', basura.join(', '));
 
-  var bien = false;
+  let bien = false;
   try {
     CB.adaptativo.actualizar(CB.adaptativo.SLUGS[0], 1, 900, perfilPrueba);
     bien = isFinite(CB.adaptativo.theta(CB.adaptativo.SLUGS[0], perfilPrueba));
@@ -158,18 +205,18 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(bien, 'E12 · con un slug correcto sigue funcionando igual');
 
   /* E13 · Ctrl+P desde cualquier pantalla ya no imprime un folio blanco */
-  var cuerpoInf = document.getElementById('informe-cuerpo');
+  const cuerpoInf = document.getElementById('informe-cuerpo');
   t.ok(!!cuerpoInf && cuerpoInf.textContent.trim().length > 20,
     'E13 · el informe sin generar dice cómo generarlo, en vez de quedarse vacío',
     cuerpoInf ? '«' + cuerpoInf.textContent.trim().slice(0, 40) + '»' : 'no existe');
 
   /* Los 3 logros que dan luz existen y la conceden de verdad */
   t.igual(CB.logros.CONCEDEN_LUZ.length, 3, 'hay exactamente 3 logros que conceden luz');
-  var perfilLuz = CB.almacen.perfilNuevo('p-luz', 'Topo Cavador', 0, CB.util.hoyISO(), null);
-  var sinConceder = CB.logros.CONCEDEN_LUZ.filter(function (id) {
-    var est = CB.vidas.nuevoEstado(0);
+  const perfilLuz = CB.almacen.perfilNuevo('p-luz', 'Topo Cavador', 0, CB.util.hoyISO(), null);
+  const sinConceder = CB.logros.CONCEDEN_LUZ.filter(function (id) {
+    const est = CB.vidas.nuevoEstado(0);
     est.luces = 2;
-    var r = CB.vidas.conceder(est, id, perfilLuz, 'expedicion');
+    const r = CB.vidas.conceder(est, id, perfilLuz, 'expedicion');
     return !(r.aplicada && est.luces === 3);
   });
   t.ok(sinConceder.length === 0,
@@ -177,10 +224,10 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     sinConceder.join(', '));
 
   /* E14 · La lectura en voz alta funciona en la calibración */
-  var estadoPrev14 = CB.partida.estado;
-  var pantallaPrev14 = CB.pantallas.actual;
-  var vozPrev = CB.voz.leerOGuiar;
-  var leido = null;
+  const estadoPrev14 = CB.partida.estado;
+  const pantallaPrev14 = CB.pantallas.actual;
+  const vozPrev = CB.voz.leerOGuiar;
+  let leido = null;
 
   CB.partida.estado = null;
   CB.pantallas.actual = 'p-calibracion';
@@ -198,7 +245,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   leido = null;
   CB.calibracion.consignaActual = null;
   CB.pantallas.actual = 'p-mapa';
-  var revento = false;
+  let revento = false;
   try { CB.partida.accionLeer(); } catch (err14) { revento = true; }
   t.ok(!revento && leido === null,
     'E14 · y fuera de la calibración sin partida no lee nada ni falla');
@@ -208,17 +255,17 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.partida.estado = estadoPrev14;
 
   /* E15 · El botón de silencio no miente, y los dos dicen lo mismo */
-  var silPrev = CB.audio.silenciado;
-  var botonesSon = document.querySelectorAll('[data-accion="sonido"]');
+  const silPrev = CB.audio.silenciado;
+  const botonesSon = document.querySelectorAll('[data-accion="sonido"]');
   t.ok(botonesSon.length >= 2,
     'E15 · la maqueta trae las barras de herramientas (sin ellas nadie las prueba)',
     botonesSon.length + ' botones de sonido');
 
-  function iconoDe(b) { var i = b.querySelector('.btn-bloque__ico'); return (i || b).textContent.trim(); }
+  function iconoDe(b) { const i = b.querySelector('.btn-bloque__ico'); return (i || b).textContent.trim(); }
 
   CB.audio.silenciado = true;
   CB.partida.sincronizarSonido();
-  var mienten = [];
+  const mienten = [];
   [].forEach.call(botonesSon, function (b, n) {
     if (iconoDe(b) !== '🔇' || b.getAttribute('aria-pressed') !== 'true') mienten.push(n);
   });
@@ -228,7 +275,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
 
   CB.audio.silenciado = false;
   CB.partida.sincronizarSonido();
-  var mienten2 = [];
+  const mienten2 = [];
   [].forEach.call(botonesSon, function (b, n) {
     if (iconoDe(b) !== '🔈' || b.getAttribute('aria-pressed') !== 'false') mienten2.push(n);
   });
@@ -237,9 +284,9 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
 
   /* Y el rótulo sobrevive: sincronizarSonido() escribía sobre el botón entero
      y se llevaba por delante la palabra «Sonido». */
-  var sinRotulo = [];
+  const sinRotulo = [];
   [].forEach.call(botonesSon, function (b, n) {
-    var r = b.querySelector('.btn-bloque__rotulo');
+    const r = b.querySelector('.btn-bloque__rotulo');
     if (!r || !r.textContent.trim()) sinRotulo.push(n);
   });
   t.ok(sinRotulo.length === 0,
@@ -248,13 +295,13 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.partida.sincronizarSonido();
 
   /* E16 · Ningún botón de la barra se explica solo con un dibujo */
-  var barras = document.querySelectorAll('.barra-herramientas');
-  var mudos = [], repetidos = [];
+  const barras = document.querySelectorAll('.barra-herramientas');
+  const mudos = [], repetidos = [];
   [].forEach.call(barras, function (barra, n) {
-    var vistos = {};
+    const vistos = {};
     [].forEach.call(barra.querySelectorAll('button'), function (b) {
-      var visible = b.textContent.replace(/\s+/g, ' ').trim();
-      var palabra = /[a-zA-ZáéíóúñÁÉÍÓÚÑ]/.test(visible);
+      const visible = b.textContent.replace(/\s+/g, ' ').trim();
+      const palabra = /[a-zA-ZáéíóúñÁÉÍÓÚÑ]/.test(visible);
       if (!palabra) mudos.push('barra ' + n + ': «' + visible + '»');
       if (vistos[visible]) repetidos.push('barra ' + n + ': «' + visible + '»');
       vistos[visible] = true;
@@ -267,10 +314,10 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E16 · y ninguna barra repite la misma etiqueta visible', repetidos.join(' · '));
 
   /* E17 · Toda zona de juego lleva paisaje */
-  var sinPaisaje = [];
+  const sinPaisaje = [];
   [].forEach.call(document.querySelectorAll('.zona-juego'), function (z) {
-    var sec = z.closest ? z.closest('.pantalla') : null;
-    var id = sec ? sec.id : '(suelta)';
+    const sec = z.closest ? z.closest('.pantalla') : null;
+    const id = sec ? sec.id : '(suelta)';
     if (z.className.indexOf('bioma') === -1) sinPaisaje.push(id + ': sin bioma');
     if (!z.querySelector('.cielo')) sinPaisaje.push(id + ': sin cielo');
   });
@@ -278,8 +325,8 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E17 · toda .zona-juego declara bioma y cielo', sinPaisaje.join(' · '));
 
   /* E18 · Una recarga no se lleva la partida por delante */
-  var perfilRec = CB.almacen.perfilNuevo('p-rec', 'Topo Cavador', 0, CB.util.hoyISO(), null);
-  var ahora = Date.now();
+  const perfilRec = CB.almacen.perfilNuevo('p-rec', 'Topo Cavador', 0, CB.util.hoyISO(), null);
+  const ahora = Date.now();
 
   t.ok(!CB.arranque.esRecarga(perfilRec, ahora),
     'E18 · sin partida guardada no se reanuda nada');
@@ -297,7 +344,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E18 · guardarEnCurso() sella cuándo se guardó, no solo cuándo empezó');
 
   /* E19 · La calibración explica lo que es */
-  var h1Cal = document.querySelector('#p-calibracion h1');
+  const h1Cal = document.querySelector('#p-calibracion h1');
   t.ok(!!h1Cal && h1Cal.className.indexOf('solo-lectores') === -1,
     'E19 · el título de la calibración es visible, no solo para lectores de pantalla');
   t.ok(!!document.getElementById('cal-paso'),
@@ -310,20 +357,20 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E20 · y al apagarse una luz se dice, con las que quedan');
 
   /* Y sigue sin apagarse en el primer intento, que es la regla que se protege. */
-  var luzEstado = CB.vidas.nuevoEstado(0);
-  var r1 = CB.vidas.fallo(luzEstado, 1, 'expedicion');
+  const luzEstado = CB.vidas.nuevoEstado(0);
+  const r1 = CB.vidas.fallo(luzEstado, 1, 'expedicion');
   t.ok(!r1.apagada && luzEstado.luces === CB.vidas.INICIALES,
     'E20 · un solo fallo NO apaga ninguna luz');
-  var r2 = CB.vidas.fallo(luzEstado, 2, 'expedicion');
+  const r2 = CB.vidas.fallo(luzEstado, 2, 'expedicion');
   t.ok(r2.apagada && luzEstado.luces === CB.vidas.INICIALES - 1,
     'E20 · el segundo fallo del mismo ítem sí apaga una');
 
   /* E21 · El botón de la portada no promete lo que no va a pasar */
-  var perfilSin = null;
+  const perfilSin = null;
   t.igual(CB.arranque.rotuloJugar(perfilSin), 'EMPEZAR',
     'E21 · sin minero elegido el botón dice EMPEZAR, no JUGAR');
 
-  var perfilNuevo = CB.almacen.perfilNuevo('p-rot', 'Topo Cavador', 0, CB.util.hoyISO(), null);
+  const perfilNuevo = CB.almacen.perfilNuevo('p-rot', 'Topo Cavador', 0, CB.util.hoyISO(), null);
   perfilNuevo.calibrado = false;
   t.igual(CB.arranque.rotuloJugar(perfilNuevo), 'EMPEZAR',
     'E21 · sin calibrar tampoco dice JUGAR: lo que viene no es una partida');
@@ -340,12 +387,12 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E21 · con una expedición a medias, lo dice en vez de fingir que empieza');
 
   /* E22 · Los mensajes se escriben en la pantalla que se está viendo */
-  var pantallaPrev22 = CB.pantallas.actual;
+  const pantallaPrev22 = CB.pantallas.actual;
 
   CB.pantallas.actual = 'p-calibracion';
   CB.ui.mensaje('¡Muy bien!', 'acierto');
-  var nCal = document.getElementById('cal-mensaje');
-  var nPar = document.getElementById('item-mensaje');
+  const nCal = document.getElementById('cal-mensaje');
+  const nPar = document.getElementById('item-mensaje');
   t.ok(!!nCal && nCal.textContent === '¡Muy bien!' && !nCal.hidden,
     'E22 · en calibración el mensaje va a su propio nodo, y visible');
   t.ok(!nPar || nPar.textContent !== '¡Muy bien!',
@@ -369,15 +416,15 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E23 · y se nombra lo que cambia: reloj, luces y gemas');
 
   /* E24 · La pausa no aterriza en un menú de configuración */
-  var estadoPrev24 = CB.partida.estado;
-  var tit = document.getElementById('ajustes-titulo');
-  var lista = document.getElementById('lista-ajustes');
+  const estadoPrev24 = CB.partida.estado;
+  const tit = document.getElementById('ajustes-titulo');
+  const lista = document.getElementById('lista-ajustes');
 
   CB.partida.estado = { pausada: true };
   CB.ajustesNino({ desdePausa: true });
   t.igual(tit ? tit.textContent : null, 'En pausa',
     'E24 · al pausar, la pantalla se llama «En pausa», no «Ajustes»');
-  var primero = lista ? lista.querySelector('button') : null;
+  const primero = lista ? lista.querySelector('button') : null;
   t.ok(!!primero && /Seguir cavando/.test(primero.textContent),
     'E24 · y volver al juego es el PRIMER botón, no el último',
     primero ? primero.textContent.trim() : 'no hay botones');
@@ -389,9 +436,9 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.partida.estado = estadoPrev24;
 
   /* E1 · Ningún handler de pantalla navega a su propia pantalla */
-  var navegantes = [];
+  const navegantes = [];
   Object.keys(CB.pantallas.alEntrar).forEach(function (id) {
-    var fuente = String(CB.pantallas.alEntrar[id]);
+    const fuente = String(CB.pantallas.alEntrar[id]);
     if (fuente.indexOf('pantallas.ir') !== -1) navegantes.push(id);
   });
   t.ok(navegantes.length === 0,
@@ -400,10 +447,10 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E1 · el cerrojo de reentrada queda limpio entre navegaciones');
 
   /* E25 · Los dos ajustes de movimiento apagan lo MISMO */
-  var enMedia = [], enClase = [];
-  var PREFIJO = ':root.sin-movimiento ';
+  const enMedia = [], enClase = [];
+  const PREFIJO = ':root.sin-movimiento ';
   function recogerReglas(reglas, destinoMedia) {
-    var i, r;
+    let i, r;
     for (i = 0; i < reglas.length; i++) {
       r = reglas[i];
       if (r.media && /prefers-reduced-motion/.test(r.conditionText || r.media.mediaText || '')) {
@@ -421,10 +468,10 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
       });
     }
   }
-  var h, hojas;
+  let h, reglasHoja;
   for (h = 0; h < document.styleSheets.length; h++) {
-    try { hojas = document.styleSheets[h].cssRules; } catch (eH) { continue; }
-    if (hojas) recogerReglas(hojas, false);
+    try { reglasHoja = document.styleSheets[h].cssRules; } catch (eH) { continue; }
+    if (reglasHoja) recogerReglas(reglasHoja, false);
   }
 
   /* Sin esto, dos listas vacías serían «idénticas» y el guardián pasaría en
@@ -433,8 +480,8 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E25 · prefers-reduced-motion desactiva una lista de animaciones no trivial',
     enMedia.length + ' selectores');
 
-  var soloSistema = enMedia.filter(function (s) { return enClase.indexOf(s) === -1; });
-  var soloJuego  = enClase.filter(function (s) { return enMedia.indexOf(s) === -1; });
+  const soloSistema = enMedia.filter(function (s) { return enClase.indexOf(s) === -1; });
+  const soloJuego  = enClase.filter(function (s) { return enMedia.indexOf(s) === -1; });
   t.ok(soloSistema.length === 0,
     'E25 · el ajuste del juego apaga todo lo que apaga el del sistema',
     'solo el sistema: ' + soloSistema.join(', '));
@@ -443,22 +490,22 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'solo el juego: ' + soloJuego.join(', '));
 
   /* E27 · La leyenda del informe decía «●਍ominado» */
-  var LEYENDAS = [
+  const LEYENDAS = [
     ['verde',    'dominado'],
     ['ambar',    'en proceso'],
     ['rojo',     'conviene trabajarlo'],
     ['sindatos', 'sin datos suficientes']
   ];
-  var sonda27 = document.createElement('span');
+  const sonda27 = document.createElement('span');
   sonda27.className = 'semaforo';
   document.body.appendChild(sonda27);
-  var rotos = [];
+  const rotos = [];
   LEYENDAS.forEach(function (par) {
     sonda27.setAttribute('data-nivel', par[0]);
-    var texto = getComputedStyle(sonda27, '::before').content || '';
+    const texto = getComputedStyle(sonda27, '::before').content || '';
     /* Los espacios duros cuentan como espacio para esta comparación: lo que se
        comprueba es que las PALABRAS estén enteras. */
-    var plano = texto.replace(/ /g, ' ');
+    const plano = texto.replace(/ /g, ' ');
     if (plano.indexOf(par[1]) === -1) rotos.push(par[0] + ' → ' + texto);
   });
   document.body.removeChild(sonda27);
@@ -469,13 +516,13 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   /* E34 · El service worker no estorba donde no puede vivir */
   t.ok(typeof CB.offline.DISPONIBLE === 'boolean',
     'E34 · la disponibilidad del modo sin conexión se decide una vez, al cargar');
-  var protocoloEsFile = location.protocol === 'file:';
+  const protocoloEsFile = location.protocol === 'file:';
   t.ok(!protocoloEsFile || CB.offline.DISPONIBLE === false,
     'E34 · en file:// el modo sin conexión se declara NO disponible',
     'protocolo ' + location.protocol + ', disponible ' + CB.offline.DISPONIBLE);
 
-  var reventoRegistro = false, devolvio;
-  var guardado = CB.offline.DISPONIBLE;
+  let reventoRegistro = false, devolvio;
+  const guardado = CB.offline.DISPONIBLE;
   CB.offline.DISPONIBLE = false;
   try { devolvio = CB.offline.registrar(); } catch (eReg) { reventoRegistro = true; }
   CB.offline.DISPONIBLE = guardado;
@@ -483,7 +530,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E34 · registrar() sin contexto seguro devuelve false y NO lanza',
     reventoRegistro ? 'lanzó una excepción' : 'devolvió ' + devolvio);
 
-  var fuenteReg = String(CB.offline.registrar);
+  const fuenteReg = String(CB.offline.registrar);
   t.ok(fuenteReg.indexOf('function') !== -1 &&
        (fuenteReg.match(/function/g) || []).length >= 2,
     'E34 · el rechazo de la promesa TAMBIÉN se recoge, no solo la excepción',
@@ -499,10 +546,10 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
       ? 'la controla ' + navigator.serviceWorker.controller.scriptURL : '');
 
   /* E37 · «Listo» solo puede significar listo */
-  var dispReal = CB.offline.DISPONIBLE;
+  const dispReal = CB.offline.DISPONIBLE;
 
   /* Es una propiedad de `window` definida SOLO con getter: sin setter, `window.caches = doble` no lanza nada en modo no estricto — simplemente no hace nada, y el doble nunca se instala. */
-  var descReal = Object.getOwnPropertyDescriptor(window, 'caches') ||
+  const descReal = Object.getOwnPropertyDescriptor(window, 'caches') ||
                  Object.getOwnPropertyDescriptor(Window.prototype, 'caches');
 
   function ponerCaches(doble) {
@@ -527,10 +574,10 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     });
   }
 
-  var TODAS_FALLAN = { open: function () {
+  const TODAS_FALLAN = { open: function () {
     return Promise.resolve({ add: function () { return Promise.reject(new Error('404')); } });
   } };
-  var TODAS_VAN = { open: function () {
+  const TODAS_VAN = { open: function () {
     return Promise.resolve({ add: function () { return Promise.resolve(); } });
   } };
 
@@ -556,15 +603,15 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
 
 /* E38 · Una sola lista de ficheros de música */
 CB.pruebas.suite('E38 · la lista de música tiene un solo dueño', function () {
-  var t = CB.pruebas;      /* suite() llama a fn() SIN argumentos */
+  const t = CB.pruebas;      /* suite() llama a fn() SIN argumentos */
   /* Y su modo de fallo era invisible por partida doble: renombrar un fichero dejaba la música sonando con toda normalidad —07-musica.js sí tenía la ruta buena— y solo rompía la descarga sin conexión, que además informaba de éxito por el… */
   t.ok(typeof CB.offline.urlesPistas === 'function',
     'E38 · las rutas de música se derivan, no se escriben otra vez');
-  var urles = CB.offline.urlesPistas();
+  const urles = CB.offline.urlesPistas();
   t.igual(urles.length, 9, 'E38 · salen las nueve pistas');
 
-  var esperadas = [];
-  for (var k in CB.musica.PISTAS) {
+  const esperadas = [];
+  for (const k in CB.musica.PISTAS) {
     if (Object.prototype.hasOwnProperty.call(CB.musica.PISTAS, k)) {
       esperadas.push(CB.musica.RAIZ + CB.musica.PISTAS[k].fichero);
     }
@@ -575,32 +622,32 @@ CB.pruebas.suite('E38 · la lista de música tiene un solo dueño', function () 
   /* Y la comprobación que de verdad ata el fallo: que ninguna ruta esté escrita
      como literal en 45-offline.js. Se busca por nombre de FICHERO, que terser
      conserva por ser literal de cadena. */
-  var fuenteOffline = String(CB.offline.urlesPistas) + String(CB.offline.descargarMusica);
+  const fuenteOffline = String(CB.offline.urlesPistas) + String(CB.offline.descargarMusica);
   t.ok(fuenteOffline.indexOf('.mp3') === -1,
     'E38 · ningún nombre de mp3 escrito a mano en el código sin conexión');
 });
 
 /* E40 · El relleno de opciones del jefe no avanzaba */
 CB.pruebas.suite('E40 · el jefe siempre puede completar sus opciones', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
-  var previo = CB.jefes.estado;
+  const previo = CB.jefes.estado;
   CB.jefes.estado = { rng: CB.util.mulberry32(99) };
 
   /* Los tres casos con nombre y apellidos que colgaban, de la mecánica reflejo:
      correcta = a − b, distractores = [a + b, a − b + sobra, a − sobra]. */
-  var colgaban = [
+  const colgaban = [
     { a: 5, b: 3, sobra: 3 },
     { a: 6, b: 6, sobra: 3 },
     { a: 7, b: 6, sobra: 3 }
   ];
-  var todosVuelven = true, todosCuatro = true, todosDistintos = true;
+  let todosVuelven = true, todosCuatro = true, todosDistintos = true;
 
   colgaban.forEach(function (c) {
-    var cont = document.createElement('div');
-    var correcta = c.a - c.b;
+    const cont = document.createElement('div');
+    const correcta = c.a - c.b;
     CB.jefes.opciones(cont, correcta, [c.a + c.b, correcta + c.sobra, c.a - c.sobra]);
-    var vals = [].slice.call(cont.querySelectorAll('button')).map(function (b) {
+    const vals = [].slice.call(cont.querySelectorAll('button')).map(function (b) {
       return Number(b.textContent);
     });
     if (!vals.length) todosVuelven = false;
@@ -614,12 +661,13 @@ CB.pruebas.suite('E40 · el jefe siempre puede completar sus opciones', function
 
   /* Barrido completo de las tres mecánicas que pasan por opciones(). En modo
      largo se recorre entero; en modo rápido, uno de cada cuatro. */
-  var salto = CB.pruebas.modoLargo ? 1 : 4;
-  var fallos = [], a, b, sobra;
+  const salto = CB.pruebas.modoLargo ? 1 : 4;
+  const fallos = [];
+  let a, b, sobra;
   for (a = 5; a <= 40; a += salto) {
     for (b = 1; b <= a; b += salto) {
       for (sobra = 1; sobra <= 9; sobra++) {
-        var cont2 = document.createElement('div');
+        const cont2 = document.createElement('div');
         CB.jefes.opciones(cont2, a - b, [a + b, a - b + sobra, a - sobra]);
         if (cont2.querySelectorAll('button').length !== 4) {
           fallos.push(a + ',' + b + ',' + sobra);
@@ -634,11 +682,11 @@ CB.pruebas.suite('E40 · el jefe siempre puede completar sus opciones', function
   /* Y la garantía estructural: el candidato de relleno no puede volver a ser el
      mismo dos vueltas seguidas. Se comprueba sobre la conducta con una llamada
      que fuerza el relleno desde una sola opción válida. */
-  var cont3 = document.createElement('div');
+  const cont3 = document.createElement('div');
   CB.jefes.opciones(cont3, 0, [0, 0, 0]);        // todos los distractores inválidos
   t.igual(cont3.querySelectorAll('button').length, 4,
     'E40 · con los tres distractores inservibles también salen cuatro');
-  var negativos = [].slice.call(cont3.querySelectorAll('button')).filter(function (b) {
+  const negativos = [].slice.call(cont3.querySelectorAll('button')).filter(function (b) {
     return Number(b.textContent) < 0;
   });
   t.igual(negativos.length, 0, 'E40 · el relleno nunca propone un número negativo');
@@ -648,7 +696,7 @@ CB.pruebas.suite('E40 · el jefe siempre puede completar sus opciones', function
 
 /* E41 · Los problemas de enunciado medían 0 ms */
 CB.pruebas.suite('E41 · el cronómetro de los problemas mide el tiempo real', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   t.ok(/subtipo/.test(String(CB.partida.marcarLectura)),
     'E41 · marcarLectura solo toca el reloj de los problemas');
@@ -656,9 +704,9 @@ CB.pruebas.suite('E41 · el cronómetro de los problemas mide el tiempo real', f
     'E41 · existe el enganche del primer toque en el contenedor de respuesta');
 
   /* El enganche se instala UNA vez por contenedor, como el del «toc». */
-  var caja = document.createElement('div');
-  var oyentes = 0;
-  var addOriginal = caja.addEventListener;
+  const caja = document.createElement('div');
+  let oyentes = 0;
+  const addOriginal = caja.addEventListener;
   caja.addEventListener = function () { oyentes++; return addOriginal.apply(caja, arguments); };
   CB.componentes.conectarLectura(caja);
   CB.componentes.conectarLectura(caja);
@@ -668,8 +716,8 @@ CB.pruebas.suite('E41 · el cronómetro de los problemas mide el tiempo real', f
   /* Y la conducta. Se monta el estado mínimo y se marca la lectura como haría
      un toque en el contenedor; luego se comprueba que el rt sale del reloj y no
      de cero. No hace falta esperar: basta con que t0 quede en el pasado. */
-  var previo = CB.partida.estado;
-  var bloqueoPrevio = CB.partida.bloqueado;
+  const previo = CB.partida.estado;
+  const bloqueoPrevio = CB.partida.bloqueado;
   CB.partida.bloqueado = false;
 
   CB.partida.estado = {
@@ -680,7 +728,7 @@ CB.pruebas.suite('E41 · el cronómetro de los problemas mide el tiempo real', f
   t.ok(CB.partida.estado.lecturaHecha === true && CB.partida.estado.t0 > 0,
     'E41 · el primer toque de un problema fija t0');
 
-  var t0Problema = CB.partida.estado.t0;
+  const t0Problema = CB.partida.estado.t0;
   CB.partida.marcarLectura();
   t.igual(CB.partida.estado.t0, t0Problema,
     'E41 · el segundo toque NO reinicia el reloj: se mediría de menos');
@@ -711,19 +759,19 @@ CB.pruebas.suite('E41 · el cronómetro de los problemas mide el tiempo real', f
 
 /* E42 · La música de mundo leía una propiedad inexistente */
 CB.pruebas.suite('E42 · la música lee el estado que existe de verdad', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
-  var previoEstado = CB.partida.estado;
-  var previoPerfil = CB.perfil;
-  var previaPantalla = CB.pantallas.actual;
+  const previoEstado = CB.partida.estado;
+  const previoPerfil = CB.perfil;
+  const previaPantalla = CB.pantallas.actual;
   CB.perfil = CB.pruebas.perfilNuevo();
 
-  var mal = [], pistas = [];
+  const mal = [], pistas = [];
   CB.MUNDOS.forEach(function (m) {
-    var e = CB.partida.iniciar({ mundoId: m.id, modo: 'expedicion' });
+    const e = CB.partida.iniciar({ mundoId: m.id, modo: 'expedicion' });
     if (!e) { mal.push(m.id + ': iniciar() no montó partida'); return; }
-    var dio = CB.musica.claveDePantalla('p-partida');
-    var toca = CB.musica.POR_BIOMA[m.bioma];
+    const dio = CB.musica.claveDePantalla('p-partida');
+    const toca = CB.musica.POR_BIOMA[m.bioma];
     pistas.push(dio);
     if (dio !== toca) mal.push(m.id + ' (' + m.bioma + ') dio ' + dio + ' en vez de ' + toca);
     CB.partida.pararCronometro();
@@ -736,7 +784,7 @@ CB.pruebas.suite('E42 · la música lee el estado que existe de verdad', functio
 
   /* Lo que delataba el fallo a simple vista: tres mundos distintos dando la
      misma pista. Cuatro biomas, cuatro pistas, sin repetir ninguna. */
-  var distintas = pistas.filter(function (p, i) { return pistas.indexOf(p) === i; });
+  const distintas = pistas.filter(function (p, i) { return pistas.indexOf(p) === i; });
   t.igual(distintas.length, 4, 'E42 · cuatro mundos, cuatro pistas distintas', pistas.join(', '));
 
   /* Y sin partida en curso sigue devolviendo algo reproducible. */
@@ -751,16 +799,16 @@ CB.pruebas.suite('E42 · la música lee el estado que existe de verdad', functio
 
 /* E43 · La barra de partida solo respondía en el borde */
 CB.pruebas.suite('E43 · la barra responde tocando el icono y el rótulo', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   /* Se monta el botón EXACTAMENTE como lo escribe index.html: el atributo en el
      <button> y dos <span> dentro, que son los que recibe de verdad el toque. */
-  var boton = document.createElement('button');
+  const boton = document.createElement('button');
   boton.type = 'button';
   boton.className = 'btn-bloque btn-bloque--rotulado';
   boton.setAttribute('data-accion', 'pista');
-  var ico = CB.ui.crear('span', 'btn-bloque__ico', 'P');
-  var rot = CB.ui.crear('span', 'btn-bloque__rotulo', 'Pista');
+  const ico = CB.ui.crear('span', 'btn-bloque__ico', 'P');
+  const rot = CB.ui.crear('span', 'btn-bloque__rotulo', 'Pista');
   boton.appendChild(ico);
   boton.appendChild(rot);
   document.body.appendChild(boton);
@@ -774,14 +822,14 @@ CB.pruebas.suite('E43 · la barra responde tocando el icono y el rótulo', funct
 
   /* No sube indefinidamente: un nodo suelto fuera de cualquier botón no dispara
      nada, y el tope de cuatro niveles se respeta. */
-  var suelto = CB.ui.crear('div', null, 'nada');
+  const suelto = CB.ui.crear('div', null, 'nada');
   document.body.appendChild(suelto);
   t.igual(CB.partida.accionDe(suelto), null,
     'E43 · un nodo sin botón encima no resuelve ninguna acción');
 
-  var hondo = boton, i;
+  let hondo = boton, i;
   for (i = 0; i < 5; i++) {
-    var capa = CB.ui.crear('span');
+    const capa = CB.ui.crear('span');
     hondo.appendChild(capa);
     hondo = capa;
   }
@@ -798,17 +846,17 @@ CB.pruebas.suite('E43 · la barra responde tocando el icono y el rótulo', funct
 
 /* E44 · El cerrojo de una respuesta solo estaba en la partida */
 CB.pruebas.suite('E44 · una respuesta por turno también en jefes y calibración', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   /* El jefe */
-  var previoJefe = CB.jefes.estado;
+  const previoJefe = CB.jefes.estado;
   CB.jefes.estado = {
     mundo: CB.catalogo.getMundo('M1'), jefe: 'Tronquete',
     def: CB.jefes.DEFINICION.Tronquete, bloques: 8, turno: 1,
     sinFallos: true, respondido: false, rng: CB.util.mulberry32(4)
   };
-  var antes = CB.jefes.estado.bloques;
-  var i;
+  const antes = CB.jefes.estado.bloques;
+  let i;
   for (i = 0; i < 5; i++) CB.jefes.responder(true);
   t.igual(CB.jefes.estado.bloques, antes - 1,
     'E44 · cinco toques en la opción correcta tiran UN bloque, no cinco');
@@ -820,9 +868,9 @@ CB.pruebas.suite('E44 · una respuesta por turno también en jefes y calibració
   CB.jefes.estado = previoJefe;
 
   /* La calibración */
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
-  var bloqueoPrevio = CB.partida.bloqueado;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
+  const bloqueoPrevio = CB.partida.bloqueado;
 
   CB.perfil = CB.pruebas.perfilNuevo();
   CB.perfil.calibrado = false;
@@ -833,13 +881,13 @@ CB.pruebas.suite('E44 · una respuesta por turno también en jefes y calibració
   /* Se levanta a mano el bloqueo de construcción y se fija la confirmación: lo
      que se prueba aquí es el cerrojo de una respuesta, no esos dos. Dejarlos al
      azar haría que el guardián pasara por el motivo equivocado. */
-  var confPrevia = CB.componentes._confirmacionPendiente;
+  const confPrevia = CB.componentes._confirmacionPendiente;
   CB.componentes._confirmacionPendiente = false;
   CB.partida.bloqueado = false;
 
-  var correcta = CB.calibracion.ITEMS[0].respuesta;
-  var botones = [].slice.call(document.querySelectorAll('#cal-respuesta button'));
-  var bOK = botones.filter(function (b) { return b.textContent === String(correcta); })[0];
+  const correcta = CB.calibracion.ITEMS[0].respuesta;
+  const botones = [].slice.call(document.querySelectorAll('#cal-respuesta button'));
+  const bOK = botones.filter(function (b) { return b.textContent === String(correcta); })[0];
 
   if (!bOK) {
     t.saltar('E44 · la calibración no admite toques repetidos',
@@ -865,33 +913,33 @@ CB.pruebas.suite('E44 · una respuesta por turno también en jefes y calibració
 
 /* E45 · La dificultad D solo sabía bajar */
 CB.pruebas.suite('E45 · los contadores de dificultad sobreviven al guardado', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
-  var nivel = { n: 0, aciertos: 0, caja: 1, D: 2, ultimoISO: null, enPausa: false };
+  const nivel = { n: 0, aciertos: 0, caja: 1, D: 2, ultimoISO: null, enPausa: false };
   CB.adaptativo.actualizarD(nivel, true, true);
   CB.adaptativo.actualizarD(nivel, true, true);
 
-  var guardado = CB.almacen.sanear({ niveles: { X: nivel } }).niveles.X;
+  const guardado = CB.almacen.sanear({ niveles: { X: nivel } }).niveles.X;
   t.ok(guardado.rachaD === 2,
     'E45 · la racha de aciertos llega entera a lo que se escribe en disco',
     JSON.stringify(guardado));
 
   /* La prueba que de verdad ata el fallo: dos sesiones. Se acierta dos veces,
      se guarda, se relee, y el tercer acierto tiene que subir la dificultad. */
-  var releido = JSON.parse(JSON.stringify(guardado));
+  const releido = JSON.parse(JSON.stringify(guardado));
   CB.adaptativo.actualizarD(releido, true, true);
   t.igual(releido.D, 3,
     'E45 · el tercer acierto sube D aunque haya un guardado por medio');
 
   /* Y la simetría: bajar sigue funcionando igual y tampoco se pierde. */
-  var baja = { D: 3 };
+  const baja = { D: 3 };
   CB.adaptativo.actualizarD(baja, false, false);
-  var bajaGuardada = JSON.parse(JSON.stringify(CB.almacen.sanear(baja)));
+  const bajaGuardada = JSON.parse(JSON.stringify(CB.almacen.sanear(baja)));
   CB.adaptativo.actualizarD(bajaGuardada, false, false);
   t.igual(bajaGuardada.D, 2, 'E45 · dos fallos con guardado por medio bajan D');
 
   /* Ningún campo con guion bajo puede volver a llevar estado que haga falta. */
-  var conGuion = Object.keys(nivel).filter(function (k) { return k.charAt(0) === '_'; });
+  const conGuion = Object.keys(nivel).filter(function (k) { return k.charAt(0) === '_'; });
   t.igual(conGuion.length, 0,
     'E45 · actualizarD no deja ningún campo que sanear() vaya a tirar',
     conGuion.join(', '));
@@ -900,16 +948,16 @@ CB.pruebas.suite('E45 · los contadores de dificultad sobreviven al guardado', f
 /* E46 · Enter se saltaba la confirmación del antiazar */
 
 CB.pruebas.suite('E46 · Enter pasa por la misma confirmación que el toque', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
-  var pantallaPrevia = CB.pantallas.actual;
-  var bloqueoPrevio = CB.partida.bloqueado;
-  var confPrevia = CB.componentes._confirmacionPendiente;
+  const pantallaPrevia = CB.pantallas.actual;
+  const bloqueoPrevio = CB.partida.bloqueado;
+  const confPrevia = CB.componentes._confirmacionPendiente;
   CB.pantallas.actual = 'p-partida';
 
   function desbloqueado() {
     return new Promise(function (listo) {
-      var t0 = CB.util.ahora();
+      const t0 = CB.util.ahora();
       (function espera() {
         if (!CB.partida.bloqueado || CB.util.ahora() - t0 > 4000) { listo(); return; }
         setTimeout(espera, 10);
@@ -917,8 +965,8 @@ CB.pruebas.suite('E46 · Enter pasa por la misma confirmación que el toque', fu
     });
   }
 
-  var respuestas = [];
-  var comp = CB.componentes.tecladoBloques(
+  const respuestas = [];
+  const comp = CB.componentes.tecladoBloques(
     { respuesta: 7 },
     function (v) { respuestas.push(v); },
     { bloqueoMs: 0 }
@@ -944,7 +992,7 @@ CB.pruebas.suite('E46 · Enter pasa por la misma confirmación que el toque', fu
     /* Sin confirmación pendiente, Enter contesta a la primera, como siempre. */
     CB.componentes._confirmacionPendiente = false;
     respuestas.length = 0;
-    var comp2 = CB.componentes.tecladoBloques(
+    const comp2 = CB.componentes.tecladoBloques(
       { respuesta: 9 },
       function (v) { respuestas.push(v); },
       { bloqueoMs: 0 }
@@ -969,7 +1017,8 @@ CB.pruebas.suite('E46 · Enter pasa por la misma confirmación que el toque', fu
    Del cargado y no del fuente: es lo único que sigue valiendo si mañana esto se
    escribe de otra manera, y lo único que ve lo que hizo el compilador. */
 CB.pruebas._reglasCinta = function () {
-  var fotogramas = {}, reglas = [], h, i, hojas, r;
+  const fotogramas = {}, reglas = [];
+  let h, i, hojas, r;
   for (h = 0; h < document.styleSheets.length; h++) {
     try { hojas = document.styleSheets[h].cssRules; } catch (eH) { continue; }
     if (!hojas) continue;
@@ -986,8 +1035,8 @@ CB.pruebas._reglasCinta = function () {
 };
 
 CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', function () {
-  var t = CB.pruebas;
-  var c = CB.pruebas._reglasCinta();
+  const t = CB.pruebas;
+  const c = CB.pruebas._reglasCinta();
 
   /* Que la lectura del CSS haya funcionado se AFIRMA. Si document.styleSheets no
      trajera nada, todo lo de abajo pasaría por vacuidad. */
@@ -997,12 +1046,13 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
 
   /* Así que la regla pasa a ser de TERRITORIO. */
   /* Aquí había un `TOPE = 45` que usaba solo la segunda comprobación, mientras la primera llevaba un 30 escrito a mano; leído deprisa parece una constante muerta y un número duplicado, y unificarlos en 30 pone roja la segunda —el cartel del… */
-  var TOPE_FOTOGRAMA = 30;
-  var TOPE_COLOCACION = 45;
+  const TOPE_FOTOGRAMA = 30;
+  const TOPE_COLOCACION = 45;
 
-  var invaden = [];
+  const invaden = [];
   Object.keys(c.fotogramas).forEach(function (nombre) {
-    var kf = c.fotogramas[nombre], j, paso, m, y;
+    const kf = c.fotogramas[nombre];
+    let j, paso, m, y;
     for (j = 0; j < kf.cssRules.length; j++) {
       paso = kf.cssRules[j];
       if (paso.style.opacity === '0') continue;          // invisible: da igual
@@ -1017,9 +1067,9 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
     invaden.join(' · '));
 
   /* Y la regla de territorio sobre los dos carteles que se colocan: la cinta y el cartel del logro. */
-  var arriba = [];
+  const arriba = [];
   c.reglas.forEach(function (r) {
-    var top = r.style.top;
+    const top = r.style.top;
     if (!top || top.indexOf('%') === -1) return;
     if (parseFloat(top) > TOPE_COLOCACION) arriba.push(r.selectorText + ' → top ' + top);
   });
@@ -1028,15 +1078,15 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
     arriba.join(' · '));
 
   /* Los dos que se superponen no interceptan toques, pase lo que pase. */
-  var pasan = ['cinta', 'cartel-festejo'].filter(function (id) {
-    var el = document.getElementById(id);
+  const pasan = ['cinta', 'cartel-festejo'].filter(function (id) {
+    const el = document.getElementById(id);
     return el && getComputedStyle(el).pointerEvents !== 'none';
   });
   t.igual(pasan.length, 0,
     'E47 · lo que se superpone deja pasar el toque', pasan.join(', '));
 
-  var relativos = ['cinta', 'cartel-festejo'].filter(function (id) {
-    var el = document.getElementById(id);
+  const relativos = ['cinta', 'cartel-festejo'].filter(function (id) {
+    const el = document.getElementById(id);
     return el && getComputedStyle(el).position !== 'absolute';
   });
   t.igual(relativos.length, 0,
@@ -1045,21 +1095,21 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
 });
 
 CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
-  var t = CB.pruebas;
-  var c = CB.pruebas._reglasCinta();
-  var tabla = Object.keys(CB.ui.cinta.COREOGRAFIAS);
+  const t = CB.pruebas;
+  const c = CB.pruebas._reglasCinta();
+  const tabla = Object.keys(CB.ui.cinta.COREOGRAFIAS);
 
   t.igual(tabla.length, 4, 'E48 · la tabla declara las cuatro coreografías de cinta');
 
   /* Ida: toda clave de la tabla tiene sus fotogramas. */
-  var sinFotogramas = tabla.filter(function (k) {
+  const sinFotogramas = tabla.filter(function (k) {
     return !c.fotogramas['cinta-' + k];
   });
   t.igual(sinFotogramas.length, 0,
     'E48 · toda coreografía de la tabla existe en el CSS', sinFotogramas.join(', '));
 
   /* Sin esta dirección, una animación huérfana se queda en la hoja sin que nada la dispare, y eso no da ningún error: simplemente no se ve nunca. */
-  var huerfanos = Object.keys(c.fotogramas).filter(function (n) {
+  const huerfanos = Object.keys(c.fotogramas).filter(function (n) {
     return n !== 'cinta-arde' && tabla.indexOf(n.replace(/^cinta-/, '')) === -1;
   });
   t.igual(huerfanos.length, 0,
@@ -1067,7 +1117,7 @@ CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
 
   /* Y el CSS NO declara duración: si la declarase volveríamos a tener el número
      en dos sitios, que es justo lo que mató a MS_CARTEL. */
-  var conDuracion = c.reglas.filter(function (r) {
+  const conDuracion = c.reglas.filter(function (r) {
     return /\.cinta--/.test(r.selectorText) &&
            r.selectorText.indexOf('.cinta__texto') === -1 &&
            r.style.animationDuration && r.style.animationDuration !== '0s';
@@ -1076,10 +1126,10 @@ CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
     'E48 · el CSS no fija la duración de ninguna coreografía', conDuracion.join(', '));
 
   /* Todas con steps(): es la regla dura del proyecto y ahora hay nueve sitios donde saltársela. */
-  var suaves = c.reglas.filter(function (r) {
-    var f = r.style.animationTimingFunction;
+  const suaves = c.reglas.filter(function (r) {
+    const f = r.style.animationTimingFunction;
     if (!f || f.indexOf('steps(') !== -1) return false;
-    var n = r.style.animationName;
+    const n = r.style.animationName;
     return !(n === 'none' || r.style.animation === 'none');
   }).map(function (r) { return r.selectorText + ' → ' + r.style.animationTimingFunction; });
   t.igual(suaves.length, 0,
@@ -1087,22 +1137,22 @@ CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
 });
 
 CB.pruebas.suite('E49-E50 · con el movimiento apagado la cinta se para pero se ve', function () {
-  var t = CB.pruebas;
-  var raiz = document.documentElement;
-  var teniaClase = raiz.classList.contains('sin-movimiento');
-  var nodo = document.getElementById('cinta');
+  const t = CB.pruebas;
+  const raiz = document.documentElement;
+  const teniaClase = raiz.classList.contains('sin-movimiento');
+  const nodo = document.getElementById('cinta');
 
   t.ok(!!nodo, 'E49 · la cinta existe en la maqueta de pruebas');
   if (!nodo) return;
 
   raiz.classList.add('sin-movimiento');
 
-  var claves = Object.keys(CB.ui.cinta.COREOGRAFIAS);
-  var moviendose = [], invisibles = [];
+  const claves = Object.keys(CB.ui.cinta.COREOGRAFIAS);
+  const moviendose = [], invisibles = [];
   claves.forEach(function (k) {
     nodo.className = 'cinta cinta--' + k + ' cinta--entra';
     nodo.hidden = false;
-    var cs = getComputedStyle(nodo);
+    const cs = getComputedStyle(nodo);
     /* animationName, NUNCA el texto: «animation: none !important» se serializa
        como «auto ease 0s 1 normal none running none» y buscar «none» ahí dentro
        da verde con cualquier animación corriendo. */
@@ -1115,12 +1165,12 @@ CB.pruebas.suite('E49-E50 · con el movimiento apagado la cinta se para pero se 
   [['insignia-gemas', 'insignia insignia--brota', true],
    ['cartel-festejo', 'cartel cartel--brota', true],
    ['zona-juego', 'zona-juego zona-juego--sacude', false]].forEach(function (v) {
-    var el = document.getElementById(v[0]);
+    const el = document.getElementById(v[0]);
     if (!el) { moviendose.push(v[0] + ' → no está en la maqueta'); return; }
-    var clasesPrevias = el.className, ocultoPrevio = el.hidden;
+    const clasesPrevias = el.className, ocultoPrevio = el.hidden;
     el.className = v[1];
     el.hidden = false;
-    var cs2 = getComputedStyle(el);
+    const cs2 = getComputedStyle(el);
     if (cs2.animationName !== 'none') moviendose.push(v[0] + ' → ' + cs2.animationName);
     if (v[2] && cs2.opacity !== '1') invisibles.push(v[0] + ' → opacidad ' + cs2.opacity);
     if (!v[2] && cs2.boxShadow === 'none') {
@@ -1137,7 +1187,7 @@ CB.pruebas.suite('E49-E50 · con el movimiento apagado la cinta se para pero se 
     invisibles.join(' · '));
 
   /* El parpadeo del texto del «Hurry up!» también se apaga. */
-  var hijo = nodo.querySelector('.cinta__texto');
+  const hijo = nodo.querySelector('.cinta__texto');
   if (hijo) {
     nodo.className = 'cinta cinta--prisa cinta--entra';
     t.igual(getComputedStyle(hijo).animationName, 'none',
@@ -1150,22 +1200,22 @@ CB.pruebas.suite('E49-E50 · con el movimiento apagado la cinta se para pero se 
 });
 
 CB.pruebas.suite('E51 · dos cintas seguidas no se pisan', function () {
-  var t = CB.pruebas;
-  var nodo = document.getElementById('cinta');
+  const t = CB.pruebas;
+  const nodo = document.getElementById('cinta');
   if (!t.ok(!!nodo, 'E51 · hay nodo de cinta')) return;
 
   CB.ui.cinta.ocultar();
 
   /* Eso solo se ve mirando si alguien lo canceló. */
-  var limpiados = [], origClear = window.clearTimeout;
+  const limpiados = [], origClear = window.clearTimeout;
   window.clearTimeout = function (id) { limpiados.push(id); return origClear.call(window, id); };
   /* Que el doble se haya instalado se AFIRMA. Si la propiedad fuese de solo
      lectura, la asignación se caería en silencio y todo esto mediría el
      clearTimeout de verdad, es decir, nada. Es lo que pasó con window.caches. */
-  var dobleInstalado = (window.clearTimeout !== origClear);
+  const dobleInstalado = (window.clearTimeout !== origClear);
 
   CB.ui.cinta.mostrar('junta', '¡Toma!');
-  var primerTemporizador = CB.ui.cinta._salida;
+  const primerTemporizador = CB.ui.cinta._salida;
   CB.ui.cinta.mostrar('bandera', '¡Se abre!');
   window.clearTimeout = origClear;
 
@@ -1180,7 +1230,7 @@ CB.pruebas.suite('E51 · dos cintas seguidas no se pisan', function () {
 
   /* Que solo quede UNA clase de coreografía. Dos a la vez darían dos
      animation-name y el navegador elegiría por orden de hoja, en silencio. */
-  var coreos = Array.prototype.filter.call(nodo.classList, function (c) {
+  const coreos = Array.prototype.filter.call(nodo.classList, function (c) {
     return /^cinta--/.test(c) && c !== 'cinta--entra';
   });
   t.igual(coreos.length, 1, 'E51 · una sola coreografía puesta a la vez', coreos.join(','));
@@ -1191,39 +1241,41 @@ CB.pruebas.suite('E51 · dos cintas seguidas no se pisan', function () {
 });
 
 CB.pruebas.suite('E52 · la bolsa de gritos sobrevive al guardado', function () {
-  var t = CB.pruebas;
-  var perfil = CB.pruebas.perfilNuevo();
-  var m = CB.mensajes.asegurar(perfil);
+  const t = CB.pruebas;
+  const perfil = CB.pruebas.perfilNuevo();
+  const m = CB.mensajes.asegurar(perfil);
 
   t.ok(!!m.gritos, 'E52 · el estado de mensajes trae bolsa de gritos');
 
   /* Ninguna clave con guion bajo delante: sanear() las borra todas, y así es
      como la dificultad D se quedó en un trinquete de una sola dirección (E45). */
-  var conGuion = Object.keys(m.gritos).filter(function (k) { return k.charAt(0) === '_'; });
+  const conGuion = Object.keys(m.gritos).filter(function (k) { return k.charAt(0) === '_'; });
   t.igual(conGuion.length, 0, 'E52 · ninguna clave de la bolsa empieza por guion bajo');
 
   /* Se gastan varios gritos y se comprueba que la bolsa recuerda. */
-  var rng = CB.util.mulberry32(7), i, vistos = [];
+  const rng = CB.util.mulberry32(7);
+  let i;
+  const vistos = [];
   for (i = 0; i < 6; i++) vistos.push(CB.mensajes.grito({ perfil: perfil, rng: rng }));
   t.ok(m.gritos.bolsaAcierto.length > 0, 'E52 · la bolsa guarda lo ya sacado');
 
-  var antes = m.gritos.bolsaAcierto.slice();
-  var saneado = CB.almacen.sanear(JSON.parse(JSON.stringify(perfil)));
+  const antes = m.gritos.bolsaAcierto.slice();
+  const saneado = CB.almacen.sanear(JSON.parse(JSON.stringify(perfil)));
   t.ok(!!(saneado.mensajes && saneado.mensajes.gritos),
     'E52 · la bolsa sigue ahí después de sanear()');
   t.igual(JSON.stringify(saneado.mensajes.gritos.bolsaAcierto), JSON.stringify(antes),
     'E52 · y con el mismo contenido');
 
   /* Y no repite: seis gritos de una bolsa de 24 tienen que ser seis distintos. */
-  var unicos = vistos.filter(function (v, k) { return vistos.indexOf(v) === k; });
+  const unicos = vistos.filter(function (v, k) { return vistos.indexOf(v) === k; });
   t.igual(unicos.length, vistos.length, 'E52 · seis gritos seguidos, seis distintos');
 });
 
 CB.pruebas.suite('E54 · el ítem siguiente no llega antes que la cinta', function () {
-  var t = CB.pruebas;
-  var cortas = [];
+  const t = CB.pruebas;
+  const cortas = [];
   Object.keys(CB.ui.festejo.CELEBRACIONES).forEach(function (k) {
-    var ms = CB.ui.festejo.CELEBRACIONES[k].ms;
+    const ms = CB.ui.festejo.CELEBRACIONES[k].ms;
     /* Las dos esperas reales del juego: 1600 tras acertar, 2200 tras fallar. */
     if (CB.ui.festejo.espera(k, 1600) < ms + 400) cortas.push(k + ' (acierto)');
     if (CB.ui.festejo.espera(k, 2200) < ms + 400) cortas.push(k + ' (fallo)');
@@ -1242,7 +1294,7 @@ CB.pruebas.suite('E54 · el ítem siguiente no llega antes que la cinta', functi
     'E54 · una clave que no existe deja la espera de siempre');
 
   /* E80 · el tiempo de lectura */
-  var largo = 'Muy bien. Has pedido prestada una decena y la has deshecho bien ' +
+  const largo = 'Muy bien. Has pedido prestada una decena y la has deshecho bien ' +
               'sin equivocarte en ninguna columna del ejercicio completo.';
   t.ok(CB.ui.festejo.espera('normal', 1600, largo) > 1600,
     'E80 · con texto, la espera se estira para poder leerlo',
@@ -1256,57 +1308,58 @@ CB.pruebas.suite('E54 · el ítem siguiente no llega antes que la cinta', functi
 });
 
 CB.pruebas.suite('E55 · el escalón 4 lleva al prerrequisito, y alguien lo llama', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   /* Escribir el número a mano en el test es lo que produjo E43 —dos implementaciones de la misma escalera y solo una probada, la que no se usaba— y de hecho la primera versión de este guardián puso 4 donde el módulo dice 3, y se puso roja… */
-  var umbral = -1, f;
+  let umbral = -1, f;
   for (f = 0; f <= 8; f++) {
     if (CB.escalera.siguienteEscalon(f, 2).accion === 'prerrequisito') { umbral = f; break; }
   }
   t.ok(umbral >= 0, 'E55 · algún número de fallos lleva al prerrequisito', 'ninguno de 0 a 8');
-  var esc = CB.escalera.siguienteEscalon(umbral, 2);
+  const esc = CB.escalera.siguienteEscalon(umbral, 2);
   t.igual(esc.escalon, 4, 'E55 · y esa acción es la del escalón 4');
 
   /* Y ahora lo que faltaba: que exista un camino real. Se busca un nivel del
      catálogo que TENGA prerrequisitos, se marca el prerrequisito como superado
      en un perfil de verdad, y se comprueba que la función lo encuentra. */
-  var perfil = CB.pruebas.perfilNuevo();
-  var ids = CB.catalogo.ids(), i, nivel, conPre = null;
+  const perfil = CB.pruebas.perfilNuevo();
+  const ids = CB.catalogo.ids();
+  let i, nivel, conPre = null;
   for (i = 0; i < ids.length; i++) {
     nivel = CB.catalogo.get(ids[i]);
     if (nivel && nivel.prerrequisitos && nivel.prerrequisitos.length) { conPre = nivel; break; }
   }
   if (!t.ok(!!conPre, 'E55 · el catálogo tiene niveles con prerrequisito')) return;
 
-  var pre = conPre.prerrequisitos[0];
+  const pre = conPre.prerrequisitos[0];
   perfil.niveles[pre] = { n: 10, aciertos: 10, caja: 3, D: 2, ultimoISO: CB.util.hoyISO(), enPausa: false };
-  var encontrado = CB.grafo.prerrequisitoDominado(conPre.id, perfil);
+  const encontrado = CB.grafo.prerrequisitoDominado(conPre.id, perfil);
   t.ok(!!encontrado, 'E55 · prerrequisitoDominado() devuelve un nivel dominado');
 
   /* Sin ningún prerrequisito superado devuelve null, y entonces el juego NO
      inventa un nivel: deja caer el fallo siguiente en el escalón 5, que es lo
      que pasaba antes. Degradar así es lo correcto. */
-  var limpio = CB.pruebas.perfilNuevo();
+  const limpio = CB.pruebas.perfilNuevo();
   t.igual(CB.grafo.prerrequisitoDominado(conPre.id, limpio), null,
     'E55 · sin nada dominado devuelve null en vez de inventarse un nivel');
 
-  var perfilPrevio = CB.perfil;
+  const perfilPrevio = CB.perfil;
   CB.perfil = perfil;
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (t.ok(!!estado, 'E55 · iniciar() devuelve estado')) {
     t.ok('prerrequisitoPendiente' in estado,
       'E55 · el estado de partida tiene dónde guardar el nivel inyectado');
     t.igual(estado.prerrequisitoPendiente, null,
       'E55 · y empieza vacío, sin colar nada en el primer ítem');
 
-    var hecho = CB.partida.aplicarEscalon(esc, { nivelId: conPre.id }, perfil, estado);
+    const hecho = CB.partida.aplicarEscalon(esc, { nivelId: conPre.id }, perfil, estado);
     t.igual(hecho, 'prerrequisito', 'E55 · el escalón 4 se aplica, no se ignora');
     t.igual(estado.prerrequisitoPendiente, encontrado,
       'E55 · y deja el prerrequisito dominado listo para el ítem siguiente');
 
     /* Sin prerrequisito dominado no hace nada y no rompe nada. */
     estado.prerrequisitoPendiente = null;
-    var nada = CB.partida.aplicarEscalon(esc, { nivelId: conPre.id }, limpio, estado);
+    const nada = CB.partida.aplicarEscalon(esc, { nivelId: conPre.id }, limpio, estado);
     t.igual(nada, null, 'E55 · sin prerrequisito dominado no se aplica');
     t.igual(estado.prerrequisitoPendiente, null, 'E55 · y no deja basura en el estado');
   }
@@ -1317,15 +1370,15 @@ CB.pruebas.suite('E55 · el escalón 4 lleva al prerrequisito, y alguien lo llam
 /* E56-E58 · La variedad tiene que ser de VEHÍCULO */
 
 CB.pruebas.suite('E56 · las celebraciones no son todas el mismo cartel', function () {
-  var t = CB.pruebas;
-  var C = CB.ui.festejo.CELEBRACIONES;
-  var claves = Object.keys(C);
+  const t = CB.pruebas;
+  const C = CB.ui.festejo.CELEBRACIONES;
+  const claves = Object.keys(C);
 
   t.ok(claves.length >= 8, 'E56 · hay celebraciones declaradas', String(claves.length));
 
-  var vehiculos = {};
+  const vehiculos = {};
   claves.forEach(function (k) { vehiculos[C[k].vehiculo] = (vehiculos[C[k].vehiculo] || 0) + 1; });
-  var distintos = Object.keys(vehiculos);
+  const distintos = Object.keys(vehiculos);
 
   /* El umbral no es decorativo: con menos de cuatro vehículos se vuelve a lo que
      había —variar el recorrido de una misma pieza— y eso ya se probó que no se
@@ -1336,7 +1389,7 @@ CB.pruebas.suite('E56 · las celebraciones no son todas el mismo cartel', functi
 
   /* Y NINGUNO acapara. Si la cinta vuelve a llevarse la mayoría, estamos otra
      vez en el mismo sitio aunque la tabla declare cinco vehículos. */
-  var mayor = 0, cual = '';
+  let mayor = 0, cual = '';
   distintos.forEach(function (v) { if (vehiculos[v] > mayor) { mayor = vehiculos[v]; cual = v; } });
   t.ok(mayor <= Math.ceil(claves.length / 2),
     'E56 · ningún vehículo se lleva más de la mitad de las celebraciones',
@@ -1345,10 +1398,10 @@ CB.pruebas.suite('E56 · las celebraciones no son todas el mismo cartel', functi
   /* LA REGLA DE ORO, y esta sí es de fondo: lo más frecuente tiene que ser lo
      más corto. La categoría A es el 60 % de los aciertos; si su celebración dura
      más que la del jefe, el juego se pasa la sesión esperando. */
-  var normal = C[CB.ui.festejo.POR_CATEGORIA.A];
+  const normal = C[CB.ui.festejo.POR_CATEGORIA.A];
   t.ok(!!normal, 'E56 · la categoría A tiene celebración');
   if (normal) {
-    var masLargas = claves.filter(function (k) { return C[k].ms > normal.ms; });
+    const masLargas = claves.filter(function (k) { return C[k].ms > normal.ms; });
     t.ok(masLargas.length >= claves.length - 2,
       'E56 · la celebración más frecuente es de las más cortas que hay',
       'solo ' + masLargas.length + ' de ' + claves.length + ' duran más');
@@ -1359,7 +1412,7 @@ CB.pruebas.suite('E56 · las celebraciones no son todas el mismo cartel', functi
   /* Las cuatro categorías de acierto tienen que existir en la tabla: un mapeo a
      una clave inventada devolvería undefined y no se celebraría nada, en
      silencio. Es la familia de E42. */
-  var huerfanas = ['A', 'B', 'C', 'D'].filter(function (cat) {
+  const huerfanas = ['A', 'B', 'C', 'D'].filter(function (cat) {
     return !C[CB.ui.festejo.POR_CATEGORIA[cat]];
   });
   t.igual(huerfanas.length, 0,
@@ -1368,11 +1421,11 @@ CB.pruebas.suite('E56 · las celebraciones no son todas el mismo cartel', functi
 });
 
 CB.pruebas.suite('E57 · cada vehículo hace algo distinto y observable', function () {
-  var t = CB.pruebas;
-  var insignia = document.getElementById('insignia-gemas');
-  var cartel = document.getElementById('cartel-festejo');
-  var cinta = document.getElementById('cinta');
-  var zona = document.getElementById('zona-juego');
+  const t = CB.pruebas;
+  const insignia = document.getElementById('insignia-gemas');
+  const cartel = document.getElementById('cartel-festejo');
+  const cinta = document.getElementById('cinta');
+  const zona = document.getElementById('zona-juego');
 
   if (!t.ok(!!(insignia && cartel && cinta && zona),
       'E57 · los cuatro nodos de celebración están en la maqueta')) return;
@@ -1416,8 +1469,8 @@ CB.pruebas.suite('E57 · cada vehículo hace algo distinto y observable', functi
 });
 
 CB.pruebas.suite('E58 · el ánimo no se celebra', function () {
-  var t = CB.pruebas;
-  var C = CB.ui.festejo.CELEBRACIONES;
+  const t = CB.pruebas;
+  const C = CB.ui.festejo.CELEBRACIONES;
 
   /* Un fallo no puede sonar a fiesta. La regla se comprueba, no se confía: es de
      las que se rompen sin querer el día que alguien copia una entrada de la
@@ -1438,12 +1491,12 @@ CB.pruebas.suite('E58 · el ánimo no se celebra', function () {
 /* E59-E61 · Fase 6 del plan: tres conductos que no estaban conectados */
 
 CB.pruebas.suite('E59 · atras() también ejecuta el manejador de salida', function () {
-  var t = CB.pruebas;
-  var pantallaPrevia = CB.pantallas.actual;
-  var pilaPrevia = CB.pantallas.pila.slice();
+  const t = CB.pruebas;
+  const pantallaPrevia = CB.pantallas.actual;
+  const pilaPrevia = CB.pantallas.pila.slice();
 
-  var llamados = [];
-  var salirPrevio = CB.pantallas.alSalir['p-mapa'];
+  const llamados = [];
+  const salirPrevio = CB.pantallas.alSalir['p-mapa'];
   CB.pantallas.alSalir['p-mapa'] = function () { llamados.push('p-mapa'); };
 
   CB.pantallas.ir('p-mapa');
@@ -1474,23 +1527,23 @@ CB.pruebas.suite('E59 · atras() también ejecuta el manejador de salida', funct
 });
 
 CB.pruebas.suite('E60 · cada componente se presenta la primera vez que se ve', function () {
-  var t = CB.pruebas;
-  var P = CB.componentes.PRESENTACION;
-  var claves = Object.keys(P);
+  const t = CB.pruebas;
+  const P = CB.componentes.PRESENTACION;
+  const claves = Object.keys(P);
 
   t.igual(claves.length, 7, 'E60 · están las siete frases de presentación');
 
-  var inexistentes = claves.filter(function (k) {
+  const inexistentes = claves.filter(function (k) {
     return typeof CB.componentes[k] !== 'function';
   });
   t.igual(inexistentes.length, 0,
     'E60 · toda frase corresponde a un componente que existe', inexistentes.join(', '));
 
-  var vacias = claves.filter(function (k) { return !P[k] || !P[k].length; });
+  const vacias = claves.filter(function (k) { return !P[k] || !P[k].length; });
   t.igual(vacias.length, 0, 'E60 · ninguna frase está vacía', vacias.join(', '));
 
   /* El ciclo completo sobre un perfil de verdad. */
-  var perfil = CB.pruebas.perfilNuevo();
+  const perfil = CB.pruebas.perfilNuevo();
   t.ok(CB.componentes.necesitaPresentacion(perfil, 'balanza'),
     'E60 · un perfil nuevo no ha visto la balanza');
 
@@ -1506,22 +1559,22 @@ CB.pruebas.suite('E60 · cada componente se presenta la primera vez que se ve', 
     'E60 · marcar dos veces no duplica la entrada');
 
   /* Y sobrevive al guardado: sin guion bajo delante, como manda sanear(). */
-  var saneado = CB.almacen.sanear(JSON.parse(JSON.stringify(perfil)));
+  const saneado = CB.almacen.sanear(JSON.parse(JSON.stringify(perfil)));
   t.ok(saneado.componentesVistos && saneado.componentesVistos.indexOf('balanza') !== -1,
     'E60 · la lista sobrevive a sanear()');
 
   /* Y AHORA EL CONDUCTO, QUE ES LO QUE FALTABA */
-  var perfilPrevio = CB.perfil;
-  var limpio = CB.pruebas.perfilNuevo();
+  const perfilPrevio = CB.perfil;
+  const limpio = CB.pruebas.perfilNuevo();
   CB.perfil = limpio;
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
-  var nodo = document.getElementById('item-mensaje');
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const nodo = document.getElementById('item-mensaje');
 
   if (t.ok(!!(estado && nodo), 'E60 · hay partida y nodo de mensaje')) {
     estado.proximoDescanso = 99;
 
-    var primera = nodo.textContent;
-    var vistosTrasUna = limpio.componentesVistos.slice();
+    const primera = nodo.textContent;
+    const vistosTrasUna = limpio.componentesVistos.slice();
 
     t.ok(vistosTrasUna.length > 0,
       'E60 · servir el primer ítem anota el componente en el perfil',
@@ -1544,14 +1597,14 @@ CB.pruebas.suite('E60 · cada componente se presenta la primera vez que se ve', 
 });
 
 CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
-  var descLeer = Object.getOwnPropertyDescriptor(CB.voz, 'leer');
-  var descGuiada = Object.getOwnPropertyDescriptor(CB.voz, 'lecturaGuiada');
-  var descDisp = Object.getOwnPropertyDescriptor(CB.voz, 'disponible');
-  var activaPrevia = CB.voz.activa;
+  const descLeer = Object.getOwnPropertyDescriptor(CB.voz, 'leer');
+  const descGuiada = Object.getOwnPropertyDescriptor(CB.voz, 'lecturaGuiada');
+  const descDisp = Object.getOwnPropertyDescriptor(CB.voz, 'disponible');
+  const activaPrevia = CB.voz.activa;
 
-  var leidos = [], guiados = [];
+  const leidos = [], guiados = [];
   Object.defineProperty(CB.voz, 'leer', {
     configurable: true, writable: true,
     value: function (texto, alTerminar) { leidos.push(texto); if (alTerminar) alTerminar(); return true; }
@@ -1568,13 +1621,14 @@ CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', funct
   t.ok(CB.voz.leer !== (descLeer && descLeer.value),
     'E61 · el doble de CB.voz.leer se ha instalado de verdad');
 
-  var perfilPrevio = CB.perfil;
-  var perfil = CB.pruebas.perfilNuevo();
+  const perfilPrevio = CB.perfil;
+  const perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
 
-  var idProblema = null;
-  var ids = CB.catalogo.ids(), k, niv;
+  let idProblema = null;
+  const ids = CB.catalogo.ids();
+  let k, niv;
   for (k = 0; k < ids.length; k++) {
     niv = CB.catalogo.get(ids[k]);
     if (niv && /^problemas_/.test(niv.destreza || '')) { idProblema = ids[k]; break; }
@@ -1600,7 +1654,7 @@ CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', funct
   /* MITAD A · con la voz apagada NO se lee nada, por ninguna de las dos vías. */
   CB.voz.activa = false;
   leidos.length = 0; guiados.length = 0;
-  var servido = servirProblema();
+  const servido = servirProblema();
   t.ok(servido, 'E61 · se ha servido un problema de enunciado de verdad');
   t.igual(leidos.length, 0, 'E61 · con «leer en voz alta» apagado, nadie lee');
   t.igual(guiados.length, 0, 'E61 · ni por la lectura guiada, que no mira ese ajuste');
@@ -1608,8 +1662,8 @@ CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', funct
   /* MITAD B · con la voz encendida sí, y con el reloj parado mientras lee. */
   CB.voz.activa = true;
   leidos.length = 0;
-  var paradas = 0;
-  var pararPrevio = CB.partida.pararCronometro;
+  let paradas = 0;
+  const pararPrevio = CB.partida.pararCronometro;
   CB.partida.pararCronometro = function () { paradas++; return pararPrevio.apply(this, arguments); };
   servirProblema();
   CB.partida.pararCronometro = pararPrevio;
@@ -1639,13 +1693,13 @@ CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', funct
 /* E62 · El teclado bloqueado no puede tener una tecla que finja */
 
 CB.pruebas.suite('E62 · con el teclado bloqueado, el OK tampoco engaña', function () {
-  var t = CB.pruebas;
-  var caja = document.getElementById('item-respuesta');
+  const t = CB.pruebas;
+  const caja = document.getElementById('item-respuesta');
   if (!t.ok(!!caja, 'E62 · hay contenedor de respuesta')) return;
 
   CB.componentes.tecladoBloques({ respuesta: 7 }, function () {}, { bloqueoMs: 30000 });
-  var ok = caja.querySelector('.btn-bloque[data-tecla="ok"]');
-  var uno = caja.querySelector('.btn-bloque[data-tecla="1"]');
+  const ok = caja.querySelector('.btn-bloque[data-tecla="ok"]');
+  const uno = caja.querySelector('.btn-bloque[data-tecla="1"]');
   if (!t.ok(!!(ok && uno), 'E62 · están el OK y el 1')) return;
 
   /* SE AFIRMA EL BLOQUEO ANTES DE MEDIR. Sin esto, si el teclado no llegara a
@@ -1654,14 +1708,14 @@ CB.pruebas.suite('E62 · con el teclado bloqueado, el OK tampoco engaña', funct
   t.ok(ok.disabled || ok.getAttribute('aria-disabled') === 'true',
     'E62 · el OK está deshabilitado durante la construcción');
 
-  var fondoOk = getComputedStyle(ok).backgroundColor;
-  var fondoUno = getComputedStyle(uno).backgroundColor;
+  const fondoOk = getComputedStyle(ok).backgroundColor;
+  const fondoUno = getComputedStyle(uno).backgroundColor;
   t.igual(fondoOk, fondoUno,
     'E62 · bloqueado, el OK tiene el mismo fondo que las demás teclas',
     'OK ' + fondoOk + ' vs 1 ' + fondoUno);
 
   /* Esto se comprueba sobre las REGLAS, no sobre el estilo calculado, y no es pereza: en la maqueta de pruebas los botones no tienen caja de composición —getBoundingClientRect() da 0— y Chrome devuelve `transform: none` para todo elemento… */
-  var reglaDesactivado = null, reglaMonta = null, h, i, hojas, r;
+  let reglaDesactivado = null, reglaMonta = null, h, i, hojas, r;
   for (h = 0; h < document.styleSheets.length; h++) {
     try { hojas = document.styleSheets[h].cssRules; } catch (eH) { continue; }
     if (!hojas) continue;
@@ -1689,26 +1743,26 @@ CB.pruebas.suite('E62 · con el teclado bloqueado, el OK tampoco engaña', funct
 
 CB.pruebas._desbloqueo = function () {
   return new Promise(function (listo) {
-    var t0 = Date.now();
-    var i = setInterval(function () {
+    const t0 = Date.now();
+    const i = setInterval(function () {
       if (!CB.partida.bloqueado || Date.now() - t0 > 4000) { clearInterval(i); listo(); }
     }, 20);
   });
 };
 
 CB.pruebas.suite('E64 · ordenar y elegir datos se pueden deshacer', function () {
-  var t = CB.pruebas;
-  var bloqueoPrevio = CB.partida.bloqueado;
+  const t = CB.pruebas;
+  const bloqueoPrevio = CB.partida.bloqueado;
   CB.partida.bloqueado = false;
 
-  var respuestas = [];
+  const respuestas = [];
   CB.componentes.ordenarFila(
     { piezas: [3, 1, 2], orden: [1, 2, 3], respuesta: 7 },
     function (v) { respuestas.push(v); }, { bloqueoMs: 0 });
 
   return CB.pruebas._desbloqueo().then(function () {
-    var cont = CB.componentes.contenedor();
-    var piezas = cont.querySelectorAll('.fila-ordenar .btn-bloque');
+    const cont = CB.componentes.contenedor();
+    const piezas = cont.querySelectorAll('.fila-ordenar .btn-bloque');
     if (!t.ok(piezas.length >= 3, 'E64 · la fila monta sus piezas', String(piezas.length))) return;
 
     /* Tres toques, y SE AFIRMA QUE ENTRARON antes de deshacer nada. */
@@ -1717,7 +1771,8 @@ CB.pruebas.suite('E64 · ordenar y elegir datos se pueden deshacer', function ()
       'E64 · los dos primeros toques entran de verdad');
     t.igual(piezas[0].disabled, true, 'E64 · y la pieza tocada se deshabilita');
 
-    var deshacer = null, i, todos = cont.querySelectorAll('.btn-bloque');
+    let deshacer = null, i;
+    const todos = cont.querySelectorAll('.btn-bloque');
     for (i = 0; i < todos.length; i++) {
       if (/Quitar/.test(todos[i].textContent)) deshacer = todos[i];
     }
@@ -1727,7 +1782,7 @@ CB.pruebas.suite('E64 · ordenar y elegir datos se pueden deshacer', function ()
     t.igual(CB.componentes._seleccion.length, 1, 'E64 · quitar retira la última');
     t.igual(piezas[1].disabled, false,
       'E64 · y la pieza vuelve a estar disponible, no solo el hueco vacío');
-    var hueco = cont.querySelector('[data-hueco="1"]');
+    const hueco = cont.querySelector('[data-hueco="1"]');
     t.igual(hueco ? hueco.textContent : '', '·', 'E64 · el hueco se vacía');
 
     deshacer.click();
@@ -1741,22 +1796,22 @@ CB.pruebas.suite('E64 · ordenar y elegir datos se pueden deshacer', function ()
 });
 
 CB.pruebas.suite('E65 · la confirmación se ve, y alcanza a los siete formatos', function () {
-  var t = CB.pruebas;
-  var confPrevia = CB.componentes._confirmacionPendiente;
-  var bloqueoPrevio = CB.partida.bloqueado;
-  var nodo = CB.ui.nodoMensaje();
+  const t = CB.pruebas;
+  const confPrevia = CB.componentes._confirmacionPendiente;
+  const bloqueoPrevio = CB.partida.bloqueado;
+  const nodo = CB.ui.nodoMensaje();
 
   CB.partida.bloqueado = false;
   CB.componentes._confirmacionPendiente = true;
   CB.ui.ocultarMensaje();
 
-  var respuestas = [];
+  const respuestas = [];
   CB.componentes.selectorSigno({ respuesta: '+' },
     function (v) { respuestas.push(v); }, { bloqueoMs: 0 });
 
   return CB.pruebas._desbloqueo().then(function () {
-    var cont = CB.componentes.contenedor();
-    var mas = cont.querySelector('.btn-bloque');
+    const cont = CB.componentes.contenedor();
+    const mas = cont.querySelector('.btn-bloque');
     if (!t.ok(!!mas, 'E65 · el selector de signo monta sus botones')) return;
 
     mas.click();
@@ -1774,9 +1829,9 @@ CB.pruebas.suite('E65 · la confirmación se ve, y alcanza a los siete formatos'
     t.igual(respuestas.length, 1, 'E65 · el segundo toque sí contesta');
 
     /* Es la fragilidad que el proyecto ya tiene anotada: leer el texto fuente de una función solo vale para literales y nombres de propiedad, y aquí se estaba usando para inferir comportamiento. */
-    var conCerrojo = ['tecladoBloques', 'opciones4', 'balanza', 'selectorSigno',
+    const conCerrojo = ['tecladoBloques', 'opciones4', 'balanza', 'selectorSigno',
                       'ordenarFila', 'monedas', 'selectorDatos'].filter(function (f) {
-      var src = String(CB.componentes[f]);
+      const src = String(CB.componentes[f]);
       return /pedirConfirmacion/.test(src) || /tecladoBloques\(/.test(src);
     });
     t.igual(conCerrojo.length, 7,
@@ -1790,18 +1845,18 @@ CB.pruebas.suite('E65 · la confirmación se ve, y alcanza a los siete formatos'
 });
 
 CB.pruebas.suite('E66 · salir de la partida pide dos toques y caduca', function () {
-  var t = CB.pruebas;
-  var estadoPrevio = CB.partida.estado;
-  var finPrevio = CB.partida.finalizar;
-  var finales = [];
+  const t = CB.pruebas;
+  const estadoPrevio = CB.partida.estado;
+  const finPrevio = CB.partida.finalizar;
+  const finales = [];
   CB.partida.finalizar = function (motivo) { finales.push(motivo); };
 
-  var boton = document.createElement('button');
+  const boton = document.createElement('button');
   boton.setAttribute('data-accion', 'salir-partida');
   boton.textContent = '◀ Salir';
   document.body.appendChild(boton);
 
-  var msPrevio = CB.partida.MS_CONFIRMAR_SALIDA;
+  const msPrevio = CB.partida.MS_CONFIRMAR_SALIDA;
   CB.partida.MS_CONFIRMAR_SALIDA = 120;      // para no esperar tres segundos
   CB.partida._rotuloSalir = null;
 
@@ -1839,21 +1894,21 @@ CB.pruebas.suite('E66 · salir de la partida pide dos toques y caduca', function
 });
 
 CB.pruebas.suite('E67 · tocar una moneda deja marca, y reiniciar la borra', function () {
-  var t = CB.pruebas;
-  var bloqueoPrevio = CB.partida.bloqueado;
-  var confPrevia = CB.componentes._confirmacionPendiente;
+  const t = CB.pruebas;
+  const bloqueoPrevio = CB.partida.bloqueado;
+  const confPrevia = CB.componentes._confirmacionPendiente;
   CB.partida.bloqueado = false;
   CB.componentes._confirmacionPendiente = false;
 
-  var respuestas = [];
+  const respuestas = [];
   CB.componentes.monedas(
     { modo: 'pagar', objetivo: 6, disponibles: [1, 2, 5] },
     function (v) { respuestas.push(v); }, { bloqueoMs: 0 });
 
   return CB.pruebas._desbloqueo().then(function () {
-    var cont = CB.componentes.contenedor();
-    var dos = cont.querySelector('.pieza[aria-label]');
-    var piezas = cont.querySelectorAll('.pieza');
+    const cont = CB.componentes.contenedor();
+    let dos = cont.querySelector('.pieza[aria-label]');
+    const piezas = cont.querySelectorAll('.pieza');
     if (!t.ok(piezas.length >= 3, 'E67 · se montan las piezas', String(piezas.length))) return;
 
     dos = piezas[1];                       // la de 2 €
@@ -1863,7 +1918,7 @@ CB.pruebas.suite('E67 · tocar una moneda deja marca, y reiniciar la borra', fun
     dos.click();
     t.igual(dos.getAttribute('data-veces'), '2', 'E67 · y cuenta las veces');
 
-    var fila = cont.querySelector('.hilera-cogidas');
+    const fila = cont.querySelector('.hilera-cogidas');
     t.ok(!!fila, 'E67 · existe la fila de lo cogido');
     t.igual(fila ? fila.querySelectorAll('.hilera-cogidas__pieza').length : 0, 2,
       'E67 · la fila muestra las dos piezas, no solo el total');
@@ -1876,7 +1931,8 @@ CB.pruebas.suite('E67 · tocar una moneda deja marca, y reiniciar la borra', fun
       'E67 · la pieza que cierra el pago también queda marcada');
     t.ok(respuestas.length > 0, 'E67 · y el pago se ha cerrado');
 
-    var reinicio = null, i, botones = cont.querySelectorAll('.btn-bloque');
+    let reinicio = null, i;
+    const botones = cont.querySelectorAll('.btn-bloque');
     for (i = 0; i < botones.length; i++) {
       if (/Empezar/.test(botones[i].textContent)) reinicio = botones[i];
     }
@@ -1896,51 +1952,51 @@ CB.pruebas.suite('E67 · tocar una moneda deja marca, y reiniciar la borra', fun
 /* E68 · Fase 9: los tres teclados eran uno mal copiado */
 
 CB.pruebas.suite('E68 · la fase 3 usa el teclado de verdad, y no pierde el informe', function () {
-  var t = CB.pruebas;
-  var bloqueoPrevio = CB.partida.bloqueado;
-  var confPrevia = CB.componentes._confirmacionPendiente;
+  const t = CB.pruebas;
+  const bloqueoPrevio = CB.partida.bloqueado;
+  const confPrevia = CB.componentes._confirmacionPendiente;
   CB.componentes._confirmacionPendiente = false;
 
-  var item = {
+  const item = {
     enunciado: 'Ana tiene 7 canicas y le dan 5 más.',
     consigna: '¿Cuántas tiene ahora?',
     respuesta: 12, operacion: '+', subtipo: 'cambio1', datos: [7, 5]
   };
-  var recibido = null;
+  let recibido = null;
   CB.componentes.selectorDatos(item, function (v, origen, extra) {
     recibido = { v: v, origen: origen, extra: extra };
   }, { bloqueoMs: 0 });
 
   return CB.pruebas._desbloqueo().then(function () {
-    var cont = CB.componentes.contenedor();
+    const cont = CB.componentes.contenedor();
 
     /* Fase 1: elegir los dos números del enunciado. */
-    var numeros = cont.querySelectorAll('.rejilla-respuestas .btn-bloque');
+    const numeros = cont.querySelectorAll('.rejilla-respuestas .btn-bloque');
     if (!t.ok(numeros.length >= 2, 'E68 · la fase de datos monta sus números',
         String(numeros.length))) return;
     numeros[0].click(); numeros[1].click();
 
     /* Fase 2: el signo. Puede saltarse si el generador no la pide. */
-    var signo = cont.querySelector('.btn-bloque[aria-label*="sumar"]');
+    const signo = cont.querySelector('.btn-bloque[aria-label*="sumar"]');
     if (signo) signo.click();
 
     return CB.pruebas._desbloqueo().then(function () {
       /* Fase 3: aquí es donde estaba la copia. */
-      var teclado = cont.querySelector('.teclado-bloques');
+      const teclado = cont.querySelector('.teclado-bloques');
       if (!t.ok(!!teclado, 'E68 · se llega a la fase de escribir el resultado')) return;
 
-      var ok = teclado.querySelector('[data-tecla="ok"]');
+      const ok = teclado.querySelector('[data-tecla="ok"]');
       t.ok(!!ok, 'E68 · el OK lleva data-tecla en minúsculas, como el teclado de verdad',
         'si no, [data-tecla="ok"] no lo alcanza y ni se pinta de primario');
 
-      var visor = cont.querySelector('#visor-respuesta');
+      const visor = cont.querySelector('#visor-respuesta');
       t.ok(!!visor, 'E68 · el visor es el del teclado real');
       t.igual(visor ? visor.getAttribute('aria-live') : null, 'polite',
         'E68 · y se anuncia: la copia no tenía aria-live ninguno');
 
       /* Se escribe 12 y se confirma. */
-      var d1 = teclado.querySelector('[data-tecla="1"]');
-      var d2 = teclado.querySelector('[data-tecla="2"]');
+      const d1 = teclado.querySelector('[data-tecla="1"]');
+      const d2 = teclado.querySelector('[data-tecla="2"]');
       if (!t.ok(!!(d1 && d2 && ok), 'E68 · están las teclas necesarias')) return;
       d1.click(); d2.click();
       t.igual(CB.componentes._valor, '12', 'E68 · los dígitos entran en el visor común');
@@ -1951,7 +2007,7 @@ CB.pruebas.suite('E68 · la fase 3 usa el teclado de verdad, y no pierde el info
       t.igual(recibido.v, 12, 'E68 · con el valor tecleado');
       t.igual(recibido.origen, 'datos',
         'E68 · y con origen «datos», no «teclado»: de ahí cuelga el registro por fases');
-      var e = recibido.extra || {};
+      const e = recibido.extra || {};
       t.ok(!!e.datosElegidos && e.datosElegidos.length === 2,
         'E68 · llegan los datos elegidos', JSON.stringify(e.datosElegidos));
       t.ok('faseDatosOk' in e, 'E68 · llega faseDatosOk');
@@ -1965,7 +2021,7 @@ CB.pruebas.suite('E68 · la fase 3 usa el teclado de verdad, y no pierde el info
          escribía sobre el «12» anterior y salía «121». */
       CB.componentes._valor = '';
       d1.click();
-      var ok2 = cont.querySelector('.teclado-bloques [data-tecla="ok"]');
+      const ok2 = cont.querySelector('.teclado-bloques [data-tecla="ok"]');
       t.igual(CB.componentes._valor, '1', 'E68 · se ha escrito algo que confirmar');
       ok2.click();
       t.igual(recibido, null, 'E68 · con el antiazar disparado, el primer OK no contesta');
@@ -1981,35 +2037,93 @@ CB.pruebas.suite('E68 · la fase 3 usa el teclado de verdad, y no pierde el info
 /* E69-E73 · Fase 10: cinco premios que el juego calculaba y no enseñaba */
 
 CB.pruebas.suite('E69 · el cromo del bloque raro dice cuál es', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var perfil = CB.pruebas.perfilNuevo();
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (!t.ok(!!estado, 'E69 · hay partida')) { CB.perfil = perfilPrevio; return; }
 
   /* Diez cromos ya reunidos: queda exactamente uno, así que se sabe cuál toca. */
-  var todos = Object.keys(CB.ui.CRIATURAS);
+  const todos = Object.keys(CB.ui.CRIATURAS);
   perfil.cromos = todos.slice(0, todos.length - 1);
-  var queFalta = todos[todos.length - 1];
+  const queFalta = todos[todos.length - 1];
 
-  var dado = CB.partida.darCromo();
+  const dado = CB.partida.darCromo();
   t.igual(dado, queFalta, 'E69 · darCromo DEVUELVE el id, para poder nombrarlo');
   t.ok(perfil.cromos.indexOf(queFalta) !== -1, 'E69 · y lo guarda en el álbum');
   t.ok(!!CB.casa.NOMBRES_CROMO[dado],
     'E69 · el id tiene nombre legible: el anuncio decía «gluglu», no «Gluglú»', dado);
 
   /* Con los once reunidos devuelve null, y no revienta. */
-  var otra = CB.partida.darCromo();
+  const otra = CB.partida.darCromo();
   t.igual(otra, null, 'E69 · con los once reunidos devuelve null en vez de fallar');
 
-  CB.partida.estado = null;
-  CB.perfil = perfilPrevio;
+  /* Esta llamada completa protege el orden: con `var cromo` declarado después
+     del mensaje, el hoisting hacía que la primera lectura siempre fuese
+     undefined y el nombre nunca llegase a verse. */
+  let anuncio = '';
+  const originales = {
+    darCromo: CB.partida.darCromo,
+    actualizarDestreza: CB.partida.actualizarDestreza,
+    comprobarLogros: CB.partida.comprobarLogros,
+    logrosDeCromo: CB.partida.logrosDeCromo,
+    hileraBono: CB.ui.hileraBono,
+    mensaje: CB.ui.mensaje,
+    personaje: CB.ui.personaje,
+    festejoMostrar: CB.ui.festejo.mostrar,
+    festejoEspera: CB.ui.festejo.espera,
+    particulasDe: CB.ui.particulasDe,
+    pintarHUD: CB.ui.pintarHUD,
+    sfx: CB.audio.sfx,
+    mensajeAcierto: CB.mensajes.acierto,
+    terminoDe: CB.gen.vocabulario.terminoDe
+  };
+  try {
+    CB.partida.darCromo = function () { return queFalta; };
+    CB.partida.actualizarDestreza = function () { return false; };
+    CB.partida.comprobarLogros = function () {};
+    CB.partida.logrosDeCromo = function () {};
+    CB.ui.hileraBono = function () {};
+    CB.ui.mensaje = function (texto) { anuncio = texto; };
+    CB.ui.personaje = function () {};
+    CB.ui.festejo.mostrar = function () {};
+    CB.ui.festejo.espera = function () { return 0; };
+    CB.ui.particulasDe = function () {};
+    CB.ui.pintarHUD = function () {};
+    CB.audio.sfx = function () {};
+    CB.mensajes.acierto = function () { return 'Muy bien.'; };
+    CB.gen.vocabulario.terminoDe = function () { return null; };
+
+    CB.partida.trasAcierto(
+      { esBloqueRaro: true, destreza: 'sumar' }, {},
+      { puntos: 0, gemas: 0, mTiempo: 1 }, 0, {}
+    );
+    t.ok(anuncio.indexOf(CB.casa.NOMBRES_CROMO[queFalta]) !== -1,
+      'E69 · trasAcierto anuncia el nombre del cromo recién entregado', anuncio);
+  } finally {
+    CB.partida.estado = null;
+    CB.partida.darCromo = originales.darCromo;
+    CB.partida.actualizarDestreza = originales.actualizarDestreza;
+    CB.partida.comprobarLogros = originales.comprobarLogros;
+    CB.partida.logrosDeCromo = originales.logrosDeCromo;
+    CB.ui.hileraBono = originales.hileraBono;
+    CB.ui.mensaje = originales.mensaje;
+    CB.ui.personaje = originales.personaje;
+    CB.ui.festejo.mostrar = originales.festejoMostrar;
+    CB.ui.festejo.espera = originales.festejoEspera;
+    CB.ui.particulasDe = originales.particulasDe;
+    CB.ui.pintarHUD = originales.pintarHUD;
+    CB.audio.sfx = originales.sfx;
+    CB.mensajes.acierto = originales.mensajeAcierto;
+    CB.gen.vocabulario.terminoDe = originales.terminoDe;
+    CB.perfil = perfilPrevio;
+  }
 });
 
 CB.pruebas.suite('E70 · el reto bonus se ve, también en los problemas', function () {
-  var t = CB.pruebas;
-  var cont = document.getElementById('item-enunciado');
+  const t = CB.pruebas;
+  const cont = document.getElementById('item-enunciado');
   if (!t.ok(!!cont, 'E70 · hay panel de enunciado')) return;
 
   /* Ítem de cálculo. */
@@ -2032,12 +2146,12 @@ CB.pruebas.suite('E70 · el reto bonus se ve, también en los problemas', functi
 });
 
 CB.pruebas.suite('E71 · lo que se celebra al acabar se ve en la pantalla de fin', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
-  var perfil = CB.pruebas.perfilNuevo();
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
+  const perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (!t.ok(!!estado, 'E71 · hay partida')) { CB.perfil = perfilPrevio; return; }
 
   estado.preguntas = 10; estado.aciertos = 9; estado.aciertos1er = 8;
@@ -2049,8 +2163,8 @@ CB.pruebas.suite('E71 · lo que se celebra al acabar se ve en la pantalla de fin
   /* LA CINTA DE p-fin. Se comprueba la IDENTIDAD del nodo, no que exista alguno:
      si p-fin no tuviera el suyo, nodoDe() caería en el getElementById('cinta') de
      respaldo —el de p-partida, oculto— y todo se celebraría donde no se ve. */
-  var deFin = document.getElementById('cinta-fin');
-  var elegido = CB.ui.cinta.nodoDe();
+  const deFin = document.getElementById('cinta-fin');
+  const elegido = CB.ui.cinta.nodoDe();
   t.ok(!!deFin, 'E71 · la pantalla de fin tiene su propio nodo de cinta');
   t.igual(elegido, deFin,
     'E71 · y es el que se elige estando en p-fin, no el de la partida',
@@ -2070,29 +2184,30 @@ CB.pruebas.suite('E71 · lo que se celebra al acabar se ve en la pantalla de fin
 });
 
 CB.pruebas.suite('E72 · abrir un mundo se dice, y una sola vez', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
-  var anunciados = [];
-  var anunciarPrevio = CB.a11y.anunciar;
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
+  const anunciados = [];
+  const anunciarPrevio = CB.a11y.anunciar;
   CB.a11y.anunciar = function (txt) { anunciados.push(String(txt)); return anunciarPrevio.apply(this, arguments); };
 
-  var perfil = CB.pruebas.perfilNuevo();
+  const perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
 
-  var nucleares = CB.catalogo.nuclearesDe('M1'), i;
+  const nucleares = CB.catalogo.nuclearesDe('M1');
+  let i;
   for (i = 0; i < nucleares.length; i++) {
     perfil.niveles[nucleares[i]] = { n: 10, aciertos: 10, caja: 3, D: 2,
                                      ultimoISO: CB.util.hoyISO(), enPausa: false };
   }
 
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   estado.preguntas = 10; estado.aciertos = 10; estado.aciertos1er = 10; estado.puntos = 400;
   anunciados.length = 0;
   CB.partida.finalizar('guion');
 
-  var caja = document.getElementById('fin-hitos');
-  var texto = (document.getElementById('fin-hitos-lista') || {}).textContent || '';
+  const caja = document.getElementById('fin-hitos');
+  const texto = (document.getElementById('fin-hitos-lista') || {}).textContent || '';
 
   /* Un guardián que solo comprueba cuando la cosa ocurre no comprueba que la cosa ocurra. */
   t.ok(!!perfil.mundos.M2 && perfil.mundos.M2.desbloqueado,
@@ -2103,18 +2218,18 @@ CB.pruebas.suite('E72 · abrir un mundo se dice, y una sola vez', function () {
 
   /* El nombre sale de CB.MUNDOS, nunca escrito a mano: no existe ningún «Bosque
      de las Restas», y una cadena literal se desviaría del catálogo. */
-  var deCatalogo = CB.MUNDOS.filter(function (m) { return texto.indexOf(m.nombre) !== -1; });
+  const deCatalogo = CB.MUNDOS.filter(function (m) { return texto.indexOf(m.nombre) !== -1; });
   t.ok(deCatalogo.length > 0,
     'E72 · el nombre del mundo sale del catálogo, no de una cadena inventada', texto);
   t.ok(anunciados.some(function (a) { return /Se ha abierto/.test(a); }),
     'E72 · se anuncia también por la región viva: la cinta es aria-hidden');
 
   /* Y NO SE REPITE. */
-  var estado2 = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado2 = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   estado2.preguntas = 10; estado2.aciertos = 10; estado2.aciertos1er = 10; estado2.puntos = 100;
   anunciados.length = 0;
   CB.partida.finalizar('guion');
-  var texto2 = (document.getElementById('fin-hitos-lista') || {}).textContent || '';
+  const texto2 = (document.getElementById('fin-hitos-lista') || {}).textContent || '';
   t.ok(!/Se ha abierto/.test(texto2),
     'E72 · la segunda expedición ya no lo vuelve a anunciar', texto2);
 
@@ -2125,19 +2240,19 @@ CB.pruebas.suite('E72 · abrir un mundo se dice, y una sola vez', function () {
 });
 
 CB.pruebas.suite('E73 · el bono habla en gemas, no en puntos', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
-  var perfil = CB.pruebas.perfilNuevo();
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
+  const perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
 
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   estado.preguntas = 20; estado.aciertos = 20; estado.aciertos1er = 20;
   estado.puntos = 1000; estado.gemas = 30;
   estado.luces.luces = CB.vidas.INICIALES;
   CB.partida.finalizar('guion');
 
-  var bl = document.getElementById('fin-bono');
+  const bl = document.getElementById('fin-bono');
   if (!t.ok(!!bl, 'E73 · hay línea de bono')) { CB.perfil = perfilPrevio; return; }
 
   if (bl.textContent.length) {
@@ -2146,7 +2261,7 @@ CB.pruebas.suite('E73 · el bono habla en gemas, no en puntos', function () {
       bl.textContent);
     /* Y el número es el de gemas, no el de puntos: iba en puntos justo debajo del
        recuento de gemas, y parecía que eran gemas. */
-    var n = parseInt((bl.textContent.match(/\+(\d+)/) || [])[1], 10);
+    const n = parseInt((bl.textContent.match(/\+(\d+)/) || [])[1], 10);
     t.ok(n < 100,
       'E73 · y la cifra es la de gemas del bono, no los puntos crudos', String(n));
   } else {
@@ -2154,7 +2269,7 @@ CB.pruebas.suite('E73 · el bono habla en gemas, no en puntos', function () {
   }
 
   /* Si esto se pusiera rojo sería porque el récord se lee DESPUÉS de pisarlo, y entonces `puntos > récord` no es cierto nunca. */
-  var lista = document.getElementById('fin-hitos-lista');
+  const lista = document.getElementById('fin-hitos-lista');
   t.ok(!!lista && /mejor expedición/i.test(lista.textContent),
     'E73 · la primera expedición de un perfil bate su récord y se dice',
     lista ? lista.textContent : 'sin lista');
@@ -2175,24 +2290,24 @@ CB.pruebas.suite('E73 · el bono habla en gemas, no en puntos', function () {
 /* E74-E76 · Fase 11: textos que prometían lo que el código no hace */
 
 CB.pruebas.suite('E74 · el cofre del descanso no promete gemas', function () {
-  var t = CB.pruebas;
-  var cofre = CB.partida.DESCANSOS.filter(function (d) { return d.id === 'cofre'; })[0];
+  const t = CB.pruebas;
+  const cofre = CB.partida.DESCANSOS.filter(function (d) { return d.id === 'cofre'; })[0];
   if (!t.ok(!!cofre, 'E74 · existe el descanso del cofre')) return;
 
   /* PRIMERO: que el código siga sin dar gemas. Va antes que la comprobación del
      texto a propósito — es lo que impide que alguien «arregle» esto sumando
      gemas por detrás, que rompería el invariante de la moneda visible. */
-  var perfilPrevio = CB.perfil;
-  var perfil = CB.pruebas.perfilNuevo();
+  const perfilPrevio = CB.perfil;
+  const perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (!t.ok(!!estado, 'E74 · hay partida')) { CB.perfil = perfilPrevio; return; }
 
-  var gemasAntes = perfil.gemas, delEstadoAntes = estado.gemas;
+  const gemasAntes = perfil.gemas, delEstadoAntes = estado.gemas;
   CB.partida.microDescanso();
-  var tablero = document.getElementById('descanso-tablero');
-  var piezas = tablero ? tablero.querySelectorAll('.tablero-descanso__bloque') : [];
-  var i;
+  const tablero = document.getElementById('descanso-tablero');
+  const piezas = tablero ? tablero.querySelectorAll('.tablero-descanso__bloque') : [];
+  let i;
   for (i = 0; i < piezas.length; i++) piezas[i].click();
 
   t.igual(perfil.gemas, gemasAntes, 'E74 · romper el descanso entero no da gemas al perfil');
@@ -2207,25 +2322,25 @@ CB.pruebas.suite('E74 · el cofre del descanso no promete gemas', function () {
 });
 
 CB.pruebas.suite('E75 · el musgo se cuenta con el criterio que lo pinta', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
   t.ok(typeof CB.memoria.conMusgo === 'function', 'E75 · existe CB.memoria.conMusgo');
 
-  var hoy = CB.util.hoyISO();
+  const hoy = CB.util.hoyISO();
 
   /* PERFIL DE PRIMERA SEMANA, que es el caso que delata el fallo: destrezas practicadas hace días pero que NUNCA llegaron a afianzada. */
 
-  var perfil = CB.pruebas.perfilNuevo();
+  const perfil = CB.pruebas.perfilNuevo();
   perfil.destrezas = {};
-  var slugs = ['numeracion', 'suma_sin_llevar', 'resta_sin_llevar'];
+  const slugs = ['numeracion', 'suma_sin_llevar', 'resta_sin_llevar'];
   slugs.forEach(function (sl) {
-    var d = CB.adaptativo.nuevaDestreza('2026-01-01');   // repasada hace muchísimo
+    const d = CB.adaptativo.nuevaDestreza('2026-01-01');   // repasada hace muchísimo
     d.n = 4; d.aciertos = 2; d.aciertosPrimerIntento = 1;   // p1 = 0,25: aprendiendo
     d.estado = 'aprendiendo';
     perfil.destrezas[sl] = d;
   });
 
-  var vencidas = CB.memoria.vencidosHoy(perfil, hoy);
-  var musgo = CB.memoria.conMusgo(perfil, hoy);
+  const vencidas = CB.memoria.vencidosHoy(perfil, hoy);
+  const musgo = CB.memoria.conMusgo(perfil, hoy);
 
   t.ok(vencidas.length > 0,
     'E75 · en primera semana hay destrezas vencidas por tiempo', String(vencidas.length));
@@ -2235,7 +2350,7 @@ CB.pruebas.suite('E75 · el musgo se cuenta con el criterio que lo pinta', funct
 
   /* Y el número de conMusgo coincide, una a una, con lo que clasificar() llama
      oxidada: no se reimplementa el predicado, se le pregunta. */
-  var porClasificar = Object.keys(perfil.destrezas).filter(function (k) {
+  const porClasificar = Object.keys(perfil.destrezas).filter(function (k) {
     return CB.memoria.clasificar(perfil.destrezas[k], hoy, false) === 'oxidada';
   });
   t.igual(musgo.length, porClasificar.length,
@@ -2244,24 +2359,24 @@ CB.pruebas.suite('E75 · el musgo se cuenta con el criterio que lo pinta', funct
   /* Y con una destreza que SÍ fue sólida y se ha olvidado, aparece. */
   perfil.destrezas.numeracion.estado = 'afianzada';
   perfil.destrezas.numeracion.aciertosPrimerIntento = 4;
-  var musgo2 = CB.memoria.conMusgo(perfil, hoy);
+  const musgo2 = CB.memoria.conMusgo(perfil, hoy);
   t.ok(musgo2.length >= 1,
     'E75 · una destreza que fue sólida y se olvidó sí sale con musgo',
     JSON.stringify(musgo2));
 
   /* Y AHORA EL SALUDO DE VERDAD, que es lo que faltaba */
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
-  var primeraSemana = CB.pruebas.perfilNuevo();
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
+  const primeraSemana = CB.pruebas.perfilNuevo();
   primeraSemana.destrezas = {};
   slugs.forEach(function (sl) {
-    var d = CB.adaptativo.nuevaDestreza('2026-01-01');
+    const d = CB.adaptativo.nuevaDestreza('2026-01-01');
     d.n = 4; d.aciertos = 2; d.aciertosPrimerIntento = 1;
     d.estado = 'aprendiendo';
     primeraSemana.destrezas[sl] = d;
   });
   CB.perfil = primeraSemana;
-  var saludo = document.getElementById('mapa-saludo');
+  const saludo = document.getElementById('mapa-saludo');
   if (t.ok(!!saludo, 'E75 · hay saludo del mapa en la maqueta')) {
 
     saludo.textContent = 'SIN PINTAR';
@@ -2269,8 +2384,8 @@ CB.pruebas.suite('E75 · el musgo se cuenta con el criterio que lo pinta', funct
     t.ok(saludo.textContent !== 'SIN PINTAR',
       'E75 · pintarMundos() escribe el saludo de verdad');
 
-    var esperado = CB.memoria.conMusgo(primeraSemana, CB.util.hoyISO()).length;
-    var dice = parseInt((saludo.textContent.match(/Hay (\d+)/) || [])[1], 10);
+    const esperado = CB.memoria.conMusgo(primeraSemana, CB.util.hoyISO()).length;
+    let dice = parseInt((saludo.textContent.match(/Hay (\d+)/) || [])[1], 10);
     if (isNaN(dice)) dice = 0;
     t.igual(dice, esperado,
       'E75 · el saludo cuenta lo mismo que se pinta con musgo, ni una más',
@@ -2285,20 +2400,22 @@ CB.pruebas.suite('E75 · el musgo se cuenta con el criterio que lo pinta', funct
 });
 
 CB.pruebas.suite('E76 · los cinco descansos no se repiten, y sobreviven al guardado', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var perfil = CB.pruebas.perfilNuevo();
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  let perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
-  var m = CB.mensajes.asegurar(perfil);
+  const m = CB.mensajes.asegurar(perfil);
 
   t.ok(!!m.bolsaDescansos, 'E76 · el perfil trae bolsa de descansos');
-  var conGuion = Object.keys(m).filter(function (k) { return k.charAt(0) === '_'; });
+  const conGuion = Object.keys(m).filter(function (k) { return k.charAt(0) === '_'; });
   t.igual(conGuion.length, 0, 'E76 · ninguna clave del estado empieza por guion bajo');
 
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (!t.ok(!!estado, 'E76 · hay partida')) { CB.perfil = perfilPrevio; return; }
 
-  var vistos = [], i, titulo = document.getElementById('descanso-titulo');
+  const vistos = [];
+  let i;
+  const titulo = document.getElementById('descanso-titulo');
   for (i = 0; i < 5; i++) {
     CB.partida.microDescanso();
     vistos.push(titulo ? titulo.textContent : '?');
@@ -2306,7 +2423,7 @@ CB.pruebas.suite('E76 · los cinco descansos no se repiten, y sobreviven al guar
     CB.perfil = perfil;
   }
 
-  var unicos = vistos.filter(function (v, k) { return vistos.indexOf(v) === k; });
+  const unicos = vistos.filter(function (v, k) { return vistos.indexOf(v) === k; });
   t.igual(unicos.length, 5,
     'E76 · cinco descansos seguidos son cinco distintos, aun guardando por medio',
     vistos.join(' | '));
@@ -2321,20 +2438,20 @@ CB.pruebas.suite('E76 · los cinco descansos no se repiten, y sobreviven al guar
 /* E77-E79 · Fase 12: ocho turnos sin celebrar nada */
 
 CB.pruebas.suite('E77 · el jefe anuncia también los aciertos, y se presenta', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
-  var perfil = CB.pruebas.perfilNuevo();
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
+  const perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
 
-  var anuncios = [], cintas = [];
-  var anunciarPrevio = CB.a11y.anunciar;
-  var mostrarPrevio = CB.ui.festejo.mostrar;
+  const anuncios = [], cintas = [];
+  const anunciarPrevio = CB.a11y.anunciar;
+  const mostrarPrevio = CB.ui.festejo.mostrar;
   CB.a11y.anunciar = function (txt) { anuncios.push(String(txt)); };
   CB.ui.festejo.mostrar = function (clave, txt) { cintas.push(clave); return true; };
 
   /* El estado lo construye CB.jefes.iniciar() de verdad. */
-  var e = CB.jefes.iniciar('M1');
+  const e = CB.jefes.iniciar('M1');
   if (!t.ok(!!e, 'E77 · el combate arranca')) {
     CB.a11y.anunciar = anunciarPrevio; CB.ui.festejo.mostrar = mostrarPrevio;
     CB.perfil = perfilPrevio; return;
@@ -2343,21 +2460,22 @@ CB.pruebas.suite('E77 · el jefe anuncia también los aciertos, y se presenta', 
   /* EL INTRO SE COMPRUEBA DESPUÉS DE QUE turno() HAYA CORRIDO —iniciar() lo llama
      en su última línea—, que es donde está la trampa: puesto en #jefe-enunciado,
      turno() lo vacía y el intro dura cero milisegundos. */
-  var aviso = document.getElementById('jefe-aviso');
+  const aviso = document.getElementById('jefe-aviso');
   t.ok(!!aviso && aviso.textContent.indexOf(e.def.intro) !== -1,
     'E77 · el intro del jefe sobrevive al primer turno',
     aviso ? aviso.textContent : 'sin nodo');
 
   /* Ocho aciertos: ocho anuncios con la cuenta correcta. */
   anuncios.length = 0; cintas.length = 0;
-  var i, bloquesEsperados = [];
+  let i;
+  const bloquesEsperados = [];
   for (i = 0; i < CB.jefes.BLOQUES; i++) {
     e.respondido = false;
     CB.jefes.responder(true);
     bloquesEsperados.push(CB.jefes.BLOQUES - 1 - i);
   }
 
-  var conCuenta = anuncios.filter(function (a) { return /Ese bloque cae/.test(a); });
+  const conCuenta = anuncios.filter(function (a) { return /Ese bloque cae/.test(a); });
   t.igual(conCuenta.length, CB.jefes.BLOQUES,
     'E77 · cada acierto se anuncia, no solo los fallos', anuncios.join(' | '));
   t.ok(conCuenta[0].indexOf(String(bloquesEsperados[0])) !== -1,
@@ -2366,7 +2484,7 @@ CB.pruebas.suite('E77 · el jefe anuncia también los aciertos, y se presenta', 
     'E77 · sin la palabra «daño»: aquí no se hace daño a nadie');
 
   /* UNA cinta en todo el combate, no ocho. */
-  var deMitad = cintas.filter(function (c) { return c === 'superacion'; });
+  const deMitad = cintas.filter(function (c) { return c === 'superacion'; });
   t.igual(deMitad.length, 1,
     'E77 · la cinta de la mitad sale UNA vez por combate', cintas.join(','));
 
@@ -2378,26 +2496,27 @@ CB.pruebas.suite('E77 · el jefe anuncia también los aciertos, y se presenta', 
 });
 
 CB.pruebas.suite('E78 · «cerrado sin un fallo» se lee de verdad', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
 
   function combate(fallar) {
-    var perfil = CB.pruebas.perfilNuevo();
+    const perfil = CB.pruebas.perfilNuevo();
     CB.perfil = perfil;
     /* M1 al 60 % para que la tarjeta muestre el reto y su distintivo. */
-    var nucleares = CB.catalogo.nuclearesDe('M1'), k;
+    const nucleares = CB.catalogo.nuclearesDe('M1');
+    let k;
     for (k = 0; k < nucleares.length; k++) {
       perfil.niveles[nucleares[k]] = { n: 10, aciertos: 10, caja: 3, D: 2,
                                        ultimoISO: CB.util.hoyISO(), enPausa: false };
     }
-    var e = CB.jefes.iniciar('M1');
+    const e = CB.jefes.iniciar('M1');
     if (!e) return null;
     /* SE JUEGA DE VERDAD con responder(), no fijando el campo a mano: si se
        fijara, el guardián nunca vería que responder dejó de ponerlo a false. */
     /* responder() programa turno() con setTimeout, y terminar() solo se llama desde turno(): un bucle síncrono de responder() baja los bloques a cero y NO TERMINA NUNCA el combate, así que jefeSinFallos no llega a escribirse. */
     if (fallar) { CB.jefes.responder(false); CB.jefes.turno(); }
-    var i;
+    let i;
     for (i = 0; i < 40 && CB.jefes.estado; i++) {
       CB.jefes.responder(true);
       CB.jefes.turno();
@@ -2406,20 +2525,20 @@ CB.pruebas.suite('E78 · «cerrado sin un fallo» se lee de verdad', function ()
     return perfil;
   }
 
-  var limpio = combate(false);
+  const limpio = combate(false);
   if (!t.ok(!!limpio, 'E78 · el combate limpio se juega')) { CB.perfil = perfilPrevio; return; }
   t.igual(limpio.mundos.M1.jefeSinFallos, true, 'E78 · sin fallos queda anotado');
   CB.perfil = limpio;
   CB.mapaDestrezas.pintarMundos();
-  var textoLimpio = (document.getElementById('rejilla-mundos') || {}).textContent || '';
+  const textoLimpio = (document.getElementById('rejilla-mundos') || {}).textContent || '';
   t.ok(/sin un fallo/.test(textoLimpio),
     'E78 · y la tarjeta del mundo lo dice', textoLimpio.slice(0, 120));
 
-  var conFallo = combate(true);
+  const conFallo = combate(true);
   t.igual(conFallo.mundos.M1.jefeSinFallos, false, 'E78 · con un fallo NO queda anotado');
   CB.perfil = conFallo;
   CB.mapaDestrezas.pintarMundos();
-  var textoFallo = (document.getElementById('rejilla-mundos') || {}).textContent || '';
+  const textoFallo = (document.getElementById('rejilla-mundos') || {}).textContent || '';
   t.ok(!/sin un fallo/.test(textoFallo),
     'E78 · y la tarjeta no lo pone', textoFallo.slice(0, 120));
 
@@ -2428,19 +2547,19 @@ CB.pruebas.suite('E78 · «cerrado sin un fallo» se lee de verdad', function ()
 });
 
 CB.pruebas.suite('E81 · la espera del segundo intento sale de la fuente única', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
   t.ok(typeof CB.partida.esperaSegundoIntento === 'function',
     'E81 · la espera del fallo es una función, no un literal dentro de un setTimeout');
   if (typeof CB.partida.esperaSegundoIntento !== 'function') return;
 
-  var base = CB.partida.esperaSegundoIntento('Vuelve a mirarlo con calma.');
+  const base = CB.partida.esperaSegundoIntento('Vuelve a mirarlo con calma.');
   t.ok(base >= 2600, 'E81 · nunca baja del suelo de siempre', String(base));
 
   /* Y CRECE CON LA COREOGRAFÍA. Esta es la que importa: con el 2600 escrito a
      pelo, la primera aserción pasaría en verde igual y el número seguiría fuera
      de la fuente única. Se toca la tabla y se restaura pase lo que pase. */
-  var previo = CB.ui.festejo.CELEBRACIONES.animo.ms;
-  var conTexto;
+  const previo = CB.ui.festejo.CELEBRACIONES.animo.ms;
+  let conTexto;
   try {
     CB.ui.festejo.CELEBRACIONES.animo.ms = 9000;
     conTexto = CB.partida.esperaSegundoIntento('Vuelve a mirarlo con calma.');
@@ -2458,9 +2577,9 @@ CB.pruebas.suite('E81 · la espera del segundo intento sale de la fuente única'
 /* E83 · Fase 14: cuánto queda */
 
 CB.pruebas.suite('E83 · el HUD dice por qué bloque va la expedición', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
-  var gal = document.getElementById('hud-galeria');
+  const gal = document.getElementById('hud-galeria');
   if (!t.ok(!!gal, 'E83 · #hud-galeria existe en la maqueta de pruebas')) return;
 
   CB.ui.pintarHUD({ luces: 3, gemas: 0, indice: 3, total: 12 });
@@ -2492,10 +2611,10 @@ CB.pruebas.suite('E83 · el HUD dice por qué bloque va la expedición', functio
   /* LA HILERA NO MIENTE, y esto se comprueba contra el guion de verdad: el ítem
      del escalón 4 se sirve EN LUGAR DEL del guion en ese índice, así que el total
      de bloques servidos sigue siendo guion.length. */
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
   CB.perfil = CB.pruebas.perfilNuevo();
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (t.ok(!!estado, 'E83 · hay partida')) {
     t.igual(gal.querySelectorAll('b').length, estado.guion.length,
       'E83 · al empezar hay tantos bloques como ítems tiene el guion',
@@ -2519,11 +2638,11 @@ CB.pruebas.suite('E83 · el HUD dice por qué bloque va la expedición', functio
 /* E84 · Fase 15: el primer minuto */
 
 CB.pruebas.suite('E84 · al acabar la calibración se empieza a jugar', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
 
-  var perfil = CB.pruebas.perfilNuevo();
+  const perfil = CB.pruebas.perfilNuevo();
   perfil.calibrado = false;
   perfil.trimestreDeducido = null;
   CB.perfil = perfil;
@@ -2565,22 +2684,22 @@ CB.pruebas.suite('E84 · al acabar la calibración se empieza a jugar', function
 /* E85-E88 · Saber dónde estás */
 
 CB.pruebas.suite('E85 · el HUD dice en qué veta se está', function () {
-  var t = CB.pruebas;
-  var nombre = document.getElementById('hud-veta-nombre');
-  var mundo = document.getElementById('hud-veta-mundo');
+  const t = CB.pruebas;
+  const nombre = document.getElementById('hud-veta-nombre');
+  const mundo = document.getElementById('hud-veta-mundo');
 
   /* SE AFIRMA PRIMERO QUE LOS NODOS ESTÁN. Sin esto, pintarVeta hace su return
      temprano y todas las comprobaciones de abajo miden la cadena vacía contra la
      cadena vacía, en verde. */
   if (!t.ok(!!(nombre && mundo), 'E85 · el rótulo de veta está en la maqueta')) return;
 
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
   CB.perfil = CB.pruebas.perfilNuevo();
 
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (t.ok(!!estado, 'E85 · hay partida')) {
-    var servido = CB.catalogo.get(estado.itemActual.nivelId);
+    const servido = CB.catalogo.get(estado.itemActual.nivelId);
     t.igual(nombre.textContent, servido.nombre,
       'E85 · el rótulo nombra la veta del ítem que se está sirviendo',
       'sirve ' + estado.itemActual.nivelId);
@@ -2590,7 +2709,7 @@ CB.pruebas.suite('E85 · el HUD dice en qué veta se está', function () {
     /* Y CAMBIA. Esta es la aserción que importa: pintar el rótulo una vez al
        empezar y no volver a tocarlo dejaría el nombre de la primera veta puesto
        toda la expedición, que es peor que no ponerlo —dice algo, y es falso. */
-    var otro = null, i;
+    let otro = null, i;
     for (i = 0; i < estado.guion.length; i++) {
       if (estado.guion[i] !== estado.itemActual.nivelId) { otro = estado.guion[i]; break; }
     }
@@ -2612,14 +2731,15 @@ CB.pruebas.suite('E85 · el HUD dice en qué veta se está', function () {
 });
 
 CB.pruebas.suite('E86 · «Nivel superado» solo cuando de verdad lo está', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
   CB.perfil = CB.pruebas.perfilNuevo();
 
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (t.ok(!!estado, 'E86 · hay partida')) {
-    var A = estado.guion[0], B = null, i;
+    const A = estado.guion[0];
+    let B = null, i;
     for (i = 1; i < estado.guion.length; i++) {
       if (estado.guion[i] !== A) { B = estado.guion[i]; break; }
     }
@@ -2646,7 +2766,7 @@ CB.pruebas.suite('E86 · «Nivel superado» solo cuando de verdad lo está', fun
       /* CASO 3 · ni guion ni cola: ahora sí, y devuelve el nivel para poder
          nombrarlo. Devolver true no habría bastado: el mensaje dice cuál. */
       estado.colaRepaso.length = 0;
-      var cerrada = CB.partida.vetaSuperada(B);
+      const cerrada = CB.partida.vetaSuperada(B);
       t.ok(!!cerrada, 'E86 · sin ítems pendientes ni deuda, la veta está superada');
       if (cerrada) {
         t.igual(cerrada.id, A, 'E86 · y devuelve la veta que queda atrás, no la nueva');
@@ -2672,14 +2792,15 @@ CB.pruebas.suite('E86 · «Nivel superado» solo cuando de verdad lo está', fun
 });
 
 CB.pruebas.suite('E87 · el tiempo agotado deja la veta a medias', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
   CB.perfil = CB.pruebas.perfilNuevo();
 
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (t.ok(!!estado, 'E87 · hay partida')) {
-    var A = estado.itemActual.nivelId, B = null, i;
+    const A = estado.itemActual.nivelId;
+    let B = null, i;
     for (i = 0; i < estado.guion.length; i++) {
       if (estado.guion[i] !== A) { B = estado.guion[i]; break; }
     }
@@ -2710,22 +2831,22 @@ CB.pruebas.suite('E87 · el tiempo agotado deja la veta a medias', function () {
 });
 
 CB.pruebas.suite('E88 · el rótulo de veta se ve', function () {
-  var t = CB.pruebas;
-  var rot = document.getElementById('hud-veta');
+  const t = CB.pruebas;
+  const rot = document.getElementById('hud-veta');
   if (!t.ok(!!rot, 'E88 · el rótulo está en la maqueta')) return;
 
-  var pantallaPrevia = CB.pantallas.actual;
+  const pantallaPrevia = CB.pantallas.actual;
   CB.pantallas.ir('p-partida');
 
-  var maqueta = document.getElementById('p-partida').parentElement;
-  var estabaOculta = maqueta.hidden;
+  const maqueta = document.getElementById('p-partida').parentElement;
+  const estabaOculta = maqueta.hidden;
   maqueta.hidden = false;
 
-  var calc = getComputedStyle(rot);
+  const calc = getComputedStyle(rot);
   t.ok(calc.position !== 'absolute' && calc.position !== 'fixed',
     'E88 · el rótulo va en el flujo, no superpuesto', calc.position);
 
-  var alto = rot.getBoundingClientRect().height;
+  const alto = rot.getBoundingClientRect().height;
   t.ok(document.getElementById('hud-galeria').getBoundingClientRect().height > 0,
     'E88 · la maqueta destapada sí tiene caja: la medida significa algo');
   t.ok(alto > 0, 'E88 · y el rótulo ocupa alto de verdad', alto + 'px');
@@ -2733,8 +2854,8 @@ CB.pruebas.suite('E88 · el rótulo de veta se ve', function () {
   maqueta.hidden = estabaOculta;
 
   /* El nombre de la veta NUNCA se esconde: es el que contesta a la pregunta. */
-  var nombre = document.getElementById('hud-veta-nombre');
-  var mundo = document.getElementById('hud-veta-mundo');
+  const nombre = document.getElementById('hud-veta-nombre');
+  const mundo = document.getElementById('hud-veta-mundo');
   if (nombre && mundo) {
     t.ok(getComputedStyle(nombre).display !== 'none',
       'E88 · el nombre de la veta no se oculta en ninguna anchura');
@@ -2748,22 +2869,22 @@ CB.pruebas.suite('E88 · el rótulo de veta se ve', function () {
 /* E89 · La moneda que había que reconocer era un número */
 
 CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
-  var t = CB.pruebas;
-  var cont = CB.componentes.contenedor();
+  const t = CB.pruebas;
+  const cont = CB.componentes.contenedor();
   if (!t.ok(!!cont, 'E89 · hay contenedor de respuesta en la maqueta')) return;
 
-  var item = CB.gen.dinero.E1(CB.util.mulberry32(7), 2);
+  const item = CB.gen.dinero.E1(CB.util.mulberry32(7), 2);
   t.ok(!!item.piezasDinero, 'E89 · el generador pide que las opciones sean piezas');
 
   /* Las opciones se montan como las monta la partida: tres distractores fijos
      más la respuesta. Construir la lista de otra forma probaría otra cosa. */
-  var opciones = item.distractoresFijos.slice(0, 3)
+  const opciones = item.distractoresFijos.slice(0, 3)
     .map(function (v) { return { valor: v, codigoError: null }; })
     .concat([{ valor: item.respuesta, codigoError: null }]);
 
   CB.componentes.opciones4(item, opciones, function () {}, { bloqueoMs: 0 });
 
-  var piezas = cont.querySelectorAll('.pieza');
+  const piezas = cont.querySelectorAll('.pieza');
   t.igual(piezas.length, 4, 'E89 · las cuatro opciones son piezas dibujadas',
     'encontradas ' + piezas.length);
   t.igual(cont.querySelectorAll('.rejilla-respuestas .btn-bloque').length, 0,
@@ -2772,7 +2893,7 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
   /* CADA UNA CON SU FORMA. Si todas salieran moneda —o todas billete— volvería a
      no distinguirse nada, y las cuatro seguirían siendo el mismo dibujo con
      distinta cifra, que es exactamente el fallo con otro traje. */
-  var correcta = null, i, v;
+  let correcta = null, i, v;
   for (i = 0; i < piezas.length; i++) {
     v = parseInt(piezas[i].textContent, 10);
     t.ok(piezas[i].classList.contains(CB.gen.dinero.esMoneda(v) ? 'pieza--moneda' : 'pieza--billete'),
@@ -2788,24 +2909,24 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
 
   /* La retícula deja de imponer el ancho de columna: con --lado-respuesta a 64 px
      el billete, que mide 128, desbordaría su celda. */
-  var rej = cont.querySelector('.rejilla-respuestas');
+  const rej = cont.querySelector('.rejilla-respuestas');
   t.ok(rej && rej.classList.contains('rejilla-respuestas--dinero'),
     'E89 · la retícula deja que el ancho lo mande la pieza');
 
   /* Y NINGUNA DENOMINACIÓN SE DIBUJA IGUAL QUE OTRA */
-  var caja = CB.ui.crear('div');
+  const caja = CB.ui.crear('div');
   document.body.appendChild(caja);
-  var huellas = {}, repes = [], sinDeclarar = [], urls = [];
-  var TODAS = [1, 2, 5, 10, 20, 50, 100].concat(
+  const huellas = {}, repes = [], sinDeclarar = [], urls = [];
+  const TODAS = [1, 2, 5, 10, 20, 50, 100].concat(
     CB.gen.dinero.PIEZAS_CENTIMO.map(CB.gen.dinero.pieza));
   TODAS.forEach(function (v) {
-    var p = CB.ui.pieza('span', v);
+    const p = CB.ui.pieza('span', v);
     caja.appendChild(p);
-    var cs = getComputedStyle(p);
-    var m = /url\(["']?([^"')]+)/.exec(cs.backgroundImage);
+    const cs = getComputedStyle(p);
+    const m = /url\(["']?([^"')]+)/.exec(cs.backgroundImage);
     if (!m) sinDeclarar.push(v + ' → ' + cs.backgroundImage);
     else urls.push([v, m[1]]);
-    var huella = cs.backgroundImage + '|' + cs.width + '|' + cs.height;
+    const huella = cs.backgroundImage + '|' + cs.width + '|' + cs.height;
     if (huellas[huella]) repes.push(v + ' igual que ' + huellas[huella]);
     huellas[huella] = v;
   });
@@ -2829,13 +2950,13 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
   /* Y QUE EL FICHERO EXISTA, QUE NO ES LO MISMO */
   return Promise.all(urls.map(function (par) {
     return new Promise(function (listo) {
-      var img = new Image();
+      const img = new Image();
       img.onload = function () { listo(img.naturalWidth > 0 ? null : par[0]); };
       img.onerror = function () { listo(par[0]); };
       img.src = par[1];
     });
   })).then(function (fallidas) {
-    var rotas = fallidas.filter(function (x) { return x !== null; });
+    const rotas = fallidas.filter(function (x) { return x !== null; });
     t.igual(rotas.length, 0,
       'E89 · y las doce fotografías se descargan de verdad',
       'no llegan: ' + rotas.join(', '));
@@ -2845,12 +2966,12 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
 /* E90 · El marcador cambiaba de golpe */
 
 CB.pruebas.suite('E90 · la cifra sube, y aterriza donde debe', function () {
-  var t = CB.pruebas;
-  var g = document.getElementById('hud-gemas');
+  const t = CB.pruebas;
+  const g = document.getElementById('hud-gemas');
   if (!t.ok(!!g, 'E90 · el marcador está en la maqueta')) return;
 
-  var raiz = document.documentElement;
-  var teniaSinMov = raiz.classList.contains('sin-movimiento');
+  const raiz = document.documentElement;
+  const teniaSinMov = raiz.classList.contains('sin-movimiento');
 
   /* Con movimiento: cuenta, y el destino se alcanza exacto */
   raiz.classList.remove('sin-movimiento');
@@ -2903,14 +3024,14 @@ CB.pruebas.suite('E90 · la cifra sube, y aterriza donde debe', function () {
 /* E91 · Los botones se pulsaban en silencio */
 
 CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   t.ok(typeof CB.audio.EFECTOS.pulsar === 'function',
     'E91 · existe el efecto de pulsar');
 
   /* Es la misma regla que ordena la tabla de celebraciones —el espectáculo es inversamente proporcional a la frecuencia— aplicada al sonido: este se oye cien veces por sesión. */
-  var oidas = [];
-  var notaPrevia = CB.audio.nota, ruidoPrevio = CB.audio.ruido;
+  let oidas = [];
+  const notaPrevia = CB.audio.nota, ruidoPrevio = CB.audio.ruido;
   CB.audio.nota = function (f, cuando, dur, tipo, gan) {
     oidas.push({ tipo: 'nota', dur: dur, gan: gan });
   };
@@ -2919,10 +3040,10 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
   };
 
   CB.audio.EFECTOS.pulsar();
-  var clic = oidas[0];
+  const clic = oidas[0];
   oidas = [];
   CB.audio.EFECTOS.toc();
-  var toc = oidas[0];
+  const toc = oidas[0];
 
   CB.audio.nota = notaPrevia;
   CB.audio.ruido = ruidoPrevio;
@@ -2939,17 +3060,17 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
   }
 
   /* LA REGLA, que es lo que de verdad se puede romper */
-  var sfxPrevio = CB.audio.sfx;
-  var pedidos = [];
+  const sfxPrevio = CB.audio.sfx;
+  let pedidos = [];
   CB.audio.sfx = function (n) { pedidos.push(n); return sfxPrevio(n); };
 
-  var conectado = CB.arranque.conectarSonidoBotones(document);
+  const conectado = CB.arranque.conectarSonidoBotones(document);
   t.ok(conectado || document.documentElement.getAttribute('data-clic') === 'si',
     'E91 · el oyente de clic está conectado al documento');
   t.igual(CB.arranque.conectarSonidoBotones(document), false,
     'E91 · y conectarlo dos veces no deja dos oyentes: el clic no suena doble');
 
-  var caja = CB.ui.crear('div');
+  const caja = CB.ui.crear('div');
   document.body.appendChild(caja);
 
   function pulsar(el) {
@@ -2960,25 +3081,25 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
     });
   }
 
-  var normal = CB.ui.crear('button', 'btn-bloque', 'Vale');
+  const normal = CB.ui.crear('button', 'btn-bloque', 'Vale');
   caja.appendChild(normal);
 
-  var apagado = CB.ui.crear('button', 'btn-bloque', 'No');
+  const apagado = CB.ui.crear('button', 'btn-bloque', 'No');
   apagado.disabled = true;
   caja.appendChild(apagado);
 
   /* Los botones rotulados llevan un icono y una palabra dentro, así que el
      objeto del clic casi nunca es el botón. */
-  var rotulado = CB.ui.crear('button', 'btn-bloque btn-bloque--rotulado');
-  var dentro = CB.ui.crear('span', 'btn-bloque__rotulo', 'Pausa');
+  const rotulado = CB.ui.crear('button', 'btn-bloque btn-bloque--rotulado');
+  const dentro = CB.ui.crear('span', 'btn-bloque__rotulo', 'Pausa');
   rotulado.appendChild(dentro);
   caja.appendChild(rotulado);
 
-  var moneda = CB.ui.pieza('button', 2);
+  const moneda = CB.ui.pieza('button', 2);
   moneda.addEventListener('click', function () { CB.audio.sfx('gema'); });
   caja.appendChild(moneda);
 
-  var teclado = CB.ui.crear('div');
+  const teclado = CB.ui.crear('div');
   caja.appendChild(teclado);
 
   return pulsar(normal).then(function (p) {
@@ -3002,13 +3123,13 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
       { contenedor: teclado, vaciar: false, bloqueoMs: 0 });
     return new Promise(function (listo) { setTimeout(listo, 30); });
   }).then(function () {
-    var siete = teclado.querySelector('[data-tecla="7"]');
+    const siete = teclado.querySelector('[data-tecla="7"]');
     if (!t.ok(!!siete, 'E91 · el teclado numérico de verdad está montado')) return '';
     return pulsar(siete);
   }).then(function (p) {
     t.igual(p, 'picar',
       'E91 · una cifra suena UNA vez: el «picar» que ya trae, sin clic encima');
-    var borrar = teclado.querySelector('[data-tecla="borrar"]');
+    const borrar = teclado.querySelector('[data-tecla="borrar"]');
     return borrar ? pulsar(borrar) : '';
   }).then(function (p) {
     /* El «toc» dice «aún no» y el clic dice «sí». Sonando a la vez no dicen
@@ -3024,21 +3145,21 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
 /* E92 · Con el teclado se jugaba en silencio */
 
 CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
-  var sfxPrevio = CB.audio.sfx;
-  var pedidos = [];
+  const sfxPrevio = CB.audio.sfx;
+  let pedidos = [];
   CB.audio.sfx = function (n) { pedidos.push(n); return sfxPrevio(n); };
 
-  var conectado = CB.arranque.conectarSonidoTeclas(document);
+  const conectado = CB.arranque.conectarSonidoTeclas(document);
   t.ok(conectado || document.documentElement.getAttribute('data-clic-tecla') === 'si',
     'E92 · el oyente de teclado está conectado al documento');
   t.igual(CB.arranque.conectarSonidoTeclas(document), false,
     'E92 · y conectarlo dos veces no deja dos oyentes');
 
   /* CUALQUIER GESTO ABRE EL AUDIO, NO SOLO JUGAR */
-  var iniciarPrevio = CB.audio.iniciar;
-  var aperturas = 0;
+  const iniciarPrevio = CB.audio.iniciar;
+  let aperturas = 0;
   CB.audio.iniciar = function () { aperturas++; return null; };
 
   t.igual(CB.arranque.despertarAudio({ isTrusted: true }), true,
@@ -3049,19 +3170,19 @@ CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function
   t.igual(aperturas, 1, 'E92 · y no llega a iniciar()');
   CB.audio.iniciar = iniciarPrevio;
 
-  var caja = CB.ui.crear('div');
+  const caja = CB.ui.crear('div');
   document.body.appendChild(caja);
 
-  var campo = CB.ui.crear('input');
+  const campo = CB.ui.crear('input');
   caja.appendChild(campo);
-  var boton = CB.ui.crear('button', 'btn-bloque', 'Vale');
+  const boton = CB.ui.crear('button', 'btn-bloque', 'Vale');
   caja.appendChild(boton);
 
   /* Y que el oyente lo LLAME, que es la mitad que se puede caer sin que nada
      falle: la función podría estar perfecta y no invocarla nadie — eso fue E41
      entero. Se cuenta a través de CB.arranque, que es como la busca el oyente. */
-  var despertarPrevio = CB.arranque.despertarAudio;
-  var despertados = 0;
+  const despertarPrevio = CB.arranque.despertarAudio;
+  let despertados = 0;
   CB.arranque.despertarAudio = function () { despertados++; return true; };
 
   function teclear(opciones, destino) {
@@ -3102,7 +3223,7 @@ CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function
     t.igual(p, '', 'E92 · escribir en un campo no es pulsar un mando');
 
     /* LO QUE YA SUENA, CALLA */
-    var propia = function () { CB.audio.sfx('toc'); };
+    const propia = function () { CB.audio.sfx('toc'); };
     document.addEventListener('keydown', propia);
     return teclear({ key: '7' }).then(function (q) {
       document.removeEventListener('keydown', propia);
@@ -3113,7 +3234,7 @@ CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function
 
     /* ENTER SOBRE UN BOTÓN */
     boton.focus();
-    var conFoco = document.activeElement === boton;
+    const conFoco = document.activeElement === boton;
     if (!t.ok(conFoco, 'E92 · el botón de prueba se ha podido enfocar')) return '';
     return teclear({ key: 'Enter' });
   }).then(function (p) {
@@ -3133,13 +3254,13 @@ CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function
 
 /* E93 · La moneda de 5 céntimos y el billete de 5 € eran el mismo «5» */
 CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo número', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   /* A · La pieza: distinta foto, distinto atributo, distinto nombre */
-  var caja = CB.ui.crear('div');
+  const caja = CB.ui.crear('div');
   document.body.appendChild(caja);
-  var cinco = CB.ui.pieza('span', 5);            // el billete de 5 €
-  var cincoC = CB.ui.pieza('span', 'c5');        // la moneda de 5 céntimos
+  const cinco = CB.ui.pieza('span', 5);            // el billete de 5 €
+  const cincoC = CB.ui.pieza('span', 'c5');        // la moneda de 5 céntimos
   caja.appendChild(cinco); caja.appendChild(cincoC);
 
   t.igual(cinco.className, 'pieza pieza--billete', 'E93 · el 5 a secas sigue siendo el billete');
@@ -3158,9 +3279,10 @@ CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo núme
   document.body.removeChild(caja);
 
   /* B · El generador: cinco piezas, ninguna repetida, ningún euro */
-  var vistas = {}, intrusos = [], repetidos = [], s;
+  const vistas = {}, intrusos = [], repetidos = [];
+  let s;
   for (s = 0; s < 40; s++) {
-    var item = CB.gen.dinero.E8(CB.util.mulberry32(s + 1), 1);
+    const item = CB.gen.dinero.E8(CB.util.mulberry32(s + 1), 1);
     if (!item.piezasDinero) { intrusos.push('D=1 sin piezas'); continue; }
     vistas[item.respuesta] = 1;
     if (!CB.gen.dinero.esCentimo(item.respuesta)) intrusos.push(String(item.respuesta));
@@ -3178,13 +3300,13 @@ CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo núme
     Object.keys(vistas).join(','));
 
   /* C · LA CORRECCIÓN, DONDE ESTABA EL FALLO */
-  var perfilPrevio = CB.perfil;
-  var estadoPrevio = CB.partida.estado;
-  var bloqueoPrevio = CB.partida.bloqueado;
+  const perfilPrevio = CB.perfil;
+  const estadoPrevio = CB.partida.estado;
+  const bloqueoPrevio = CB.partida.bloqueado;
   CB.perfil = CB.pruebas.perfilNuevo();
   CB.partida.bloqueado = false;
 
-  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  const estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
 
   CB.partida.bloqueado = false;
   if (t.ok(!!(estado && estado.itemActual), 'E93 · hay partida con un ítem servido')) {
@@ -3194,14 +3316,14 @@ CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo núme
 
     estado.respondido = false;
     CB.partida.responder('c20', 'opciones', { posicion: 0 });
-    var ultima = estado.respuestas[estado.respuestas.length - 1];
+    const ultima = estado.respuestas[estado.respuestas.length - 1];
     t.ok(!!ultima && ultima.correcto === true,
       'E93 · tocar la moneda de 20 céntimos acierta: Number("c20") es NaN y NaN nunca se iguala',
       JSON.stringify(ultima));
 
     estado.respondido = false;
     CB.partida.responder('c50', 'opciones', { posicion: 1 });
-    var fallada = estado.respuestas[estado.respuestas.length - 1];
+    const fallada = estado.respuestas[estado.respuestas.length - 1];
     t.ok(!!fallada && fallada.correcto === false,
       'E93 · y tocar otra falla: la comparación no da cierto a todo',
       JSON.stringify(fallada));
@@ -3214,17 +3336,17 @@ CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo núme
 
 /* E94 · El «Salir» del mapa no hacía nada */
 CB.pruebas.suite('E94 · Salir siempre lleva a alguna parte distinta', function () {
-  var t = CB.pruebas;
-  var pantallaPrevia = CB.pantallas.actual;
-  var pilaPrevia = CB.pantallas.pila.slice();
-  var perfilPrevio = CB.perfil;
+  const t = CB.pruebas;
+  const pantallaPrevia = CB.pantallas.actual;
+  const pilaPrevia = CB.pantallas.pila.slice();
+  const perfilPrevio = CB.perfil;
 
   CB.perfil = CB.perfil || { id: 'e94', nombre: 'E94', ajustes: {}, niveles: {} };
 
   /* 1. El caso exacto que se rompía: pila con el propio mapa en la cima. */
   CB.pantallas.pila = ['p-portada', 'p-mapa'];
   CB.pantallas.actual = 'p-mapa';
-  var destino = CB.pantallas.atras();
+  const destino = CB.pantallas.atras();
   t.ok(destino !== 'p-mapa', 'E94 · Salir en el mapa no devuelve al mapa', destino);
   t.igual(destino, 'p-portada', 'E94 · sino a la portada, que es lo que había debajo');
   t.igual(CB.pantallas.actual, destino, 'E94 · y la pantalla actual es la de destino');
@@ -3263,11 +3385,11 @@ CB.pruebas.suite('E94 · Salir siempre lleva a alguna parte distinta', function 
   CB.pantallas.pila = ['p-portada', 'p-mapa'];
   CB.pantallas.actual = 'p-cantera';
   CB.pantallas.atras();
-  var sec = document.getElementById('p-mapa');
+  const sec = document.getElementById('p-mapa');
   if (sec) {
     t.ok(sec.getAttribute('role') === 'main',
       'E94 · la pantalla a la que se sale es la region principal');
-    var h = sec.querySelector('h1');
+    const h = sec.querySelector('h1');
     if (h) {
 
       t.igual(h.getAttribute('tabindex'), '-1',
@@ -3284,19 +3406,19 @@ CB.pruebas.suite('E94 · Salir siempre lleva a alguna parte distinta', function 
 
 /* E95 · Lo que centra y además tiene scroll esconde por arriba */
 CB.pruebas.suite('E95 · con scroll arriba del todo no falta nada por arriba', function () {
-  var t = CB.pruebas;
-  var caja = document.createElement('div');
+  const t = CB.pruebas;
+  const caja = document.createElement('div');
   caja.className = 'zona-juego';
 
   caja.style.flex = 'none';
   caja.style.minHeight = '200px'; caja.style.maxHeight = '200px';
   caja.style.width  = '260px';
-  var sup = document.createElement('div');
+  const sup = document.createElement('div');
   sup.className = 'zona-juego__alta';
-  var primero = document.createElement('p');
+  const primero = document.createElement('p');
   primero.className = 'enunciado';
   primero.textContent = 'Primera línea del enunciado, la que se perdía.';
-  var relleno = document.createElement('p');
+  const relleno = document.createElement('p');
   relleno.className = 'enunciado';
   relleno.textContent = new Array(60).join('texto largo que no cabe de ninguna manera ');
   /* Los dos párrafos no se encogen: son hijos de un flex, y con el
@@ -3313,7 +3435,7 @@ CB.pruebas.suite('E95 · con scroll arriba del todo no falta nada por arriba', f
       sup.scrollHeight + ' > ' + sup.clientHeight);
 
     sup.scrollTop = 0;
-    var c = sup.getBoundingClientRect(), p = primero.getBoundingClientRect();
+    const c = sup.getBoundingClientRect(), p = primero.getBoundingClientRect();
     /* Un margen de 1 px por el redondeo del subpíxel. El relleno de la caja hace
        que lo normal sea NEGATIVO —el párrafo empieza por debajo del borde—; lo
        que no puede pasar es que empiece por encima. */
@@ -3327,7 +3449,7 @@ CB.pruebas.suite('E95 · con scroll arriba del todo no falta nada por arriba', f
     /* Y hasta el final: que no falte por arriba no puede lograrse a costa de que
        falte por abajo. */
     sup.scrollTop = sup.scrollHeight;
-    var f = relleno.getBoundingClientRect(), c2 = sup.getBoundingClientRect();
+    const f = relleno.getBoundingClientRect(), c2 = sup.getBoundingClientRect();
     t.ok(f.bottom <= c2.bottom + 2,
       'E95 · y bajando del todo se llega al final del texto',
       'sobran ' + Math.round(f.bottom - c2.bottom) + ' px');
@@ -3342,7 +3464,7 @@ CB.pruebas.suite('E95 · con scroll arriba del todo no falta nada por arriba', f
     t.ok(sup.scrollHeight <= sup.clientHeight + 1,
       'E95 · el caso de control cabe de verdad',
       sup.scrollHeight + ' vs ' + sup.clientHeight);
-    var c3 = sup.getBoundingClientRect(), p3 = primero.getBoundingClientRect();
+    const c3 = sup.getBoundingClientRect(), p3 = primero.getBoundingClientRect();
     t.ok(p3.top > c3.top + 8,
       'E95 · cuando cabe, el contenido sigue centrado y no pegado arriba',
       Math.round(p3.top - c3.top) + ' px de aire');
@@ -3353,25 +3475,25 @@ CB.pruebas.suite('E95 · con scroll arriba del todo no falta nada por arriba', f
 
 /* Dos columnas desde 1200 px */
 CB.pruebas.suite('Maquetación · el reparto cambia a dos columnas en pantalla ancha', function () {
-  var t = CB.pruebas;
-  var caja = document.createElement('div');
+  const t = CB.pruebas;
+  const caja = document.createElement('div');
   caja.className = 'zona-juego';
   caja.style.flex = 'none';
   caja.style.minHeight = '400px'; caja.style.maxHeight = '400px';
-  var sup = document.createElement('div'); sup.className = 'zona-juego__alta';
-  var inf = document.createElement('div'); inf.className = 'zona-juego__baja';
+  const sup = document.createElement('div'); sup.className = 'zona-juego__alta';
+  const inf = document.createElement('div'); inf.className = 'zona-juego__baja';
   sup.appendChild(document.createElement('p'));
   sup.firstChild.className = 'enunciado';
   sup.firstChild.textContent = '9 − 6';
-  var b = document.createElement('button');
+  const b = document.createElement('button');
   b.className = 'btn-bloque'; b.textContent = '3';
   inf.appendChild(b);
   caja.appendChild(sup); caja.appendChild(inf);
   document.body.appendChild(caja);
 
   try {
-    var ancha = window.matchMedia('(min-width: 1200px)').matches;
-    var rs = sup.getBoundingClientRect(), ri = inf.getBoundingClientRect();
+    const ancha = window.matchMedia('(min-width: 1200px)').matches;
+    const rs = sup.getBoundingClientRect(), ri = inf.getBoundingClientRect();
     if (ancha) {
       t.ok(ri.left >= rs.right - 1,
         'Maquetación · en ancho, la respuesta queda a la DERECHA del enunciado',
@@ -3390,7 +3512,7 @@ CB.pruebas.suite('Maquetación · el reparto cambia a dos columnas en pantalla a
         'Maquetación · ninguna de las dos se queda sin alto');
     }
     /* En los dos repartos: nunca solapadas. */
-    var solapan = ri.left < rs.right - 1 && ri.top < rs.bottom - 1;
+    const solapan = ri.left < rs.right - 1 && ri.top < rs.bottom - 1;
     t.ok(!solapan, 'Maquetación · enunciado y respuesta nunca se pisan');
   } finally {
     document.body.removeChild(caja);
@@ -3399,25 +3521,26 @@ CB.pruebas.suite('Maquetación · el reparto cambia a dos columnas en pantalla a
 
 /* E96-E98 · El teclado tiene que caber, y si no cabe, alcanzarse */
 CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto', function () {
-  var t = CB.pruebas;
-  var raiz = document.documentElement;
-  var clasesPrevias = raiz.className;
+  const t = CB.pruebas;
+  const raiz = document.documentElement;
+  const clasesPrevias = raiz.className;
 
   /* El teclado de verdad, con las clases que usa el juego, dentro de una zona del
      ancho de la ventana: lo que se mide es la hoja de estilos, no el componente. */
-  var caja = document.createElement('div');
+  const caja = document.createElement('div');
   caja.className = 'zona-juego';
   caja.style.flex = 'none';
   caja.style.width = window.innerWidth + 'px';
-  var inf = document.createElement('div');
+  const inf = document.createElement('div');
   inf.className = 'zona-juego__baja';
-  var visor = document.createElement('div');
+  const visor = document.createElement('div');
   visor.className = 'respuesta__visor'; visor.textContent = '_';
-  var tec = document.createElement('div');
+  const tec = document.createElement('div');
   tec.className = 'teclado-bloques';
-  var teclas = ['1','2','3','4','5','6','7','8','9','⌫','0','OK'], k;
+  const teclas = ['1','2','3','4','5','6','7','8','9','⌫','0','OK'];
+  let k;
   for (k = 0; k < teclas.length; k++) {
-    var b = document.createElement('button');
+    const b = document.createElement('button');
     b.className = 'btn-bloque'; b.type = 'button'; b.textContent = teclas[k];
     if (teclas[k] === 'OK') b.setAttribute('data-tecla', 'ok');
     tec.appendChild(b);
@@ -3449,29 +3572,29 @@ CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto',
     raiz.className = clasesPrevias;
 
     /* E97 Ni una tecla fuera por la derecha, en la ventana que sea. */
-    var rc = caja.getBoundingClientRect(), rt = tec.getBoundingClientRect();
+    const rc = caja.getBoundingClientRect(), rt = tec.getBoundingClientRect();
     t.ok(rt.width <= rc.width + 1,
       'E97 · el teclado no es mas ancho que la zona, sea cual sea la ventana',
       Math.round(rt.width) + ' px de teclado en ' + Math.round(rc.width) + ' px de zona');
-    var ultima = tec.lastChild.getBoundingClientRect();
+    const ultima = tec.lastChild.getBoundingClientRect();
     t.ok(ultima.right <= rc.right + 1,
       'E97 · y la ultima tecla no se sale por la derecha',
       'sobran ' + Math.round(ultima.right - rc.right) + ' px');
 
     /* E98 Apretando la zona a la mitad de lo que necesita, el OK sigue */
-    var altoNecesario = inf.scrollHeight;
+    const altoNecesario = inf.scrollHeight;
     inf.style.minHeight = Math.round(altoNecesario / 2) + 'px';
     inf.style.maxHeight = Math.round(altoNecesario / 2) + 'px';
     t.ok(inf.scrollHeight > inf.clientHeight + 1,
       'E98 · el caso de prueba aprieta de verdad (si no, no prueba nada)',
       inf.scrollHeight + ' vs ' + inf.clientHeight);
     inf.scrollTop = 0;
-    var rv = visor.getBoundingClientRect(), ri0 = inf.getBoundingClientRect();
+    const rv = visor.getBoundingClientRect(), ri0 = inf.getBoundingClientRect();
     t.ok(rv.top >= ri0.top - 1,
       'E98 · con la barra arriba, el visor no se pierde por arriba',
       'perdidos ' + Math.round(ri0.top - rv.top) + ' px');
     inf.scrollTop = inf.scrollHeight;
-    var rok = tec.lastChild.getBoundingClientRect(), ri1 = inf.getBoundingClientRect();
+    const rok = tec.lastChild.getBoundingClientRect(), ri1 = inf.getBoundingClientRect();
     t.ok(rok.bottom <= ri1.bottom + 2,
       'E98 · y bajando del todo se llega al OK: la pregunta se puede contestar',
       'quedan ' + Math.round(rok.bottom - ri1.bottom) + ' px fuera');
@@ -3483,39 +3606,39 @@ CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto',
 
 /* E99-E100 · Lo que no cabe en 320 px se sale sin avisar */
 CB.pruebas.suite('E99-E100 · en 320 px no se sale nada por los bordes', function () {
-  var t = CB.pruebas;
-  var caja = document.createElement('div');
+  const t = CB.pruebas;
+  const caja = document.createElement('div');
   caja.className = 'pantalla pantalla--portada';
   caja.style.width = '320px';
   caja.style.position = 'static';
   caja.hidden = false;
 
-  var h = document.createElement('h1');
+  const h = document.createElement('h1');
   h.className = 'portada__titulo';
   h.textContent = 'CUBOMÁTICA';
   caja.appendChild(h);
 
-  var barra = document.createElement('div');
+  const barra = document.createElement('div');
   barra.className = 'barra-herramientas';
-  var g1 = document.createElement('div'), g2 = document.createElement('div');
+  const g1 = document.createElement('div'), g2 = document.createElement('div');
   g1.className = 'barra-herramientas__grupo'; g2.className = 'barra-herramientas__grupo';
   ['Pista', '◀ Salir'].forEach(function (r) {
-    var b = document.createElement('button'); b.className = 'btn-bloque'; b.textContent = r; g1.appendChild(b);
+    const b = document.createElement('button'); b.className = 'btn-bloque'; b.textContent = r; g1.appendChild(b);
   });
   ['Pausa', 'Sonido'].forEach(function (r) {
-    var b = document.createElement('button'); b.className = 'btn-bloque'; b.textContent = r; g2.appendChild(b);
+    const b = document.createElement('button'); b.className = 'btn-bloque'; b.textContent = r; g2.appendChild(b);
   });
   barra.appendChild(g1); barra.appendChild(g2);
   caja.appendChild(barra);
   document.body.appendChild(caja);
 
   try {
-    var rc = caja.getBoundingClientRect();
+    const rc = caja.getBoundingClientRect();
 
     /* E99 · el título cabe, partiéndose si hace falta. Se comprueba el ANCHO
        DESBORDADO, no el número de líneas: partirlo es un medio, y lo que no se
        negocia es que no se salga. */
-    var rh = h.getBoundingClientRect();
+    const rh = h.getBoundingClientRect();
     t.ok(rh.right <= rc.right + 1 && rh.left >= rc.left - 1,
       'E99 · el titulo de la portada no se sale de una pantalla de 320 px',
       Math.round(rh.width) + ' px de titulo en ' + Math.round(rc.width));
@@ -3524,9 +3647,10 @@ CB.pruebas.suite('E99-E100 · en 320 px no se sale nada por los bordes', functio
       h.scrollWidth + ' vs ' + h.clientWidth);
 
     /* E100 · los cuatro controles, dentro. El de Sonido es el último. */
-    var botones = barra.querySelectorAll('button'), fuera = [], i;
+    const botones = barra.querySelectorAll('button'), fuera = [];
+    let i;
     for (i = 0; i < botones.length; i++) {
-      var rb = botones[i].getBoundingClientRect();
+      const rb = botones[i].getBoundingClientRect();
       if (rb.right > rc.right + 1 || rb.left < rc.left - 1) fuera.push(botones[i].textContent);
     }
     t.igual(fuera.length, 0,
@@ -3541,14 +3665,14 @@ CB.pruebas.suite('E99-E100 · en 320 px no se sale nada por los bordes', functio
 
 /* E102 · Una palabra que no cabe NO se parte sola: se sale */
 CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', function () {
-  var t = CB.pruebas;
-  var enlace = document.querySelector('link[rel="stylesheet"]');
-  var hoja = enlace ? enlace.getAttribute('href') : '';
+  const t = CB.pruebas;
+  const enlace = document.querySelector('link[rel="stylesheet"]');
+  const hoja = enlace ? enlace.getAttribute('href') : '';
   if (!t.ok(!!hoja, 'E102 · la página declara su hoja de estilo')) return;
 
   /* Las palabras son las de verdad, las más largas que el juego escribe dentro
      de un panel. Cambiarlas por «xxxxxxxxxxxx» probaría un caso que no existe. */
-  var cuerpo =
+  const cuerpo =
     '<section class="pantalla pantalla--scroll"><div class="contenido">' +
     '<div class="panel-bloque"><h2>Cubomática</h2>' +
     '<p class="texto-lectura">Al final de cada mundo hay un guardián.</p>' +
@@ -3557,7 +3681,7 @@ CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', func
     '</div></div></section>';
 
   return new Promise(function (listo) {
-    var marco = document.createElement('iframe');
+    const marco = document.createElement('iframe');
     marco.title = 'medida de 320 px';
 
     marco.style.cssText =
@@ -3565,7 +3689,7 @@ CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', func
     marco.srcdoc = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">' +
       '<link rel="stylesheet" href="' + hoja + '"></head><body>' + cuerpo + '</body></html>';
 
-    var acabado = false;
+    let acabado = false;
     function terminar(motivo) {
       if (acabado) return;
       acabado = true;
@@ -3576,18 +3700,18 @@ CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', func
 
     marco.onload = function () {
       if (acabado) return;
-      var d = marco.contentDocument;
-      var panel = d.querySelector('.panel-bloque');
+      const d = marco.contentDocument;
+      const panel = d.querySelector('.panel-bloque');
       if (!panel) return terminar('no hay panel dentro del marco');
 
       /* Que la hoja se aplicó de verdad: sin ella el panel no tiene relleno y
          todo cabe, o sea que todo saldría verde sin haber medido nada. */
-      var relleno = parseFloat(marco.contentWindow.getComputedStyle(panel).paddingLeft) || 0;
+      const relleno = parseFloat(marco.contentWindow.getComputedStyle(panel).paddingLeft) || 0;
       if (!t.ok(relleno > 0 && marco.contentWindow.innerWidth === 320,
         'E102 · el marco mide 320 px y la hoja del juego se ha aplicado dentro',
         marco.contentWindow.innerWidth + ' px, relleno ' + relleno)) return terminar();
 
-      var fuera = [];
+      const fuera = [];
       [].slice.call(d.querySelectorAll('.contenido *')).forEach(function (el) {
         if (el.clientWidth && el.scrollWidth > el.clientWidth + 1) {
           fuera.push(el.tagName + ' «' + el.textContent.trim().slice(0, 20) + '» ' +
@@ -3598,7 +3722,7 @@ CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', func
         'E102 · a 320 px nada de un panel de texto se sale de su caja',
         fuera.slice(0, 3).join(' · '));
 
-      var h2 = d.querySelector('h2');
+      const h2 = d.querySelector('h2');
       t.ok(marco.contentWindow.getComputedStyle(h2).overflowWrap === 'break-word',
         'E102 · y se arregla partiendo la palabra, no tocando el tamaño de letra',
         marco.contentWindow.getComputedStyle(h2).overflowWrap);
@@ -3614,12 +3738,12 @@ CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', func
 
 /* E103 · La portada no se podía recorrer, y lo de abajo no existía */
 CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la portada', function () {
-  var t = CB.pruebas;
-  var enlace = document.querySelector('link[rel="stylesheet"]');
-  var hoja = enlace ? enlace.getAttribute('href') : '';
+  const t = CB.pruebas;
+  const enlace = document.querySelector('link[rel="stylesheet"]');
+  const hoja = enlace ? enlace.getAttribute('href') : '';
   if (!t.ok(!!hoja, 'E103 · la página declara su hoja de estilo')) return;
 
-  var cuerpo =
+  const cuerpo =
     '<section class="pantalla pantalla--portada"><div class="pila-centro portada__pila">' +
     '<h1 class="portada__titulo">CUBOMÁTICA</h1>' +
     '<p class="portada__lema">«las Matemáticas son muy divertidas»</p>' +
@@ -3633,7 +3757,7 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
     '</div></div></section>';
 
   return new Promise(function (listo) {
-    var marco = document.createElement('iframe');
+    const marco = document.createElement('iframe');
     marco.title = 'portada de 320×480';
 
     marco.style.cssText =
@@ -3641,7 +3765,7 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
     marco.srcdoc = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">' +
       '<link rel="stylesheet" href="' + hoja + '"></head><body>' + cuerpo + '</body></html>';
 
-    var acabado = false;
+    let acabado = false;
     function terminar(motivo) {
       if (acabado) return;
       acabado = true;
@@ -3652,16 +3776,16 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
 
     marco.onload = function () {
       if (acabado) return;
-      var w = marco.contentWindow, d = marco.contentDocument;
-      var pila = d.querySelector('.portada__pila');
-      var ultimo = d.getElementById('ultimo');
-      var titulo = d.querySelector('.portada__titulo');
+      const w = marco.contentWindow, d = marco.contentDocument;
+      const pila = d.querySelector('.portada__pila');
+      const ultimo = d.getElementById('ultimo');
+      const titulo = d.querySelector('.portada__titulo');
       if (!pila || !ultimo) return terminar('no está la pila dentro del marco');
 
       /* Antes solo se comprobaban `pila` y `ultimo`, y `titulo` se medía sin mirar: al renombrar `.titulo-juego` esta maqueta se quedó con el nombre viejo, `titulo` salió null, la excepción murió dentro del onload y la promesa no se resolvió nunca. */
       if (!titulo) return terminar('la maqueta no trae .portada__titulo');
 
-      var cs = w.getComputedStyle(pila);
+      const cs = w.getComputedStyle(pila);
       if (!t.ok(cs.overflowY === 'auto' && w.innerWidth === 320 && w.innerHeight === 480,
         'E103 · el marco mide 320×480 y la pila de la portada lleva barra',
         w.innerWidth + '×' + w.innerHeight + ', overflow-y: ' + cs.overflowY)) return terminar();

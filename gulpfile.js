@@ -46,7 +46,7 @@ const OPCIONES_TERSER = {
   compress: {
     /* Con true, terser borra las doce `function tabla()`, `function serie()`, `function ls()`… porque NADIE las llama por su nombre dentro del bundle: solo pruebas/casos-carga.js las busca en window. */
     toplevel: false,
-    /* Los 44 `var CB = CB || {}` y los IIFE de datos/vocabulario.js y
+    /* Los 45 `var CB = CB || {}` y los IIFE de datos/vocabulario.js y
        js/17-catalogo.js son efectos laterales POR DISEÑO. Con true terser puede
        considerarlos puros y tirarlos. */
     side_effects: false,
@@ -72,7 +72,7 @@ const OPCIONES_TERSER = {
   },
 };
 
-/* Las 11 989 líneas nunca se han ejecutado en modo estricto. */
+/* El bundle clásico nunca se ha ejecutado en modo estricto. */
 
 /* cssnano conservador. reduceIdents renombraría los @keyframes —hoy es seguro
    porque ningún JS nombra uno, verificado, pero se desactiva igual— y zindex
@@ -252,27 +252,27 @@ const PUERTO_PRUEBAS = Number(process.env.PUERTO_PRUEBAS) || 8081;
    tres ediciones: la pagina recarga y lo verde mide codigo viejo. Además se
    resuelve la ruta antes de leer nada: `..` nunca puede escapar de la raiz. */
 function rutaDev(raiz, url) {
-  var rel;
+  let rel;
   try { rel = decodeURIComponent(url.split('?')[0]).replace(/^\/+/, ''); }
   catch (e) { return null; }
-  var f = path.resolve(raiz, rel || 'index.html');
+  const f = path.resolve(raiz, rel || 'index.html');
   return (f === raiz || f.startsWith(raiz + path.sep)) ? f : null;
 }
 
 function servirFichero(raiz, req, res, opciones) {
-  var f = rutaDev(raiz, req.url);
+  const f = rutaDev(raiz, req.url);
   if (!f || !fs.existsSync(f) || fs.statSync(f).isDirectory()) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('no existe');
     return;
   }
 
-  var cabeceras = {
+  const cabeceras = {
     'Content-Type': TIPOS_DEV[path.extname(f)] || 'application/octet-stream',
     'Cache-Control': 'no-store, must-revalidate',
   };
   if (opciones && opciones.inyectarRecarga && path.extname(f) === '.html') {
-    var htmlDev = fs.readFileSync(f, 'utf8').replace('</body>', CLIENTE_RECARGA + '</body>');
+    const htmlDev = fs.readFileSync(f, 'utf8').replace('</body>', CLIENTE_RECARGA + '</body>');
     res.writeHead(200, cabeceras);
     res.end(htmlDev);
     return;
@@ -301,7 +301,7 @@ function recargarNavegadores() {
 function servidor(cb) {
   const raiz = path.resolve(RUTAS.salida);
   http.createServer((req, res) => {
-    var url = req.url.split('?')[0];
+    const url = req.url.split('?')[0];
     if (url === '/__recarga') {
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',

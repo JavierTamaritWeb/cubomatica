@@ -1,10 +1,10 @@
 /* casos-carga.js — el bundle, 18 secciones y los espacios de nombre de CB */
 
 CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   /* El invariante no desaparece, cambia de sitio y se parte en dos, cada mitad donde puede comprobarse de verdad: · la AUDITORÍA (herramientas/comprobar-dist.mjs) cuenta los ficheros en disco, los cruza con manifiesto.json y reconstruye el… */
-  var delJuego = [].slice.call(document.scripts).filter(function (s) {
+  const delJuego = [].slice.call(document.scripts).filter(function (s) {
     return s.src && s.src.indexOf('/pruebas/') === -1;
   });
   t.igual(delJuego.length, 1, 'el juego entero se carga en un solo guion');
@@ -13,24 +13,25 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
     delJuego.length ? delJuego[0].src : 'ninguno');
 
   t.igual(CB.pantallas.IDS.length, 18, 'hay 18 ids de pantalla declarados');
-  var faltan = CB.pantallas.IDS.filter(function (id) {
+  const faltanPantallas = CB.pantallas.IDS.filter(function (id) {
     return !document.getElementById(id);
   });
-  t.ok(faltan.length === 0, 'las 18 <section> existen en el documento', faltan.join(', '));
+  t.ok(faltanPantallas.length === 0, 'las 18 <section> existen en el documento',
+    faltanPantallas.join(', '));
 
-  var espacios = ['util', 'LEGAL', 'almacen', 'texturas', 'sprites', 'audio', 'voz',
+  const espacios = ['util', 'LEGAL', 'almacen', 'texturas', 'sprites', 'audio', 'voz',
     'a11y', 'gen', 'catalogo', 'MUNDOS', 'ERRORES', 'distractores', 'diagnosticar',
     'CURRICULO', 'puntuacion', 'antiazar', 'vidas', 'adaptativo', 'logros', 'mensajes',
     'reparacion', 'leitner', 'memoria', 'grafo', 'escalera', 'ui', 'pantallas',
     'componentes', 'partida', 'adulto', 'jefes', 'mapaDestrezas', 'casa', 'arranque',
     'musica', 'pruebas'];
-  var ausentes = espacios.filter(function (k) { return CB[k] === undefined; });
+  const ausentes = espacios.filter(function (k) { return CB[k] === undefined; });
   t.ok(ausentes.length === 0, 'los ' + espacios.length + ' espacios de nombre de CB existen',
        ausentes.join(', '));
 
-  var gens = ['numeracion', 'sumas', 'restas', 'multiplicacion', 'problemas',
+  const gens = ['numeracion', 'sumas', 'restas', 'multiplicacion', 'problemas',
               'dinero', 'vocabulario'];
-  var sinGen = gens.filter(function (g) { return !CB.gen[g]; });
+  const sinGen = gens.filter(function (g) { return !CB.gen[g]; });
   t.ok(sinGen.length === 0, 'los 7 generadores están registrados', sinGen.join(', '));
 
   t.igual(CB.catalogo.ids().length, 92, 'el catálogo declara 92 niveles');
@@ -43,13 +44,13 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
     'CB.VERSION existe y tiene formato x.y.z', String(CB.VERSION));
 
   /* ENTRAR EN CADA UNA DE LAS 18 PANTALLAS */
-  var fallos = [];
-  var pantallaPrevia = CB.pantallas.actual;
-  var falloOriginal = CB.pantallas.fallo;
+  const fallos = [];
+  const pantallaPrevia = CB.pantallas.actual;
+  const falloOriginal = CB.pantallas.fallo;
 
   CB.pantallas.IDS.forEach(function (id) {
     if (id === 'p-error') return;                  // es el destino del fallo, no un origen
-    var capturado = null;
+    let capturado = null;
     CB.pantallas.fallo = function (e) { capturado = (e && e.message) || String(e); };
     try {
       CB.pantallas.ir(id);
@@ -69,12 +70,12 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
     fallos.join(' · '));
 
   /* Y el cerrojo de reentrada que impide que vuelva a pasar */
-  var vueltas = 0;
+  let vueltas = 0;
   CB.pantallas.alEntrar['p-creditos'] = function () {
     vueltas++;
     if (vueltas < 50) CB.pantallas.ir('p-creditos');   // handler malicioso a propósito
   };
-  var reventó = false;
+  let reventó = false;
   try { CB.pantallas.ir('p-creditos'); } catch (e3) { reventó = true; }
   CB.pantallas.alEntrar['p-creditos'] = function () { CB.creditos(); };
   t.ok(!reventó && vueltas === 1,
@@ -84,11 +85,11 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
   if (pantallaPrevia) { try { CB.pantallas.ir(pantallaPrevia); } catch (e4) { } }
 
   /* Cada pantalla tiene UN encabezado y la jerarquía no salta niveles */
-  var malEncabezado = [];
+  const malEncabezado = [];
   CB.pantallas.IDS.forEach(function (id) {
-    var sec = document.getElementById(id);
+    const sec = document.getElementById(id);
     if (!sec) return;
-    var h1 = sec.querySelectorAll('h1');
+    const h1 = sec.querySelectorAll('h1');
     if (h1.length !== 1) malEncabezado.push(id + ': ' + h1.length + ' h1');
   });
   t.ok(malEncabezado.length === 0,
@@ -99,43 +100,43 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
   t.ok(typeof CB.adulto.restaurar === 'function',
     'existe la restauración de una copia, no solo la exportación');
 
-  var ida = CB.almacen.exportar(CB.pruebas.perfilNuevo());
-  var vuelta = CB.almacen.validarImportado(JSON.parse(ida), CB.datos.MOTES);
+  const ida = CB.almacen.exportar(CB.pruebas.perfilNuevo());
+  const vuelta = CB.almacen.validarImportado(JSON.parse(ida), CB.datos.MOTES);
   t.ok(vuelta.ok && vuelta.perfil && vuelta.perfil.id,
     'lo que exporta el juego lo acepta su propio validador de importación',
     vuelta.ok ? '' : vuelta.motivo);
 
   /* Los globales del proyecto son EXACTAMENTE estos */
-  var GLOBALES = ['ls', 'tramo', 'comparacion', 'serie', 'itemSuma', 'itemResta',
+  const GLOBALES = ['ls', 'tramo', 'comparacion', 'serie', 'itemSuma', 'itemResta',
                   'itemMult', 'tabla', 'cuantos', 'itemVocab', 'digitos', 'desdeDigitos'];
-  var faltan = GLOBALES.filter(function (n) { return typeof window[n] !== 'function'; });
-  t.ok(faltan.length === 0,
+  const faltanGlobales = GLOBALES.filter(function (n) { return typeof window[n] !== 'function'; });
+  t.ok(faltanGlobales.length === 0,
     'los ' + GLOBALES.length + ' auxiliares globales declarados siguen existiendo',
-    faltan.join(', '));
+    faltanGlobales.join(', '));
 
   /* El oyente del toque prematuro se registra UNA vez */
-  var caja = document.createElement('div');
-  var registrados = 0;
-  var añadir = caja.addEventListener;
+  const caja = document.createElement('div');
+  let registrados = 0;
+  const añadir = caja.addEventListener;
   caja.addEventListener = function () { registrados++; return añadir.apply(this, arguments); };
-  var v;
+  let v;
   for (v = 0; v < 20; v++) CB.componentes.conectarToc(caja);
   t.igual(registrados, 1,
     'conectarToc() sobre el mismo contenedor 20 veces registra UN solo oyente');
   t.igual(caja.getAttribute('data-toc'), 'si', 'y deja la marca visible en el nodo');
 
   /* Un perfil ilegible NO se confunde con un perfil que no existe */
-  var claveFalsa = CB.almacen.claveDePerfil('perfil-de-prueba-ilegible');
-  var previo = null;
+  const claveFalsa = CB.almacen.claveDePerfil('perfil-de-prueba-ilegible');
+  let previo = null;
   try { previo = localStorage.getItem(claveFalsa); } catch (e5) { }
 
   t.ok(CB.almacen.leerPerfil('perfil-que-no-existe-jamas') === null,
     'un perfil que NO existe devuelve null');
 
-  var escrito = false;
+  let escrito = false;
   try { localStorage.setItem(claveFalsa, '{esto no es json,,,'); escrito = true; } catch (e6) { }
   if (escrito) {
-    var roto = CB.almacen.leerPerfil('perfil-de-prueba-ilegible');
+    const roto = CB.almacen.leerPerfil('perfil-de-prueba-ilegible');
     t.ok(roto && roto.error === 'perfil-ilegible',
       'un perfil que existe pero está ILEGIBLE devuelve un error, no null',
       JSON.stringify(roto));

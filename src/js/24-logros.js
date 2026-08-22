@@ -78,7 +78,7 @@ CB.logros.CONCEDEN_LUZ = CB.logros.LISTA.filter(function (l) { return l.luz; })
                                         .map(function (l) { return l.id; });
 
 CB.logros.get = function (id) {
-  var i;
+  let i;
   for (i = 0; i < CB.logros.LISTA.length; i++) {
     if (CB.logros.LISTA[i].id === id) return CB.logros.LISTA[i];
   }
@@ -104,19 +104,19 @@ CB.logros.otorgar = function (perfil, id, hoyISO, progreso) {
  * @return [logro] recién desbloqueados
  */
 CB.logros.comprobar = function (evento, ctx) {
-  var out = [], p = ctx.perfil, hoy = ctx.hoyISO;
+  const out = [], p = ctx.perfil, hoy = ctx.hoyISO;
   if (!p) return out;
 
   /* En Cantera Tranquila solo se evalúan los de colección (§12.8). */
-  var soloColeccion = (ctx.modo === 'tranquila');
+  const soloColeccion = (ctx.modo === 'tranquila');
 
   function intenta(id, condicion, progreso) {
-    var l = CB.logros.get(id);
+    const l = CB.logros.get(id);
     if (!l || l.version !== 1) return;
     if (soloColeccion && !l.enTranquila) return;
     if (CB.logros.yaTiene(p, id)) return;
     if (!condicion) return;
-    var otorgado = CB.logros.otorgar(p, id, hoy, progreso);
+    const otorgado = CB.logros.otorgar(p, id, hoy, progreso);
     if (otorgado) out.push(otorgado);
   }
 
@@ -150,8 +150,8 @@ CB.logros.comprobar = function (evento, ctx) {
     intenta('primer_pico', (p.historial || []).length >= 1, 1);
     intenta('cantero', !!ctx.mundoCompletado, 1);
 
-    var dias = (p.diario && p.diario.diasJugados) ? p.diario.diasJugados : [];
-    var dosDias = false;
+    const dias = (p.diario && p.diario.diasJugados) ? p.diario.diasJugados : [];
+    let dosDias = false;
     if (dias.length >= 2) {
       dosDias = CB.util.diasEntre(dias[0], dias[dias.length - 1]) >= 1;
     }

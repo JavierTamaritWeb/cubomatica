@@ -32,10 +32,10 @@ CB.jefes.DEFINICION = {
 CB.jefes.estado = null;
 
 CB.jefes.iniciar = function (mundoId) {
-  var mundo = CB.catalogo.getMundo(mundoId);
+  const mundo = CB.catalogo.getMundo(mundoId);
   if (!mundo) return null;
-  var def = CB.jefes.DEFINICION[mundo.jefe];
-  var perfil = CB.perfil;
+  const def = CB.jefes.DEFINICION[mundo.jefe];
+  const perfil = CB.perfil;
 
   CB.jefes.estado = {
     mundo: mundo, jefe: mundo.jefe, def: def,
@@ -45,12 +45,12 @@ CB.jefes.iniciar = function (mundoId) {
   };
 
   CB.pantallas.ir('p-jefe');
-  var n = document.getElementById('jefe-nombre');
+  const n = document.getElementById('jefe-nombre');
   if (n) n.textContent = mundo.jefe;
-  var c = document.getElementById('jefe-criatura');
+  const c = document.getElementById('jefe-criatura');
   if (c) c.textContent = def.icono;
 
-  var av = document.getElementById('jefe-aviso');
+  const av = document.getElementById('jefe-aviso');
   if (av) {
     av.textContent = (def && def.intro ? def.intro + ' ' : '') +
                      'Aquí no se apagan luces. Aquí solo se cavan bloques.';
@@ -62,13 +62,13 @@ CB.jefes.iniciar = function (mundoId) {
 };
 
 CB.jefes.pintarArmadura = function () {
-  var e = CB.jefes.estado;
-  var cont = document.getElementById('jefe-armadura');
+  const e = CB.jefes.estado;
+  const cont = document.getElementById('jefe-armadura');
   if (!cont) return;
   CB.ui.vaciar(cont);
-  var i;
+  let i;
   for (i = 0; i < CB.jefes.BLOQUES; i++) {
-    var b = CB.ui.crear('b', 'jefe__bloque');
+    const b = CB.ui.crear('b', 'jefe__bloque');
     b.setAttribute('data-caido', i < (CB.jefes.BLOQUES - e.bloques) ? 'si' : 'no');
     cont.appendChild(b);
   }
@@ -77,7 +77,7 @@ CB.jefes.pintarArmadura = function () {
 
 /* Un turno, con la mecánica propia de cada jefe */
 CB.jefes.turno = function () {
-  var e = CB.jefes.estado;
+  const e = CB.jefes.estado;
   if (!e) return;
 
   if (e.bloques <= 0 || e.turno >= CB.jefes.TOPE_TURNOS) {
@@ -87,12 +87,12 @@ CB.jefes.turno = function () {
   e.turno++;
   e.respondido = false;          // se abre el cerrojo del turno nuevo
 
-  var enun = document.getElementById('jefe-enunciado');
-  var opc = document.getElementById('jefe-opciones');
+  const enun = document.getElementById('jefe-enunciado');
+  const opc = document.getElementById('jefe-opciones');
   CB.ui.vaciar(enun);
   CB.ui.vaciar(opc);
 
-  var m = e.def.mecanica;
+  const m = e.def.mecanica;
 
   if (m === 'ramas') {
     /* Hay que ELEGIR QUÉ RAMA atacar: cada rama es una operación distinta. */
@@ -103,10 +103,10 @@ CB.jefes.turno = function () {
 
   if (m === 'nenufares') {
     /* Hay que ANTICIPAR dónde caerá: es una serie, no una operación suelta. */
-    var salto = CB.util.elegir(e.rng, [2, 5, 10]);
-    var inicio = CB.util.ent(e.rng, salto, 40);
-    var serie = [inicio, inicio + salto, inicio + salto * 2];
-    var destino = inicio + salto * 3;
+    const salto = CB.util.elegir(e.rng, [2, 5, 10]);
+    const inicio = CB.util.ent(e.rng, salto, 40);
+    const serie = [inicio, inicio + salto, inicio + salto * 2];
+    const destino = inicio + salto * 3;
     enun.appendChild(CB.ui.crear('p', 'enunciado',
       'Ranacubo salta: ' + serie.join(', ') + '… ¿A qué nenúfar irá?'));
     CB.jefes.opciones(opc, destino, [destino + salto, destino - salto, destino + 1]);
@@ -115,8 +115,8 @@ CB.jefes.turno = function () {
 
   if (m === 'reflejo') {
     /* Hay que ELEGIR LOS DATOS correctos antes de operar. */
-    var a = CB.util.ent(e.rng, 5, 40), b = CB.util.ent(e.rng, 1, a);
-    var sobra = CB.util.ent(e.rng, 1, 9);
+    const a = CB.util.ent(e.rng, 5, 40), b = CB.util.ent(e.rng, 1, a);
+    const sobra = CB.util.ent(e.rng, 1, 9);
     enun.appendChild(CB.ui.crear('p', 'enunciado',
       'Cristalina refleja: ' + a + ', ' + b + ' y ' + sobra + '.'));
     enun.appendChild(CB.ui.crear('p', 'texto texto--menor',
@@ -126,8 +126,8 @@ CB.jefes.turno = function () {
   }
 
   /* restaurar: la multiplicación como matriz a la que le falta una pieza */
-  var f = CB.util.elegir(e.rng, [2, 5, 10]);
-  var g = CB.util.ent(e.rng, 2, 10);
+  const f = CB.util.elegir(e.rng, [2, 5, 10]);
+  const g = CB.util.ent(e.rng, 2, 10);
   enun.appendChild(CB.ui.crear('p', 'enunciado',
     'Brasita ha apagado la matriz de ' + f + ' × ' + g + '.'));
   enun.appendChild(CB.ui.matriz(f, g));
@@ -136,8 +136,8 @@ CB.jefes.turno = function () {
 };
 
 CB.jefes.prepararRamas = function (e, opc) {
-  var objetivo = CB.util.ent(e.rng, 10, 60);
-  var ramas = [], i, a, b;
+  const objetivo = CB.util.ent(e.rng, 10, 60);
+  let ramas = [], i, a, b;
   for (i = 0; i < 4; i++) {
     if (i === 0) { a = CB.util.ent(e.rng, 1, objetivo); b = objetivo - a; }
     else {
@@ -149,7 +149,7 @@ CB.jefes.prepararRamas = function (e, opc) {
   }
   ramas = CB.util.barajar(ramas, e.rng);
   ramas.forEach(function (r) {
-    var b2 = CB.ui.boton(r.a + ' + ' + r.b, '', function () {
+    const b2 = CB.ui.boton(r.a + ' + ' + r.b, '', function () {
       CB.jefes.responder(r.valor === objetivo);
     });
     opc.appendChild(b2);
@@ -159,8 +159,8 @@ CB.jefes.prepararRamas = function (e, opc) {
 
 /* Bucle infinito, pestaña colgada, y el niño pierde la partida entera sin un solo error en consola. */
 CB.jefes.opciones = function (cont, correcta, distractores) {
-  var e = CB.jefes.estado;
-  var lista = [{ v: correcta, ok: true }];
+  const e = CB.jefes.estado;
+  const lista = [{ v: correcta, ok: true }];
 
   function anadir(v) {
     if (v === correcta || !(v >= 0) || v > 999) return false;
@@ -171,7 +171,7 @@ CB.jefes.opciones = function (cont, correcta, distractores) {
 
   distractores.forEach(anadir);
 
-  var paso = 1;
+  let paso = 1;
   while (lista.length < 4 && paso <= 20) {
     anadir(correcta + paso);
     if (lista.length < 4) anadir(correcta - paso);
@@ -187,11 +187,11 @@ CB.jefes.opciones = function (cont, correcta, distractores) {
 
 /* Y no era solo el atajo. */
 CB.jefes.responder = function (correcto) {
-  var e = CB.jefes.estado;
+  const e = CB.jefes.estado;
   if (!e || e.respondido) return;
   e.respondido = true;
 
-  var mitad = false;
+  let mitad = false;
   if (correcto) {
     e.bloques--;
     CB.audio.sfx('picar');
@@ -224,7 +224,7 @@ CB.jefes.responder = function (correcto) {
 };
 
 CB.jefes.terminar = function (porBloques) {
-  var e = CB.jefes.estado, perfil = CB.perfil;
+  const e = CB.jefes.estado, perfil = CB.perfil;
   if (!e) return;
 
   if (!perfil.mundos[e.mundo.id]) {
@@ -235,13 +235,13 @@ CB.jefes.terminar = function (porBloques) {
   if (e.sinFallos) perfil.mundos[e.mundo.id].jefeSinFallos = true;
 
   /* Pasado el tope de turnos el jefe cede igualmente, con recompensa menor. */
-  var gemas = porBloques ? 25 : 10;
+  const gemas = porBloques ? 25 : 10;
   perfil.gemas += gemas;
 
-  var nuevos = CB.logros.comprobar('jefe', {
+  const nuevos = CB.logros.comprobar('jefe', {
     perfil: perfil, modo: 'jefe', hoyISO: CB.util.hoyISO(), jefeSuperado: true
   });
-  var i;
+  let i;
   for (i = 0; i < nuevos.length; i++) CB.a11y.anunciar('Logro: ' + nuevos[i].nombre);
 
   /* La cinta más larga del juego, y puede permitírselo: se ve cuatro veces en
@@ -251,8 +251,8 @@ CB.jefes.terminar = function (porBloques) {
   CB.musica.poner('victoria');
   CB.almacen.guardarPerfil(perfil);
 
-  var enun = document.getElementById('jefe-enunciado');
-  var opc = document.getElementById('jefe-opciones');
+  const enun = document.getElementById('jefe-enunciado');
+  const opc = document.getElementById('jefe-opciones');
   CB.ui.vaciar(enun); CB.ui.vaciar(opc);
   enun.appendChild(CB.ui.crear('h2', null, '¡' + e.jefe + ' abre el paso!'));
   enun.appendChild(CB.ui.crear('p', 'texto texto--lectura',

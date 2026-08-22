@@ -4,13 +4,14 @@ var CB = CB || {};
 
 /* Ayudas de dígitos */
 function digitos(n) {
-  var d = [], x = Math.abs(Math.round(n));
+  const d = [];
+  let x = Math.abs(Math.round(n));
   if (x === 0) return [0];
   while (x > 0) { d.push(x % 10); x = Math.floor(x / 10); }
   return d;                                    // índice 0 = unidades
 }
 function desdeDigitos(d) {
-  var v = 0, p = 1, i;
+  let v = 0, p = 1, i;
   for (i = 0; i < d.length; i++) { v += d[i] * p; p *= 10; }
   return v;
 }
@@ -24,8 +25,9 @@ CB.ERRORES = {
     reparacion: 'columnasCDU',
     simular: function (item) {
       if (item.operacion !== '+' || !item.operandos || item.operandos.length !== 2) return null;
-      var a = digitos(item.operandos[0]), b = digitos(item.operandos[1]);
-      var n = Math.max(a.length, b.length), out = [], i, s;
+      const a = digitos(item.operandos[0]), b = digitos(item.operandos[1]);
+      const n = Math.max(a.length, b.length), out = [];
+      let i, s;
       for (i = 0; i < n; i++) {
         s = (a[i] || 0) + (b[i] || 0);
         out.push(s % 10);                      // se pierde la llevada
@@ -40,13 +42,14 @@ CB.ERRORES = {
     reparacion: 'columnasCDU',
     simular: function (item) {
       if (item.operacion !== '+' || !item.operandos || item.operandos.length !== 2) return null;
-      var a = digitos(item.operandos[0]), b = digitos(item.operandos[1]);
-      var n = Math.max(a.length, b.length), txt = '', i, s;
+      const a = digitos(item.operandos[0]), b = digitos(item.operandos[1]);
+      const n = Math.max(a.length, b.length);
+      let txt = '', i, s;
       for (i = n - 1; i >= 0; i--) {
         s = (a[i] || 0) + (b[i] || 0);
         txt += String(s);                      // se escribe la columna entera
       }
-      var v = parseInt(txt, 10);
+      const v = parseInt(txt, 10);
       return isFinite(v) ? v : null;
     }
   },
@@ -57,7 +60,7 @@ CB.ERRORES = {
     reparacion: 'columnasCDU',
     simular: function (item) {
       if (item.operacion !== '+' || !item.operandos || item.operandos.length !== 2) return null;
-      var llev = CB.gen.sumas.llevadas(item.operandos[0], item.operandos[1]);
+      const llev = CB.gen.sumas.llevadas(item.operandos[0], item.operandos[1]);
       if (!llev) return null;
       return item.respuesta + 10 * llev;       // la llevada se suma dos veces
     }
@@ -69,7 +72,7 @@ CB.ERRORES = {
     reparacion: 'columnasCDU',
     simular: function (item) {
       if (item.operacion !== '+' || !item.operandos || item.operandos.length !== 2) return null;
-      var a = item.operandos[0], b = item.operandos[1];
+      const a = item.operandos[0], b = item.operandos[1];
       if (b >= 10 || a < 10) return null;      // solo tiene sentido con DU + U
       return a + b * 10;                       // la unidad se suma a las decenas
     }
@@ -82,8 +85,9 @@ CB.ERRORES = {
     reparacion: 'columnasCDU',
     simular: function (item) {
       if (item.operacion !== '-' || !item.operandos) return null;
-      var a = digitos(item.operandos[0]), b = digitos(item.operandos[1]);
-      var n = Math.max(a.length, b.length), out = [], i, x, y;
+      const a = digitos(item.operandos[0]), b = digitos(item.operandos[1]);
+      const n = Math.max(a.length, b.length), out = [];
+      let i, x, y;
       for (i = 0; i < n; i++) {
         x = a[i] || 0; y = b[i] || 0;
         out.push(Math.abs(x - y));             // se resta el menor del mayor
@@ -98,7 +102,7 @@ CB.ERRORES = {
     reparacion: 'columnasCDU',
     simular: function (item) {
       if (item.operacion !== '-' || !item.operandos) return null;
-      var p = CB.gen.restas.prestamos(item.operandos[0], item.operandos[1]);
+      const p = CB.gen.restas.prestamos(item.operandos[0], item.operandos[1]);
       if (!p) return null;
       return item.respuesta + 10 * p;          // no se descuenta la decena pedida
     }
@@ -110,7 +114,7 @@ CB.ERRORES = {
     reparacion: 'columnasCDU',
     simular: function (item) {
       if (item.operacion !== '-' || !item.operandos) return null;
-      var p = CB.gen.restas.prestamos(item.operandos[0], item.operandos[1]);
+      const p = CB.gen.restas.prestamos(item.operandos[0], item.operandos[1]);
       if (!p) return null;
       return item.respuesta - 10 * p;
     }
@@ -122,7 +126,7 @@ CB.ERRORES = {
     reparacion: 'columnasCDU',
     simular: function (item) {
       if (item.operacion !== '-' || !item.operandos) return null;
-      var a = digitos(item.operandos[0]);
+      const a = digitos(item.operandos[0]);
       if (a.indexOf(0) === -1) return null;
       return item.respuesta + 100;
     }
@@ -144,10 +148,10 @@ CB.ERRORES = {
     pista: 'Mira qué lugar ocupa cada cifra.',
     reparacion: 'columnasCDU',
     simular: function (item) {
-      var r = item.respuesta;
+      const r = item.respuesta;
       if (r < 10) return null;
-      var d = digitos(r);
-      var t = d[0]; d[0] = d[1]; d[1] = t;     // se intercambian D y U
+      const d = digitos(r);
+      const t = d[0]; d[0] = d[1]; d[1] = t;     // se intercambian D y U
       return desdeDigitos(d);
     }
   },
@@ -157,7 +161,7 @@ CB.ERRORES = {
     pista: 'El cero también ocupa su sitio.',
     reparacion: 'columnasCDU',
     simular: function (item) {
-      var d = digitos(item.respuesta);
+      const d = digitos(item.respuesta);
       if (d.length < 3 || d[1] !== 0) return null;
       return d[2] * 10 + d[0];                 // se omite el cero de en medio
     }
@@ -188,7 +192,7 @@ CB.ERRORES = {
     reparacion: 'matrizFilasColumnas',
     simular: function (item) {
       if (item.operacion !== '×' || !item.operandos) return null;
-      var a = item.operandos[0];
+      const a = item.operandos[0];
       return item.respuesta - a;               // el hecho anterior de la tabla
     }
   },
@@ -199,7 +203,7 @@ CB.ERRORES = {
     reparacion: 'matrizFilasColumnas',
     simular: function (item) {
       if (item.operacion !== '×' || !item.operandos) return null;
-      var a = item.operandos[0], b = item.operandos[1];
+      const a = item.operandos[0], b = item.operandos[1];
       if (a !== 0 && b !== 0 && a !== 1 && b !== 1) return null;
       return (a === 0 || b === 0) ? (a + b) : (a === 1 ? 1 : b);
     }
@@ -212,7 +216,7 @@ CB.ERRORES = {
     reparacion: 'barrasComparativas',
     simular: function (item) {
       if (!item.datos || item.datos.length < 2) return null;
-      var a = item.datos[0], b = item.datos[1];
+      const a = item.datos[0], b = item.datos[1];
       return (item.operacion === '+') ? (a - b) : (a + b);   // operación contraria
     }
   },
@@ -270,8 +274,9 @@ CB.distractores.RELLENOS = [1, 2, 10, 20, 100];
 CB.distractores.MAX_INTENTOS_RELLENO = 40;
 
 CB.distractores.codigosAplicables = function (item) {
-  var letra = (item.nivelId || 'S1').charAt(0);
-  var out = [], k;
+  const letra = (item.nivelId || 'S1').charAt(0);
+  const out = [];
+  let k;
   for (k in CB.ERRORES) {
     if (!Object.prototype.hasOwnProperty.call(CB.ERRORES, k)) continue;
     if (CB.ERRORES[k].familia !== letra) continue;
@@ -286,13 +291,14 @@ CB.distractores.codigosAplicables = function (item) {
  *         Si no se consiguen 4 opciones únicas, formato pasa a 'teclado'.
  */
 CB.distractores.para = function (item, rng) {
-  var correcta = item.respuesta;
-  var vistos = {}, opciones = [], i, v, cod;
+  const correcta = item.respuesta;
+  const vistos = {}, opciones = [];
+  let i, v, cod;
 
   vistos[correcta] = true;
 
   /* 1) candidatos por simulación de error */
-  var codigos = CB.util.barajar(CB.distractores.codigosAplicables(item), rng);
+  const codigos = CB.util.barajar(CB.distractores.codigosAplicables(item), rng);
   for (i = 0; i < codigos.length && opciones.length < 3; i++) {
     cod = codigos[i];
     try { v = CB.ERRORES[cod].simular(item); } catch (e) { v = null; }
@@ -302,8 +308,8 @@ CB.distractores.para = function (item, rng) {
     /* 2) descarte de colisiones, negativos y repetidos */
     if (v === correcta || v < 0 || vistos[v]) continue;
 
-    var intencionado = !!CB.ERRORES[cod].puedeSuperar999;
-    var limite = intencionado ? CB.distractores.LIMITE_INTENCIONADO
+    const intencionado = !!CB.ERRORES[cod].puedeSuperar999;
+    const limite = intencionado ? CB.distractores.LIMITE_INTENCIONADO
                               : CB.distractores.LIMITE_NORMAL;
     if (v > limite) continue;
 
@@ -316,14 +322,14 @@ CB.distractores.para = function (item, rng) {
   }
 
   /* 3) relleno acotado: respuesta ± k */
-  var intentos = 0;
-  var ks = CB.util.barajar(CB.distractores.RELLENOS, rng);
-  var signos = [1, -1];
-  var idx = 0;
+  let intentos = 0;
+  const ks = CB.util.barajar(CB.distractores.RELLENOS, rng);
+  const signos = [1, -1];
+  let idx = 0;
   while (opciones.length < 3 && intentos < CB.distractores.MAX_INTENTOS_RELLENO) {
     intentos++;
-    var kk = ks[idx % ks.length];
-    var sg = signos[Math.floor(idx / ks.length) % 2];
+    const kk = ks[idx % ks.length];
+    const sg = signos[Math.floor(idx / ks.length) % 2];
     idx++;
     v = correcta + sg * kk;
     if (v < 0 || v > CB.distractores.LIMITE_NORMAL) continue;
@@ -341,11 +347,11 @@ CB.distractores.para = function (item, rng) {
 
   /* 6) contrabalanceo de posición con bolsa: la correcta se reparte uniformemente
      entre las 4 posiciones a lo largo de la partida. */
-  var pos = (item.posicionCorrecta != null)
+  const pos = (item.posicionCorrecta != null)
     ? item.posicionCorrecta
     : CB.util.ent(rng, 0, 3);
-  var correctaObj = opciones.pop();
-  var mezcladas = CB.util.barajar(opciones, rng);
+  const correctaObj = opciones.pop();
+  const mezcladas = CB.util.barajar(opciones, rng);
   mezcladas.splice(pos, 0, correctaObj);
 
   return { opciones: mezcladas.slice(0, 4), formato: 'opciones4', posicionCorrecta: pos };
@@ -353,7 +359,8 @@ CB.distractores.para = function (item, rng) {
 
 /* Diagnóstico */
 CB.diagnosticar = function (item, valorDado) {
-  var hipotesis = [], codigos, i, v;
+  const hipotesis = [];
+  let i, v;
   if (valorDado == null || !isFinite(valorDado)) {
     return { hipotesis: [], discriminante: false };
   }
@@ -361,7 +368,7 @@ CB.diagnosticar = function (item, valorDado) {
     return { hipotesis: [], discriminante: false, motivo: 'nivelNoDiagnostico' };
   }
 
-  codigos = CB.distractores.codigosAplicables(item);
+  const codigos = CB.distractores.codigosAplicables(item);
   for (i = 0; i < codigos.length; i++) {
     try { v = CB.ERRORES[codigos[i]].simular(item); } catch (e) { v = null; }
     if (v != null && isFinite(v) && Math.round(v) === Math.round(valorDado)) {
@@ -373,10 +380,10 @@ CB.diagnosticar = function (item, valorDado) {
 
 /* Registra el diagnóstico en el perfil, solo si es discriminante. */
 CB.distractores.registrar = function (perfil, item, valorDado) {
-  var d = CB.diagnosticar(item, valorDado);
+  const d = CB.diagnosticar(item, valorDado);
   if (!d.hipotesis.length) return d;
   if (!perfil.errores) perfil.errores = {};
-  var i, cod;
+  let i, cod;
   for (i = 0; i < d.hipotesis.length; i++) {
     cod = d.hipotesis[i];
     if (!perfil.errores[cod]) {
@@ -384,7 +391,7 @@ CB.distractores.registrar = function (perfil, item, valorDado) {
     }
     perfil.errores[cod].veces++;
     if (d.discriminante) perfil.errores[cod].vecesDiscriminante++;
-    var ej = (item.consigna || item.enunciado || item.expr) + ' → ' + valorDado;
+    const ej = (item.consigna || item.enunciado || item.expr) + ' → ' + valorDado;
     perfil.errores[cod].ejemplos.unshift(ej);
     if (perfil.errores[cod].ejemplos.length > 3) perfil.errores[cod].ejemplos.length = 3;
   }

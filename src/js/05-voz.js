@@ -11,9 +11,9 @@ CB.voz.vozES = null;
 CB.voz.disponible = function () {
   if (typeof speechSynthesis === 'undefined') return false;
   try {
-    var vs = speechSynthesis.getVoices();
+    const vs = speechSynthesis.getVoices();
     if (!vs || !vs.length) return false;
-    var i;
+    let i;
     for (i = 0; i < vs.length; i++) {
       if (vs[i].lang && vs[i].lang.toLowerCase().indexOf('es') === 0) {
         CB.voz.vozES = vs[i];
@@ -49,7 +49,7 @@ CB.voz.leer = function (texto, alTerminar) {
     return false;
   }
   try {
-    var u = new SpeechSynthesisUtterance(String(texto));
+    const u = new SpeechSynthesisUtterance(String(texto));
     u.lang = 'es-ES';
     if (CB.voz.vozES) u.voice = CB.voz.vozES;
     u.rate = 0.85;                  // más lento que el habla adulta normal
@@ -80,8 +80,8 @@ CB.voz.leer = function (texto, alTerminar) {
  */
 CB.voz.lecturaGuiada = function (texto, alResaltar, alTerminar) {
   CB.voz.cancelar();
-  var palabras = CB.util.palabras(texto);
-  var i = 0;
+  const palabras = CB.util.palabras(texto);
+  let i = 0;
 
   function paso() {
     if (i >= palabras.length) {

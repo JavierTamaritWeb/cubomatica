@@ -21,7 +21,7 @@ CB.leitner.actualizar = function (estado, acierto) {
 };
 
 CB.leitner.proximoRepaso = function (estado, hoyISO) {
-  var dias = CB.leitner.DIAS[estado.caja || 1];
+  let dias = CB.leitner.DIAS[estado.caja || 1];
   if (!isFinite(dias)) dias = 0;
   return CB.util.sumarDias(hoyISO, dias);
 };
@@ -42,14 +42,14 @@ CB.leitner.nuevaCola = function () { return []; };
  * @param rng      inyectado: nada de Math.random
  */
 CB.leitner.programarReinsercion = function (cola, nivelId, indiceActual, rng) {
-  var salto = CB.util.ent(rng, 3, 5);
+  const salto = CB.util.ent(rng, 3, 5);
   cola.push({ nivelId: nivelId, enIndice: indiceActual + salto });
   return cola;
 };
 
 /* Devuelve el nivelId que toca reinsertar en este índice, o null. */
 CB.leitner.tocaReinsertar = function (cola, indice) {
-  var i;
+  let i;
   for (i = 0; i < cola.length; i++) {
     if (cola[i].enIndice <= indice) {
       return cola.splice(i, 1)[0].nivelId;

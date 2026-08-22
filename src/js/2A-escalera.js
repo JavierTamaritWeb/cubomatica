@@ -56,7 +56,7 @@ CB.escalera.pausarConcepto = function (perfil, nivelId) {
    proponer hasta la siguiente sesión», no «nunca más». */
 CB.escalera.levantarPausas = function (perfil) {
   if (!perfil || !perfil.niveles) return 0;
-  var k, n = 0;
+  let k, n = 0;
   for (k in perfil.niveles) {
     if (!Object.prototype.hasOwnProperty.call(perfil.niveles, k)) continue;
     if (perfil.niveles[k].enPausa) { perfil.niveles[k].enPausa = false; n++; }

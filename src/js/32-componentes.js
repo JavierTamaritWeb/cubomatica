@@ -20,10 +20,10 @@ CB.componentes.contenedor = function () {
 
 /* Construcción visible + bloqueo */
 CB.componentes.montar = function (contenedor, bloqueoMs, alDesbloquear) {
-  var ms = (bloqueoMs == null) ? CB.componentes.MS_CONSTRUCCION : bloqueoMs;
-  var botones = [].slice.call(contenedor.querySelectorAll('button'));
-  var montaje = ++CB.componentes._montaje;
-  var i;
+  const ms = (bloqueoMs == null) ? CB.componentes.MS_CONSTRUCCION : bloqueoMs;
+  const botones = [].slice.call(contenedor.querySelectorAll('button'));
+  const montaje = ++CB.componentes._montaje;
+  let i;
 
   for (i = 0; i < botones.length; i++) {
     botones[i].disabled = true;
@@ -60,7 +60,7 @@ CB.componentes.conectarToc = function (contenedor) {
 
   contenedor.addEventListener('pointerdown', function (ev) {
     if (!CB.partida || !CB.partida.bloqueado) return;
-    var b = ev.target;
+    const b = ev.target;
     /* Monedas y billetes NO son .btn-bloque, así que durante los 800 ms de
        construcción no recibían ni el «toc» ni la sacudida: se tocaban y no pasaba
        nada de nada, ni siquiera el sonido de «aún no». */
@@ -79,7 +79,7 @@ CB.componentes.conectarLectura = function (contenedor) {
   if (!contenedor || contenedor.getAttribute('data-lectura') === 'si') return;
   contenedor.setAttribute('data-lectura', 'si');
 
-  var arranca = function () {
+  const arranca = function () {
     if (CB.partida && CB.partida.marcarLectura) CB.partida.marcarLectura();
   };
   contenedor.addEventListener('pointerdown', arranca);
@@ -94,8 +94,8 @@ CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
     alConfirmar();
     return;
   }
-  var previos = document.querySelectorAll('[data-confirmando="si"]');
-  var i;
+  const previos = document.querySelectorAll('[data-confirmando="si"]');
+  let i;
   for (i = 0; i < previos.length; i++) previos[i].removeAttribute('data-confirmando');
   boton.setAttribute('data-confirmando', 'si');
   boton.classList.add('btn-bloque--hundido');
@@ -114,20 +114,20 @@ CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
  */
 CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   opciones = opciones || {};
-  var cont = opciones.contenedor || CB.componentes.contenedor();
+  const cont = opciones.contenedor || CB.componentes.contenedor();
   if (opciones.vaciar !== false) CB.ui.vaciar(cont);
   CB.componentes._valor = '';
 
-  var visor = CB.ui.crear('div', 'respuesta__visor');
+  const visor = CB.ui.crear('div', 'respuesta__visor');
   visor.id = 'visor-respuesta';
   visor.setAttribute('role', 'status');
   visor.setAttribute('aria-live', 'polite');
   visor.setAttribute('aria-label', 'Tu respuesta');
   cont.appendChild(visor);
 
-  var teclado = CB.ui.crear('div', 'teclado-bloques');
-  var teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'OK'];
-  var i;
+  const teclado = CB.ui.crear('div', 'teclado-bloques');
+  const teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'OK'];
+  let i;
 
   function pinta() {
     visor.textContent = CB.componentes._valor;
@@ -153,11 +153,11 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     CB.audio.sfx('picar');
   }
 
-  var botonOK = null;
+  let botonOK = null;
   for (i = 0; i < teclas.length; i++) {
     (function (t) {
 
-      var b = CB.ui.boton(t, 'teclado-bloques__tecla' +
+      const b = CB.ui.boton(t, 'teclado-bloques__tecla' +
         (t === 'OK' ? ' btn-bloque--primario' : ''), function () {
         pulsa(t, b);
       }, { tecla: t === '⌫' ? 'borrar' : (t === 'OK' ? 'ok' : t) });
@@ -188,19 +188,19 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
 /* 2. OPCIONES 4 */
 CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opciones) {
   opciones = opciones || {};
-  var cont = CB.componentes.contenedor();
+  const cont = CB.componentes.contenedor();
   CB.ui.vaciar(cont);
 
-  var rej = CB.ui.crear('div', 'rejilla-respuestas');
+  const rej = CB.ui.crear('div', 'rejilla-respuestas');
   /* Las columnas de la retícula miden --lado-respuesta, que en la pantalla más
      estrecha son 64 px; un billete mide 128×64 y desbordaría su celda. Con las
      piezas, el ancho de columna lo manda el contenido. */
   if (item.piezasDinero) rej.classList.add('rejilla-respuestas--dinero');
-  var i;
+  let i;
 
   for (i = 0; i < opcionesValores.length; i++) {
     (function (op, idx) {
-      var b;
+      let b;
       function elegir() {
         if (CB.partida && CB.partida.bloqueado) return;
         CB.componentes.pedirConfirmacion(b, function () {
@@ -214,7 +214,7 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
         b.setAttribute('data-posicion', idx);
         b.addEventListener('click', elegir);
       } else {
-        var etiqueta = (op.texto != null) ? op.texto : String(op.valor);
+        const etiqueta = (op.texto != null) ? op.texto : String(op.valor);
         b = CB.ui.boton(etiqueta, 'rejilla-respuestas__opcion', elegir, { posicion: idx });
         if (op.texto != null) b.style.fontSize = 'var(--tam-texto-min)';
       }
@@ -230,9 +230,9 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
   CB.componentes.actual = {
     tipo: 'opciones4',
     tecla: function (k) {
-      var n = parseInt(k, 10);
+      const n = parseInt(k, 10);
       if (n >= 1 && n <= opcionesValores.length) {
-        var b = rej.querySelectorAll('button')[n - 1];
+        const b = rej.querySelectorAll('button')[n - 1];
         if (b && !b.disabled) b.click();
         return true;
       }
@@ -245,12 +245,12 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
 /* 3. SELECTOR DE SIGNO */
 CB.componentes.selectorSigno = function (item, alResponder, opciones) {
   opciones = opciones || {};
-  var cont = CB.componentes.contenedor();
+  const cont = CB.componentes.contenedor();
   CB.ui.vaciar(cont);
 
-  var fila = CB.ui.crear('div', 'rejilla-respuestas');
+  const fila = CB.ui.crear('div', 'rejilla-respuestas');
   ['+', '−'].forEach(function (s, idx) {
-    var b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
+    const b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
       if (CB.partida && CB.partida.bloqueado) return;
       /* La misma regla que el teclado y las opciones. Se la saltaba, y con ella
          tres formatos más: una regla aplicada en tres sitios de siete es
@@ -273,15 +273,15 @@ CB.componentes.selectorSigno = function (item, alResponder, opciones) {
 /* 4. BALANZA */
 CB.componentes.balanza = function (item, alResponder, opciones) {
   opciones = opciones || {};
-  var cont = CB.componentes.contenedor();
+  const cont = CB.componentes.contenedor();
   CB.ui.vaciar(cont);
 
-  var fila = CB.ui.crear('div', 'rejilla-respuestas');
-  var signos = item.opcionesFijas || ['>', '<', '='];
-  var etiquetas = { '>': 'mayor que', '<': 'menor que', '=': 'igual que' };
+  const fila = CB.ui.crear('div', 'rejilla-respuestas');
+  const signos = item.opcionesFijas || ['>', '<', '='];
+  const etiquetas = { '>': 'mayor que', '<': 'menor que', '=': 'igual que' };
 
   signos.forEach(function (s, idx) {
-    var b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
+    const b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
       if (CB.partida && CB.partida.bloqueado) return;
       CB.componentes.pedirConfirmacion(b, function () {
         alResponder(s, 'balanza', { posicion: idx });
@@ -298,9 +298,9 @@ CB.componentes.balanza = function (item, alResponder, opciones) {
   CB.componentes.actual = {
     tipo: 'balanza',
     tecla: function (k) {
-      var n = parseInt(k, 10);
+      const n = parseInt(k, 10);
       if (n >= 1 && n <= signos.length) {
-        var b = fila.querySelectorAll('button')[n - 1];
+        const b = fila.querySelectorAll('button')[n - 1];
         if (b && !b.disabled) b.click();
         return true;
       }
@@ -313,27 +313,27 @@ CB.componentes.balanza = function (item, alResponder, opciones) {
 /* 5. ORDENAR FILA (por toque, nunca solo por arrastre) */
 CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   opciones = opciones || {};
-  var cont = CB.componentes.contenedor();
+  const cont = CB.componentes.contenedor();
   CB.ui.vaciar(cont);
   CB.componentes._seleccion = [];
 
-  var huecos = CB.ui.crear('div', 'fila-ordenar');
-  var i;
+  const huecos = CB.ui.crear('div', 'fila-ordenar');
+  let i;
   for (i = 0; i < item.orden.length; i++) {
-    var h = CB.ui.crear('span', 'fila-ordenar__hueco', '·');
+    const h = CB.ui.crear('span', 'fila-ordenar__hueco', '·');
     h.setAttribute('data-hueco', i);
     huecos.appendChild(h);
   }
   cont.appendChild(CB.ui.crear('p', 'respuesta__consigna', 'Toca los números en orden.'));
   cont.appendChild(huecos);
 
-  var piezas = CB.ui.crear('div', 'fila-ordenar');
+  const piezas = CB.ui.crear('div', 'fila-ordenar');
 
-  var usados = [];
+  const usados = [];
 
   function cerrarSiEstaLlena() {
     if (CB.componentes._seleccion.length !== item.orden.length) return;
-    var correcto = CB.componentes._seleccion.every(function (x, j) {
+    const correcto = CB.componentes._seleccion.every(function (x, j) {
       return x === item.orden[j];
     });
     alResponder(correcto ? item.respuesta : -1, 'ordenar',
@@ -341,13 +341,13 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   }
 
   item.piezas.forEach(function (v, idx) {
-    var b = CB.ui.boton(String(v), '', function () {
+    const b = CB.ui.boton(String(v), '', function () {
       if (CB.partida && CB.partida.bloqueado) return;
       if (b.disabled) return;
-      var pos = CB.componentes._seleccion.length;
+      const pos = CB.componentes._seleccion.length;
       CB.componentes._seleccion.push(v);
       usados.push(b);
-      var hueco = huecos.querySelector('[data-hueco="' + pos + '"]');
+      const hueco = huecos.querySelector('[data-hueco="' + pos + '"]');
       if (hueco) hueco.textContent = String(v);
       b.disabled = true;
       b.classList.add('btn-bloque--hundido');
@@ -362,13 +362,13 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   });
   cont.appendChild(piezas);
 
-  var deshacer = CB.ui.boton('⌫ Quitar', '', function () {
+  const deshacer = CB.ui.boton('⌫ Quitar', '', function () {
     if (CB.partida && CB.partida.bloqueado) return;
     if (!CB.componentes._seleccion.length) return;
     CB.componentes._seleccion.pop();
-    var pieza = usados.pop();
-    var pos = CB.componentes._seleccion.length;
-    var hueco = huecos.querySelector('[data-hueco="' + pos + '"]');
+    const pieza = usados.pop();
+    const pos = CB.componentes._seleccion.length;
+    const hueco = huecos.querySelector('[data-hueco="' + pos + '"]');
     if (hueco) hueco.textContent = '·';
     if (pieza) {
       pieza.disabled = false;
@@ -389,35 +389,35 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
 /* 6. MONEDAS */
 CB.componentes.monedas = function (item, alResponder, opciones) {
   opciones = opciones || {};
-  var cont = CB.componentes.contenedor();
+  const cont = CB.componentes.contenedor();
   CB.ui.vaciar(cont);
 
   /* Modo «pagar»: el niño elige piezas hasta el importe exacto. */
   if (item.modo === 'pagar') {
-    var total = 0;
-    var marcador = CB.ui.crear('div', 'respuesta__visor', '0');
+    let total = 0;
+    const marcador = CB.ui.crear('div', 'respuesta__visor', '0');
     cont.appendChild(marcador);
 
     /* LA FILA DE LO COGIDO: «2 € + 2 € + 1 €». Es lo que de verdad descarga la
        memoria del niño. Con solo el marcador del total, quien va por 5 € no sabe
        si ha cogido dos de 2 y una de 1 o una de 5, y no puede comprobarlo. */
-    var cogidas = [];
-    var fila = CB.ui.crear('div', 'hilera-cogidas');
+    const cogidas = [];
+    const fila = CB.ui.crear('div', 'hilera-cogidas');
     fila.setAttribute('aria-live', 'off');
     cont.appendChild(fila);
 
     function pintarCogidas() {
       CB.ui.vaciar(fila);
-      var j;
+      let j;
       for (j = 0; j < cogidas.length; j++) {
         if (j) fila.appendChild(CB.ui.crear('span', 'hilera-cogidas__mas', '+'));
         fila.appendChild(CB.ui.crear('span', 'hilera-cogidas__pieza', cogidas[j] + ' €'));
       }
     }
 
-    var caja = CB.ui.crear('div', 'contenedor-dinero');
+    const caja = CB.ui.crear('div', 'contenedor-dinero');
     item.disponibles.forEach(function (v, idx) {
-      var b = CB.ui.pieza('button', v);
+      const b = CB.ui.pieza('button', v);
       b.type = 'button';
       b.setAttribute('data-posicion', idx);
       b.addEventListener('click', function () {
@@ -426,7 +426,7 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
         marcador.textContent = String(total);
         cogidas.push(v);
         /* Y va ANTES de comprobar el objetivo: si fuera después, la pieza que cierra el pago no llegaría a verse marcada nunca. */
-        var veces = (parseInt(b.getAttribute('data-veces'), 10) || 0) + 1;
+        const veces = (parseInt(b.getAttribute('data-veces'), 10) || 0) + 1;
         b.setAttribute('data-veces', String(veces));
         pintarCogidas();
         CB.audio.sfx('gema');
@@ -442,14 +442,15 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
     });
     cont.appendChild(caja);
 
-    var deshacer = CB.ui.boton('Empezar de nuevo', '', function () {
+    const deshacer = CB.ui.boton('Empezar de nuevo', '', function () {
       total = 0; marcador.textContent = '0';
       /* Y SE LIMPIAN LAS MARCAS. Sin esto, tras reiniciar las piezas seguirían
          contadas: peor que no marcarlas, porque el marcador diría 0 y las monedas
          dirían que se han cogido. */
       cogidas.length = 0;
       pintarCogidas();
-      var piezas = caja.querySelectorAll('[data-veces]'), k;
+      const piezas = caja.querySelectorAll('[data-veces]');
+      let k;
       for (k = 0; k < piezas.length; k++) {
         piezas[k].removeAttribute('data-veces');
         piezas[k].removeAttribute('data-confirmando');
@@ -464,11 +465,11 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
   }
 
   /* Modo «contar»: se muestran las piezas y se responde con teclado. */
-  var muestra = CB.ui.crear('div', 'contenedor-dinero');
+  const muestra = CB.ui.crear('div', 'contenedor-dinero');
   (item.piezas || []).forEach(function (v) {
     muestra.appendChild(CB.ui.pieza('span', v));
   });
-  var arriba = document.getElementById('item-enunciado');
+  const arriba = document.getElementById('item-enunciado');
   if (arriba) arriba.appendChild(muestra);
 
   return CB.componentes.tecladoBloques(item, alResponder, opciones);
@@ -477,17 +478,17 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
 /* 7. SELECTOR DE DATOS (3 toques que hacen visible el razonamiento) */
 CB.componentes.selectorDatos = function (item, alResponder, opciones) {
   opciones = opciones || {};
-  var cont = CB.componentes.contenedor();
+  const cont = CB.componentes.contenedor();
   CB.ui.vaciar(cont);
 
-  var necesarios = item.datoSobrante ? 2 : item.datos.length;
-  var elegidos = [];
-  var fase = 'datos';
-  var signoElegido = null;
+  const necesarios = item.datoSobrante ? 2 : item.datos.length;
+  let elegidos = [];
+  let fase = 'datos';
+  let signoElegido = null;
   /* El teclado que monta la fase 3, para poder cederle las teclas físicas. Antes
      la fase 3 devolvía `tecla: function () { return false; }`: se jugaba con el
      dedo o no se jugaba. */
-  var montado = null;
+  let montado = null;
 
   /* El paso 1 SE OMITE si el enunciado tiene exactamente 2 números y el nivel
      no lleva dato sobrante: no se hace perder el tiempo con una decisión que
@@ -497,9 +498,9 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     fase = 'operacion';
   }
 
-  var titulo = CB.ui.crear('p', 'respuesta__consigna', '');
+  const titulo = CB.ui.crear('p', 'respuesta__consigna', '');
   cont.appendChild(titulo);
-  var zona = CB.ui.crear('div');
+  const zona = CB.ui.crear('div');
   cont.appendChild(zona);
 
   function pintarFase() {
@@ -507,16 +508,16 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
 
     if (fase === 'datos') {
       titulo.textContent = 'Toca los números que necesitas.';
-      var numeros = (item.enunciado.match(/\d+/g) || []).map(Number);
-      var rej = CB.ui.crear('div', 'rejilla-respuestas');
+      const numeros = (item.enunciado.match(/\d+/g) || []).map(Number);
+      const rej = CB.ui.crear('div', 'rejilla-respuestas');
       numeros.forEach(function (n, idx) {
-        var b = CB.ui.boton(String(n), 'rejilla-respuestas__opcion', function () {
+        const b = CB.ui.boton(String(n), 'rejilla-respuestas__opcion', function () {
           if (CB.partida && CB.partida.bloqueado) return;
 
           if (b.getAttribute('aria-pressed') === 'true') {
             b.setAttribute('aria-pressed', 'false');
             b.classList.remove('btn-bloque--hundido');
-            var donde = elegidos.indexOf(n);
+            const donde = elegidos.indexOf(n);
             if (donde !== -1) elegidos.splice(donde, 1);
             CB.audio.sfx('toc');
             return;
@@ -537,9 +538,9 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
 
     if (fase === 'operacion') {
       titulo.textContent = '¿Qué hay que hacer?';
-      var fila = CB.ui.crear('div', 'rejilla-respuestas');
+      const fila = CB.ui.crear('div', 'rejilla-respuestas');
       ['+', '−'].forEach(function (s, idx) {
-        var b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
+        const b = CB.ui.boton(s, 'rejilla-respuestas__opcion', function () {
           signoElegido = (s === '+') ? '+' : '-';
           fase = 'calculo';
           pintarFase();
@@ -556,7 +557,7 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     /* Volver a elegir los números. La fase salta sola al tocar el último, así que
        sin esto un error en el penúltimo toque era irreparable. Un toque SOLO
        cuando hace falta: quien acierta a la primera no lo ve ni lo paga. */
-    var volverDatos = CB.ui.boton('◀ Cambiar los números', '', function () {
+    const volverDatos = CB.ui.boton('◀ Cambiar los números', '', function () {
       if (CB.partida && CB.partida.bloqueado) return;
       elegidos.length = 0;
       signoElegido = null;
@@ -598,7 +599,8 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
 
 CB.componentes.datosCorrectos = function (item, elegidos) {
   if (!item.datos || elegidos.length !== item.datos.length) return false;
-  var copia = item.datos.slice(), i, j;
+  const copia = item.datos.slice();
+  let i, j;
   for (i = 0; i < elegidos.length; i++) {
     j = copia.indexOf(elegidos[i]);
     if (j === -1) return false;

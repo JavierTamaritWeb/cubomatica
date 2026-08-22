@@ -12,15 +12,15 @@ CB.gen.vocabulario.terminosDe = function (nivelId) {
    El índice del término dentro del glosario hace de «respuesta» entera, para
    cumplir el invariante 5 sin inventar un número que no significa nada. */
 function itemVocab(nivelId, rng, D) {
-  var propios = CB.gen.vocabulario.terminosDe(nivelId);
+  let propios = CB.gen.vocabulario.terminosDe(nivelId);
   if (!propios.length) propios = CB.datos.GLOSARIO.slice(0, 6);
 
-  var elegido = CB.util.elegir(rng, propios);
-  var iGlobal = CB.datos.GLOSARIO.indexOf(elegido);
+  const elegido = CB.util.elegir(rng, propios);
+  const iGlobal = CB.datos.GLOSARIO.indexOf(elegido);
 
   /* Los distractores salen del MISMO nivel siempre que se pueda: confundir
      «sumando» con «decena» no informa de nada; confundirlo con «total» sí. */
-  var candidatos = propios.filter(function (g) { return g.t !== elegido.t; });
+  let candidatos = propios.filter(function (g) { return g.t !== elegido.t; });
   if (candidatos.length < 3) {
     candidatos = candidatos.concat(
       CB.datos.GLOSARIO.filter(function (g) {
@@ -28,7 +28,7 @@ function itemVocab(nivelId, rng, D) {
       })
     );
   }
-  var distractores = CB.util.barajar(candidatos, rng).slice(0, 3);
+  const distractores = CB.util.barajar(candidatos, rng).slice(0, 3);
 
   return {
     formato: 'opciones4',
@@ -56,10 +56,10 @@ CB.gen.vocabulario.V8 = function (rng, D) { return itemVocab('V8', rng, D); };
 
 /* V4 Comparar: se responde en la balanza, no eligiendo palabra */
 CB.gen.vocabulario.V4 = function (rng, D) {
-  var a = CB.util.ent(rng, 1, (D === 1) ? 20 : 99);
-  var b = CB.util.ent(rng, 1, (D === 1) ? 20 : 99);
-  var signo = (a > b) ? '>' : (a < b ? '<' : '=');
-  var palabra = (signo === '>') ? 'mayor que' : (signo === '<' ? 'menor que' : 'igual');
+  const a = CB.util.ent(rng, 1, (D === 1) ? 20 : 99);
+  const b = CB.util.ent(rng, 1, (D === 1) ? 20 : 99);
+  const signo = (a > b) ? '>' : (a < b ? '<' : '=');
+  const palabra = (signo === '>') ? 'mayor que' : (signo === '<' ? 'menor que' : 'igual');
   return {
     formato: 'balanza',
     consigna: '¿' + a + ' es mayor, menor o igual que ' + b + '?',
@@ -76,9 +76,10 @@ CB.gen.vocabulario.V4 = function (rng, D) {
 
 /* V5 Orden y posición: se responde ordenando */
 CB.gen.vocabulario.V5 = function (rng, D) {
-  var inicio = CB.util.ent(rng, 1, 14);
-  var cuantos = (D === 1) ? 3 : 4;
-  var orden = [], i;
+  const inicio = CB.util.ent(rng, 1, 14);
+  const cuantos = (D === 1) ? 3 : 4;
+  const orden = [];
+  let i;
   for (i = 0; i < cuantos; i++) orden.push(inicio + i);
   return {
     formato: 'ordenar',

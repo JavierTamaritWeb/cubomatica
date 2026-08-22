@@ -112,6 +112,9 @@ for (const [pagina, bundle] of [['pruebas.html', 'cubomatica.js'],
   juzgar(guiones.length === 1 && guiones[0] === '../dist/js/' + bundle,
     'pruebas/' + pagina + ' prueba el bundle ' + bundle + ', no las fuentes sueltas',
     'pruebas/' + pagina + ' carga ' + guiones.length + ' guiones del juego: ' + guiones.join(', '));
+  juzgar(/<link rel="icon" href="data:[^"]*">/.test(p),
+    'pruebas/' + pagina + ' lleva favicon embebido y no provoca un 404',
+    'pruebas/' + pagina + ' no lleva favicon embebido');
 }
 
 /* 4 y 5. Todo lo que necesita dist/ */
@@ -169,7 +172,7 @@ for (const b of ['cubomatica.js', 'cubomatica.min.js']) {
    conserva el nombre literalmente, asi que basta buscarlo. */
 const min = readFileSync(join(DIST, 'js', 'cubomatica.min.js'), 'utf8');
 const casos = readFileSync(D('pruebas', 'casos-carga.js'), 'utf8');
-const mg = casos.match(/var GLOBALES = \[([\s\S]*?)\];/);
+const mg = casos.match(/const GLOBALES = \[([\s\S]*?)\];/);
 if (!mg) {
   mal('no se encuentra la lista GLOBALES en pruebas/casos-carga.js');
 } else {
@@ -198,6 +201,9 @@ juzgar(cuenta(/<script src=/g) === 1 && cuenta(/rel="stylesheet"/g) === 1,
   cuenta(/rel="stylesheet"/g) + ' hojas');
 juzgar(/<html lang="es">/.test(dh), 'dist/index.html conserva lang="es" tras minificar',
   'la minificacion se ha llevado lang="es"');
+juzgar(/<link rel="icon" href="data:image\/svg\+xml,/.test(dh),
+  'dist/index.html lleva favicon SVG embebido y no provoca un 404',
+  'dist/index.html no lleva el favicon SVG embebido');
 
 const referidos = [...dh.matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1])
   .filter((u) => !/^(https?:|data:|#|mailto:)/.test(u));

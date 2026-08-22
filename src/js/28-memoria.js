@@ -22,16 +22,16 @@ CB.memoria.ICONO = {
 /* R = 2^(-d/S). Blindado contra fechas imposibles y relojes mal puestos. */
 CB.memoria.recuperabilidad = function (estado, hoyISO) {
   if (!estado || !estado.ultimoRepasoISO) return 1;
-  var d = Math.max(0, CB.util.diasEntre(estado.ultimoRepasoISO, hoyISO));
+  let d = Math.max(0, CB.util.diasEntre(estado.ultimoRepasoISO, hoyISO));
   if (!isFinite(d)) d = 0;
-  var S = Math.max(1, estado.estabilidadDias || 1);
-  var r = Math.pow(2, -d / S);
+  const S = Math.max(1, estado.estabilidadDias || 1);
+  const r = Math.pow(2, -d / S);
   return isFinite(r) ? CB.util.clamp(r, 0, 1) : 1;
 };
 
 /* La estabilidad crece con el acierto y se desploma con el fallo. */
 CB.memoria.actualizarEstabilidad = function (estado, acierto) {
-  var S = Math.max(1, estado.estabilidadDias || 1);
+  let S = Math.max(1, estado.estabilidadDias || 1);
   if (acierto) {
     S = Math.min(180, S * 1.9 + 0.5);
   } else {
@@ -45,9 +45,9 @@ CB.memoria.clasificar = function (estado, hoyISO, bloqueado) {
   if (bloqueado) return 'bloqueado';
   if (!estado || !estado.n) return 'nuevo';
 
-  var p1 = (estado.aciertosPrimerIntento || 0) / estado.n;
-  var R = CB.memoria.recuperabilidad(estado, hoyISO);
-  var eraSolida = (estado.estado === 'afianzada' || estado.estado === 'dominada');
+  const p1 = (estado.aciertosPrimerIntento || 0) / estado.n;
+  const R = CB.memoria.recuperabilidad(estado, hoyISO);
+  const eraSolida = (estado.estado === 'afianzada' || estado.estado === 'dominada');
 
   /* Oxidada: era sólida y se ha olvidado. Es el único estado que MIRA ATRÁS. */
   if (eraSolida && R < 0.6) return 'oxidada';
@@ -62,7 +62,7 @@ CB.memoria.clasificar = function (estado, hoyISO, bloqueado) {
 /* Recalcula y persiste el estado de todas las destrezas del perfil. */
 CB.memoria.reclasificarTodo = function (perfil, hoyISO) {
   if (!perfil || !perfil.destrezas) return;
-  var k;
+  let k;
   for (k in perfil.destrezas) {
     if (!Object.prototype.hasOwnProperty.call(perfil.destrezas, k)) continue;
     perfil.destrezas[k].estado = CB.memoria.clasificar(perfil.destrezas[k], hoyISO, false);
@@ -90,7 +90,8 @@ CB.memoria.reclasificarTodo = function (perfil, hoyISO) {
  */
 CB.memoria.conMusgo = function (perfil, hoyISO, bloqueados) {
   if (!perfil || !perfil.destrezas) return [];
-  var lista = [], k;
+  const lista = [];
+  let k;
   for (k in perfil.destrezas) {
     if (!Object.prototype.hasOwnProperty.call(perfil.destrezas, k)) continue;
     if (CB.memoria.clasificar(perfil.destrezas[k], hoyISO,
@@ -103,7 +104,8 @@ CB.memoria.conMusgo = function (perfil, hoyISO, bloqueados) {
 
 CB.memoria.vencidosHoy = function (perfil, hoyISO) {
   if (!perfil || !perfil.destrezas) return [];
-  var lista = [], k, d, R;
+  const lista = [];
+  let k, d, R;
   for (k in perfil.destrezas) {
     if (!Object.prototype.hasOwnProperty.call(perfil.destrezas, k)) continue;
     d = perfil.destrezas[k];

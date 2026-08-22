@@ -35,7 +35,7 @@ CB.almacen.disponible = function () { return ls() !== null; };
 /* sanear: NaN e Infinity → 0. Sin esto, JSON.stringify convierte NaN en null y
    a partir de ahí toda la aritmética del perfil da NaN para siempre (§11.2). */
 CB.almacen.sanear = function (obj) {
-  var vistos = [];
+  const vistos = [];
   function limpia(v) {
     if (typeof v === 'number') {
       if (!isFinite(v)) { CB.almacen.incidenciasNoFinito++; return 0; }
@@ -47,7 +47,8 @@ CB.almacen.sanear = function (obj) {
       if (Object.prototype.toString.call(v) === '[object Array]') {
         return v.map(limpia);
       }
-      var out = {}, k;
+      const out = {};
+      let k;
       for (k in v) {
         if (!Object.prototype.hasOwnProperty.call(v, k)) continue;
         if (k.charAt(0) === '_') continue;        // campos internos, no se guardan
@@ -61,8 +62,8 @@ CB.almacen.sanear = function (obj) {
 };
 
 CB.almacen.leerCrudo = function (clave) {
-  var s = ls();
-  var txt = s ? s.getItem(clave) : null;
+  const s = ls();
+  const txt = s ? s.getItem(clave) : null;
   if (txt == null && CB.almacen.memoria[clave] != null) return CB.almacen.memoria[clave];
   if (txt == null) return null;
   try { return JSON.parse(txt); } catch (e) { return null; }
@@ -72,11 +73,11 @@ CB.almacen.leerCrudo = function (clave) {
    guardado y el JSON queda truncado. Se escribe en .tmp, se verifica con
    JSON.parse, y solo entonces se pisa la clave buena. */
 CB.almacen.escribir = function (clave, obj) {
-  var limpio = CB.almacen.sanear(obj);
-  var s;
+  const limpio = CB.almacen.sanear(obj);
+  let s;
   try { s = JSON.stringify(limpio); } catch (e) { return false; }
 
-  var store = ls();
+  const store = ls();
   if (!store) {
     CB.almacen.memoria[clave] = limpio;
     CB.almacen.sinDisco = true;
@@ -106,14 +107,14 @@ CB.almacen.escribir = function (clave, obj) {
 };
 
 CB.almacen.borrar = function (clave) {
-  var s = ls();
+  const s = ls();
   if (s) { try { s.removeItem(clave); s.removeItem(clave + '.tmp'); } catch (e) { } }
   delete CB.almacen.memoria[clave];
 };
 
 /* Ajustes del APARATO (solo lo físico) */
 CB.almacen.ajustesDispositivo = function () {
-  var a = CB.almacen.leerCrudo(CB.almacen.CLAVE_AJUSTES);
+  let a = CB.almacen.leerCrudo(CB.almacen.CLAVE_AJUSTES);
   if (!a) {
     a = { volumen: 0.7, silencio: false, modoAula: false, modoProyeccion: false,
           nivelMusica: 2 };
@@ -130,7 +131,7 @@ CB.almacen.guardarAjustesDispositivo = function (a) {
 
 /* Índice de perfiles */
 CB.almacen.indice = function () {
-  var i = CB.almacen.leerCrudo(CB.almacen.CLAVE_INDICE);
+  const i = CB.almacen.leerCrudo(CB.almacen.CLAVE_INDICE);
   return (i && i.length != null) ? i : [];
 };
 CB.almacen.guardarIndice = function (idx) {
@@ -145,13 +146,14 @@ CB.almacen.fijarUltimoPerfil = function (id) {
 
 /* Esqueleto de problemas: array literal LOCAL, sin dependencias */
 CB.almacen.ESQUELETO_PROBLEMAS = function () {
-  var subtipos = ['CAMBIO_1', 'CAMBIO_2', 'CAMBIO_3', 'CAMBIO_4', 'CAMBIO_5', 'CAMBIO_6',
+  const subtipos = ['CAMBIO_1', 'CAMBIO_2', 'CAMBIO_3', 'CAMBIO_4', 'CAMBIO_5', 'CAMBIO_6',
                   'COMBINACION_1', 'COMBINACION_2',
                   'COMPARACION_1', 'COMPARACION_2', 'COMPARACION_3', 'COMPARACION_4',
                   'COMPARACION_5', 'COMPARACION_6',
                   'IGUALACION_1', 'IGUALACION_2', 'IGUALACION_3', 'IGUALACION_4',
                   'IGUALACION_5', 'IGUALACION_6'];
-  var o = {}, i;
+  const o = {};
+  let i;
   for (i = 0; i < subtipos.length; i++) {
     o[subtipos[i]] = { intentos: 0, aciertos: 0, rtMedioMs: 0 };
   }
@@ -200,8 +202,8 @@ CB.almacen.perfilNuevo = function (id, mote, avatar, hoyISO, ajustesPrevios) {
 /* Conserva lo que se pueda de un perfil roto. Nunca se devuelve al niño a cero
    sin motivo: sus gemas, sus logros y sus cromos son suyos. */
 CB.almacen.perfilNuevoDesdeRestos = function (roto) {
-  var hoy = CB.util.hoyISO();
-  var p = CB.almacen.perfilNuevo(
+  const hoy = CB.util.hoyISO();
+  const p = CB.almacen.perfilNuevo(
     (roto && roto.id) || ('p-' + CB.util.hash32(hoy).toString(16)),
     (roto && roto.mote) || 'Topo Cavador',
     (roto && roto.avatar) || 0, hoy, null
@@ -225,7 +227,7 @@ CB.almacen.migrar = function (perfil) {
     if (perfil.version < 2) {
       perfil.problemas = perfil.problemas || CB.almacen.ESQUELETO_PROBLEMAS();
 
-      var ds = perfil.destrezas || (perfil.destrezas = {});
+      const ds = perfil.destrezas || (perfil.destrezas = {});
       Object.keys(ds).forEach(function (k) {
         if (ds[k].estabilidadDias == null) ds[k].estabilidadDias = 1;
         if (ds[k].estado == null) ds[k].estado = 'nuevo';
@@ -276,7 +278,8 @@ CB.almacen.migrar = function (perfil) {
 /* Reloj del dispositivo mal puesto: se recorta a hoy en lugar de romper la
    racha o producir días negativos (§15.5). */
 CB.almacen.recortarFechasFuturas = function (perfil) {
-  var hoy = CB.util.hoyISO(), k, d;
+  const hoy = CB.util.hoyISO();
+  let k, d;
   function recorta(iso) {
     if (!CB.util.esISO(iso)) return iso;
     return (CB.util.diasEntre(iso, hoy) < 0) ? hoy : iso;
@@ -303,7 +306,7 @@ CB.almacen.recortarFechasFuturas = function (perfil) {
    perfil» de «hay un perfil y está roto» es lo único que separa un mensaje útil
    de un botón que no hace nada. */
 CB.almacen.existeCrudo = function (clave) {
-  var s = ls();
+  const s = ls();
   if (s) {
     try { if (s.getItem(clave) != null) return true; } catch (e) { }
   }
@@ -311,8 +314,8 @@ CB.almacen.existeCrudo = function (clave) {
 };
 
 CB.almacen.leerPerfil = function (id) {
-  var clave = CB.almacen.claveDePerfil(id);
-  var p = CB.almacen.leerCrudo(clave);
+  const clave = CB.almacen.claveDePerfil(id);
+  const p = CB.almacen.leerCrudo(clave);
 
   if (!p && CB.almacen.existeCrudo(clave)) {
     return { error: 'perfil-ilegible',
@@ -332,8 +335,9 @@ CB.almacen.leerPerfil = function (id) {
 
 CB.almacen.guardarPerfil = function (perfil) {
   if (!perfil || !perfil.id) return false;
-  var ok = CB.almacen.escribir(CB.almacen.claveDePerfil(perfil.id), perfil);
-  var idx = CB.almacen.indice(), i, hallado = false;
+  const ok = CB.almacen.escribir(CB.almacen.claveDePerfil(perfil.id), perfil);
+  const idx = CB.almacen.indice();
+  let i, hallado = false;
   for (i = 0; i < idx.length; i++) {
     if (idx[i].id === perfil.id) {
       idx[i].mote = perfil.mote; idx[i].avatar = perfil.avatar;
@@ -351,7 +355,7 @@ CB.almacen.guardarPerfil = function (perfil) {
 
 CB.almacen.borrarPerfil = function (id) {
   CB.almacen.borrar(CB.almacen.claveDePerfil(id));
-  var idx = CB.almacen.indice().filter(function (e) { return e.id !== id; });
+  const idx = CB.almacen.indice().filter(function (e) { return e.id !== id; });
   CB.almacen.guardarIndice(idx);
   if (CB.almacen.ultimoPerfil() === id) {
     CB.almacen.fijarUltimoPerfil(idx.length ? idx[0].id : null);
@@ -361,10 +365,10 @@ CB.almacen.borrarPerfil = function (id) {
 /* Poda */
 CB.almacen.podar = function (perfil, opciones) {
   opciones = opciones || {};
-  var aula = CB.almacen.ajustesDispositivo().modoAula;
-  var t = aula ? CB.almacen.TOPES.aula : CB.almacen.TOPES.domestico;
-  var factor = opciones.agresiva ? 0.5 : 1;
-  var k, d;
+  const aula = CB.almacen.ajustesDispositivo().modoAula;
+  const t = aula ? CB.almacen.TOPES.aula : CB.almacen.TOPES.domestico;
+  const factor = opciones.agresiva ? 0.5 : 1;
+  let k, d;
 
   if (perfil.respuestas && perfil.respuestas.length > t.respuestas * factor) {
     perfil.respuestas = perfil.respuestas.slice(-Math.floor(t.respuestas * factor));
@@ -377,7 +381,7 @@ CB.almacen.podar = function (perfil, opciones) {
       perfil.diario.diasJugados = perfil.diario.diasJugados.slice(-120);
     }
     if (perfil.diario.tiempoPantallaPorDia) {
-      var dias = Object.keys(perfil.diario.tiempoPantallaPorDia).sort();
+      const dias = Object.keys(perfil.diario.tiempoPantallaPorDia).sort();
       while (dias.length > 120) delete perfil.diario.tiempoPantallaPorDia[dias.shift()];
     }
   }
@@ -398,7 +402,7 @@ CB.almacen.podar = function (perfil, opciones) {
     }
   }
   if (perfil.items) {
-    var claves = Object.keys(perfil.items);
+    const claves = Object.keys(perfil.items);
     while (claves.length > 400) delete perfil.items[claves.shift()];
   }
   return perfil;
@@ -423,7 +427,8 @@ CB.almacen.validarImportado = function (crudo, motesValidos) {
     return { ok: false, motivo: 'version' };
   }
 
-  var limpio = {}, i, c;
+  const limpio = {};
+  let i, c;
   for (i = 0; i < CB.almacen.CAMPOS_PERMITIDOS.length; i++) {
     c = CB.almacen.CAMPOS_PERMITIDOS[i];
     if (crudo[c] !== undefined) limpio[c] = crudo[c];
@@ -454,7 +459,8 @@ CB.almacen.avisarSinDisco = function () { CB.almacen.sinDisco = true; };
 
 /* Tamaño total ocupado, para el aviso del panel del adulto. */
 CB.almacen.bytesUsados = function () {
-  var s = ls(), total = 0, i, k;
+  const s = ls();
+  let total = 0, i, k;
   if (!s) return 0;
   for (i = 0; i < s.length; i++) {
     k = s.key(i);

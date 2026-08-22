@@ -95,7 +95,7 @@ CB.datos.OBJETOS = [
 /* Se completan artículo y verbos en tiempo de definición: así el objeto que
    recibe el generador ya lleva todos los campos que declara PLAN §14.1. */
 (function () {
-  var i, o, v;
+  let i, o, v;
   for (i = 0; i < CB.datos.OBJETOS.length; i++) {
     o = CB.datos.OBJETOS[i];
     o.articulo    = (o.g === 'f') ? 'la'  : 'el';

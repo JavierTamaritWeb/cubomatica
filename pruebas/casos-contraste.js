@@ -1,11 +1,11 @@
 /* casos-contraste.js — Ratios WCAG par a par sobre las variables CSS calculadas */
 
 CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   /* Hasta 1.7.0 solo admitía seis dígitos, y eso bastaba mientras el CSS lo escribiera una persona. */
   function hex(v) {
-    var s = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    const s = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
     if (/^#[0-9A-Fa-f]{6}$/.test(s)) return s;
     if (/^#[0-9A-Fa-f]{3}$/.test(s)) {
       return '#' + s.charAt(1) + s.charAt(1) + s.charAt(2) + s.charAt(2) +
@@ -14,14 +14,14 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
     return null;
   }
   function lum(h) {
-    var r = parseInt(h.substr(1, 2), 16) / 255;
-    var g = parseInt(h.substr(3, 2), 16) / 255;
-    var b = parseInt(h.substr(5, 2), 16) / 255;
+    const r = parseInt(h.substr(1, 2), 16) / 255;
+    const g = parseInt(h.substr(3, 2), 16) / 255;
+    const b = parseInt(h.substr(5, 2), 16) / 255;
     function c(x) { return (x <= 0.03928) ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }
     return 0.2126 * c(r) + 0.7152 * c(g) + 0.0722 * c(b);
   }
   function ratio(a, b) {
-    var la = lum(a), lb = lum(b);
+    const la = lum(a), lb = lum(b);
     return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
   }
 
@@ -45,17 +45,19 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
     ['--bg-texto-oscuro',  '--texto-claro',          4.5, 'la cifra en la cinta de cada moneda y cada billete']
   ];
 
-  var malos = 0, saltados = [], i;
+  let malos = 0;
+  const saltados = [];
+  let i;
   for (i = 0; i < CB.pruebas.PARES.length; i++) {
-    var p = CB.pruebas.PARES[i];
-    var a = hex(p[0]), b = hex(p[1]);
+    const p = CB.pruebas.PARES[i];
+    const a = hex(p[0]), b = hex(p[1]);
     if (!a || !b) {
       saltados.push(a ? p[1] : p[0]);
       CB.pruebas.saltar(p[3], 'variable no resuelta: ' + (a ? p[1] : p[0]));
       continue;
     }
-    var r = ratio(a, b);
-    var ok = r >= p[2] - 0.005;
+    const r = ratio(a, b);
+    const ok = r >= p[2] - 0.005;
     if (!ok) malos++;
     t.ok(ok, p[3] + ' (' + p[0] + ' / ' + p[1] + ') ≥ ' + p[2] + ':1',
          r.toFixed(2) + ':1');
@@ -73,12 +75,12 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   /* Ningún texto se dibuja jamás sobre una textura (§10.1): el contraste de un
      texto sobre ruido pseudoaleatorio no es un par de colores y no se puede
      verificar. */
-  var conTextura = [], sinRegla = [], sinMedir = [];
-  var sospechosas = ['.enunciado', '.enunciado--operacion', '.texto--menor', '.panel-bloque',
+  const conTextura = [], sinRegla = [], sinMedir = [];
+  const sospechosas = ['.enunciado', '.enunciado--operacion', '.texto--menor', '.panel-bloque',
                      '.btn-bloque', '.mensaje-resultado', '.veta', '.cromo'];
 
   sospechosas.forEach(function (sel) {
-    var hay = t.claseEnHoja(sel);
+    const hay = t.claseEnHoja(sel);
     if (hay === null) sinMedir.push(sel);
     else if (!hay) sinRegla.push(sel);
   });
@@ -92,14 +94,14 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   /* Y DESPUÉS se miden. La que no esté montada en la maqueta se monta: medir
      solo las que había a mano dejaba fuera a las demás sin decirlo. */
   sospechosas.forEach(function (sel) {
-    var el = document.querySelector(sel), prestado = null;
+    let el = document.querySelector(sel), prestado = null;
     if (!el) {
       prestado = document.createElement('div');
       prestado.className = sel.slice(1);
       document.body.appendChild(prestado);
       el = prestado;
     }
-    var bg = getComputedStyle(el).backgroundImage;
+    const bg = getComputedStyle(el).backgroundImage;
     if (bg && bg !== 'none' && bg.indexOf('url(') !== -1) conTextura.push(sel);
     if (prestado) document.body.removeChild(prestado);
   });
@@ -107,70 +109,71 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
     'ninguna clase con texto hereda una textura de fondo', conTextura.join(', '));
 
   /* Los dos grupos de color no se mezclan */
-  var decoConTexto = 0;
+  let decoConTexto = 0;
   ['--deco-piedra', '--deco-tierra', '--deco-hierba'].forEach(function (v) {
     if (!hex(v)) decoConTexto++;
   });
   t.igual(decoConTexto, 0, 'los colores de decoración están declarados como colores planos');
 
   /* Tamaños mínimos: ningún texto del niño por debajo de 20 px */
-  var raiz = getComputedStyle(document.documentElement);
-  var min = parseInt(raiz.getPropertyValue('--tam-texto-min'), 10);
+  const raiz = getComputedStyle(document.documentElement);
+  const min = parseInt(raiz.getPropertyValue('--tam-texto-min'), 10);
   t.ok(min >= 20, 'el suelo de tamaño de texto es de al menos 20 px', min + ' px');
-  var numOpcion = parseInt(raiz.getPropertyValue('--tam-numero-opcion'), 10);
+  const numOpcion = parseInt(raiz.getPropertyValue('--tam-numero-opcion'), 10);
   t.ok(numOpcion >= 44,
     'los dígitos en tipografía pixel van a 44 px o más (6/8/9 y 1/7 se confunden por debajo)',
     numOpcion + ' px');
 
-  var sondaLado = document.createElement('div');
+  const sondaLado = document.createElement('div');
   sondaLado.style.position = 'absolute';
   sondaLado.style.width = 'var(--lado-respuesta)';
   document.body.appendChild(sondaLado);
-  var lado = parseFloat(getComputedStyle(sondaLado).width);
+  const lado = parseFloat(getComputedStyle(sondaLado).width);
   document.body.removeChild(sondaLado);
   t.ok(lado >= 64, 'el botón de respuesta nunca baja de 64 px', lado + ' px');
   /* --e3 es un calc(): getPropertyValue devuelve la expresión sin resolver.
      Hay que renderizarla para leer el valor real. */
-  var sonda = document.createElement('div');
+  const sonda = document.createElement('div');
   sonda.style.position = 'absolute';
   sonda.style.width = 'var(--e3)';
   document.body.appendChild(sonda);
-  var e3 = parseFloat(getComputedStyle(sonda).width);
+  const e3 = parseFloat(getComputedStyle(sonda).width);
   document.body.removeChild(sonda);
   t.ok(e3 >= 16, 'la separación entre botones es de al menos 16 px', e3 + ' px');
 });
 
 /* E63 · El par del botón BLOQUEADO, medido sobre el botón de verdad */
 CB.pruebas.suite('Contraste: el teclado bloqueado también se lee', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   function rgbAHex(s) {
-    var m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(s || '');
+    const m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(s || '');
     if (!m) return null;
-    function dos(n) { var h = Number(n).toString(16); return h.length === 1 ? '0' + h : h; }
+    function dos(n) { const h = Number(n).toString(16); return h.length === 1 ? '0' + h : h; }
     return '#' + dos(m[1]) + dos(m[2]) + dos(m[3]);
   }
   function lum(h) {
-    var r = parseInt(h.substr(1, 2), 16) / 255, g = parseInt(h.substr(3, 2), 16) / 255,
+    const r = parseInt(h.substr(1, 2), 16) / 255, g = parseInt(h.substr(3, 2), 16) / 255,
         b = parseInt(h.substr(5, 2), 16) / 255;
     function c(x) { return (x <= 0.03928) ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }
     return 0.2126 * c(r) + 0.7152 * c(g) + 0.0722 * c(b);
   }
   function ratio(a, b) {
-    var la = lum(a), lb = lum(b);
+    const la = lum(a), lb = lum(b);
     return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
   }
 
-  var caja = document.getElementById('item-respuesta');
+  const caja = document.getElementById('item-respuesta');
   if (!t.ok(!!caja, 'E63 · hay contenedor de respuesta en la maqueta')) return;
 
   /* Se monta el teclado REAL con un bloqueo largo, para pillarlo apagado. */
   CB.componentes.tecladoBloques({ respuesta: 7 }, function () {}, { bloqueoMs: 30000 });
-  var teclas = caja.querySelectorAll('.btn-bloque');
+  const teclas = caja.querySelectorAll('.btn-bloque');
   if (!t.ok(teclas.length >= 12, 'E63 · el teclado monta sus doce teclas',
       String(teclas.length))) return;
 
-  var apagadas = [], i, cs;
+  const apagadas = [];
+  let i, cs;
   for (i = 0; i < teclas.length; i++) {
     if (teclas[i].disabled || teclas[i].getAttribute('aria-disabled') === 'true') {
       apagadas.push(teclas[i]);
@@ -182,10 +185,10 @@ CB.pruebas.suite('Contraste: el teclado bloqueado también se lee', function () 
   t.ok(apagadas.length >= 12, 'E63 · las doce teclas están deshabilitadas durante el bloqueo',
     apagadas.length + ' de ' + teclas.length);
 
-  var pares = [], fondos = {};
+  const pares = [], fondos = {};
   for (i = 0; i < apagadas.length; i++) {
     cs = getComputedStyle(apagadas[i]);
-    var f = rgbAHex(cs.backgroundColor), c = rgbAHex(cs.color);
+    const f = rgbAHex(cs.backgroundColor), c = rgbAHex(cs.color);
     if (!f || !c) continue;
     fondos[f] = (fondos[f] || 0) + 1;
     pares.push({ tecla: apagadas[i].getAttribute('data-tecla') || apagadas[i].textContent,
@@ -198,19 +201,19 @@ CB.pruebas.suite('Contraste: el teclado bloqueado también se lee', function () 
     'E63 · las doce teclas bloqueadas comparten fondo: ninguna finge estar viva',
     JSON.stringify(fondos));
 
-  var flojas = pares.filter(function (p) { return p.r < 4.5; })
+  const flojas = pares.filter(function (p) { return p.r < 4.5; })
     .map(function (p) { return p.tecla + ' ' + p.c + ' sobre ' + p.f + ' = ' + p.r.toFixed(2); });
   t.igual(flojas.length, 0,
     'E63 · y sus cifras se leen: 4,5:1 o más', flojas.slice(0, 4).join(' · '));
 
   /* Y EN ALTO CONTRASTE, que reescribe --btn-texto a blanco sin tocar la piedra:
      sin su propia línea, el bloqueado quedaría a 3,36:1. */
-  var raiz = document.documentElement, tenia = raiz.classList.contains('alto-contraste');
+  const raiz = document.documentElement, tenia = raiz.classList.contains('alto-contraste');
   raiz.classList.add('alto-contraste');
-  var peorAC = 99;
+  let peorAC = 99;
   for (i = 0; i < apagadas.length; i++) {
     cs = getComputedStyle(apagadas[i]);
-    var fa = rgbAHex(cs.backgroundColor), ca = rgbAHex(cs.color);
+    const fa = rgbAHex(cs.backgroundColor), ca = rgbAHex(cs.color);
     if (fa && ca) peorAC = Math.min(peorAC, ratio(fa, ca));
   }
   if (!tenia) raiz.classList.remove('alto-contraste');

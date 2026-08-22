@@ -6,7 +6,7 @@ CB.mapaDestrezas = CB.mapaDestrezas || {};
 CB.mapaDestrezas.verTodo = false;
 
 CB.mapaDestrezas.mundoActual = function (perfil) {
-  var i, m, ultimo = CB.MUNDOS[0];
+  let i, m, ultimo = CB.MUNDOS[0];
   for (i = 0; i < CB.MUNDOS.length; i++) {
     m = CB.MUNDOS[i];
     if (perfil.mundos[m.id] && perfil.mundos[m.id].desbloqueado) ultimo = m;
@@ -15,40 +15,40 @@ CB.mapaDestrezas.mundoActual = function (perfil) {
 };
 
 CB.mapaDestrezas.pintar = function () {
-  var perfil = CB.perfil;
+  const perfil = CB.perfil;
   if (!perfil) return;
-  var hoy = CB.util.hoyISO();
-  var cont = document.getElementById('rejilla-vetas');
+  const hoy = CB.util.hoyISO();
+  const cont = document.getElementById('rejilla-vetas');
   if (!cont) return;
   CB.ui.vaciar(cont);
 
-  var mundo = CB.mapaDestrezas.mundoActual(perfil);
-  var ids = CB.mapaDestrezas.verTodo ? CB.catalogo.ids() : mundo.niveles;
-  var frontera = CB.grafo.frontera(perfil);
+  const mundo = CB.mapaDestrezas.mundoActual(perfil);
+  const ids = CB.mapaDestrezas.verTodo ? CB.catalogo.ids() : mundo.niveles;
+  const frontera = CB.grafo.frontera(perfil);
 
-  var pista = document.getElementById('cantera-pista');
+  const pista = document.getElementById('cantera-pista');
   if (pista) {
     pista.textContent = CB.mapaDestrezas.verTodo
       ? 'Toda la cantera'
       : 'Lo siguiente que puedes cavar — ' + mundo.nombre;
   }
 
-  var conteo = { bloqueado: 0, nuevo: 0, aprendiendo: 0, afianzada: 0, dominada: 0, oxidada: 0 };
+  const conteo = { bloqueado: 0, nuevo: 0, aprendiendo: 0, afianzada: 0, dominada: 0, oxidada: 0 };
 
   ids.forEach(function (id) {
-    var nivel = CB.catalogo.get(id);
+    const nivel = CB.catalogo.get(id);
     if (!nivel) return;
-    var bloqueado = CB.grafo.estado(id, perfil) === 'bloqueado';
-    var d = perfil.destrezas[nivel.destreza];
-    var estadoNivel = perfil.niveles[id];
+    const bloqueado = CB.grafo.estado(id, perfil) === 'bloqueado';
+    const d = perfil.destrezas[nivel.destreza];
+    const estadoNivel = perfil.niveles[id];
 
-    var estado;
+    let estado;
     if (bloqueado) estado = 'bloqueado';
     else if (!estadoNivel || !estadoNivel.n) estado = 'nuevo';
     else estado = CB.memoria.clasificar(d, hoy, false);
     conteo[estado] = (conteo[estado] || 0) + 1;
 
-    var veta = CB.ui.crear('div', 'veta');
+    const veta = CB.ui.crear('div', 'veta');
     veta.setAttribute('data-estado', estado);
     veta.setAttribute('role', 'img');
     /* Nunca solo color: icono + nombre + estado en texto (§10.4). */
@@ -60,18 +60,18 @@ CB.mapaDestrezas.pintar = function () {
     if (frontera.indexOf(id) !== -1) veta.classList.add('veta--frontera');
     if (estado === 'oxidada') veta.classList.add('veta--musgo');
     if (nivel.ampliacion) {
-      var dist = CB.ui.crear('span', 'distintivo', 'ampliación');
+      const dist = CB.ui.crear('span', 'distintivo', 'ampliación');
       veta.appendChild(dist);
     }
     cont.appendChild(veta);
   });
 
-  var ley = document.getElementById('leyenda-vetas');
+  const ley = document.getElementById('leyenda-vetas');
   if (ley) {
     CB.ui.vaciar(ley);
     ['dominada', 'afianzada', 'aprendiendo', 'oxidada', 'nuevo', 'bloqueado'].forEach(function (k) {
       if (!conteo[k]) return;
-      var s = CB.ui.crear('span', null,
+      const s = CB.ui.crear('span', null,
         CB.memoria.ICONO[k] + ' ' + conteo[k] + ' ' + CB.memoria.ETIQUETA[k] + '   ');
       ley.appendChild(s);
     });
@@ -81,7 +81,7 @@ CB.mapaDestrezas.pintar = function () {
     }
   }
 
-  var btn = document.getElementById('btn-toda-cantera');
+  const btn = document.getElementById('btn-toda-cantera');
   if (btn) {
     btn.textContent = CB.mapaDestrezas.verTodo ? 'Ver solo mi mundo' : 'Ver toda la cantera';
     btn.onclick = function () {
@@ -93,16 +93,16 @@ CB.mapaDestrezas.pintar = function () {
 
 /* El mapa de mundos */
 CB.mapaDestrezas.pintarMundos = function () {
-  var perfil = CB.perfil;
+  const perfil = CB.perfil;
   if (!perfil) return;
-  var cont = document.getElementById('rejilla-mundos');
+  const cont = document.getElementById('rejilla-mundos');
   if (!cont) return;
   CB.ui.vaciar(cont);
 
-  var saludo = document.getElementById('mapa-saludo');
+  const saludo = document.getElementById('mapa-saludo');
   if (saludo) {
     /* CB.partida sigue usando vencidosHoy para elegir qué servir: son dos preguntas distintas y solo una se le enseña al niño. */
-    var conMusgo = CB.memoria.conMusgo(perfil, CB.util.hoyISO());
+    const conMusgo = CB.memoria.conMusgo(perfil, CB.util.hoyISO());
     saludo.textContent = conMusgo.length
       ? ('Hay ' + conMusgo.length + (conMusgo.length === 1 ? ' veta' : ' vetas') +
          ' con musgo esperándote.')
@@ -112,12 +112,12 @@ CB.mapaDestrezas.pintarMundos = function () {
   CB.partida.desbloquearMundos();
 
   CB.MUNDOS.forEach(function (m) {
-    var estado = perfil.mundos[m.id] || { desbloqueado: false };
-    var prog = CB.catalogo.progresoMundo(m.id, perfil);
-    var tarjeta = CB.ui.crear('div', 'tarjeta-mundo');
+    const estado = perfil.mundos[m.id] || { desbloqueado: false };
+    const prog = CB.catalogo.progresoMundo(m.id, perfil);
+    const tarjeta = CB.ui.crear('div', 'tarjeta-mundo');
     tarjeta.setAttribute('data-bloqueado', estado.desbloqueado ? 'no' : 'si');
 
-    var cinta = CB.ui.crear('div', 'tarjeta-mundo__cinta');
+    const cinta = CB.ui.crear('div', 'tarjeta-mundo__cinta');
     cinta.setAttribute('data-bioma', m.bioma);
     tarjeta.appendChild(cinta);
 
@@ -126,11 +126,11 @@ CB.mapaDestrezas.pintarMundos = function () {
     /* M4 lleva el distintivo INICIACIÓN con nota tocable que explica en lenguaje
        llano por qué la multiplicación es iniciación (§6.5). */
     if (m.distintivo) {
-      var d = CB.ui.crear('button', 'distintivo', m.distintivo);
+      const d = CB.ui.crear('button', 'distintivo', m.distintivo);
       d.type = 'button';
       d.addEventListener('click', function () {
         CB.a11y.anunciar(CB.LEGAL.MULTIPLICACION);
-        var nota = document.getElementById('nota-iniciacion');
+        let nota = document.getElementById('nota-iniciacion');
         if (!nota) {
           nota = CB.ui.crear('p', 'texto texto--menor');
           nota.id = 'nota-iniciacion';

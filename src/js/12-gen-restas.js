@@ -6,7 +6,7 @@ CB.gen.restas = {};
 
 /* Cuenta los préstamos reales de a − b. */
 CB.gen.restas.prestamos = function (a, b) {
-  var n = 0, deuda = 0, x = a, y = b, dA, dB;
+  let n = 0, deuda = 0, x = a, y = b, dA, dB;
   while (y > 0 || deuda > 0) {
     dA = x % 10; dB = y % 10;
     if (dA - deuda < dB) { n++; deuda = 1; } else { deuda = 0; }
@@ -18,7 +18,7 @@ CB.gen.restas.prestamos = function (a, b) {
 
 /* ¿Hay un 0 en el minuendo en una columna que exige préstamo? */
 CB.gen.restas.ceroEnColumnaDePrestamo = function (a, b) {
-  var deuda = 0, x = a, y = b, dA, dB;
+  let deuda = 0, x = a, y = b, dA, dB;
   while (y > 0 || deuda > 0) {
     dA = x % 10; dB = y % 10;
     if (deuda === 1 && dA === 0) return true;     // hay que pedir A TRAVÉS del 0
@@ -34,7 +34,7 @@ CB.gen.restas.ceroEnColumnaDePrestamo = function (a, b) {
  * @param patron por columna desde las unidades: true = esa columna pide prestado
  */
 CB.gen.restas.construir = function (rng, patron, cifrasR, cifrasB, techo) {
-  var k = 0, s, a;
+  let k = 0, s, a;
   while (k < 40) {
     k++;
     s = CB.gen.sumas.construir(rng, patron, cifrasR, cifrasB);
@@ -63,21 +63,21 @@ function itemResta(t) {
 
 /* R1 Restas hasta 10 */
 CB.gen.restas.R1 = function (rng, D) {
-  var a = CB.util.ent(rng, (D === 1) ? 2 : 5, 10);
-  var b = CB.util.ent(rng, 0, a);
+  const a = CB.util.ent(rng, (D === 1) ? 2 : 5, 10);
+  const b = CB.util.ent(rng, 0, a);
   return itemResta({ a: a, b: b, r: a - b });
 };
 
 /* R2 Restas hasta 20 sin llevar */
 CB.gen.restas.R2 = function (rng, D) {
-  var a = CB.util.ent(rng, 10, 20);
-  var b = CB.util.ent(rng, 0, a % 10);          // sin préstamo por construcción
+  const a = CB.util.ent(rng, 10, 20);
+  const b = CB.util.ent(rng, 0, a % 10);          // sin préstamo por construcción
   return itemResta({ a: a, b: b, r: a - b });
 };
 
 /* R3 Restar 10 */
 CB.gen.restas.R3 = function (rng, D) {
-  var a = CB.util.ent(rng, 11, (D === 1) ? 49 : 99);
+  const a = CB.util.ent(rng, 11, (D === 1) ? 49 : 99);
   return itemResta({ a: a, b: 10, r: a - 10 });
 };
 
@@ -93,9 +93,9 @@ CB.gen.restas.R5 = function (rng, D) {
 
 /* R6 Complementos a 10 y a 100 */
 CB.gen.restas.R6 = function (rng, D) {
-  var base = (D === 1 || rng() < 0.5) ? 10 : 100;
-  var b = (base === 10) ? CB.util.ent(rng, 1, 9) : CB.util.ent(rng, 1, 9) * 10;
-  var it = itemResta({ a: base, b: b, r: base - b });
+  const base = (D === 1 || rng() < 0.5) ? 10 : 100;
+  const b = (base === 10) ? CB.util.ent(rng, 1, 9) : CB.util.ent(rng, 1, 9) * 10;
+  const it = itemResta({ a: base, b: b, r: base - b });
   it.consigna = '¿Cuánto le falta a ' + b + ' para llegar a ' + base + '?';
   it.expr = 'comp' + base + '_' + b;
   return it;
@@ -113,9 +113,9 @@ CB.gen.restas.R8 = function (rng, D) {
 
 /* R9 Restar decenas completas */
 CB.gen.restas.R9 = function (rng, D) {
-  var a = CB.util.ent(rng, 3, (D === 1) ? 20 : 59) * 10;
-  var b = CB.util.ent(rng, 1, Math.min(9, a / 10)) * 10;
-  var it = itemResta({ a: a, b: b, r: a - b });
+  const a = CB.util.ent(rng, 3, (D === 1) ? 20 : 59) * 10;
+  const b = CB.util.ent(rng, 1, Math.min(9, a / 10)) * 10;
+  const it = itemResta({ a: a, b: b, r: a - b });
   it.formato = 'opciones4';
   return it;
 };
@@ -144,7 +144,7 @@ CB.gen.restas.R13 = function (rng, D) {
 CB.gen.restas.R14 = function (rng, D) {
   /* Único nivel del juego que puede tener dos préstamos y cero intermedio. Solo
      se sirve con ajustes.restasDobleLlevada activado por el adulto (§6.7). */
-  var k = 0, s, a;
+  let k = 0, s, a;
   while (k < 40) {
     k++;
     s = CB.gen.sumas.construir(rng, [true, true, false], 3, 3);

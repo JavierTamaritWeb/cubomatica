@@ -1,23 +1,23 @@
 /* casos-a11y.js — lo que EN 301 549 obliga y ninguna otra suite miraba */
 
 CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
-  var ENFOCABLE = 'a[href], button:not([disabled]), input:not([disabled]), ' +
+  const ENFOCABLE = 'a[href], button:not([disabled]), input:not([disabled]), ' +
                   'select:not([disabled]), textarea:not([disabled]), ' +
                   '[tabindex]:not([tabindex="-1"])';
 
   /* 1. Saltarse los bloques repetidos (WCAG 2.4.1) */
-  var enPartida = document.getElementById('p-partida');
+  const enPartida = document.getElementById('p-partida');
   if (enPartida) {
-    var orden = [].slice.call(enPartida.querySelectorAll(ENFOCABLE));
-    var barra = enPartida.querySelector('.barra-herramientas');
+    const orden = [].slice.call(enPartida.querySelectorAll(ENFOCABLE));
+    const barra = enPartida.querySelector('.barra-herramientas');
 
     t.ok(!!barra, 'la partida tiene barra de herramientas que ordenar');
-    var primeroDeBarra = orden.findIndex
+    const primeroDeBarra = orden.findIndex
       ? orden.findIndex(function (el) { return barra && barra.contains(el); })
       : -1;
-    var hayFueraDespues = primeroDeBarra >= 0 && orden.slice(primeroDeBarra)
+    const hayFueraDespues = primeroDeBarra >= 0 && orden.slice(primeroDeBarra)
       .some(function (el) { return !barra.contains(el); });
     t.ok(!hayFueraDespues,
       'en la partida, la barra de herramientas es lo ÚLTIMO del orden de tabulación',
@@ -25,23 +25,23 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
   }
 
   /* 2. Cero tabindex positivo */
-  var positivos = [].slice.call(document.querySelectorAll('[tabindex]'))
+  const positivos = [].slice.call(document.querySelectorAll('[tabindex]'))
     .filter(function (el) { return parseInt(el.getAttribute('tabindex'), 10) > 0; });
   t.ok(positivos.length === 0, 'ningún elemento lleva un tabindex positivo',
     positivos.length + ' encontrados');
 
   /* 3. El Tab no se va a una pantalla que no se ve */
-  var previa = CB.pantallas.actual;
-  var fugas = [];
+  const previa = CB.pantallas.actual;
+  const fugas = [];
   CB.pantallas.IDS.forEach(function (id) {
     if (id === 'p-error') return;
     try { CB.pantallas.ir(id); } catch (e) { return; }
-    var seccion = document.getElementById(id);
+    const seccion = document.getElementById(id);
     if (!seccion) return;
     /* Solo se miran las OTRAS pantallas del juego. */
     CB.pantallas.IDS.forEach(function (otro) {
       if (otro === id) return;
-      var s2 = document.getElementById(otro);
+      const s2 = document.getElementById(otro);
       if (!s2) return;
       [].slice.call(s2.querySelectorAll(ENFOCABLE)).forEach(function (el) {
         if (el.closest('[hidden]')) return;        // correctamente fuera del orden
@@ -54,20 +54,20 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
     fugas.slice(0, 5).join(' · '));
 
   /* 4. Las dieciocho son regiones con nombre */
-  var sinNombre = [], sinMain = [];
+  const sinNombre = [], sinMain = [];
   CB.pantallas.IDS.forEach(function (id) {
     if (id === 'p-error') return;
     try { CB.pantallas.ir(id); } catch (e) { return; }
-    var s = document.getElementById(id);
+    const s = document.getElementById(id);
     if (!s) return;
-    var idEtiqueta = s.getAttribute('aria-labelledby');
-    var etiqueta = idEtiqueta ? document.getElementById(idEtiqueta) : null;
+    const idEtiqueta = s.getAttribute('aria-labelledby');
+    const etiqueta = idEtiqueta ? document.getElementById(idEtiqueta) : null;
     if (!etiqueta || !etiqueta.textContent.trim()) sinNombre.push(id);
     if (s.getAttribute('role') !== 'main') sinMain.push(id);
     /* Y solo UNA lleva role=main: dieciocho «main» a la vez no es incorrecto,
        es que deja de significar nada. */
-    var otras = CB.pantallas.IDS.filter(function (o) {
-      var e = document.getElementById(o);
+    const otras = CB.pantallas.IDS.filter(function (o) {
+      const e = document.getElementById(o);
       return o !== id && e && e.getAttribute('role') === 'main';
     });
     if (otras.length) sinMain.push(id + ' comparte main con ' + otras.join(','));
@@ -82,8 +82,8 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
   if (previa) { try { CB.pantallas.ir(previa); } catch (e) { } }
 
   /* 5. DOS regiones vivas, con papeles distintos */
-  var educada = document.getElementById('region-viva');
-  var urgente = document.getElementById('region-urgente');
+  const educada = document.getElementById('region-viva');
+  const urgente = document.getElementById('region-urgente');
   t.ok(!!educada && educada.getAttribute('aria-live') === 'polite',
     'la región educada existe y es aria-live="polite"');
   t.ok(!!urgente && urgente.getAttribute('aria-live') === 'assertive' &&
@@ -104,8 +104,8 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
   }
 
   /* 6. Todo interruptor dice si está pulsado */
-  var conmutadores = [].slice.call(document.querySelectorAll('[data-accion="sonido"]'));
-  var sinEstado = conmutadores.filter(function (b) {
+  const conmutadores = [].slice.call(document.querySelectorAll('[data-accion="sonido"]'));
+  const sinEstado = conmutadores.filter(function (b) {
     return b.getAttribute('aria-pressed') === null;
   });
   t.ok(conmutadores.length > 0 && sinEstado.length === 0,
@@ -119,8 +119,8 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
     'existe el punto donde se aplican los ajustes de accesibilidad del perfil');
 
   /* 8. Y la región urgente la USA alguien */
-  var fuenteReloj = String(CB.ui.reloj.gritar || '');
-  var fuenteFallo = String(CB.partida.trasFallo || '');
+  const fuenteReloj = String(CB.ui.reloj.gritar || '');
+  const fuenteFallo = String(CB.partida.trasFallo || '');
   t.ok(fuenteReloj.indexOf('urgente') !== -1,
     'el aviso de los diez segundos va por la región urgente, no por la educada');
   t.ok(fuenteFallo.indexOf('urgente') !== -1,

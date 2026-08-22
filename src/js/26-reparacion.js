@@ -40,12 +40,12 @@ CB.reparacion.explicadorDe = function (destreza) {
 /* Los 6 explicadores. Cada uno devuelve EXACTAMENTE 3 pasos */
 
 CB.reparacion.columnasCDU = function (item) {
-  var a = item.operandos ? item.operandos[0] : 63;
-  var b = item.operandos ? item.operandos[1] : 28;
-  var esResta = (item.operacion === '-');
+  const a = item.operandos ? item.operandos[0] : 63;
+  const b = item.operandos ? item.operandos[1] : 28;
+  const esResta = (item.operacion === '-');
 
   if (esResta) {
-    var uA = a % 10, uB = b % 10;
+    const uA = a % 10, uB = b % 10;
     return {
       titulo: 'Las columnas',
       dibujo: 'columnas',
@@ -70,8 +70,8 @@ CB.reparacion.columnasCDU = function (item) {
 };
 
 CB.reparacion.rectaNumerica = function (item) {
-  var r = item.respuesta;
-  var d = Math.floor(r / 10) * 10;
+  const r = item.respuesta;
+  const d = Math.floor(r / 10) * 10;
   return {
     titulo: 'La recta de los números',
     dibujo: 'recta',
@@ -85,8 +85,8 @@ CB.reparacion.rectaNumerica = function (item) {
 };
 
 CB.reparacion.matrizFilasColumnas = function (item) {
-  var f = item.operandos ? item.operandos[0] : 3;
-  var c = item.operandos ? item.operandos[1] : 4;
+  const f = item.operandos ? item.operandos[0] : 3;
+  const c = item.operandos ? item.operandos[1] : 4;
   return {
     titulo: 'Filas y columnas',
     dibujo: 'matriz',
@@ -100,8 +100,8 @@ CB.reparacion.matrizFilasColumnas = function (item) {
 };
 
 CB.reparacion.barrasComparativas = function (item) {
-  var a = item.datos ? item.datos[0] : 12;
-  var b = item.datos ? item.datos[1] : 5;
+  const a = item.datos ? item.datos[0] : 12;
+  const b = item.datos ? item.datos[1] : 5;
   return {
     titulo: 'Las dos barras',
     dibujo: 'barras',
@@ -128,7 +128,7 @@ CB.reparacion.monedas = function (item) {
 };
 
 CB.reparacion.tabla100 = function (item) {
-  var r = item.respuesta;
+  const r = item.respuesta;
   return {
     titulo: 'La tabla del 100',
     dibujo: 'tabla100',
@@ -147,20 +147,20 @@ CB.reparacion.tabla100 = function (item) {
  *          codigoError, notaAdulto}
  */
 CB.reparacion.tarjeta = function (item, hipotesis) {
-  var nombre = CB.reparacion.explicadorDe(item.destreza);
-  var base = CB.reparacion[nombre](item);
+  const nombre = CB.reparacion.explicadorDe(item.destreza);
+  const base = CB.reparacion[nombre](item);
 
   /* Suelo temporal adicional: 4 s como mínimo, y 900 ms por palabra. Un niño de
      2.º lee ≈1 palabra por segundo; menos que esto es no dejarle leer. */
-  var palabras = 0, i;
+  let palabras = 0, i;
   for (i = 0; i < base.pasos.length; i++) {
     palabras += CB.util.palabras(base.pasos[i].texto).length;
   }
-  var suelo = Math.max(CB.reparacion.SUELO_MS_MIN,
+  const suelo = Math.max(CB.reparacion.SUELO_MS_MIN,
                        palabras * CB.reparacion.MS_POR_PALABRA);
 
-  var cod = (hipotesis && hipotesis.length) ? hipotesis[0] : null;
-  var rec = (cod && CB.datos.RECOMENDACIONES[cod]) ? CB.datos.RECOMENDACIONES[cod] : null;
+  const cod = (hipotesis && hipotesis.length) ? hipotesis[0] : null;
+  const rec = (cod && CB.datos.RECOMENDACIONES[cod]) ? CB.datos.RECOMENDACIONES[cod] : null;
 
   return {
     explicador: nombre,

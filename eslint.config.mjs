@@ -1,5 +1,34 @@
 import { defineConfig } from 'eslint/config';
 
+const reglasCubomatica = {
+  rules: {
+    'var-solo-para-cb-global': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: {
+          local: 'Usa let o const; var solo se permite para el CB global de los scripts clásicos.'
+        }
+      },
+      create(context) {
+        return {
+          VariableDeclaration(node) {
+            if (node.kind !== 'var') return;
+            const declaracion = node.declarations[0];
+            const inicio = declaracion && declaracion.init;
+            const cbGlobal = node.parent.type === 'Program' && node.declarations.length === 1 &&
+              declaracion.id.type === 'Identifier' && declaracion.id.name === 'CB' &&
+              inicio && inicio.type === 'LogicalExpression' && inicio.operator === '||' &&
+              inicio.left.type === 'Identifier' && inicio.left.name === 'CB' &&
+              inicio.right.type === 'ObjectExpression' && inicio.right.properties.length === 0;
+            if (!cbGlobal) context.report({ node, messageId: 'local' });
+          }
+        };
+      }
+    }
+  }
+};
+
 const navegador = {
   Audio: 'readonly',
   AudioContext: 'readonly',
@@ -121,6 +150,16 @@ const reglasComunes = {
 export default defineConfig([
   {
     ignores: ['.claude/**', 'dist/**', 'node_modules/**']
+  },
+  {
+    files: ['**/*.js', '**/*.mjs'],
+    plugins: {
+      cubomatica: reglasCubomatica
+    },
+    rules: {
+      'cubomatica/var-solo-para-cb-global': 'error',
+      'prefer-const': 'error'
+    }
   },
   {
     files: ['src/**/*.js', 'pruebas/**/*.js'],

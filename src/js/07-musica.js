@@ -101,9 +101,9 @@ CB.musica.volumenBase = function () {
 };
 
 CB.musica.volumenDe = function (canal) {
-  var p = CB.musica.PISTAS[canal.clave];
+  const p = CB.musica.PISTAS[canal.clave];
   if (!p || !canal.el) return 0;
-  var v = CB.musica.volumenBase() * p.gan * canal.f;
+  let v = CB.musica.volumenBase() * p.gan * canal.f;
   if (CB.musica.agachada) v *= CB.musica.AGACHADO;
   v *= CB.musica.factorBucle(canal.el, p);
   return CB.util.clamp(v, 0, 1);
@@ -113,11 +113,11 @@ CB.musica.volumenDe = function (canal) {
    todo el cuerpo de la pista y baja a 0 en los últimos S_BUCLE segundos y en
    los primeros S_BUCLE segundos tras dar la vuelta. */
 CB.musica.factorBucle = function (el, p) {
-  var fin = p.sale;
+  let fin = p.sale;
   if (el.duration && isFinite(el.duration) && fin > el.duration) fin = el.duration;
-  var f = 1;
-  var restante = fin - el.currentTime;
-  var desde = el.currentTime - p.entra;
+  let f = 1;
+  const restante = fin - el.currentTime;
+  const desde = el.currentTime - p.entra;
   if (restante < CB.musica.S_BUCLE) {
     f = Math.min(f, Math.max(0, restante / CB.musica.S_BUCLE));
   }
@@ -142,7 +142,7 @@ CB.musica.detectarVolumen = function (el) {
 };
 
 CB.musica.aplicarVolumenes = function () {
-  var i, c, debe;
+  let i, c, debe;
   for (i = 0; i < 2; i++) {
     c = CB.musica.canales[i];
     if (!c.el) continue;
@@ -176,9 +176,9 @@ CB.musica.pararReloj = function () {
 };
 
 CB.musica.tick = function () {
-  var paso = CB.musica.MS_TICK / CB.musica.MS_FUNDIDO;
-  var vivo = false;
-  var i, c, p, fin;
+  const paso = CB.musica.MS_TICK / CB.musica.MS_FUNDIDO;
+  let vivo = false;
+  let i, c, p, fin;
 
   for (i = 0; i < 2; i++) {
     c = CB.musica.canales[i];
@@ -219,7 +219,7 @@ CB.musica.soltar = function (c) {
      de bucle: ahí el factor de volumen va por debajo de 1 y la pista entraría
      baja, que se oye como un fallo de sonido. */
   if (c.clave && CB.musica.PISTAS[c.clave]) {
-    var p = CB.musica.PISTAS[c.clave];
+    const p = CB.musica.PISTAS[c.clave];
     try {
       CB.musica.posiciones[c.clave] = CB.util.clamp(c.el.currentTime || 0,
         p.entra, Math.max(p.entra, p.sale - CB.musica.S_BUCLE));
@@ -234,9 +234,9 @@ CB.musica.soltar = function (c) {
 
 /* Elementos */
 CB.musica.crearElemento = function (clave) {
-  var p = CB.musica.PISTAS[clave];
+  const p = CB.musica.PISTAS[clave];
   if (!p) return null;
-  var el;
+  let el;
   try {
     el = document.createElement('audio');
   } catch (e) { return null; }
@@ -265,7 +265,7 @@ CB.musica.poner = function (clave) {
   if (CB.musica.pistaActual === clave) return true;
   CB.musica.pistaActual = clave;
 
-  var i;
+  let i;
   /* Todo lo que suene se va apagando */
   for (i = 0; i < 2; i++) CB.musica.canales[i].objetivo = 0;
 
@@ -275,7 +275,7 @@ CB.musica.poner = function (clave) {
   }
 
   /* El canal libre (o el que ya estaba más apagado) recibe la nueva pista */
-  var destino = CB.musica.canales[1 - CB.musica._activo];
+  const destino = CB.musica.canales[1 - CB.musica._activo];
   if (destino.el) CB.musica.soltar(destino);
   CB.musica._activo = 1 - CB.musica._activo;
 
@@ -285,7 +285,7 @@ CB.musica.poner = function (clave) {
   destino.f = 0;
   destino.objetivo = 1;
   /* Se retoma donde se dejó, si es que se había oído antes en esta sesión. */
-  var desde = (CB.musica.posiciones[clave] != null)
+  const desde = (CB.musica.posiciones[clave] != null)
     ? CB.musica.posiciones[clave] : CB.musica.PISTAS[clave].entra;
   try { destino.el.currentTime = desde; } catch (e) { }
 
@@ -299,7 +299,7 @@ CB.musica.poner = function (clave) {
    la pista y se reintenta en el primer toque. */
 CB.musica.reproducir = function (c) {
   if (!c.el) return;
-  var pr;
+  let pr;
   try { pr = c.el.play(); } catch (e) { CB.musica.pendiente = c.clave; return; }
   if (pr && pr.then) {
     pr.then(function () {
@@ -312,7 +312,7 @@ CB.musica.reproducir = function (c) {
 
 CB.musica.reintentar = function () {
   if (!CB.musica.pendiente) return;
-  var i, c;
+  let i, c;
   for (i = 0; i < 2; i++) {
     c = CB.musica.canales[i];
     if (c.el && c.objetivo > 0 && c.el.paused) CB.musica.reproducir(c);
@@ -337,7 +337,7 @@ CB.musica.fijarNivel = function (i) {
     CB.musica.parar();
   } else if (!CB.musica.canales[CB.musica._activo].el && CB.musica.pistaActual) {
     /* Se había parado del todo: hay que volver a montar la pista de la pantalla */
-    var clave = CB.musica.pistaActual;
+    const clave = CB.musica.pistaActual;
     CB.musica.pistaActual = null;
     CB.musica.poner(clave);
   }
@@ -346,7 +346,7 @@ CB.musica.fijarNivel = function (i) {
 };
 
 CB.musica.nivelActual = function () {
-  var i;
+  let i;
   for (i = 0; i < CB.musica.NIVELES.length; i++) {
     if (CB.musica.NIVELES[i].valor === CB.musica.base) return i;
   }
@@ -354,19 +354,19 @@ CB.musica.nivelActual = function () {
 };
 
 CB.musica.parar = function () {
-  var i;
+  let i;
   for (i = 0; i < 2; i++) CB.musica.soltar(CB.musica.canales[i]);
   CB.musica.pararReloj();
 };
 
 /* Resolución pantalla → pista */
 CB.musica.claveDePantalla = function (idPantalla) {
-  var v = CB.musica.PANTALLAS[idPantalla];
+  const v = CB.musica.PANTALLAS[idPantalla];
   if (v !== '@mundo') return (v === undefined) ? null : v;
 
   /* No hay error, no hay silencio, no hay nada que mirar: suena música, solo que siempre la misma. */
-  var mundo = (CB.partida && CB.partida.estado) ? CB.partida.estado.mundo : null;
-  var clave = (mundo && mundo.bioma) ? CB.musica.POR_BIOMA[mundo.bioma] : null;
+  const mundo = (CB.partida && CB.partida.estado) ? CB.partida.estado.mundo : null;
+  const clave = (mundo && mundo.bioma) ? CB.musica.POR_BIOMA[mundo.bioma] : null;
   return clave || 'mundoPradera';
 };
 
@@ -375,8 +375,8 @@ CB.musica.iniciar = function () {
   if (CB.musica.iniciada) return;
   CB.musica.iniciada = true;
 
-  var ap = CB.almacen.ajustesDispositivo();
-  var n = (ap.nivelMusica == null) ? CB.musica.NIVEL_DEFECTO : ap.nivelMusica;
+  const ap = CB.almacen.ajustesDispositivo();
+  const n = (ap.nivelMusica == null) ? CB.musica.NIVEL_DEFECTO : ap.nivelMusica;
   CB.musica.base = CB.musica.NIVELES[CB.util.clamp(n, 0, 3)].valor;
 
   CB.bus.escuchar('pantalla', function (id) {
@@ -385,14 +385,14 @@ CB.musica.iniciar = function () {
 
   /* Cualquier gesto sirve para desbloquear el autoarranque, no solo el botón
      JUGAR: un niño puede empezar tocando «Ajustes». */
-  var desbloquear = function () { CB.musica.reintentar(); };
+  const desbloquear = function () { CB.musica.reintentar(); };
   document.addEventListener('pointerdown', desbloquear, true);
   document.addEventListener('keydown', desbloquear, true);
 
   /* Pestaña oculta: la música se para. Un juego que sigue sonando en una
      pestaña que nadie mira es un juego que el adulto cierra de golpe. */
   document.addEventListener('visibilitychange', function () {
-    var i, c;
+    let i, c;
     for (i = 0; i < 2; i++) {
       c = CB.musica.canales[i];
       if (!c.el) continue;

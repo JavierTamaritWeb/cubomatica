@@ -81,10 +81,10 @@ CB.CURRICULO = {
 
   /* Calendario escolar por defecto, para deducir el trimestre sin */
   trimestrePorFecha: function (isoFecha) {
-    var partes = String(isoFecha).split('-');
-    var mes = parseInt(partes[1], 10), dia = parseInt(partes[2], 10);
+    const partes = String(isoFecha).split('-');
+    const mes = parseInt(partes[1], 10), dia = parseInt(partes[2], 10);
     if (!isFinite(mes) || !isFinite(dia)) return 1;
-    var md = mes * 100 + dia;
+    const md = mes * 100 + dia;
     if (md >= 908 && md <= 1222) return 1;               //  8 sep – 22 dic
     if (md >= 108 && md <= 331) return 2;                //  8 ene – Semana Santa (aprox.)
     if (md >= 401 && md <= 622) return 3;                //  tras Semana Santa – 22 jun

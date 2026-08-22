@@ -1,17 +1,17 @@
 /* casos-generadores.js — Los 12 invariantes de generación (PLAN §19.1) */
 
 CB.pruebas.suite('Generadores: los 12 invariantes', function () {
-  var t = CB.pruebas;
-  var porNivel = CB.pruebas.modoLargo ? 10000 : 1000;
-  var ids = CB.catalogo.ids();
+  const t = CB.pruebas;
+  const porNivel = CB.pruebas.modoLargo ? 10000 : 1000;
+  const ids = CB.catalogo.ids();
 
-  var fallos = {
+  const fallos = {
     inv1: 0, inv2: 0, inv3: 0, inv4: 0, inv5: 0, inv5bis: 0, inv5ter: 0,
     inv6: 0, inv11: 0, inv12: 0, nulos: 0
   };
-  var ejemplos = {};
-  var FORMATOS = ['opciones4', 'teclado', 'signo', 'balanza', 'ordenar', 'monedas', 'datos'];
-  var totalItems = 0, conOpciones = 0;
+  const ejemplos = {};
+  const FORMATOS = ['opciones4', 'teclado', 'signo', 'balanza', 'ordenar', 'monedas', 'datos'];
+  let totalItems = 0, conOpciones = 0;
 
   function anota(clave, texto) {
     fallos[clave]++;
@@ -19,12 +19,13 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
   }
 
   ids.forEach(function (id) {
-    var nivel = CB.catalogo.get(id);
-    var unicos = {}, nUnicos = 0, s;
+    const nivel = CB.catalogo.get(id);
+    const unicos = {};
+    let nUnicos = 0, s;
 
     for (s = 0; s < porNivel; s++) {
-      var rng = CB.util.mulberry32(CB.util.hash32(id + '#' + s));
-      var item = nivel.generar(rng, (s % 3) + 1, {
+      const rng = CB.util.mulberry32(CB.util.hash32(id + '#' + s));
+      const item = nivel.generar(rng, (s % 3) + 1, {
         ajustes: { tablas69: nivel.flagAdulto === 'tablas69',
                    centimos: nivel.flagAdulto === 'centimos',
                    restasDobleLlevada: nivel.flagAdulto === 'restasDobleLlevada' },
@@ -36,7 +37,7 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
       if (!unicos[item.expr]) { unicos[item.expr] = 1; nUnicos++; }
 
       /* La exención es ESTRECHA a propósito: solo la respuesta, solo si es una cadena, y solo en un ítem que pide dibujar piezas. */
-      var esPieza = (item.piezasDinero === true && typeof item.respuesta === 'string');
+      const esPieza = (item.piezasDinero === true && typeof item.respuesta === 'string');
 
       /* INV 1 — operandos y respuesta en [0, 999] */
       if (!esPieza && !(item.respuesta >= 0 && item.respuesta <= 999)) {
@@ -54,7 +55,7 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
 
       /* INV 3 — sin decimales, sin negativos, sin fracción */
       if (!esPieza && item.respuesta !== Math.round(item.respuesta)) anota('inv3', id + ' decimal');
-      var txt = (item.consigna || '') + (item.enunciado || '');
+      const txt = (item.consigna || '') + (item.enunciado || '');
       if (/[,.]\d|\d\/\d|½|¼/.test(txt)) anota('inv3', id + ' notación prohibida: ' + txt);
 
       /* INV 4 — factores de multiplicación */
@@ -69,17 +70,17 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
       /* LOS FIJOS NO PASAN POR EL MOTOR, igual que en `40-partida.js`: cuando el generador ya ha elegido las tres, llamar al motor de distractores medía una lista que la partida no llega a montar nunca. */
       if (item.formato === 'opciones4' && item.distractoresFijos) {
         conOpciones++;
-        var fijas = item.distractoresFijos.slice(0, 3);
+        const fijas = item.distractoresFijos.slice(0, 3);
         if (fijas.length !== 3) anota('inv5', id + ' ' + fijas.length + ' distractores fijos');
         if (new Set(fijas.concat([item.respuesta])).size !== 4) {
           anota('inv5', id + ' opciones fijas repetidas');
         }
         if (fijas.indexOf(item.respuesta) !== -1) anota('inv5ter', id + ' (fijas)');
       } else if (item.formato === 'opciones4' && !item.distractoresTexto) {
-        var d = CB.distractores.para(item, CB.util.mulberry32(s + 7));
+        const d = CB.distractores.para(item, CB.util.mulberry32(s + 7));
         if (d.formato === 'opciones4') {
           conOpciones++;
-          var vals = d.opciones.map(function (o) { return o.valor; });
+          const vals = d.opciones.map(function (o) { return o.valor; });
           if (d.opciones.length !== 4) anota('inv5', id + ' ' + d.opciones.length + ' opciones');
           if (new Set(vals).size !== 4) anota('inv5', id + ' opciones repetidas');
           if (vals.filter(function (v) { return v === item.respuesta; }).length !== 1) {
@@ -88,7 +89,7 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
           d.opciones.forEach(function (o) {
             if (o.valor < 0) anota('inv5', id + ' distractor negativo');
             if (!o.correcta && o.valor === item.respuesta) anota('inv5ter', id);
-            var lim = o.intencionado ? 1999 : 999;
+            const lim = o.intencionado ? 1999 : 999;
             if (o.valor > lim) anota('inv1', id + ' distractor ' + o.valor + ' > ' + lim);
             if (!o.correcta && !o.intencionado && o.codigoError &&
                 Math.abs(o.valor - item.respuesta) > Math.max(20, 0.5 * item.respuesta)) {
@@ -134,12 +135,12 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
 
   /* Contraejemplo explícito de F2: con el flag apagado, ningún ítem puede ser un
      hecho propio de las tablas del 3, 4, 6, 7, 8 o 9. */
-  var prohibidos = 0, m, s2;
-  var nivelesM = ['M1','M2','M3','M4','M5','M6','M7','M8'];   // los nucleares
+  let prohibidos = 0, m, s2;
+  const nivelesM = ['M1','M2','M3','M4','M5','M6','M7','M8'];   // los nucleares
   for (m = 0; m < nivelesM.length; m++) {
-    var nv = CB.catalogo.get(nivelesM[m]);
+    const nv = CB.catalogo.get(nivelesM[m]);
     for (s2 = 0; s2 < 2000; s2++) {
-      var it2 = nv.generar(CB.util.mulberry32(s2 * 31 + m), (s2 % 3) + 1,
+      const it2 = nv.generar(CB.util.mulberry32(s2 * 31 + m), (s2 % 3) + 1,
                            { ajustes: { tablas69: false } });
       if (it2 && !CB.gen.multiplicacion.factoresValidos(it2, false)) prohibidos++;
     }

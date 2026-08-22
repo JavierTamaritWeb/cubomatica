@@ -1,6 +1,6 @@
 {
   "name": "cubomatica",
-  "version": "1.23.3",
+  "version": "1.23.4",
   "private": true,
   "description": "Cubomatica — juego de matematicas para 2.º de Primaria (RD 157/2022)",
   "license": "MIT",
@@ -12,7 +12,10 @@
     "build": "gulp build",
     "dev": "gulp dev",
     "auditar": "node pruebas/auditar.mjs",
-    "entregar": "npm run estilo && npm run build && npm run auditar",
+    "dependencias": "node herramientas/comprobar-dependencias.mjs",
+    "dependencias:limpiar": "node herramientas/limpiar-dependencias.mjs",
+    "postinstall": "npm run dependencias:limpiar",
+    "entregar": "npm run dependencias && npm run estilo && npm run build && npm run auditar",
     "cruzar": "node herramientas/cruzar-clases.mjs",
     "estilo": "npm run estilo:js && npm run estilo:scss",
     "estilo:js": "eslint . --max-warnings 0",
@@ -35,7 +38,7 @@
     "html-minifier-terser": "^7.2.0",
     "postcss": "^8.5.6",
     "postcss-scss": "^4.0.9",
-    "sass-embedded": "^1.93.0",
+    "sass-embedded": "^1.103.1",
     "stylelint": "^17.14.1",
     "stylelint-config-standard-scss": "^17.0.0",
     "terser": "^5.44.0"

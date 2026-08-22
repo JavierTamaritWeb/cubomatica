@@ -27,7 +27,8 @@ function itemMult(a, b, formato) {
     visual: { tipo: 'matriz', filas: a, columnas: b },
     sumaReiterada: (function () {
       if (a === 0 || a > 6) return null;         // no se dibujan 10 sumandos
-      var t = [], i;
+      const t = [];
+      let i;
       for (i = 0; i < a; i++) t.push(b);
       return t.join(' + ');
     })(),
@@ -37,26 +38,26 @@ function itemMult(a, b, formato) {
 
 /* M1 Veces: la suma reiterada */
 CB.gen.multiplicacion.M1 = function (rng, D) {
-  var a = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
-  var b = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
-  var it = itemMult(a, b, 'opciones4');
+  const a = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
+  const b = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
+  const it = itemMult(a, b, 'opciones4');
   it.consigna = '¿Cuánto es ' + b + ' repetido ' + a + ' veces?';
   return it;
 };
 
 /* M2 Filas y columnas */
 CB.gen.multiplicacion.M2 = function (rng, D) {
-  var a = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
-  var b = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
-  var it = itemMult(a, b, 'opciones4');
+  const a = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
+  const b = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
+  const it = itemMult(a, b, 'opciones4');
   it.consigna = 'Hay ' + a + ' filas de ' + b + ' bloques. ¿Cuántos bloques hay?';
   return it;
 };
 
 /* M3 Del dibujo a «a × b» */
 CB.gen.multiplicacion.M3 = function (rng, D) {
-  var a = CB.util.ent(rng, 2, 5), b = CB.util.ent(rng, 2, 5);
-  var it = itemMult(a, b, 'teclado');
+  const a = CB.util.ent(rng, 2, 5), b = CB.util.ent(rng, 2, 5);
+  const it = itemMult(a, b, 'teclado');
   it.consigna = a + ' × ' + b;
   return it;
 };
@@ -65,10 +66,10 @@ CB.gen.multiplicacion.M3 = function (rng, D) {
 /* Las tablas del 3 y del 4 (M9, M10) son niveles de ampliación y solo se sirven con el flag del adulto activado, de modo que con el flag apagado el factor fijo siempre pertenece a {2, 5, 10}. */
 function tabla(fijo) {
   return function (rng, D, ctx) {
-    var pool = CB.gen.multiplicacion.MULTIPLICADORES.slice();
+    let pool = CB.gen.multiplicacion.MULTIPLICADORES.slice();
     if (D === 1) pool = pool.filter(function (v) { return v <= 5; });
     if (D === 3) pool = pool.filter(function (v) { return v >= 5; });
-    var b = CB.util.elegir(rng, pool);
+    let b = CB.util.elegir(rng, pool);
     if (b == null) b = 2;
     return itemMult(fijo, b, 'teclado');
   };
@@ -80,27 +81,27 @@ CB.gen.multiplicacion.M6 = tabla(5);
 
 /* M7 Mezcla del 2, del 5 y del 10 */
 CB.gen.multiplicacion.M7 = function (rng, D) {
-  var f = CB.util.elegir(rng, CB.gen.multiplicacion.TABLAS_NUCLEARES);
-  var b = CB.util.elegir(rng, CB.gen.multiplicacion.MULTIPLICADORES);
+  const f = CB.util.elegir(rng, CB.gen.multiplicacion.TABLAS_NUCLEARES);
+  const b = CB.util.elegir(rng, CB.gen.multiplicacion.MULTIPLICADORES);
   return itemMult(f, b == null ? 2 : b, 'teclado');
 };
 
 /* M8 Dobles y mitades */
 CB.gen.multiplicacion.M8 = function (rng, D) {
-  var pideMitad = rng() < 0.5;
-  var b = CB.util.ent(rng, 1, (D === 1) ? 5 : 10);
+  const pideMitad = rng() < 0.5;
+  const b = CB.util.ent(rng, 1, (D === 1) ? 5 : 10);
   if (pideMitad) {
     /* La mitad se expresa SOLO con palabras, nunca con notación de fracción
        (invariante 3): un niño de 2.º que ve «½» no lee «medio», no lee nada. */
-    var doble = b * 2;
-    var it = itemMult(2, b, 'opciones4');
+    const doble = b * 2;
+    const it = itemMult(2, b, 'opciones4');
     it.consigna = '¿Cuál es la mitad de ' + doble + '?';
     it.respuesta = b;
     it.expr = 'mitad' + doble;
     it.visual = { tipo: 'matriz', filas: 2, columnas: b };
     return it;
   }
-  var it2 = itemMult(2, b, 'opciones4');
+  const it2 = itemMult(2, b, 'opciones4');
   it2.consigna = '¿Cuál es el doble de ' + b + '?';
   it2.expr = 'doble' + b;
   return it2;
@@ -114,14 +115,14 @@ CB.gen.multiplicacion.M10 = tabla(4);
    Contraejemplo explícito de F2: con el flag apagado, ningún ítem puede ser un
    hecho propio de las tablas del 3, 4, 6, 7, 8 o 9. */
 CB.gen.multiplicacion.factoresValidos = function (item, tablas69) {
-  var o = item.operandos || [];
+  const o = item.operandos || [];
   if (o.length !== 2) return true;              // «la mitad de» no es un producto
 
-  var a = o[0], b = o[1];
+  const a = o[0], b = o[1];
   if (!(a >= 0 && a <= 10) || !(b >= 0 && b <= 10)) return false;   // nunca > 10
   if (tablas69) return true;
 
-  var N = CB.gen.multiplicacion.TABLAS_NUCLEARES;
-  var M = CB.gen.multiplicacion.MAX_CONCEPTO;
+  const N = CB.gen.multiplicacion.TABLAS_NUCLEARES;
+  const M = CB.gen.multiplicacion.MAX_CONCEPTO;
   return (N.indexOf(a) !== -1) || (N.indexOf(b) !== -1) || (a <= M && b <= M);
 };

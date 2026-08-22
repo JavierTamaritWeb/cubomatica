@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 1.23.3**
+**Versión 1.23.4**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.
@@ -190,6 +190,12 @@ En JavaScript se documentan contratos, invariantes y decisiones no evidentes.
 El historial de errores y las explicaciones extensas pertenecen a
 `CHANGELOG.md` y `docs/decisiones.md`, no a los ficheros ejecutables.
 
+Las variables locales usan `const` por defecto y `let` únicamente cuando hay
+reasignación. La excepción deliberada es `var CB = CB || {};` al comienzo de
+los scripts clásicos: esos 45 ficheros se concatenan en un único bundle y
+comparten ese espacio de nombres global; repetir allí `let` o `const` produciría
+un error de redeclaración. ESLint impide introducir cualquier otro `var`.
+
 Desde 1.7.0 el proyecto tiene compilación. Hasta 1.6.0 no la tenía, y la razón de
 que ahora sí es concreta: SCSS con BEM, minificado, responsive y caché sin
 conexión no caben sin un paso intermedio. Lo que **no** ha cambiado es el destino:
@@ -212,7 +218,7 @@ La suite son **dos páginas**, y hay que mirar las dos:
   ponen rojas.
 
 Las dos necesitan `npm run build` antes; sin él lo dicen en vez de quedarse en
-blanco. Base actual: **854 comprobaciones, 0 fallos**.
+blanco. Base actual: **864 comprobaciones, 0 fallos**.
 
 Sírvelas con la caché desactivada. Una recarga normal de Chrome reutiliza tanto
 el bundle como los `casos-*.js`, y entonces el verde que sale mide el código de
@@ -224,7 +230,10 @@ recién descargado.
 
 **Nunca la ejecutes sola antes de entregar**: puede pasar en verde sobre un
 `dist/` construido hace tres días, que es el peor fallo posible porque es verde y
-es falso. `npm run entregar` construye primero.
+es falso. `npm run entregar` comprueba además que `node_modules` no contenga
+paquetes ajenos a `package-lock.json`, construye desde las fuentes y audita el
+resultado. `npm ci` ejecuta esa limpieza automáticamente; también puede lanzarse
+a mano con `npm run dependencias:limpiar`.
 
 ## Navegadores soportados
 

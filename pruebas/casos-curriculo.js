@@ -1,11 +1,11 @@
 /* casos-curriculo.js — Las 8 comprobaciones CU1-CU8 de PLAN §6.3 */
 
 CB.pruebas.suite('Currículo: CU1-CU8', function () {
-  var t = CB.pruebas;
-  var niveles = CB.catalogo.todos();
+  const t = CB.pruebas;
+  const niveles = CB.catalogo.todos();
 
   /* CU1 — el saber declarado EXISTE en la transcripción del RD */
-  var malSaber = niveles.filter(function (n) {
+  const malSaber = niveles.filter(function (n) {
     if (!CB.CURRICULO.saberes[n.curriculo.saber]) return true;
     if (n.curriculo.saberSecundario &&
         !CB.CURRICULO.saberes[n.curriculo.saberSecundario]) return true;
@@ -16,7 +16,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     malSaber.map(function (n) { return n.id + ':' + n.curriculo.saber; }).join(', '));
 
   /* CU2 — los criterios declarados EXISTEN */
-  var malCrit = [];
+  const malCrit = [];
   niveles.forEach(function (n) {
     n.curriculo.criterios.forEach(function (c) {
       if (!CB.CURRICULO.criterios[c]) malCrit.push(n.id + ':' + c);
@@ -27,7 +27,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     malCrit.join(', '));
 
   /* CU3 — compatibilidad tipo ↔ criterio */
-  var malTipo = niveles.filter(function (n) {
+  const malTipo = niveles.filter(function (n) {
     if (n.letra !== 'P') return false;
     return !n.curriculo.criterios.some(function (c) {
       return c.charAt(0) === '1' || c.charAt(0) === '2';
@@ -37,7 +37,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     'CU3a · todo nivel PROBLEMA_* declara ≥1 criterio de la CE1 o la CE2',
     malTipo.map(function (n) { return n.id; }).join(', '));
 
-  var soloSocio = niveles.filter(function (n) {
+  const soloSocio = niveles.filter(function (n) {
     return n.curriculo.criterios.length === 1 &&
            (n.curriculo.criterios[0].charAt(0) === '7' ||
             n.curriculo.criterios[0].charAt(0) === '8');
@@ -46,15 +46,15 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     'CU3b · ningún nivel declara la CE7 o la CE8 como criterio único: el juego NO evalúa la CE7',
     soloSocio.map(function (n) { return n.id; }).join(', '));
 
-  var saberesA = Object.keys(CB.CURRICULO.saberes).filter(function (k) {
+  const saberesA = Object.keys(CB.CURRICULO.saberes).filter(function (k) {
     return k.charAt(0) === 'A';
   });
-  var usados = {};
+  const usados = {};
   niveles.forEach(function (n) {
     usados[n.curriculo.saber] = 1;
     if (n.curriculo.saberSecundario) usados[n.curriculo.saberSecundario] = 1;
   });
-  var sinNivel = saberesA.filter(function (k) { return !usados[k]; });
+  const sinNivel = saberesA.filter(function (k) { return !usados[k]; });
   t.ok(sinNivel.length === 0,
     'CU4 · los ' + saberesA.length + ' saberes del bloque A tienen al menos un nivel',
     sinNivel.join(', '));
@@ -73,7 +73,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     'CU5 · ninguna ampliación es prerrequisito de un nivel nuclear');
 
   /* CU6 — los 92 apuntan a uno de los 13 slugs */
-  var malSlug = niveles.filter(function (n) {
+  const malSlug = niveles.filter(function (n) {
     return CB.adaptativo.SLUGS.indexOf(n.destreza) === -1;
   });
   t.ok(malSlug.length === 0,
@@ -81,15 +81,15 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     malSlug.map(function (n) { return n.id + ':' + n.destreza; }).join(', '));
 
   /* CU7 — la unión de los mundos es EXACTAMENTE los 92 ids */
-  var union = [], repes = [];
+  const union = [], repes = [];
   CB.MUNDOS.forEach(function (m) {
     m.niveles.forEach(function (id) {
       if (union.indexOf(id) !== -1) repes.push(id);
       union.push(id);
     });
   });
-  var huerfanos = CB.catalogo.ids().filter(function (id) { return union.indexOf(id) === -1; });
-  var fantasmas = union.filter(function (id) { return !CB.catalogo.get(id); });
+  const huerfanos = CB.catalogo.ids().filter(function (id) { return union.indexOf(id) === -1; });
+  const fantasmas = union.filter(function (id) { return !CB.catalogo.get(id); });
   t.igual(union.length, 92, 'CU7a · los mundos suman 92 niveles');
   t.ok(repes.length === 0, 'CU7b · ningún nivel aparece en dos mundos', repes.join(', '));
   t.ok(huerfanos.length === 0, 'CU7c · ningún nivel se queda fuera de los mundos',
@@ -98,8 +98,8 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
        fantasmas.join(', '));
 
   /* CU8 — CB.ERRORES y recomendaciones comparten el conjunto de claves */
-  var ce = Object.keys(CB.ERRORES).sort();
-  var cr = Object.keys(CB.datos.RECOMENDACIONES).sort();
+  const ce = Object.keys(CB.ERRORES).sort();
+  const cr = Object.keys(CB.datos.RECOMENDACIONES).sort();
   t.igual(ce.length, 24, 'CU8a · hay 24 códigos de error');
   t.igual(cr.length, 24, 'CU8b · hay 24 recomendaciones');
   t.ok(ce.join('|') === cr.join('|'),
@@ -107,29 +107,29 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     'solo en errores: ' + ce.filter(function (k) { return cr.indexOf(k) === -1; }).join(',') +
     ' | solo en recomendaciones: ' + cr.filter(function (k) { return ce.indexOf(k) === -1; }).join(','));
 
-  var vacias = cr.filter(function (k) {
-    var r = CB.datos.RECOMENDACIONES[k];
+  const vacias = cr.filter(function (k) {
+    const r = CB.datos.RECOMENDACIONES[k];
     return !r.frase || !r.frase.length || !r.actividad || !r.actividad.length;
   });
   t.ok(vacias.length === 0, 'CU8d · toda recomendación tiene frase llana y actividad',
        vacias.join(', '));
 
-  var conSimular = ce.filter(function (k) { return typeof CB.ERRORES[k].simular === 'function'; });
-  var sinDiag = ce.filter(function (k) { return CB.ERRORES[k].diagnostico === false; });
+  const conSimular = ce.filter(function (k) { return typeof CB.ERRORES[k].simular === 'function'; });
+  const sinDiag = ce.filter(function (k) { return CB.ERRORES[k].diagnostico === false; });
   t.igual(conSimular.length, 18, '18 códigos tienen simular()');
   t.igual(sinDiag.length, 6, 'los 6 restantes declaran diagnostico:false');
-  var incoherentes = ce.filter(function (k) {
+  const incoherentes = ce.filter(function (k) {
     return (typeof CB.ERRORES[k].simular === 'function') === (CB.ERRORES[k].diagnostico === false);
   });
   t.ok(incoherentes.length === 0,
     'simular() y diagnostico:false son mutuamente excluyentes', incoherentes.join(', '));
 
   /* Rangos y contenidos concretos de 2.º */
-  var techos = CB.CURRICULO.techoTrimestre;
+  const techos = CB.CURRICULO.techoTrimestre;
   t.ok(techos[1] === 199 && techos[2] === 599 && techos[3] === 999,
     'el techo por trimestre es 199 / 599 / 999 (§6.6)');
 
-  var fueraDeTecho = niveles.filter(function (n) {
+  const fueraDeTecho = niveles.filter(function (n) {
     return n.rango[1] > techos[n.trimestreSugerido];
   });
   t.ok(fueraDeTecho.length === 0,
@@ -139,9 +139,9 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     }).join(', '));
 
   /* La multiplicación: M1-M8 nucleares de T3, M9-M10 ampliación */
-  var mult = niveles.filter(function (n) { return n.letra === 'M'; });
+  const mult = niveles.filter(function (n) { return n.letra === 'M'; });
   t.igual(mult.length, 10, 'hay 10 niveles de multiplicación (no 18: §8.4)');
-  var nucleares = mult.filter(function (n) { return !n.ampliacion; });
+  const nucleares = mult.filter(function (n) { return !n.ampliacion; });
   t.igual(nucleares.length, 8, 'M1-M8 son iniciación NUCLEAR, no ampliación');
   t.ok(nucleares.every(function (n) { return n.trimestreSugerido === 3; }),
     'la iniciación a la multiplicación va en el 3.er trimestre');
@@ -156,12 +156,12 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     'las MONEDAS son exactamente 1 y 2 euros, como dice el saber A.5');
   t.ok(CB.gen.dinero.BILLETES.join(',') === '5,10,20,50,100',
     'los BILLETES son 5, 10, 20, 50 y 100, incluido el de 100 que está en el texto');
-  var e8 = CB.catalogo.get('E8');
+  const e8 = CB.catalogo.get('E8');
   t.ok(e8.ampliacion && e8.flagAdulto === 'centimos',
     'los céntimos son ampliación apagada por defecto (son saber de 2.º ciclo)');
 
   /* R14 con doble llevada, apagada */
-  var r14 = CB.catalogo.get('R14');
+  const r14 = CB.catalogo.get('R14');
   t.ok(r14.ampliacion && r14.flagAdulto === 'restasDobleLlevada',
     'R14 (doble llevada y cero intermedio) es ampliación apagada: es contenido de 3.º');
 
@@ -173,7 +173,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   });
 
   /* Reparto declarado */
-  var cuenta = {};
+  const cuenta = {};
   niveles.forEach(function (n) { cuenta[n.letra] = (cuenta[n.letra] || 0) + 1; });
   t.ok(cuenta.N === 16 && cuenta.S === 16 && cuenta.R === 14 && cuenta.M === 10 &&
        cuenta.P === 20 && cuenta.E === 8 && cuenta.V === 8,

@@ -6,7 +6,7 @@ CB.gen.sumas = {};
 
 /* Cuenta las llevadas reales de a + b. Compartida con casos-generadores.js. */
 CB.gen.sumas.llevadas = function (a, b) {
-  var n = 0, acarreo = 0, x = a, y = b, s;
+  let n = 0, acarreo = 0, x = a, y = b, s;
   while (x > 0 || y > 0) {
     s = (x % 10) + (y % 10) + acarreo;
     acarreo = (s >= 10) ? 1 : 0;
@@ -22,15 +22,16 @@ CB.gen.sumas.llevadas = function (a, b) {
  * @param cifrasA / cifrasB número de cifras de cada sumando
  */
 CB.gen.sumas.construir = function (rng, patron, cifrasA, cifrasB) {
-  var cols = Math.max(cifrasA, cifrasB, patron.length);
-  var digA = [], digB = [], acarreo = 0, i, dA, dB, suma, intentos;
+  const cols = Math.max(cifrasA, cifrasB, patron.length);
+  const digA = [], digB = [];
+  let acarreo = 0, i, dA, dB, suma, intentos;
 
   for (i = 0; i < cols; i++) {
-    var quiere = !!patron[i];
-    var maxA = (i < cifrasA) ? 9 : 0;
-    var maxB = (i < cifrasB) ? 9 : 0;
-    var minA = (i === cifrasA - 1 && cifrasA > 1) ? 1 : 0;
-    var minB = (i === cifrasB - 1 && cifrasB > 1) ? 1 : 0;
+    const quiere = !!patron[i];
+    const maxA = (i < cifrasA) ? 9 : 0;
+    const maxB = (i < cifrasB) ? 9 : 0;
+    const minA = (i === cifrasA - 1 && cifrasA > 1) ? 1 : 0;
+    const minB = (i === cifrasB - 1 && cifrasB > 1) ? 1 : 0;
 
     dA = 0; dB = 0; intentos = 0;
     do {
@@ -56,14 +57,14 @@ CB.gen.sumas.construir = function (rng, patron, cifrasA, cifrasB) {
     acarreo = (suma >= 10) ? 1 : 0;
   }
 
-  var a = 0, b = 0, p = 1;
+  let a = 0, b = 0, p = 1;
   for (i = 0; i < cols; i++) { a += digA[i] * p; b += digB[i] * p; p *= 10; }
   return { a: a, b: b, r: a + b };
 };
 
 /* Genera hasta que el resultado cabe en el techo del nivel. */
 CB.gen.sumas.intentar = function (rng, patron, cifrasA, cifrasB, techo, intentos) {
-  var k = 0, s;
+  let k = 0, s;
   intentos = intentos || 30;
   while (k < intentos) {
     k++;
@@ -88,23 +89,23 @@ function itemSuma(s, destreza) {
 
 /* S1 Sumas hasta 10, sin llevar */
 CB.gen.sumas.S1 = function (rng, D) {
-  var techo = (D === 1) ? 6 : 10;
-  var a = CB.util.ent(rng, 0, techo);
-  var b = CB.util.ent(rng, 0, techo - a);
+  const techo = (D === 1) ? 6 : 10;
+  const a = CB.util.ent(rng, 0, techo);
+  const b = CB.util.ent(rng, 0, techo - a);
   return itemSuma({ a: a, b: b, r: a + b });
 };
 
 /* S2 Sumas hasta 20 sin llevar */
 CB.gen.sumas.S2 = function (rng, D) {
-  var a = CB.util.ent(rng, 10, (D === 1) ? 14 : 19);
-  var b = CB.util.ent(rng, 0, 9 - (a % 10));
+  const a = CB.util.ent(rng, 10, (D === 1) ? 14 : 19);
+  const b = CB.util.ent(rng, 0, 9 - (a % 10));
   return itemSuma({ a: a, b: b, r: a + b });
 };
 
 /* S3 Dobles hasta 10 + 10 */
 CB.gen.sumas.S3 = function (rng, D) {
-  var a = CB.util.ent(rng, 1, (D === 1) ? 5 : 10);
-  var it = itemSuma({ a: a, b: a, r: a + a });
+  const a = CB.util.ent(rng, 1, (D === 1) ? 5 : 10);
+  const it = itemSuma({ a: a, b: a, r: a + a });
   it.formato = 'opciones4';
   it.consigna = '¿Cuánto es el doble de ' + a + '?';
   return it;
@@ -112,7 +113,7 @@ CB.gen.sumas.S3 = function (rng, D) {
 
 /* S4 Sumar 10 */
 CB.gen.sumas.S4 = function (rng, D) {
-  var a = CB.util.ent(rng, 1, (D === 1) ? 49 : 89);
+  const a = CB.util.ent(rng, 1, (D === 1) ? 49 : 89);
   return itemSuma({ a: a, b: 10, r: a + 10 });
 };
 
@@ -143,8 +144,8 @@ CB.gen.sumas.S9 = function (rng, D) {
 
 /* S10 Tres sumandos de una cifra */
 CB.gen.sumas.S10 = function (rng, D) {
-  var techo = (D === 1) ? 15 : 27;
-  var a, b, c, k = 0;
+  const techo = (D === 1) ? 15 : 27;
+  let a, b, c, k = 0;
   do {
     k++;
     a = CB.util.ent(rng, 1, 9); b = CB.util.ent(rng, 1, 9); c = CB.util.ent(rng, 1, 9);
@@ -171,10 +172,10 @@ CB.gen.sumas.S12 = function (rng, D) {
 
 /* S13 Sumar decenas completas */
 CB.gen.sumas.S13 = function (rng, D) {
-  var a = CB.util.ent(rng, 1, (D === 1) ? 20 : 49) * 10;
-  var b = CB.util.ent(rng, 1, 9) * 10;
+  let a = CB.util.ent(rng, 1, (D === 1) ? 20 : 49) * 10;
+  const b = CB.util.ent(rng, 1, 9) * 10;
   if (a + b > 599) a = 599 - b - ((599 - b) % 10);
-  var it = itemSuma({ a: a, b: b, r: a + b });
+  const it = itemSuma({ a: a, b: b, r: a + b });
   it.formato = 'opciones4';
   return it;
 };
@@ -191,10 +192,10 @@ CB.gen.sumas.S15 = function (rng, D) {
 
 /* S16 Tres sumandos con decenas */
 CB.gen.sumas.S16 = function (rng, D) {
-  var a = CB.util.ent(rng, 1, 9) * 10 + CB.util.ent(rng, 0, 9);
-  var b = CB.util.ent(rng, 1, 9) * 10;
-  var c = CB.util.ent(rng, 1, 9);
-  var r = a + b + c;
+  let a = CB.util.ent(rng, 1, 9) * 10 + CB.util.ent(rng, 0, 9);
+  let b = CB.util.ent(rng, 1, 9) * 10;
+  let c = CB.util.ent(rng, 1, 9);
+  let r = a + b + c;
   if (r > 999) { a = 100; b = 20; c = 3; r = 123; }
   return {
     formato: 'teclado', operacion: '+', operandos: [a, b, c],

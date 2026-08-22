@@ -12,6 +12,41 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.23.4] — 2026-08-23
+
+**Tercera cifra.** Reauditoría, correcciones defensivas y modernización de
+variables sin cambiar el formato del perfil guardado ni la API pública `CB.*`.
+
+### Cambiado
+
+- Las variables locales usan `const` por defecto y `let` cuando se reasignan.
+  Solo permanece `var CB = CB || {};` en la cabecera de los scripts clásicos,
+  donde evita la redeclaración del espacio global al concatenarlos.
+- ESLint incorpora una regla propia que rechaza cualquier otro `var` y
+  `prefer-const` impide conservar un `let` que nunca se reasigna.
+- Sass Embedded se actualiza a 1.103.1. La instalación comprueba además que
+  `node_modules` coincida con el bloqueo y elimina respaldos opcionales que npm
+  deja fuera del árbol activo.
+
+### Corregido
+
+- Los fallos al salir de una pantalla cancelan la transición y llegan al
+  capturador global; los errores de un oyente del bus se aíslan antes de
+  informarse para evitar bucles. E108 conserva ambos comportamientos.
+- El arnés resuelve la música contra `dist/audio/` y E109 exige una respuesta
+  HTTP 200 con tipo `audio/mpeg`, en vez de aceptar un elemento apuntando a 404.
+- El juego y las dos páginas de pruebas llevan favicon embebido, sin peticiones
+  fallidas a `favicon.ico`.
+- El anuncio de un bloque raro recibe ahora el cromo antes de construir el
+  mensaje. El hoisting de `var` ocultaba siempre el nombre recién obtenido; E69
+  ejecuta el flujo completo para impedir la regresión.
+
+### Pruebas
+
+- **864 comprobaciones, 0 fallos** en modalidad rápida y larga, contra los
+  bundles legible y minificado, sin excepciones, errores de consola ni
+  respuestas HTTP fallidas.
+
 ## [1.23.3] — 2026-08-23
 
 **Tercera cifra.** Refactorización y endurecimiento del JavaScript sin cambiar

@@ -26,10 +26,17 @@ CB.pantallas.ir = function (id, props) {
   if (CB.pantallas.IDS.indexOf(id) === -1) {
     throw new Error('Pantalla desconocida: ' + id);
   }
-  var i, el;
+  let i, el;
 
   if (CB.pantallas.actual && CB.pantallas.alSalir[CB.pantallas.actual]) {
-    try { CB.pantallas.alSalir[CB.pantallas.actual](); } catch (e) { }
+    try {
+      CB.pantallas.alSalir[CB.pantallas.actual]();
+    } catch (e) {
+      /* Sin la limpieza confirmada no se cambia de pantalla: hacerlo dejaría
+         relojes o temporizadores vivos detrás de una interfaz distinta. */
+      CB.util.reportarError(e, 'salida de ' + CB.pantallas.actual);
+      return false;
+    }
   }
 
   for (i = 0; i < CB.pantallas.IDS.length; i++) {
@@ -44,7 +51,7 @@ CB.pantallas.ir = function (id, props) {
   CB.pantallas.actual = id;
 
   if (CB.pantallas.alEntrar[id] && CB.pantallas._entrando !== id) {
-    var previo = CB.pantallas._entrando;
+    const previo = CB.pantallas._entrando;
     CB.pantallas._entrando = id;
     try {
       CB.pantallas.alEntrar[id](props || {});
@@ -58,9 +65,9 @@ CB.pantallas.ir = function (id, props) {
   /* El foco viaja al encabezado de la pantalla nueva: sin esto, un usuario de
      teclado o de lector de pantalla se queda en el botón que acaba de pulsar,
      que ya no existe. */
-  var seccion = document.getElementById(id);
+  const seccion = document.getElementById(id);
   if (seccion) {
-    var h = seccion.querySelector('h1');
+    const h = seccion.querySelector('h1');
     if (h) {
       h.setAttribute('tabindex', '-1');
 
@@ -89,9 +96,9 @@ CB.pantallas.SIN_VUELTA = ['p-partida', 'p-reparacion', 'p-descanso', 'p-jefe',
 
 /* Nunca deja al niño en un callejón sin salida. */
 CB.pantallas.atras = function () {
-  var destino = null;
+  let destino = null;
   while (CB.pantallas.pila.length) {
-    var cand = CB.pantallas.pila.pop();
+    const cand = CB.pantallas.pila.pop();
     if (CB.pantallas.SIN_VUELTA.indexOf(cand) !== -1) continue;
     if (cand === CB.pantallas.actual) continue;
     destino = cand;
@@ -118,13 +125,13 @@ CB.pantallas.fallo = function (e) {
   } catch (e2) { /* si ni siquiera se puede guardar, seguimos: lo importante
                      es no dejar al niño con la pantalla congelada */ }
 
-  var det = document.getElementById('error-detalle');
+  const det = document.getElementById('error-detalle');
   if (det) {
     det.textContent = (e && e.message) ? String(e.message).slice(0, 160) : '';
   }
-  var i;
+  let i;
   for (i = 0; i < CB.pantallas.IDS.length; i++) {
-    var el = document.getElementById(CB.pantallas.IDS[i]);
+    const el = document.getElementById(CB.pantallas.IDS[i]);
     if (el) el.hidden = (CB.pantallas.IDS[i] !== 'p-error');
   }
   CB.pantallas.actual = 'p-error';
@@ -136,9 +143,9 @@ CB.pantallas.fallo = function (e) {
 /* Delegación de eventos común a todas las pantallas */
 CB.pantallas.conectar = function () {
   document.addEventListener('click', function (ev) {
-    var t = ev.target;
+    let t = ev.target;
     /* Sube hasta 4 niveles: los botones llevan spans dentro */
-    var n = 0;
+    let n = 0;
     while (t && t !== document.body && n < 4) {
       if (t.hasAttribute && t.hasAttribute('data-ir')) {
         CB.pantallas.ir(t.getAttribute('data-ir'));
@@ -152,7 +159,7 @@ CB.pantallas.conectar = function () {
     }
   });
 
-  var volver = document.getElementById('btn-error-mapa');
+  const volver = document.getElementById('btn-error-mapa');
   if (volver) {
     volver.addEventListener('click', function () {
       CB.pantallas.ir(CB.perfil ? 'p-mapa' : 'p-portada');

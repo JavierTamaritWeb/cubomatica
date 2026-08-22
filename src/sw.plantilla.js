@@ -1,12 +1,12 @@
 /* sw.plantilla.js — el service worker. Gulp sustituye los tres __MARCADORES__. */
 
-var VERSION = '__VERSION__';
-var HUELLA  = '__HUELLA__';
-var ARMAZON = __PRECACHE__;
+const VERSION = '__VERSION__';
+const HUELLA  = '__HUELLA__';
+const ARMAZON = __PRECACHE__;
 
-var MAYOR = VERSION.split('.')[0];
-var CACHE_ARMAZON = 'cubomatica-armazon-' + VERSION + '-' + HUELLA;
-var CACHE_MUSICA  = 'cubomatica-musica-' + MAYOR;
+const MAYOR = VERSION.split('.')[0];
+const CACHE_ARMAZON = 'cubomatica-armazon-' + VERSION + '-' + HUELLA;
+const CACHE_MUSICA  = 'cubomatica-musica-' + MAYOR;
 
 /* install */
 self.addEventListener('install', function (e) {
@@ -34,7 +34,7 @@ self.addEventListener('activate', function (e) {
 
 /* fetch */
 self.addEventListener('fetch', function (e) {
-  var req = e.request;
+  const req = e.request;
   if (req.method !== 'GET') return;
   if (new URL(req.url).origin !== self.location.origin) return;
 

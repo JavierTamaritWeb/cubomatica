@@ -1,12 +1,12 @@
 /* sw.plantilla.js — el service worker. Gulp sustituye los tres __MARCADORES__. */
 
-var VERSION = '1.23.3';
-var HUELLA  = 'cbc98f7e';
-var ARMAZON = ["index.html","css/cubomatica.min.css","js/cubomatica.min.js","manifest.webmanifest","img/pieza-c1.webp","img/pieza-c5.webp","img/pieza-c10.webp","img/pieza-c20.webp","img/pieza-c50.webp","img/pieza-1.webp","img/pieza-2.webp","img/pieza-5.webp","img/pieza-10.webp","img/pieza-20.webp","img/pieza-50.webp","img/pieza-100.webp"];
+const VERSION = '1.23.4';
+const HUELLA  = '839c2b44';
+const ARMAZON = ["index.html","css/cubomatica.min.css","js/cubomatica.min.js","manifest.webmanifest","img/pieza-c1.webp","img/pieza-c5.webp","img/pieza-c10.webp","img/pieza-c20.webp","img/pieza-c50.webp","img/pieza-1.webp","img/pieza-2.webp","img/pieza-5.webp","img/pieza-10.webp","img/pieza-20.webp","img/pieza-50.webp","img/pieza-100.webp"];
 
-var MAYOR = VERSION.split('.')[0];
-var CACHE_ARMAZON = 'cubomatica-armazon-' + VERSION + '-' + HUELLA;
-var CACHE_MUSICA  = 'cubomatica-musica-' + MAYOR;
+const MAYOR = VERSION.split('.')[0];
+const CACHE_ARMAZON = 'cubomatica-armazon-' + VERSION + '-' + HUELLA;
+const CACHE_MUSICA  = 'cubomatica-musica-' + MAYOR;
 
 /* install */
 self.addEventListener('install', function (e) {
@@ -34,7 +34,7 @@ self.addEventListener('activate', function (e) {
 
 /* fetch */
 self.addEventListener('fetch', function (e) {
-  var req = e.request;
+  const req = e.request;
   if (req.method !== 'GET') return;
   if (new URL(req.url).origin !== self.location.origin) return;
 

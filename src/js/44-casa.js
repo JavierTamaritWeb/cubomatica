@@ -25,24 +25,24 @@ CB.casa.DESCRIPCION = {
 };
 
 CB.casa.pintar = function () {
-  var perfil = CB.perfil;
+  const perfil = CB.perfil;
   if (!perfil) return;
 
-  var resumen = document.getElementById('casa-resumen');
+  const resumen = document.getElementById('casa-resumen');
   if (resumen) {
     resumen.textContent = perfil.cromos.length + ' de ' +
       Object.keys(CB.casa.NOMBRES_CROMO).length + ' cromos · ' +
       Math.max(0, perfil.gemas) + ' gemas';
   }
 
-  var cont = document.getElementById('rejilla-cromos');
+  const cont = document.getElementById('rejilla-cromos');
   if (!cont) return;
   CB.ui.vaciar(cont);
 
   Object.keys(CB.casa.NOMBRES_CROMO).forEach(function (id) {
-    var tiene = perfil.cromos.indexOf(id) !== -1;
-    var c = CB.ui.crear('div', 'cromo' + (tiene ? '' : ' cromo--bloqueado'));
-    var icono = CB.ui.crear('div', 'criatura', tiene ? (CB.ui.CRIATURAS[id] || '◆') : '?');
+    const tiene = perfil.cromos.indexOf(id) !== -1;
+    const c = CB.ui.crear('div', 'cromo' + (tiene ? '' : ' cromo--bloqueado'));
+    const icono = CB.ui.crear('div', 'criatura', tiene ? (CB.ui.CRIATURAS[id] || '◆') : '?');
     icono.style.width = 'auto'; icono.style.height = '64px'; icono.style.fontSize = '40px';
     c.appendChild(icono);
     c.appendChild(CB.ui.crear('div', null, tiene ? CB.casa.NOMBRES_CROMO[id] : '???'));
@@ -58,25 +58,25 @@ CB.casa.pintar = function () {
 
 /* Diccionario de Bloques */
 CB.casa.pintarGlosario = function () {
-  var perfil = CB.perfil;
+  const perfil = CB.perfil;
   if (!perfil) return;
 
-  var resumen = document.getElementById('glosario-resumen');
+  const resumen = document.getElementById('glosario-resumen');
   if (resumen) {
     resumen.textContent = perfil.glosario.length + ' de ' +
       CB.datos.GLOSARIO.length + ' palabras descubiertas.';
   }
 
-  var cont = document.getElementById('lista-glosario');
+  const cont = document.getElementById('lista-glosario');
   if (!cont) return;
   CB.ui.vaciar(cont);
 
   CB.datos.GLOSARIO.forEach(function (g) {
-    var tiene = perfil.glosario.indexOf(g.t) !== -1;
-    var fila = CB.ui.crear('div', 'termino-glosario');
+    const tiene = perfil.glosario.indexOf(g.t) !== -1;
+    const fila = CB.ui.crear('div', 'termino-glosario');
     fila.setAttribute('data-bloqueado', tiene ? 'no' : 'si');
 
-    var titulo = CB.ui.crear('strong', null, tiene ? g.t : '· · ·');
+    const titulo = CB.ui.crear('strong', null, tiene ? g.t : '· · ·');
     fila.appendChild(titulo);
 
     /* «minuendo» y «sustraendo» son terminología que el RD no sitúa

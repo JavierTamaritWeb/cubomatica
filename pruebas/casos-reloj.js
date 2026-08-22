@@ -1,10 +1,10 @@
 /* casos-reloj.js — La cuenta atrás de 30 s */
 
 CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   /* Los segundos */
-  var modos = Object.keys(CB.partida.SEGUNDOS_ITEM).sort();
+  const modos = Object.keys(CB.partida.SEGUNDOS_ITEM).sort();
   t.ok(modos.join('|') === 'conCalma|normal|sinPrisa',
     'SEGUNDOS_ITEM declara los tres modos de tiempo y solo esos', modos.join(','));
 
@@ -20,9 +20,9 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
     'un modo desconocido no deja el ítem sin límite ni con límite cero');
 
   /* Quedarse sin tiempo no castiga */
-  var est = { luces: 3, timeoutsConsecutivos: 0, timeoutsPartida: 0 };
-  var r1 = CB.vidas.timeout(est);
-  var r2 = CB.vidas.timeout(est);
+  const est = { luces: 3, timeoutsConsecutivos: 0, timeoutsPartida: 0 };
+  const r1 = CB.vidas.timeout(est);
+  const r2 = CB.vidas.timeout(est);
   t.igual(est.luces, 3, 'agotar el tiempo dos veces seguidas NO apaga ninguna luz');
   t.igual(r2.luces, 3, 'y el resultado devuelve las mismas 3 luces');
   t.ok(r1.consecutivos === 1 && r2.consecutivos === 2,
@@ -34,11 +34,11 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
     'la arena baja a saltos, ni continua ni de dos en dos');
 
   /* pintar() con nodos de mentira: se comprueba la cuenta, no el dibujo */
-  var caja = document.createElement('div');
-  var cifra = document.createElement('span');
-  var alta = document.createElement('i');
-  var baja = document.createElement('i');
-  var previo = {
+  const caja = document.createElement('div');
+  const cifra = document.createElement('span');
+  const alta = document.createElement('i');
+  const baja = document.createElement('i');
+  const previo = {
     caja: CB.ui.reloj.caja, cifra: CB.ui.reloj.cifra,
     alta: CB.ui.reloj.alta, baja: CB.ui.reloj.baja,
     aviso: CB.ui.reloj.aviso, total: CB.ui.reloj._totalMs
@@ -55,17 +55,17 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
     return { cifra: cifra.textContent, alta: alta.style.height, baja: baja.style.height };
   }
 
-  var lleno = pinta(30000);
+  const lleno = pinta(30000);
   t.igual(lleno.cifra, '30', 'a 30 000 ms la cifra es 30');
   t.igual(lleno.alta, '100%', 'a tiempo completo toda la arena está arriba');
   t.igual(lleno.baja, '0%', 'y nada abajo');
 
-  var medio = pinta(15000);
+  const medio = pinta(15000);
   t.igual(medio.cifra, '15', 'a la mitad la cifra es 15');
   t.igual(medio.alta, '50%', 'a la mitad, media arena arriba');
   t.igual(medio.baja, '50%', 'y media abajo');
 
-  var vacio = pinta(0);
+  const vacio = pinta(0);
   t.igual(vacio.cifra, '0', 'a cero la cifra es 0, nunca negativa');
   t.igual(vacio.alta, '0%', 'a cero no queda arena arriba');
   t.igual(vacio.baja, '100%', 'y toda está abajo');
@@ -73,11 +73,11 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
   /* La suma de las dos arenas es SIEMPRE 100: si no, se ve arena que desaparece
      o arena que se duplica, que es lo que delata que el reloj es una barra de
      progreso disfrazada. */
-  var descuadre = [];
-  var i;
+  const descuadre = [];
+  let i;
   for (i = 0; i <= 30; i++) {
-    var v = pinta(i * 1000);
-    var suma = parseInt(v.alta, 10) + parseInt(v.baja, 10);
+    const v = pinta(i * 1000);
+    const suma = parseInt(v.alta, 10) + parseInt(v.baja, 10);
     if (suma !== 100) descuadre.push(i + 's:' + suma);
   }
   t.ok(descuadre.length === 0,
@@ -85,7 +85,7 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
     descuadre.join(', '));
 
   /* La cifra nunca se salta un segundo ni repite: 30, 29, 28... */
-  var esperados = [], reales = [];
+  const esperados = [], reales = [];
   for (i = 30; i >= 0; i--) { esperados.push(String(i)); reales.push(pinta(i * 1000).cifra); }
   t.ok(esperados.join(',') === reales.join(','),
     'la cifra baja de uno en uno de 30 a 0', reales.join(','));
@@ -93,15 +93,15 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
   /* La marca de prisa entra exactamente en el segundo 10, no antes */
   caja.className = '';
   pinta(11000);
-  var a11 = caja.classList.contains('reloj--prisa');
+  const a11 = caja.classList.contains('reloj--prisa');
   pinta(10000);
-  var a10 = caja.classList.contains('reloj--prisa');
+  const a10 = caja.classList.contains('reloj--prisa');
   t.ok(!a11 && a10,
     'la marca de prisa entra en el segundo 10 exacto, no en el 11');
 
   /* arrancar(0) es «Sin prisa»: ni pinta, ni deja intervalo suelto */
   CB.ui.reloj.caja = caja;
-  var arrancado = CB.ui.reloj.arrancar(0);
+  const arrancado = CB.ui.reloj.arrancar(0);
   t.ok(arrancado === false, 'arrancar(0) no pone cuenta atrás');
   t.ok(CB.ui.reloj._tic === null, 'y no deja ningún intervalo corriendo');
 

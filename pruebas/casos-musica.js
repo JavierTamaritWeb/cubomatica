@@ -1,8 +1,8 @@
 /* casos-musica.js — Las tablas de música y la aritmética del volumen */
 
 CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
-  var t = CB.pruebas;
-  var claves = Object.keys(CB.musica.PISTAS);
+  const t = CB.pruebas;
+  const claves = Object.keys(CB.musica.PISTAS);
 
   /* La suite no puede hacer ruido */
   t.ok(CB.musica.iniciada === false,
@@ -11,18 +11,18 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   /* Las 9 pistas */
   t.igual(claves.length, 9, 'hay 9 pistas declaradas');
 
-  var ficheros = claves.map(function (k) { return CB.musica.PISTAS[k].fichero; });
-  var repes = ficheros.filter(function (f, i) { return ficheros.indexOf(f) !== i; });
+  const ficheros = claves.map(function (k) { return CB.musica.PISTAS[k].fichero; });
+  const repes = ficheros.filter(function (f, i) { return ficheros.indexOf(f) !== i; });
   t.ok(repes.length === 0, 'ninguna pista repite fichero', repes.join(', '));
 
-  var malFichero = ficheros.filter(function (f) { return !/^[a-z0-9-]+\.mp3$/.test(f); });
+  const malFichero = ficheros.filter(function (f) { return !/^[a-z0-9-]+\.mp3$/.test(f); });
   t.ok(malFichero.length === 0,
     'todo nombre de fichero es neutro: minúsculas, guiones y .mp3',
     malFichero.join(', '));
 
   /* Rangos de cada pista */
-  var malRango = claves.filter(function (k) {
-    var p = CB.musica.PISTAS[k];
+  const malRango = claves.filter(function (k) {
+    const p = CB.musica.PISTAS[k];
     return !(p.gan > 0) || !(p.entra >= 0) || !(p.sale > p.entra + 10);
   });
   t.ok(malRango.length === 0,
@@ -30,11 +30,11 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     malRango.join(', '));
 
   /* LA invariante del volumen */
-  var ganMax = 0, cualMax = null;
+  let ganMax = 0, cualMax = null;
   claves.forEach(function (k) {
     if (CB.musica.PISTAS[k].gan > ganMax) { ganMax = CB.musica.PISTAS[k].gan; cualMax = k; }
   });
-  var nivelMax = CB.musica.NIVELES[CB.musica.NIVELES.length - 1].valor;
+  const nivelMax = CB.musica.NIVELES[CB.musica.NIVELES.length - 1].valor;
   t.ok(ganMax * nivelMax <= 1.0,
     'el nivel más alto por la ganancia mayor no se pasa de 1: la normalización sobrevive',
     cualMax + ': ' + nivelMax + ' × ' + ganMax + ' = ' + (nivelMax * ganMax).toFixed(3));
@@ -42,15 +42,15 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   /* Los cuatro niveles */
   t.igual(CB.musica.NIVELES.length, 4, 'el ajuste tiene 4 niveles');
   t.igual(CB.musica.NIVELES[0].valor, 0, 'el primer nivel es silencio total');
-  var creciente = true, i;
+  let creciente = true, i;
   for (i = 1; i < CB.musica.NIVELES.length; i++) {
     if (CB.musica.NIVELES[i].valor <= CB.musica.NIVELES[i - 1].valor) creciente = false;
   }
   t.ok(creciente, 'los niveles son estrictamente crecientes');
 
   /* Ida y vuelta del ajuste: fijar por índice y volver a leerlo */
-  var antes = CB.musica.base;
-  var idaVuelta = [0, 1, 2, 3].every(function (n) {
+  const antes = CB.musica.base;
+  const idaVuelta = [0, 1, 2, 3].every(function (n) {
     CB.musica.fijarNivel(n);
     return CB.musica.nivelActual() === n;
   });
@@ -58,20 +58,20 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.ok(idaVuelta, 'fijarNivel() y nivelActual() son inversas para los 4 niveles');
 
   /* Las 17 pantallas */
-  var sinEntrada = CB.pantallas.IDS.filter(function (id) {
+  const sinEntrada = CB.pantallas.IDS.filter(function (id) {
     return !(id in CB.musica.PANTALLAS);
   });
   t.ok(sinEntrada.length === 0,
     'las 18 pantallas están en CB.musica.PANTALLAS', sinEntrada.join(', '));
 
-  var sobran = Object.keys(CB.musica.PANTALLAS).filter(function (id) {
+  const sobran = Object.keys(CB.musica.PANTALLAS).filter(function (id) {
     return CB.pantallas.IDS.indexOf(id) === -1;
   });
   t.ok(sobran.length === 0,
     'CB.musica.PANTALLAS no cita ninguna pantalla inexistente', sobran.join(', '));
 
-  var malDestino = Object.keys(CB.musica.PANTALLAS).filter(function (id) {
-    var v = CB.musica.PANTALLAS[id];
+  const malDestino = Object.keys(CB.musica.PANTALLAS).filter(function (id) {
+    const v = CB.musica.PANTALLAS[id];
     if (v === null || v === '@mundo') return false;
     return !CB.musica.PISTAS[v];
   });
@@ -85,29 +85,29 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     'la pantalla de error va en silencio');
 
   /* Un mundo, una música */
-  var sinBioma = CB.MUNDOS.filter(function (m) {
-    var clave = CB.musica.POR_BIOMA[m.bioma];
+  const sinBioma = CB.MUNDOS.filter(function (m) {
+    const clave = CB.musica.POR_BIOMA[m.bioma];
     return !clave || !CB.musica.PISTAS[clave];
   });
   t.ok(sinBioma.length === 0,
     'los 4 mundos tienen pista propia y existe',
     sinBioma.map(function (m) { return m.id + ':' + m.bioma; }).join(', '));
 
-  var pistasMundo = CB.MUNDOS.map(function (m) { return CB.musica.POR_BIOMA[m.bioma]; });
-  var repesMundo = pistasMundo.filter(function (p, j) { return pistasMundo.indexOf(p) !== j; });
+  const pistasMundo = CB.MUNDOS.map(function (m) { return CB.musica.POR_BIOMA[m.bioma]; });
+  const repesMundo = pistasMundo.filter(function (p, j) { return pistasMundo.indexOf(p) !== j; });
   t.ok(repesMundo.length === 0,
     'dos mundos nunca comparten música: cambiar de mundo se oye',
     repesMundo.join(', '));
 
   /* Test e implementación se daban la razón el uno al otro mientras tres de las cuatro pistas de mundo no sonaban nunca. */
-  var estadoPrevio = CB.partida.estado;
-  var bien = CB.MUNDOS.every(function (m) {
+  const estadoPrevio = CB.partida.estado;
+  const bien = CB.MUNDOS.every(function (m) {
     CB.partida.estado = { mundo: CB.catalogo.getMundo(m.id) };
     return CB.musica.claveDePantalla('p-partida') === CB.musica.POR_BIOMA[m.bioma];
   });
   /* Y sin partida en curso no revienta: devuelve algo reproducible */
   CB.partida.estado = null;
-  var sinPartida = CB.musica.claveDePantalla('p-partida');
+  const sinPartida = CB.musica.claveDePantalla('p-partida');
   CB.partida.estado = estadoPrevio;
   t.ok(bien, 'claveDePantalla() da la pista del bioma de cada uno de los 4 mundos');
   t.ok(!!CB.musica.PISTAS[sinPartida],
@@ -116,18 +116,18 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   /* Créditos */
   t.igual(CB.musica.CREDITOS.length, 9, 'hay 9 créditos, uno por pista');
 
-  var clavesCred = CB.musica.CREDITOS.map(function (c) { return c.clave; }).sort();
+  const clavesCred = CB.musica.CREDITOS.map(function (c) { return c.clave; }).sort();
   t.ok(clavesCred.join('|') === claves.slice().sort().join('|'),
     'el conjunto de claves de CREDITOS es EXACTAMENTE el de PISTAS',
     'pistas: ' + claves.slice().sort().join(',') + ' | créditos: ' + clavesCred.join(','));
 
-  var sinAutor = CB.musica.CREDITOS.filter(function (c) {
+  const sinAutor = CB.musica.CREDITOS.filter(function (c) {
     return !c.autor || !c.autor.length || !c.id;
   });
   t.ok(sinAutor.length === 0, 'todo crédito lleva autor e identificador',
     sinAutor.map(function (c) { return c.clave; }).join(', '));
 
-  var sinDonde = CB.musica.CREDITOS.filter(function (c) { return !CB.DONDE_SUENA[c.clave]; });
+  const sinDonde = CB.musica.CREDITOS.filter(function (c) { return !CB.DONDE_SUENA[c.clave]; });
   t.ok(sinDonde.length === 0,
     'los créditos dicen dónde suena cada pista, en lenguaje de niño',
     sinDonde.map(function (c) { return c.clave; }).join(', '));
@@ -136,7 +136,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     'la licencia se cita por su nombre');
 
   /* El fundido del bucle */
-  var p = { entra: 0, sale: 100 };
+  const p = { entra: 0, sale: 100 };
   function f(seg) { return CB.musica.factorBucle({ duration: 120, currentTime: seg }, p); }
 
   t.igual(f(50), 1, 'en mitad de la pista el fundido de bucle no toca el volumen');
@@ -149,7 +149,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
 
   /* Con silencio de cabecera (mundo-bosque entra en 0,40) el fundido de
      entrada se cuenta desde entra, no desde cero. */
-  var q = { entra: 10, sale: 100 };
+  const q = { entra: 10, sale: 100 };
   t.ok(CB.musica.factorBucle({ duration: 120, currentTime: 10 }, q) <= 0.001,
     'con entrada retrasada, el cero del fundido está en entra, no en 0');
 
@@ -158,8 +158,8 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     'si el fichero dura menos de lo declarado, manda la duración real');
 
   /* El silencio del aparato manda sobre la música */
-  var silPrevio = CB.audio.silenciado;
-  var basePrevia = CB.musica.base;
+  const silPrevio = CB.audio.silenciado;
+  const basePrevia = CB.musica.base;
   CB.musica.base = 0.4;
   CB.audio.silenciado = true;
   t.igual(CB.musica.volumenBase(), 0, 'con el sonido del aparato apagado, la música vale 0');
@@ -169,13 +169,13 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   CB.musica.base = basePrevia;
 
   /* Aparatos que NO dejan fijar el volumen (iPhone y iPad) */
-  var ajustePrevio = CB.musica.volumenAjustable;
-  var basePrev2 = CB.musica.base;
-  var agachPrev = CB.musica.agachada;
-  var canalesPrev = CB.musica.canales;
+  const ajustePrevio = CB.musica.volumenAjustable;
+  const basePrev2 = CB.musica.base;
+  const agachPrev = CB.musica.agachada;
+  const canalesPrev = CB.musica.canales;
 
   function elementoDeIOS() {
-    var e = { paused: true, _v: 1, pausas: 0, arranques: 0 };
+    const e = { paused: true, _v: 1, pausas: 0, arranques: 0 };
     Object.defineProperty(e, 'volume', {
       get: function () { return 1; },              // iOS: siempre 1
       set: function () { }                          // iOS: no hace nada
@@ -185,18 +185,18 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     return e;
   }
 
-  var elIOS = elementoDeIOS();
+  const elIOS = elementoDeIOS();
   CB.musica.volumenAjustable = null;
   t.ok(CB.musica.detectarVolumen(elIOS) === false,
     'se detecta un aparato que ignora el volumen escribiendo y releyendo');
 
-  var elNormal = { volume: 0, paused: false, pause: function () { }, play: function () { } };
+  const elNormal = { volume: 0, paused: false, pause: function () { }, play: function () { } };
   CB.musica.volumenAjustable = null;
   t.ok(CB.musica.detectarVolumen(elNormal) === true,
     'y un aparato normal se detecta como ajustable');
 
   /* La visibilidad de la pestaña se FIJA a mano */
-  var descHidden = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
+  const descHidden = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
   function fijarVisible(v) {
     Object.defineProperty(document, 'hidden', {
       configurable: true, get: function () { return !v; }
@@ -212,7 +212,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   CB.musica.volumenAjustable = false;
   CB.musica.base = 0.4;
   CB.musica.agachada = false;
-  var cIOS = { el: elementoDeIOS(), clave: 'temaPrincipal', f: 1, objetivo: 1 };
+  const cIOS = { el: elementoDeIOS(), clave: 'temaPrincipal', f: 1, objetivo: 1 };
   cIOS.el.paused = false;
   CB.musica.canales = [cIOS, { el: null, clave: null, f: 0, objetivo: 0 }];
 
@@ -234,7 +234,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.ok(cIOS.el.paused === false, 'y al callar la voz la música vuelve por donde iba');
 
   /* El bucle NO debe parar y arrancar: eso sonaría mucho peor que la costura */
-  var arranquesAntes = cIOS.el.arranques, pausasAntes = cIOS.el.pausas;
+  const arranquesAntes = cIOS.el.arranques, pausasAntes = cIOS.el.pausas;
   cIOS.f = 0;                                    // como en el punto de bucle
   CB.musica.aplicarVolumenes();
   t.ok(cIOS.el.pausas === pausasAntes && cIOS.el.arranques === arranquesAntes,
@@ -245,7 +245,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   cIOS.f = 1;
   cIOS.el.pause();
   fijarVisible(false);
-  var arranquesFondo = cIOS.el.arranques;
+  const arranquesFondo = cIOS.el.arranques;
   CB.musica.aplicarVolumenes();
   t.ok(cIOS.el.paused === true && cIOS.el.arranques === arranquesFondo,
     'con la pestaña en segundo plano la música NO se arranca sola');
@@ -271,19 +271,40 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.ok(CB.musica.agachada === false, 'cancelar la voz devuelve la música a su nivel');
 });
 
+CB.pruebas.suite('E109 · la suite alcanza los MP3 reales', function () {
+  const t = CB.pruebas;
+  const url = CB.musica.RAIZ + CB.musica.PISTAS.calma.fichero;
+  t.ok(CB.musica.RAIZ === '../dist/audio/',
+    'E109 · la raíz de audio de pruebas apunta a dist/audio', CB.musica.RAIZ);
+
+  if (location.protocol === 'file:') {
+    t.saltar('E109 · el servidor entrega un MP3 real', 'file:// no ofrece respuestas HTTP');
+    return;
+  }
+
+  return fetch(url, { method: 'HEAD', cache: 'no-store' }).then(function (respuesta) {
+    t.ok(respuesta.ok, 'E109 · el servidor entrega un MP3 real',
+      respuesta.status + ' ' + respuesta.statusText);
+    t.ok(/^audio\/mpeg\b/.test(respuesta.headers.get('content-type') || ''),
+      'E109 · y lo entrega con el tipo audio/mpeg', respuesta.headers.get('content-type'));
+  }, function (error) {
+    t.ok(false, 'E109 · el servidor entrega un MP3 real', error.message);
+  });
+});
+
 /* E79 · La victoria del jefe suena a victoria */
 CB.pruebas.suite('E79 · al ganar al jefe, la música cambia a victoria', function () {
-  var t = CB.pruebas;
-  var perfilPrevio = CB.perfil;
-  var pantallaPrevia = CB.pantallas.actual;
-  var perfil = CB.pruebas.perfilNuevo();
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const pantallaPrevia = CB.pantallas.actual;
+  const perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
 
-  var puestas = [];
-  var ponerPrevio = CB.musica.poner;
+  const puestas = [];
+  const ponerPrevio = CB.musica.poner;
   CB.musica.poner = function (clave) { puestas.push(clave); return true; };
 
-  var e = CB.jefes.iniciar('M1');
+  const e = CB.jefes.iniciar('M1');
   if (!t.ok(!!e, 'E79 · el combate arranca con iniciar() de verdad')) {
     CB.musica.poner = ponerPrevio; CB.perfil = perfilPrevio; return;
   }
@@ -309,15 +330,15 @@ CB.pruebas.suite('E79 · al ganar al jefe, la música cambia a victoria', functi
 
 /* E82 · La pista del mundo no vuelve al segundo cero */
 CB.pruebas.suite('E82 · la música del mundo retoma donde se quedó', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
   if (!t.ok(!!CB.musica.posiciones, 'E82 · existe la tabla de posiciones')) return;
 
-  var posPrevias = CB.musica.posiciones;
-  var actualPrevia = CB.musica.pistaActual;
+  const posPrevias = CB.musica.posiciones;
+  const actualPrevia = CB.musica.pistaActual;
   CB.musica.posiciones = {};
 
-  var puesta = CB.musica.poner('mundoPradera');
-  var canal = CB.musica.canales[CB.musica._activo];
+  const puesta = CB.musica.poner('mundoPradera');
+  const canal = CB.musica.canales[CB.musica._activo];
   if (!t.ok(puesta && canal && canal.el,
       'E82 · la pista del mundo llega a sonar en este navegador')) {
     CB.musica.posiciones = posPrevias;
@@ -327,9 +348,9 @@ CB.pruebas.suite('E82 · la música del mundo retoma donde se quedó', function 
 
   /* Se avanza a mano y se comprueba que el avance ha cuajado: asignar
      currentTime antes del metadato es lo que un try/catch se traga en silencio. */
-  var destino = 40;
+  const destino = 40;
   try { canal.el.currentTime = destino; } catch (e) { }
-  var llegó = canal.el.currentTime;
+  const llegó = canal.el.currentTime;
   if (!t.ok(llegó > 1,
       'E82 · el elemento acepta que se le mueva el tiempo', String(llegó))) {
     CB.musica.posiciones = posPrevias;
@@ -339,8 +360,8 @@ CB.pruebas.suite('E82 · la música del mundo retoma donde se quedó', function 
 
   CB.musica.poner('calma');
   CB.musica.poner('mundoPradera');
-  var vuelta = CB.musica.canales[CB.musica._activo];
-  var entra = CB.musica.PISTAS.mundoPradera.entra;
+  const vuelta = CB.musica.canales[CB.musica._activo];
+  const entra = CB.musica.PISTAS.mundoPradera.entra;
 
   t.ok(vuelta && vuelta.el, 'E82 · vuelve a sonar');
   if (vuelta && vuelta.el) {

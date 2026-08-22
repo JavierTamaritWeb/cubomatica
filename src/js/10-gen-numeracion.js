@@ -20,12 +20,12 @@ CB.gen.numeracion.enPalabras = function (n) {
   if (n < 10) return CB.gen.numeracion.UNIDADES[n];
   if (n <= 15) return CB.gen.numeracion.DIEZ_A_QUINCE[n - 10];
   if (n < 20) {
-    var u = n - 10;
+    const u = n - 10;
     return 'dieci' + (u === 6 ? 'séis' : CB.gen.numeracion.UNIDADES[u]);
   }
   if (n < 30) {
     if (n === 20) return 'veinte';
-    var u2 = n - 20;
+    const u2 = n - 20;
     if (u2 === 1) return 'veintiuno';
     if (u2 === 2) return 'veintidós';
     if (u2 === 3) return 'veintitrés';
@@ -33,12 +33,12 @@ CB.gen.numeracion.enPalabras = function (n) {
     return 'veinti' + CB.gen.numeracion.UNIDADES[u2];
   }
   if (n < 100) {
-    var d = Math.floor(n / 10), r = n % 10;
+    const d = Math.floor(n / 10), r = n % 10;
     return CB.gen.numeracion.DECENAS[d] + (r ? ' y ' + CB.gen.numeracion.UNIDADES[r] : '');
   }
   if (n === 100) return 'cien';
-  var c = Math.floor(n / 100), resto = n % 100;
-  var txt = CB.gen.numeracion.CENTENAS[c];
+  const c = Math.floor(n / 100), resto = n % 100;
+  const txt = CB.gen.numeracion.CENTENAS[c];
   if (!resto) return txt;
   return txt + ' ' + CB.gen.numeracion.enPalabras(resto);
 };
@@ -53,7 +53,7 @@ CB.gen.numeracion.ORDINALES = ['', 'primero', 'segundo', 'tercero', 'cuarto', 'q
 /* Rango efectivo del nivel según D (§8.2): D no cambia el rango declarado, lo
    recorre. D=1 la parte baja, D=2 todo, D=3 la parte alta. */
 function tramo(min, max, D, rng) {
-  var span = max - min;
+  const span = max - min;
   if (D === 1) return CB.util.ent(rng, min, min + Math.max(1, Math.floor(span * 0.4)));
   if (D === 3) return CB.util.ent(rng, min + Math.floor(span * 0.6), max);
   return CB.util.ent(rng, min, max);
@@ -62,7 +62,7 @@ CB.gen.numeracion._tramo = tramo;
 
 /* N1 Contar y recontar */
 CB.gen.numeracion.N1 = function (rng, D) {
-  var n = tramo(3, D === 1 ? 12 : 24, D, rng);
+  const n = tramo(3, D === 1 ? 12 : 24, D, rng);
   return {
     formato: 'opciones4',
     consigna: '¿Cuántos bloques hay?',
@@ -75,7 +75,7 @@ CB.gen.numeracion.N1 = function (rng, D) {
 
 /* N2 Leer y escribir hasta 99 */
 CB.gen.numeracion.N2 = function (rng, D) {
-  var n = tramo(10, 99, D, rng);
+  const n = tramo(10, 99, D, rng);
   return {
     formato: 'teclado',
     consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabras(n),
@@ -87,8 +87,8 @@ CB.gen.numeracion.N2 = function (rng, D) {
 
 /* N3 Decenas y unidades */
 CB.gen.numeracion.N3 = function (rng, D) {
-  var n = tramo(11, 99, D, rng);
-  var pideDecenas = rng() < 0.5;
+  const n = tramo(11, 99, D, rng);
+  const pideDecenas = rng() < 0.5;
   return {
     formato: 'opciones4',
     consigna: pideDecenas
@@ -103,12 +103,13 @@ CB.gen.numeracion.N3 = function (rng, D) {
 
 /* N4 Mayor, menor, igual (balanza) */
 function comparacion(rng, D, max) {
-  var a = tramo(0, max, D, rng), b;
-  var r = rng();
+  const a = tramo(0, max, D, rng);
+  let b;
+  const r = rng();
   if (r < 0.15) b = a;                                    // el = existe de verdad
   else if (r < 0.6) b = CB.util.clamp(a + CB.util.ent(rng, 1, 20), 0, max);
   else b = CB.util.clamp(a - CB.util.ent(rng, 1, 20), 0, max);
-  var signo = (a > b) ? '>' : (a < b ? '<' : '=');
+  const signo = (a > b) ? '>' : (a < b ? '<' : '=');
   return {
     formato: 'balanza',
     consigna: '¿Qué signo va en medio?',
@@ -127,11 +128,12 @@ CB.gen.numeracion.N16 = function (rng, D) { return comparacion(rng, D, 999); };
 
 /* N5 / N11 Series (ordenar) */
 function serie(rng, D, saltos, max) {
-  var salto = CB.util.elegir(rng, saltos);
-  var asc = rng() < 0.65;
-  var cuantos = (D === 1) ? 3 : 4;
-  var inicio = CB.util.ent(rng, salto * cuantos, Math.max(salto * cuantos, max - salto * cuantos));
-  var orden = [], i, v;
+  const salto = CB.util.elegir(rng, saltos);
+  const asc = rng() < 0.65;
+  const cuantos = (D === 1) ? 3 : 4;
+  const inicio = CB.util.ent(rng, salto * cuantos, Math.max(salto * cuantos, max - salto * cuantos));
+  const orden = [];
+  let i, v;
   for (i = 0; i < cuantos; i++) {
     v = asc ? inicio + i * salto : inicio - i * salto;
     orden.push(CB.util.clamp(v, 0, 999));
@@ -153,9 +155,9 @@ CB.gen.numeracion.N11 = function (rng, D) { return serie(rng, D, [5, 100], 599);
 
 /* N6 Pares e impares */
 CB.gen.numeracion.N6 = function (rng, D) {
-  var pidePar = rng() < 0.5;
-  var base = tramo(1, 99, D, rng);
-  var resp = pidePar ? (base % 2 === 0 ? base : base + 1) : (base % 2 === 1 ? base : base + 1);
+  const pidePar = rng() < 0.5;
+  const base = tramo(1, 99, D, rng);
+  let resp = pidePar ? (base % 2 === 0 ? base : base + 1) : (base % 2 === 1 ? base : base + 1);
   resp = CB.util.clamp(resp, 0, 99);
   return {
     formato: 'opciones4',
@@ -166,7 +168,8 @@ CB.gen.numeracion.N6 = function (rng, D) {
     /* Los distractores de este nivel son de la paridad contraria: es lo único
        que lo hace diagnóstico de verdad. */
     distractoresFijos: (function () {
-      var out = [], v, k = 0;
+      const out = [];
+      let v, k = 0;
       while (out.length < 3 && k < 60) {
         k++;
         v = CB.util.ent(rng, 1, 99);
@@ -181,7 +184,8 @@ CB.gen.numeracion.N6 = function (rng, D) {
 
 /* N7 La recta numérica (ordenar) */
 CB.gen.numeracion.N7 = function (rng, D) {
-  var max = 199, cuantos = (D === 1) ? 3 : 4, orden = [], v, k = 0;
+  const max = 199, cuantos = (D === 1) ? 3 : 4, orden = [];
+  let v, k = 0;
   while (orden.length < cuantos && k < 80) {
     k++;
     v = tramo(0, max, D, rng);
@@ -201,7 +205,7 @@ CB.gen.numeracion.N7 = function (rng, D) {
 
 /* N8 / N15 Escribir números grandes */
 CB.gen.numeracion.N8 = function (rng, D) {
-  var n = tramo(100, 199, D, rng);
+  const n = tramo(100, 199, D, rng);
   return {
     formato: 'teclado',
     consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabras(n),
@@ -209,7 +213,7 @@ CB.gen.numeracion.N8 = function (rng, D) {
   };
 };
 CB.gen.numeracion.N15 = function (rng, D) {
-  var n = tramo(200, 999, D, rng);
+  const n = tramo(200, 999, D, rng);
   return {
     formato: 'teclado',
     consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabras(n),
@@ -219,10 +223,10 @@ CB.gen.numeracion.N15 = function (rng, D) {
 
 /* N9 La centena: C, D y U */
 CB.gen.numeracion.N9 = function (rng, D) {
-  var n = tramo(100, 599, D, rng);
-  var cual = CB.util.ent(rng, 0, 2);
-  var partes = ['centenas', 'decenas', 'unidades sueltas'];
-  var val = [Math.floor(n / 100), Math.floor(n / 10) % 10, n % 10][cual];
+  const n = tramo(100, 599, D, rng);
+  const cual = CB.util.ent(rng, 0, 2);
+  const partes = ['centenas', 'decenas', 'unidades sueltas'];
+  const val = [Math.floor(n / 100), Math.floor(n / 10) % 10, n % 10][cual];
   return {
     formato: 'opciones4',
     consigna: '¿Cuántas ' + partes[cual] + ' tiene el ' + n + '?',
@@ -235,9 +239,9 @@ CB.gen.numeracion.N9 = function (rng, D) {
 
 /* N12 Descomponer C + D + U */
 CB.gen.numeracion.N12 = function (rng, D) {
-  var n = tramo(101, 599, D, rng);
-  var c = Math.floor(n / 100) * 100, d = Math.floor(n / 10) % 10 * 10, u = n % 10;
-  var trozos = [];
+  const n = tramo(101, 599, D, rng);
+  const c = Math.floor(n / 100) * 100, d = Math.floor(n / 10) % 10 * 10, u = n % 10;
+  const trozos = [];
   if (c) trozos.push(c);
   if (d) trozos.push(d);
   if (u) trozos.push(u);
@@ -253,10 +257,10 @@ CB.gen.numeracion.N12 = function (rng, D) {
 
 /* N13 Aproximar a la decena */
 CB.gen.numeracion.N13 = function (rng, D) {
-  var n = tramo(11, 599, D, rng);
+  let n = tramo(11, 599, D, rng);
   if (n % 10 === 0) n += CB.util.ent(rng, 1, 9);
-  var abajo = Math.floor(n / 10) * 10, arriba = abajo + 10;
-  var resp = ((n % 10) >= 5) ? arriba : abajo;
+  const abajo = Math.floor(n / 10) * 10, arriba = abajo + 10;
+  const resp = ((n % 10) >= 5) ? arriba : abajo;
   return {
     formato: 'opciones4',
     consigna: '¿A qué decena está más cerca el ' + n + '?',
@@ -273,8 +277,8 @@ CB.gen.numeracion.N13 = function (rng, D) {
 
 /* N14 Ordinales hasta el 20.º */
 CB.gen.numeracion.N14 = function (rng, D) {
-  var total = (D === 1) ? CB.util.ent(rng, 5, 9) : CB.util.ent(rng, 10, 20);
-  var pos = CB.util.ent(rng, 1, total);
+  const total = (D === 1) ? CB.util.ent(rng, 5, 9) : CB.util.ent(rng, 10, 20);
+  const pos = CB.util.ent(rng, 1, total);
   return {
     formato: 'opciones4',
     consigna: 'En la fila hay ' + total + ' vagonetas. ' +

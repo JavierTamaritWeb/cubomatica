@@ -22,7 +22,7 @@ CB.partida.estimaSegundos = function (nivel) {
 };
 
 CB.partida.rtMedianaDe = function (nivel, perfil) {
-  var d = perfil.destrezas ? perfil.destrezas[nivel.destreza] : null;
+  const d = perfil.destrezas ? perfil.destrezas[nivel.destreza] : null;
   if (d && d.rtMediana > 0) return d.rtMediana / 1000;
   return CB.partida.estimaSegundos(nivel);
 };
@@ -31,9 +31,11 @@ CB.partida.rtMedianaDe = function (nivel, perfil) {
 CB.partida.MAX_REPETICIONES = 3;
 
 CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
-  var guion = [], segundos = 0, intentos = 0, veces = {};
-  var destrezas = CB.util.barajar(CB.adaptativo.SLUGS, rng);
-  var nivelesMundo = mundo ? mundo.niveles : CB.catalogo.ids();
+  const guion = [];
+  let segundos = 0, intentos = 0;
+  const veces = {};
+  const destrezas = CB.util.barajar(CB.adaptativo.SLUGS, rng);
+  const nivelesMundo = mundo ? mundo.niveles : CB.catalogo.ids();
 
   function cabe(id) {
     return (veces[id] || 0) < CB.partida.MAX_REPETICIONES;
@@ -45,8 +47,8 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   }
 
   function candidatoDe(slug) {
-    var banda = CB.adaptativo.elegirBeta(slug, perfil);
-    var lista = CB.catalogo.candidatos(slug, banda, perfil).filter(function (n) {
+    const banda = CB.adaptativo.elegirBeta(slug, perfil);
+    let lista = CB.catalogo.candidatos(slug, banda, perfil).filter(function (n) {
       return nivelesMundo.indexOf(n.id) !== -1 && cabe(n.id);
     });
     if (!lista.length) {
@@ -58,19 +60,19 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   }
 
   /* 1) Vencidos por la curva de olvido primero: la razón honesta de volver. */
-  var vencidos = CB.memoria.vencidosHoy(perfil, CB.util.hoyISO());
-  var i, n;
+  const vencidos = CB.memoria.vencidosHoy(perfil, CB.util.hoyISO());
+  let i, n;
   for (i = 0; i < vencidos.length && guion.length < 4; i++) {
     n = candidatoDe(vencidos[i]);
     if (n && guion.indexOf(n.id) === -1) anotar(n.id);
   }
 
   /* 2) CUOTA: al menos 2 problemas de enunciado, si hay alguno abierto. */
-  var problemasPuestos = 0;
+  let problemasPuestos = 0;
   while (problemasPuestos < 2 && intentos < 40) {
     intentos++;
-    var sub = CB.gen.problemas.siguienteSubtipo(perfil, { lucesActuales: 3 });
-    var slugP = CB.gen.problemas.DESTREZA(sub);
+    const sub = CB.gen.problemas.siguienteSubtipo(perfil, { lucesActuales: 3 });
+    const slugP = CB.gen.problemas.DESTREZA(sub);
     n = candidatoDe(slugP);
     if (!n || CB.catalogo.get(n.id).letra !== 'P') break;   // ninguno abierto todavía
     if (guion.indexOf(n.id) === -1) anotar(n.id);
@@ -78,16 +80,16 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   }
 
   /* 3) CUOTA: al menos 1 ítem de cada bloque desbloqueado. */
-  var letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V'];
+  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V'];
   for (i = 0; i < letras.length; i++) {
     (function (letra) {
-      var deLaLetra = nivelesMundo.filter(function (id) {
-        var nv = CB.catalogo.get(id);
+      const deLaLetra = nivelesMundo.filter(function (id) {
+        const nv = CB.catalogo.get(id);
         return nv && nv.letra === letra && CB.grafo.estado(id, perfil) === 'abierta';
       });
       if (!deLaLetra.length) return;
       if (guion.some(function (id) { return CB.catalogo.get(id).letra === letra; })) return;
-      var elegido = CB.util.elegir(rng, deLaLetra);
+      const elegido = CB.util.elegir(rng, deLaLetra);
       if (elegido && guion.length < CB.partida.MAX_ITEMS) anotar(elegido);
     })(letras[i]);
   }
@@ -96,11 +98,11 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
         repeticiones. Si se agotan los niveles abiertos, se para: más vale una
         partida corta que veinte veces la misma pregunta. */
   intentos = 0;
-  var seguidosSinSuerte = 0;
+  let seguidosSinSuerte = 0;
   while (segundos < CB.partida.OBJETIVO_S && guion.length < CB.partida.MAX_ITEMS &&
          intentos < 200 && seguidosSinSuerte < destrezas.length * 2) {
     intentos++;
-    var slug = destrezas[intentos % destrezas.length];
+    const slug = destrezas[intentos % destrezas.length];
     n = candidatoDe(slug);
     if (!n) { seguidosSinSuerte++; continue; }
     seguidosSinSuerte = 0;
@@ -114,7 +116,7 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
     intentos++;
     n = candidatoDe(destrezas[intentos % destrezas.length]);
     if (n) { anotar(n.id); continue; }
-    var abiertos = CB.grafo.desbloqueados(perfil);
+    const abiertos = CB.grafo.desbloqueados(perfil);
     if (!abiertos.length) break;
     guion.push(CB.util.elegir(rng, abiertos));
   }
@@ -125,20 +127,20 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
 /* Iniciar */
 CB.partida.iniciar = function (opciones) {
   opciones = opciones || {};
-  var perfil = CB.perfil;
+  const perfil = CB.perfil;
   if (!perfil) return null;
 
-  var modo = opciones.modo || 'expedicion';
-  var mundo = CB.catalogo.getMundo(opciones.mundoId || 'M1') || CB.MUNDOS[0];
-  var semilla = CB.util.hash32(perfil.id + CB.util.hoyISO() +
+  const modo = opciones.modo || 'expedicion';
+  const mundo = CB.catalogo.getMundo(opciones.mundoId || 'M1') || CB.MUNDOS[0];
+  const semilla = CB.util.hash32(perfil.id + CB.util.hoyISO() +
                                (perfil.historial ? perfil.historial.length : 0));
-  var rng = CB.util.mulberry32(semilla);
+  const rng = CB.util.mulberry32(semilla);
 
   CB.partida.pararCronometro();
   CB.ui.limpiarReparacion();                 // ninguna tarjeta anterior sigue viva
   CB.escalera.levantarPausas(perfil);        // «no hasta la siguiente sesión»
 
-  var luces = CB.vidas.nuevoEstado(modo === 'tranquila' ? 0 : perfil.vidasReserva);
+  const luces = CB.vidas.nuevoEstado(modo === 'tranquila' ? 0 : perfil.vidasReserva);
   if (modo !== 'tranquila' && perfil.vidasReserva > 0) {
     CB.a11y.anunciar('Empiezas con una luz guardada de la expedición anterior.');
     perfil.vidasReserva = 0;
@@ -201,7 +203,7 @@ CB.partida.iniciar = function (opciones) {
 /* De los dos errores posibles solo uno es aceptable. */
 CB.partida.quedanDeLaVeta = function (e, nivelId) {
   if (!e || !nivelId) return 0;
-  var n = 0, i;
+  let n = 0, i;
   for (i = e.indice; i < e.guion.length; i++) {
     if (e.guion[i] === nivelId) n++;
   }
@@ -212,7 +214,7 @@ CB.partida.quedanDeLaVeta = function (e, nivelId) {
 };
 
 CB.partida.vetaSuperada = function (nivelId) {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e || !e.vetaPrevia || e.vetaPrevia === nivelId) return null;
   if (e.vetasSinCerrar[e.vetaPrevia]) return null;
   if (CB.partida.quedanDeLaVeta(e, e.vetaPrevia) > 0) return null;
@@ -221,7 +223,7 @@ CB.partida.vetaSuperada = function (nivelId) {
 
 /* Servir un ítem */
 CB.partida.servirItem = function () {
-  var e = CB.partida.estado, perfil = CB.perfil;
+  const e = CB.partida.estado, perfil = CB.perfil;
   if (!e) return;
 
   CB.ui.ocultarMensaje();
@@ -241,13 +243,13 @@ CB.partida.servirItem = function () {
   }
 
   /* Reinserción de un ítem fallado, con OTROS números del mismo tipo */
-  var reinsertado = CB.leitner.tocaReinsertar(e.colaRepaso, e.indice);
+  const reinsertado = CB.leitner.tocaReinsertar(e.colaRepaso, e.indice);
 
   /* ESCALÓN 4 de la escalera anti-frustración: un ítem del prerrequisito ya
      dominado, por delante del guion y una sola vez. Se consume aquí porque este
      es el único sitio que decide qué nivel toca. */
-  var delPrerrequisito = false;
-  var nivelId;
+  let delPrerrequisito = false;
+  let nivelId;
   if (e.prerrequisitoPendiente) {
     nivelId = e.prerrequisitoPendiente;
     e.prerrequisitoPendiente = null;
@@ -255,17 +257,17 @@ CB.partida.servirItem = function () {
   } else {
     nivelId = reinsertado || e.guion[e.indice];
   }
-  var nivel = CB.catalogo.get(nivelId);
+  const nivel = CB.catalogo.get(nivelId);
   if (!nivel) { e.indice++; CB.partida.servirItem(); return; }
 
-  var estadoNivel = perfil.niveles[nivelId] ||
+  const estadoNivel = perfil.niveles[nivelId] ||
     (perfil.niveles[nivelId] = { n: 0, aciertos: 0, caja: 1, D: 2, ultimoISO: null, enPausa: false });
 
   /* Generación con reintentos: nunca se repite el mismo ítem en la sesión */
-  var item = null, k = 0;
+  let item = null, k = 0;
   while (k < 12) {
     k++;
-    var rngItem = CB.util.mulberry32(e.semilla + e.indice * 7919 + k * 104729);
+    const rngItem = CB.util.mulberry32(e.semilla + e.indice * 7919 + k * 104729);
     item = nivel.generar(rngItem, estadoNivel.D || 2, {
       ajustes: perfil.ajustes,
       techo: CB.CURRICULO.techoTrimestre[perfil.trimestreDeducido || 1] || 99,
@@ -275,7 +277,7 @@ CB.partida.servirItem = function () {
                     (perfil.historial && perfil.historial.length > 0)
     });
     if (!item) break;
-    var idItem = nivelId + '#' + item.expr;
+    const idItem = nivelId + '#' + item.expr;
     if (!e.servidosSet[idItem]) { e.servidosSet[idItem] = true; break; }
     item = null;
   }
@@ -295,7 +297,7 @@ CB.partida.servirItem = function () {
                     indice: e.indice, total: e.guion.length });
 
   /* EN QUÉ VETA ESTAMOS */
-  var superada = CB.partida.vetaSuperada(nivelId);
+  const superada = CB.partida.vetaSuperada(nivelId);
   e.vetaPrevia = nivelId;
   CB.ui.pintarVeta(nivel, e.mundo);
 
@@ -304,7 +306,7 @@ CB.partida.servirItem = function () {
   CB.partida.pintarRespuesta(item);
 
   /* «NIVEL SUPERADO» */
-  var dicho = '';
+  let dicho = '';
   if (superada && !delPrerrequisito) {
 
     dicho = 'Ahora vas a: ' + nivel.nombre + '. Ya has terminado ' +
@@ -335,7 +337,7 @@ CB.partida.servirItem = function () {
 
 /* Elige y monta el componente de respuesta */
 CB.partida.pintarRespuesta = function (item) {
-  var e = CB.partida.estado, perfil = CB.perfil;
+  const e = CB.partida.estado, perfil = CB.perfil;
 
   if (!e || !item || e.itemActual !== item) return false;
 
@@ -347,23 +349,23 @@ CB.partida.pintarRespuesta = function (item) {
      Se pide en cada ítem y se instala una sola vez: el contenedor es permanente. */
   CB.componentes.conectarLectura(CB.componentes.contenedor());
 
-  var efectos = CB.antiazar.consumir(e.antiazar);
+  const efectos = CB.antiazar.consumir(e.antiazar);
   CB.componentes._confirmacionPendiente = efectos.confirmacionDoble;
-  var bloqueo = Math.max(CB.componentes.MS_CONSTRUCCION, efectos.bloqueoMs || 0);
+  const bloqueo = Math.max(CB.componentes.MS_CONSTRUCCION, efectos.bloqueoMs || 0);
 
   function responder(valor, origen, extra) { CB.partida.responder(valor, origen, extra); }
 
   /* Las siete frases llevaban escritas desde la primera versión, con sus dos funciones de apoyo, y NO LAS LLAMABA NADIE: `componentesVistos` se declaraba en el esqueleto del perfil, se reparaba en la migración y estaba en los campos… */
   function presentar(tipo) {
     if (e.intento !== 1) return;
-    var frase = CB.componentes.PRESENTACION[tipo];
+    const frase = CB.componentes.PRESENTACION[tipo];
     if (!frase) return;                  // clave desconocida: nunca un mensaje vacío
     if (!CB.componentes.necesitaPresentacion(perfil, tipo)) return;
     CB.componentes.marcarVisto(perfil, tipo);
     CB.ui.mensaje(frase, 'aviso');
   }
 
-  var formato = item.formato;
+  const formato = item.formato;
 
   /* Los problemas SIEMPRE con teclado en primer intento (§9.5): con 2 datos y
      4 opciones un niño acierta sin haber comprendido nada, y eso destruye la
@@ -381,7 +383,7 @@ CB.partida.pintarRespuesta = function (item) {
   }
 
   if (formato === 'opciones4') {
-    var opciones;
+    let opciones;
     if (item.distractoresTexto) {
       /* Vocabulario: las opciones son PALABRAS, no números. */
       opciones = item.distractoresTexto.map(function (t, i) {
@@ -396,7 +398,7 @@ CB.partida.pintarRespuesta = function (item) {
         .concat([{ valor: item.respuesta, codigoError: null }]);
       opciones = CB.util.barajar(opciones, e.rng);
     } else {
-      var d = CB.distractores.para(item, e.rng);
+      const d = CB.distractores.para(item, e.rng);
       if (d.formato === 'teclado') {
         presentar('tecladoBloques');
         CB.componentes.tecladoBloques(item, responder, { bloqueoMs: bloqueo });
@@ -433,13 +435,13 @@ CB.partida.pintarRespuesta = function (item) {
 CB.partida.SEGUNDOS_ITEM = { normal: 30, conCalma: 30, sinPrisa: 0 };
 
 CB.partida.msDeItem = function (modoTiempo) {
-  var s = CB.partida.SEGUNDOS_ITEM[modoTiempo];
+  let s = CB.partida.SEGUNDOS_ITEM[modoTiempo];
   if (s == null) s = CB.partida.SEGUNDOS_ITEM.conCalma;
   return s * 1000;
 };
 
 CB.partida.iniciarCronometro = function (esProblema) {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e) return;
   CB.partida.pararCronometro();
 
@@ -450,7 +452,7 @@ CB.partida.iniciarCronometro = function (esProblema) {
     e.t0 = CB.util.ahora() + CB.componentes.MS_CONSTRUCCION;
   }
 
-  var limite = CB.partida.msDeItem(e.modoTiempo);
+  const limite = CB.partida.msDeItem(e.modoTiempo);
   if (limite <= 0) { CB.ui.reloj.arrancar(0); return; }   // «Sin prisa»
 
   /* La cuenta atrás empieza cuando los botones terminan de construirse: los
@@ -465,7 +467,7 @@ CB.partida.iniciarCronometro = function (esProblema) {
 };
 
 CB.partida.pararCronometro = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (e && e.temporizador) { clearTimeout(e.temporizador); e.temporizador = null; }
   if (e && e.relojArranque) { clearTimeout(e.relojArranque); e.relojArranque = null; }
   CB.ui.reloj.parar();
@@ -473,7 +475,7 @@ CB.partida.pararCronometro = function () {
 
 /* El primer toque de un problema arranca el cronómetro de puntuación. */
 CB.partida.marcarLectura = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e || e.lecturaHecha) return;
   if (!e.itemActual || !e.itemActual.subtipo) return;   // solo los problemas
   if (CB.partida.bloqueado) return;                     // los 800 ms no se cobran
@@ -482,11 +484,11 @@ CB.partida.marcarLectura = function () {
 };
 
 CB.partida.tiempoAgotado = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e || e.pausada) return;
 
   /* El tiempo agotado NUNCA apaga una luz. Ni el primero, ni ninguno. */
-  var r = CB.vidas.timeout(e.luces);
+  const r = CB.vidas.timeout(e.luces);
 
   if (e.itemActual) e.vetasSinCerrar[e.itemActual.nivelId] = true;
 
@@ -509,7 +511,7 @@ CB.partida.tiempoAgotado = function () {
 
 /* Responder */
 CB.partida.responder = function (valor, origen, extra) {
-  var e = CB.partida.estado, perfil = CB.perfil;
+  const e = CB.partida.estado, perfil = CB.perfil;
   if (!e || !e.itemActual || CB.partida.bloqueado) return;
 
   /* Cada toque metía una observación más en el motor adaptativo, así que la competencia estimada de esa destreza se movía seis veces por un solo ítem; y el informe del adulto contaba seis intentos donde hubo uno. */
@@ -519,18 +521,18 @@ CB.partida.responder = function (valor, origen, extra) {
   extra = extra || {};
   CB.partida.pararCronometro();
 
-  var item = e.itemActual;
-  var nivel = CB.catalogo.get(item.nivelId);
+  const item = e.itemActual;
+  const nivel = CB.catalogo.get(item.nivelId);
 
   /* Red de seguridad: si nadie tocó nada antes de contestar —un formato que no pase por el contenedor de respuesta, o una vía de teclado futura— se mide desde que se MOSTRÓ el enunciado. */
   if (item.subtipo && !e.lecturaHecha) {
     e.lecturaHecha = true;
     e.t0 = e.tLectura0 || CB.util.ahora();
   }
-  var rt = CB.util.rt(e.t0 || CB.util.ahora());
+  const rt = CB.util.rt(e.t0 || CB.util.ahora());
 
   /* Corrección */
-  var correcto;
+  let correcto;
   if (item.respuestaSigno) correcto = (valor === item.respuestaSigno);
   else if (origen === 'ordenar') correcto = (valor === item.respuesta);
   /* Es exactamente la forma de fallo que no rompe nada y que solo se ve jugando. */
@@ -540,12 +542,12 @@ CB.partida.responder = function (valor, origen, extra) {
   /* Anti-azar. La primera línea de evaluar() garantiza que un acierto rápido
      NUNCA se marca como azar. */
   item.valorDado = Number(valor);
-  var histo = e.respuestas.map(function (r) {
+  const histo = e.respuestas.map(function (r) {
     return { posicion: r.posicion, rtMs: r.rt, correcto: r.correcto };
   });
-  var az = CB.antiazar.evaluar(item, rt, correcto, histo, perfil);
+  const az = CB.antiazar.evaluar(item, rt, correcto, histo, perfil);
 
-  var punt = CB.puntuacion.calcular(item, rt, {
+  const punt = CB.puntuacion.calcular(item, rt, {
     correcto: correcto, azar: az.azar, intento: e.intento, modoTiempo: e.modoTiempo
   });
 
@@ -560,7 +562,7 @@ CB.partida.responder = function (valor, origen, extra) {
 
 /* Acierto */
 CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
-  var e = CB.partida.estado, perfil = CB.perfil;
+  const e = CB.partida.estado, perfil = CB.perfil;
 
   e.preguntas++;
   e.aciertos++;
@@ -575,18 +577,19 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
 
   /* El bono de rapidez se muestra RETROSPECTIVAMENTE, como ganancia. Nunca como
      una cuenta atrás corriendo mientras el niño piensa (§3.4). */
-  var bono = CB.puntuacion.gemasDeRapidez(punt.mTiempo);
+  const bono = CB.puntuacion.gemasDeRapidez(punt.mTiempo);
   CB.ui.hileraBono(bono);
 
-  var vetaNueva = CB.partida.actualizarDestreza(item, nivel, true);
+  const vetaNueva = CB.partida.actualizarDestreza(item, nivel, true);
 
-  var ctxMsg = {
+  const ctxMsg = {
     perfil: perfil, destreza: item.destreza, rng: e.rng,
     reparacion: e.intento === 2, superacion: e.intento === 2,
     racha: e.rachaPrimerIntento, vetaNueva: vetaNueva,
     lento: punt.mTiempo < 1.0, intento: e.intento
   };
-  var msg = CB.mensajes.acierto(ctxMsg);
+  let msg = CB.mensajes.acierto(ctxMsg);
+  const cromo = item.esBloqueRaro ? CB.partida.darCromo() : null;
   /* El mensaje entero se queda QUIETO aquí. Es donde va la frase de
      procedimiento, que es la única parte que enseña algo y que hay que poder
      leer con calma: no cabe en una cinta que cruza en menos de dos segundos. */
@@ -602,14 +605,13 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
 
   /* Las cuatro categorías ya las calculaba CB.mensajes.categoriaAcierto() desde el primer día; aquí solo se les pone cuerpo. */
 
-  var cromo = item.esBloqueRaro ? CB.partida.darCromo() : null;
   /* Si coinciden, manda el más raro: el bloque raro es 1 de cada 20 y el reto
      necesita además D === 3. */
-  var festejo = item.esBloqueRaro ? 'raro'
+  const festejo = item.esBloqueRaro ? 'raro'
     : (item.esRetoBonus ? 'logro'
       : CB.ui.festejo.POR_CATEGORIA[CB.mensajes.categoriaAcierto(ctxMsg)]);
   /* Si ya están los once, darCromo devuelve null y queda el grito normal. */
-  var grito = cromo ? ('¡' + (CB.casa.NOMBRES_CROMO[cromo] || cromo) + '!')
+  const grito = cromo ? ('¡' + (CB.casa.NOMBRES_CROMO[cromo] || cromo) + '!')
             : (item.esRetoBonus ? '¡Reto!'
               : CB.mensajes.grito({ perfil: perfil, rng: e.rng }));
   CB.ui.festejo.mostrar(festejo, grito, { bono: bono });
@@ -626,7 +628,7 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   if (cromo) CB.partida.logrosDeCromo();
 
   /* Vocabulario: el término entra en el Diccionario de Bloques. */
-  var termino = CB.gen.vocabulario.terminoDe(item);
+  const termino = CB.gen.vocabulario.terminoDe(item);
   if (termino && perfil.glosario.indexOf(termino) === -1) {
     perfil.glosario.push(termino);
     CB.logros.comprobar('glosario', { perfil: perfil, modo: e.modo, hoyISO: CB.util.hoyISO() });
@@ -651,7 +653,7 @@ CB.partida.esperaSegundoIntento = function (pista) {
 
 /* Fallo */
 CB.partida.trasFallo = function (item, nivel, extra) {
-  var e = CB.partida.estado, perfil = CB.perfil;
+  const e = CB.partida.estado, perfil = CB.perfil;
 
   CB.distractores.registrar(perfil, item, Number(item.valorDado));
 
@@ -663,8 +665,8 @@ CB.partida.trasFallo = function (item, nivel, extra) {
   if (e.intento === 1) {
     /* Escalón 1: pista de Rocarr. NO apaga luz. NO rompe racha. */
     e.intento = 2;
-    var pistas = CB.datos.MENSAJES.PISTAS[item.destreza];
-    var pista = pistas ? pistas[0] : 'Vuelve a mirarlo con calma.';
+    const pistas = CB.datos.MENSAJES.PISTAS[item.destreza];
+    const pista = pistas ? pistas[0] : 'Vuelve a mirarlo con calma.';
     /* La regla es que la luz se apaga SOLO al fallar el segundo intento (docs/decisiones.md, Documento 5), y esa regla hay que contarla en el momento en que importa, no dejarla escrita en un documento que el niño no lee. */
     CB.ui.mensaje('Esta no suma gemas. Te queda otro intento. ' + pista, 'animo');
     CB.ui.festejo.mostrar('animo');
@@ -685,10 +687,10 @@ CB.partida.trasFallo = function (item, nivel, extra) {
   CB.partida.actualizarDestreza(item, nivel, false);
   CB.leitner.programarReinsercion(e.colaRepaso, item.nivelId, e.indice, e.rng);
 
-  var diag = CB.diagnosticar(item, Number(item.valorDado));
+  const diag = CB.diagnosticar(item, Number(item.valorDado));
   CB.ui.mostrarReparacion(item, diag.hipotesis, function () {
     if (CB.partida.estado !== e || e.itemActual !== item) return;
-    var r = CB.vidas.fallo(e.luces, 2, e.modo);
+    const r = CB.vidas.fallo(e.luces, 2, e.modo);
     if (r.apagada) {
       e.lucesApagadas++;
       CB.audio.sfx('luzApagada');
@@ -706,8 +708,8 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     if (CB.vidas.agotadas(e.luces)) { CB.partida.finalizar('luces'); return; }
 
     if (r.apagada) {
-      var quedan = e.luces.luces;
-      var aviso = 'Se ha apagado una luz. Te ' +
+      const quedan = e.luces.luces;
+      const aviso = 'Se ha apagado una luz. Te ' +
                   (quedan === 1 ? 'queda 1 luz.' : 'quedan ' + quedan + ' luces.');
       CB.ui.mensaje(aviso, 'animo');
       /* Tambien urgente: el mensaje visible dura 2,2 s y luego la pantalla pasa
@@ -736,7 +738,7 @@ CB.partida.aplicarEscalon = function (esc, item, perfil, e) {
 
   if (esc.accion === 'prerrequisito') {
     /* Degradar así es lo correcto: nunca inventarse un nivel que el niño no haya superado ya, porque entonces «volvemos un paso atrás» sería mentira y le pondría delante algo aún más difícil. */
-    var previo = CB.grafo.prerrequisitoDominado(item.nivelId, perfil);
+    const previo = CB.grafo.prerrequisitoDominado(item.nivelId, perfil);
     if (!previo) return null;
     e.prerrequisitoPendiente = previo;
     return 'prerrequisito';
@@ -752,12 +754,12 @@ CB.partida.aplicarEscalon = function (esc, item, perfil, e) {
 
 /* Azar */
 CB.partida.trasAzar = function (item, punt) {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   e.azares++;
   e.rachaPrimerIntento = 0;
   CB.vidas.fallaRacha(e.luces);
 
-  var ef = CB.antiazar.aplicar(e.antiazar);
+  const ef = CB.antiazar.aplicar(e.antiazar);
 
   /* Gluglú NO es un juez, es un accidente del entorno. En ninguna parte de la
      interfaz del niño aparece «adivinar», «al azar» ni «concéntrate» (§12.4). */
@@ -778,11 +780,11 @@ CB.partida.trasAzar = function (item, punt) {
 
 /* Registro en el perfil */
 CB.partida.registrarRespuesta = function (item, rt, correcto, az, extra) {
-  var e = CB.partida.estado, perfil = CB.perfil;
+  const e = CB.partida.estado, perfil = CB.perfil;
 
   /* Array posicional documentado (§15.3): baja cada respuesta de ~380 a ~120
      bytes, que es lo que hace viable el modo aula con 30 perfiles. */
-  var flags = 0;
+  let flags = 0;
   if (e.intento === 2) flags |= 1;
   if (extra.usoPista) flags |= 2;
   if (extra.usoAudio) flags |= 4;
@@ -795,7 +797,7 @@ CB.partida.registrarRespuesta = function (item, rt, correcto, az, extra) {
                           rt, correcto ? 1 : 0, Number(item.valorDado) || 0, flags]);
 
   if (item.subtipo) {
-    var p = perfil.problemas[item.subtipo] ||
+    const p = perfil.problemas[item.subtipo] ||
             (perfil.problemas[item.subtipo] = { intentos: 0, aciertos: 0, rtMedioMs: 0 });
     p.rtMedioMs = CB.util.mediaIncremental(p.rtMedioMs, p.intentos, rt);
     p.intentos++;
@@ -808,10 +810,10 @@ CB.partida.registrarRespuesta = function (item, rt, correcto, az, extra) {
 };
 
 CB.partida.actualizarDestreza = function (item, nivel, correcto) {
-  var e = CB.partida.estado, perfil = CB.perfil, hoy = CB.util.hoyISO();
+  const e = CB.partida.estado, perfil = CB.perfil, hoy = CB.util.hoyISO();
 
-  var d = perfil.destrezas[item.destreza];
-  var estadoAntes = d ? d.estado : 'nuevo';
+  let d = perfil.destrezas[item.destreza];
+  const estadoAntes = d ? d.estado : 'nuevo';
 
   CB.adaptativo.registrar(item.destreza, {
     correcto: correcto, intento: e.intento, rtMs: e.respuestas.length
@@ -821,10 +823,10 @@ CB.partida.actualizarDestreza = function (item, nivel, correcto) {
 
   d = perfil.destrezas[item.destreza];
   CB.memoria.repasado(d, correcto, hoy);
-  var estadoDespues = CB.memoria.clasificar(d, hoy, false);
+  const estadoDespues = CB.memoria.clasificar(d, hoy, false);
   d.estado = estadoDespues;
 
-  var estadoNivel = perfil.niveles[item.nivelId];
+  const estadoNivel = perfil.niveles[item.nivelId];
   estadoNivel.n++;
   if (correcto) estadoNivel.aciertos++;
   estadoNivel.ultimoISO = hoy;
@@ -837,7 +839,7 @@ CB.partida.actualizarDestreza = function (item, nivel, correcto) {
     if (e.destrezasMejoradas.indexOf(item.destreza) === -1) {
       e.destrezasMejoradas.push(item.destreza);
     }
-    var nuevos = CB.logros.comprobar('destreza', {
+    const nuevos = CB.logros.comprobar('destreza', {
       perfil: perfil, modo: e.modo, hoyISO: hoy, vetaRestaurada: true
     });
     CB.partida.aplicarLogros(nuevos);
@@ -855,8 +857,8 @@ CB.partida.actualizarDestreza = function (item, nivel, correcto) {
 
 /* Logros y luces extra */
 CB.partida.comprobarLogros = function (item) {
-  var e = CB.partida.estado;
-  var nuevos = CB.logros.comprobar('acierto', {
+  const e = CB.partida.estado;
+  const nuevos = CB.logros.comprobar('acierto', {
     perfil: CB.perfil, modo: e.modo, hoyISO: CB.util.hoyISO(),
     estadoLuces: e.luces, rachaPrimerIntento: e.rachaPrimerIntento,
     esRetoBonus: item.esRetoBonus
@@ -866,7 +868,7 @@ CB.partida.comprobarLogros = function (item) {
 
 CB.partida.festejarLogro = function (grito, indice) {
   if (!indice) { CB.ui.festejo.mostrar('logro', grito); return; }
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   setTimeout(function () {
     /* finalizar() pone estado a null después de pintar p-fin; allí la cola sí
        pertenece a la partida que acaba. En cualquier otra pantalla o partida,
@@ -880,7 +882,8 @@ CB.partida.festejarLogro = function (grito, indice) {
 };
 
 CB.partida.aplicarLogros = function (nuevos) {
-  var e = CB.partida.estado, i, l, r;
+  const e = CB.partida.estado;
+  let i, l, r;
   for (i = 0; i < (nuevos || []).length; i++) {
     l = nuevos[i];
     if (!l.luz) {
@@ -908,12 +911,12 @@ CB.partida.aplicarLogros = function (nuevos) {
 
 /* Antes no devolvía nada y su única salida era un anuncio con el ID CRUDO —«el cromo de gluglu»—, que solo oía un lector de pantalla. */
 CB.partida.darCromo = function () {
-  var perfil = CB.perfil, e = CB.partida.estado;
-  var posibles = Object.keys(CB.ui.CRIATURAS).filter(function (c) {
+  const perfil = CB.perfil, e = CB.partida.estado;
+  const posibles = Object.keys(CB.ui.CRIATURAS).filter(function (c) {
     return perfil.cromos.indexOf(c) === -1;
   });
   if (!posibles.length) return null;
-  var c = CB.util.elegir(e.rng, posibles);
+  const c = CB.util.elegir(e.rng, posibles);
   perfil.cromos.push(c);
   /* El sonido lo pone la cinta 'veta-madre', que ya suena a cofre. Sonaba dos
      veces seguidas y se oía como un eco. */
@@ -922,7 +925,7 @@ CB.partida.darCromo = function () {
 
 /* Los logros que dispara un cromo, aparte y a posteriori. */
 CB.partida.logrosDeCromo = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e) return;
   CB.partida.aplicarLogros(CB.logros.comprobar('cromo', {
     perfil: CB.perfil, modo: e.modo, hoyISO: CB.util.hoyISO()
@@ -931,7 +934,7 @@ CB.partida.logrosDeCromo = function () {
 
 /* Avanzar */
 CB.partida.siguiente = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e) return;
   e.indice++;
 
@@ -945,9 +948,9 @@ CB.partida.siguiente = function () {
 };
 
 CB.partida.comprobarLimiteSesion = function () {
-  var e = CB.partida.estado, perfil = CB.perfil;
-  var limite = (perfil.ajustes.limiteSesionMin || 20) * 60000;
-  var transcurrido = Date.now() - e.inicioTs;
+  const e = CB.partida.estado, perfil = CB.perfil;
+  const limite = (perfil.ajustes.limiteSesionMin || 20) * 60000;
+  const transcurrido = Date.now() - e.inicioTs;
 
   /* Aviso suave 2 minutos antes, sin cuenta atrás numérica. */
   if (!e.avisoLimiteDado && transcurrido > limite - 120000) {
@@ -969,31 +972,32 @@ CB.partida.DESCANSOS = [
 ];
 
 CB.partida.microDescanso = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
 
-  var m = CB.mensajes.asegurar(CB.perfil);
-  var idx = CB.mensajes.sacarDeBolsa(m, 'bolsaDescansos',
+  const m = CB.mensajes.asegurar(CB.perfil);
+  const idx = CB.mensajes.sacarDeBolsa(m, 'bolsaDescansos',
     CB.partida.DESCANSOS.length, [], [], 0, e.rng);
-  var d = CB.partida.DESCANSOS[idx < 0 ? 0 : idx];
+  const d = CB.partida.DESCANSOS[idx < 0 ? 0 : idx];
 
   CB.pantallas.ir('p-descanso');
-  var t = document.getElementById('descanso-titulo');
+  const t = document.getElementById('descanso-titulo');
   if (t) t.textContent = d.titulo;
 
-  var tablero = document.getElementById('descanso-tablero');
+  const tablero = document.getElementById('descanso-tablero');
   CB.ui.vaciar(tablero);
 
   if (d.id === 'cofre') {
     /* Se ve la lista completa de premios ANTES de abrir: sin cofres opacos, que
        es un patrón oscuro prohibido en un juego infantil (§21.4). */
-    var aviso = CB.ui.crear('p', 'texto texto--menor', 'Tres cofres de piedra. Rómpelos todos.');
+    const aviso = CB.ui.crear('p', 'texto texto--menor', 'Tres cofres de piedra. Rómpelos todos.');
     tablero.appendChild(aviso);
   }
 
-  var n = (d.id === 'cofre') ? 3 : 8, i;
+  const n = (d.id === 'cofre') ? 3 : 8;
+  let i;
   for (i = 0; i < n; i++) {
     (function () {
-      var b = CB.ui.crear('button', 'tablero-descanso__bloque');
+      const b = CB.ui.crear('button', 'tablero-descanso__bloque');
       b.type = 'button';
       b.setAttribute('aria-label', d.id === 'cofre' ? 'Cofre' : 'Bloque');
       b.addEventListener('click', function () {
@@ -1005,7 +1009,7 @@ CB.partida.microDescanso = function () {
     })();
   }
 
-  var seguir = document.getElementById('btn-seguir');
+  const seguir = document.getElementById('btn-seguir');
   if (seguir) {
     seguir.onclick = function () {
       CB.pantallas.ir('p-partida');
@@ -1017,7 +1021,7 @@ CB.partida.microDescanso = function () {
 
 /* Pausa y partida guardada */
 CB.partida.pausar = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e || e.pausada) return;
   e.pausada = true;
   CB.partida.pararCronometro();
@@ -1026,7 +1030,7 @@ CB.partida.pausar = function () {
 };
 
 CB.partida.reanudar = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e) return;
   e.pausada = false;
   CB.pantallas.ir('p-partida');
@@ -1034,7 +1038,7 @@ CB.partida.reanudar = function () {
 };
 
 CB.partida.guardarEnCurso = function () {
-  var e = CB.partida.estado, perfil = CB.perfil;
+  const e = CB.partida.estado, perfil = CB.perfil;
   if (!e || !perfil) return;
   perfil.partidaEnCurso = {
     iniciadaTs: e.inicioTs,
@@ -1050,7 +1054,7 @@ CB.partida.guardarEnCurso = function () {
 };
 
 CB.partida.hayPartidaGuardada = function (perfil) {
-  var p = perfil && perfil.partidaEnCurso;
+  const p = perfil && perfil.partidaEnCurso;
   if (!p) return false;
   /* Caducidad: pasadas 24 h se descarta y se ofrece empezar de nuevo. */
   if (Date.now() - p.iniciadaTs > 86400000) { perfil.partidaEnCurso = null; return false; }
@@ -1058,9 +1062,9 @@ CB.partida.hayPartidaGuardada = function (perfil) {
 };
 
 CB.partida.reanudarGuardada = function (perfil) {
-  var p = perfil.partidaEnCurso;
+  const p = perfil.partidaEnCurso;
   if (!p) return null;
-  var e = CB.partida.iniciar({ mundoId: p.mundo, modo: p.modo });
+  const e = CB.partida.iniciar({ mundoId: p.mundo, modo: p.modo });
   if (!e) return null;
   e.guion = p.guion.slice();
   e.indice = p.indice;
@@ -1076,13 +1080,13 @@ CB.partida.reanudarGuardada = function (perfil) {
 
 /* Fin de la expedición */
 CB.partida.finalizar = function (motivo) {
-  var e = CB.partida.estado, perfil = CB.perfil;
+  const e = CB.partida.estado, perfil = CB.perfil;
   if (!e) return;
   CB.partida.pararCronometro();
   e.motivoFin = motivo;
 
-  var precision1er = e.preguntas ? (e.aciertos1er / e.preguntas) : 0;
-  var bono = CB.puntuacion.bonoFinal(
+  const precision1er = e.preguntas ? (e.aciertos1er / e.preguntas) : 0;
+  const bono = CB.puntuacion.bonoFinal(
     precision1er, e.luces.luces >= CB.vidas.INICIALES, e.preguntas >= 15,
     e.preguntas, e.puntos
   );
@@ -1094,12 +1098,12 @@ CB.partida.finalizar = function (motivo) {
   /* EL RÉCORD SE LEE ANTES DE PISARLO. Si se lee después, `e.puntos > récord`
      es falso siempre y la celebración no se dispara nunca. Y se compara SIEMPRE
      contra el récord del MISMO modo: el antifarmeo cerrado en 24-logros.js. */
-  var claveModo = (e.modo === 'tranquila') ? 'sinPrisa' : e.modoTiempo;
+  const claveModo = (e.modo === 'tranquila') ? 'sinPrisa' : e.modoTiempo;
   if (!perfil.mejorPuntuacion[claveModo]) perfil.mejorPuntuacion[claveModo] = 0;
-  var esRecord = e.preguntas > 0 && e.puntos > perfil.mejorPuntuacion[claveModo];
+  const esRecord = e.preguntas > 0 && e.puntos > perfil.mejorPuntuacion[claveModo];
   if (esRecord) perfil.mejorPuntuacion[claveModo] = e.puntos;
 
-  var hoy = CB.util.hoyISO();
+  const hoy = CB.util.hoyISO();
   perfil.historial.push({
     fechaISO: hoy, modo: e.modo, mundo: e.mundo.id,
     seg: Math.round((Date.now() - e.inicioTs) / 1000),
@@ -1117,21 +1121,21 @@ CB.partida.finalizar = function (motivo) {
   perfil.diario.tiempoPantallaPorDia[hoy] =
     (perfil.diario.tiempoPantallaPorDia[hoy] || 0) + Math.round((Date.now() - e.inicioTs) / 1000);
 
-  var mundoCompletado = CB.catalogo.progresoMundo(e.mundo.id, perfil).fraccion >= 0.6;
+  const mundoCompletado = CB.catalogo.progresoMundo(e.mundo.id, perfil).fraccion >= 0.6;
   /* Se GUARDAN para pintarlos en p-fin. Se aplicaban aquí, estando todavía en
      p-partida, y nueve líneas después la pantalla cambiaba: «Primer pico»,
      «Cantero» y «Vuelvo mañana» sonaban sobre una pantalla que desaparecía. */
-  var logrosFin = CB.logros.comprobar('finPartida', {
+  const logrosFin = CB.logros.comprobar('finPartida', {
     perfil: perfil, modo: e.modo, hoyISO: hoy, mundoCompletado: mundoCompletado
   });
   CB.partida.aplicarLogros(logrosFin);
 
-  var abiertosAntes = {};
+  const abiertosAntes = {};
   CB.MUNDOS.forEach(function (m) {
     abiertosAntes[m.id] = !!(perfil.mundos[m.id] && perfil.mundos[m.id].desbloqueado);
   });
   CB.partida.desbloquearMundos();
-  var mundoNuevo = null;
+  let mundoNuevo = null;
   CB.MUNDOS.forEach(function (m) {
     if (!abiertosAntes[m.id] && perfil.mundos[m.id] && perfil.mundos[m.id].desbloqueado) {
       mundoNuevo = m;
@@ -1146,7 +1150,8 @@ CB.partida.finalizar = function (motivo) {
 };
 
 CB.partida.desbloquearMundos = function () {
-  var perfil = CB.perfil, i, m;
+  const perfil = CB.perfil;
+  let i, m;
   for (i = 0; i < CB.MUNDOS.length; i++) {
     m = CB.MUNDOS[i];
     if (!perfil.mundos[m.id]) {
@@ -1160,32 +1165,32 @@ CB.partida.desbloquearMundos = function () {
 
 /* Pantalla de fin: MISMO TONO se acabe como se acabe (§3.7) */
 CB.partida.pintarFin = function (motivo, bono, hitos) {
-  var e = CB.partida.estado, perfil = CB.perfil;
+  const e = CB.partida.estado, perfil = CB.perfil;
   CB.pantallas.ir('p-fin');
 
-  var titulo = document.getElementById('fin-titulo');
-  var sub = document.getElementById('fin-subtitulo');
+  const titulo = document.getElementById('fin-titulo');
+  const sub = document.getElementById('fin-subtitulo');
 
   /* Prohibido literalmente: «has perdido», «game over», «fin de la partida»,
      «fallaste», «te has quedado sin», y cualquier recuento de fallos. */
-  var textos = {
+  const textos = {
     luces: ['Fin de la expedición', 'Se ha apagado la luz del casco. ¡Mañana la cargamos!'],
     guion: ['Fin de la expedición', '¡Has cavado toda la galería de hoy!'],
     limiteSesion: ['Misión cumplida por hoy', 'Se ha acabado el tiempo de hoy. ¡Buena expedición!'],
     salida: ['Fin de la expedición', 'Hasta la próxima bajada a la cantera.'],
     pausa: ['Fin de la expedición', 'Lo dejamos aquí por hoy. Todo queda guardado.']
   };
-  var t = textos[motivo] || textos.guion;
+  const t = textos[motivo] || textos.guion;
   if (titulo) titulo.textContent = t[0];
   if (sub) sub.textContent = t[1];
 
   /* 1.º Lo que has dominado hoy. Orden de lectura obligatorio. */
-  var dom = document.getElementById('fin-dominado');
+  const dom = document.getElementById('fin-dominado');
   CB.ui.vaciar(dom);
   if (e.destrezasMejoradas.length) {
     e.destrezasMejoradas.forEach(function (slug) {
-      var d = perfil.destrezas[slug];
-      var fila = CB.ui.crear('div', 'bloque-dominado');
+      const d = perfil.destrezas[slug];
+      const fila = CB.ui.crear('div', 'bloque-dominado');
       fila.appendChild(CB.ui.crear('span', null, CB.memoria.ICONO[d.estado] || '◆'));
       fila.appendChild(CB.ui.crear('span', null,
         CB.partida.nombreDestreza(slug) + ' → ' + CB.memoria.ETIQUETA[d.estado]));
@@ -1197,9 +1202,9 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
   }
 
   hitos = hitos || {};
-  var caja = document.getElementById('fin-hitos');
-  var lista = document.getElementById('fin-hitos-lista');
-  var dijo = [];
+  const caja = document.getElementById('fin-hitos');
+  const lista = document.getElementById('fin-hitos-lista');
+  const dijo = [];
   if (caja && lista) {
     CB.ui.vaciar(lista);
 
@@ -1225,13 +1230,13 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
   }
 
   /* 2.º Gemas y desglose del bono. */
-  var g = document.getElementById('fin-gemas');
+  const g = document.getElementById('fin-gemas');
 
   if (g) { g.textContent = '0'; CB.ui.contarHasta(g, Math.max(0, e.gemas)); }
-  var bl = document.getElementById('fin-bono');
+  const bl = document.getElementById('fin-bono');
   if (bl) {
 
-    var gemasBono = Math.max(0, Math.round(bono.total / 50));
+    const gemasBono = Math.max(0, Math.round(bono.total / 50));
     bl.textContent = gemasBono > 0
       ? ('+' + gemasBono + ' gemas de bono: ' + bono.extras.map(function (x) {
           return CB.puntuacion.ETIQUETA_EXTRA[x] || x;
@@ -1248,8 +1253,8 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
 
   /* 3.º Momento socioafectivo: 1,5 s DESPUÉS, y solo si la partida duró ≥3 min.
      Nunca inmediatamente después de la tercera luz. */
-  var cajaAnimo = document.getElementById('fin-animo');
-  var duro = (Date.now() - e.inicioTs) >= 180000;
+  const cajaAnimo = document.getElementById('fin-animo');
+  const duro = (Date.now() - e.inicioTs) >= 180000;
   if (cajaAnimo) {
     cajaAnimo.hidden = true;
     if (duro) {
@@ -1261,10 +1266,10 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
 
   /* Tras dos partidas seguidas acabadas por luces, se ofrece Cantera Tranquila
      en primer lugar. La recomendación no puede ser una promesa vacía (§3.8). */
-  var h = perfil.historial;
-  var dosSeguidas = h.length >= 2 &&
+  const h = perfil.historial;
+  const dosSeguidas = h.length >= 2 &&
     h[h.length - 1].motivoFin === 'luces' && h[h.length - 2].motivoFin === 'luces';
-  var btnTranquila = document.getElementById('btn-tranquila-fin');
+  const btnTranquila = document.getElementById('btn-tranquila-fin');
   if (btnTranquila) btnTranquila.hidden = !dosSeguidas;
 
   CB.audio.sfx(motivo === 'luces' ? 'luzApagada' : 'subirNivel');
@@ -1286,9 +1291,9 @@ CB.partida.nombreDestreza = function (slug) {
 /* Acciones de la barra de herramientas */
 
 CB.partida.accionLeerSuave = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e || !e.itemActual) return;
-  var texto = e.itemActual.enunciado || e.itemActual.consigna || '';
+  const texto = e.itemActual.enunciado || e.itemActual.consigna || '';
   CB.partida.pararCronometro();
   CB.voz.leerOGuiar(texto, CB.ui.resaltarPalabra, function () {
     CB.ui.resaltarLinea(-1);
@@ -1297,7 +1302,7 @@ CB.partida.accionLeerSuave = function () {
 };
 
 CB.partida.accionLeer = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
 
   /* La calibración NO crea estado de partida (no tiene cronómetro, ni luces, ni puntuación: no debe parecer un test). */
   if (!e || !e.itemActual) {
@@ -1310,7 +1315,7 @@ CB.partida.accionLeer = function () {
     return;
   }
 
-  var texto = e.itemActual.enunciado || e.itemActual.consigna || '';
+  const texto = e.itemActual.enunciado || e.itemActual.consigna || '';
   /* Pulsar el altavoz salta el bloqueo de 800 ms: el niño ya ha invertido
      tiempo en el ítem, no está respondiendo al tuntún (§3.5). */
   CB.partida.bloqueado = false;
@@ -1322,9 +1327,9 @@ CB.partida.accionLeer = function () {
 };
 
 CB.partida.accionPista = function () {
-  var e = CB.partida.estado;
+  const e = CB.partida.estado;
   if (!e || !e.itemActual) return;
-  var pistas = CB.datos.MENSAJES.PISTAS[e.itemActual.destreza];
+  const pistas = CB.datos.MENSAJES.PISTAS[e.itemActual.destreza];
   /* La pista está SIEMPRE disponible y NO cuesta ninguna luz (§3.2). */
   CB.ui.mensaje(pistas ? pistas[1] : 'Léelo otra vez con calma.', 'animo');
   CB.ui.personaje('rocarr', 'pista');
@@ -1333,9 +1338,9 @@ CB.partida.accionPista = function () {
 
 /* El botón de silencio dice la verdad, y lo dicen los DOS */
 CB.partida.sincronizarSonido = function () {
-  var s = !!CB.audio.silenciado;
-  var bs = document.querySelectorAll('[data-accion="sonido"]');
-  var i, ico;
+  const s = !!CB.audio.silenciado;
+  const bs = document.querySelectorAll('[data-accion="sonido"]');
+  let i, ico;
   for (i = 0; i < bs.length; i++) {
     /* Solo el icono: el rótulo «Sonido» se queda, y escribir sobre el botón
        entero se lo llevaría por delante. */
@@ -1346,7 +1351,7 @@ CB.partida.sincronizarSonido = function () {
 };
 
 CB.partida.accionDe = function (nodo) {
-  var n = 0, a = null;
+  let n = 0, a = null;
   while (nodo && nodo !== document.body && n < 4) {
     if (nodo.getAttribute) a = nodo.getAttribute('data-accion');
     if (a) return a;
@@ -1359,7 +1364,7 @@ CB.partida.MS_CONFIRMAR_SALIDA = 3000;
 
 /* NO se usa CB.componentes.pedirConfirmacion: esa función empieza con `if (!_confirmacionPendiente) { alConfirmar(); return; }`, y esa bandera solo se pone a true cuando el antiazar ha detectado azar. */
 CB.partida.pedirSalida = function (nodo) {
-  var boton = nodo && nodo.closest ? nodo.closest('[data-accion="salir-partida"]') : null;
+  const boton = nodo && nodo.closest ? nodo.closest('[data-accion="salir-partida"]') : null;
   if (!boton) { CB.partida.finalizar('salida'); return false; }
 
   if (boton.getAttribute('data-confirmando') === 'si') {
@@ -1400,7 +1405,7 @@ CB.partida.soltarSalida = function (boton) {
 
 CB.partida.conectarBarra = function () {
   document.addEventListener('click', function (ev) {
-    var a = CB.partida.accionDe(ev.target);
+    const a = CB.partida.accionDe(ev.target);
     if (!a) return;
 
     /* Ya no hay botón «Leer»: se retiró a petición. accionLeer() sigue viva
@@ -1408,9 +1413,9 @@ CB.partida.conectarBarra = function () {
     if (a === 'pista') CB.partida.accionPista();
     if (a === 'pausa') CB.partida.pausar();
     if (a === 'sonido') {
-      var s = CB.audio.silenciar(!CB.audio.silenciado);
+      const s = CB.audio.silenciar(!CB.audio.silenciado);
       CB.partida.sincronizarSonido();
-      var aj = CB.almacen.ajustesDispositivo();
+      const aj = CB.almacen.ajustesDispositivo();
       aj.silencio = s;
       CB.almacen.guardarAjustesDispositivo(aj);
     }

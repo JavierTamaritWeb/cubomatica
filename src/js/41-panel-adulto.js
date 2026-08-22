@@ -13,8 +13,8 @@ CB.adulto.FRASES_PUERTA = [
 
 /* Efecto real: pulsar la llave de la portada NUNCA abría el panel del adulto. */
 CB.adulto.abrir = function () {
-  var puerta = document.getElementById('adulto-puerta');
-  var contenido = document.getElementById('adulto-contenido');
+  const puerta = document.getElementById('adulto-puerta');
+  const contenido = document.getElementById('adulto-contenido');
 
   if (CB.adulto.desbloqueado) {
     puerta.hidden = true;
@@ -25,21 +25,21 @@ CB.adulto.abrir = function () {
   puerta.hidden = false;
   contenido.hidden = true;
 
-  var reto = CB.adulto.FRASES_PUERTA[
+  const reto = CB.adulto.FRASES_PUERTA[
     CB.util.hash32(CB.util.hoyISO()) % CB.adulto.FRASES_PUERTA.length];
-  var orden = ['primera', 'segunda', 'tercera', 'cuarta', 'quinta', 'sexta'];
+  const orden = ['primera', 'segunda', 'tercera', 'cuarta', 'quinta', 'sexta'];
 
-  var preg = document.getElementById('adulto-pregunta');
+  const preg = document.getElementById('adulto-pregunta');
   preg.textContent = 'Para entrar, escribe la ' + orden[reto.n - 1] +
                      ' palabra de esta frase: «' + reto.frase + '»';
 
-  var campo = document.getElementById('adulto-respuesta');
-  var error = document.getElementById('adulto-error');
+  const campo = document.getElementById('adulto-respuesta');
+  const error = document.getElementById('adulto-error');
   campo.value = '';
   error.hidden = true;
 
   document.getElementById('adulto-entrar').onclick = function () {
-    var esperada = CB.util.palabras(reto.frase)[reto.n - 1].toLowerCase();
+    const esperada = CB.util.palabras(reto.frase)[reto.n - 1].toLowerCase();
     if (CB.util.normalizar(campo.value) === CB.util.normalizar(esperada)) {
       CB.adulto.desbloqueado = true;
       puerta.hidden = true;
@@ -53,11 +53,11 @@ CB.adulto.abrir = function () {
 
 /* Las 10 métricas */
 CB.adulto.metricas = function (perfil) {
-  var hoy = CB.util.hoyISO();
-  var h = perfil.historial || [];
-  var ultimas = h.slice(-10);
+  const hoy = CB.util.hoyISO();
+  const h = perfil.historial || [];
+  const ultimas = h.slice(-10);
 
-  var segTotal = 0, preg = 0, ac = 0, ac1 = 0, azar = 0, luces = 0, i;
+  let segTotal = 0, preg = 0, ac = 0, ac1 = 0, azar = 0, luces = 0, i;
   for (i = 0; i < ultimas.length; i++) {
     segTotal += ultimas[i].seg || 0;
     preg += ultimas[i].preguntas || 0;
@@ -67,7 +67,8 @@ CB.adulto.metricas = function (perfil) {
     luces += ultimas[i].lucesApagadas || 0;
   }
 
-  var dominadas = [], flojas = [], k, d;
+  const dominadas = [], flojas = [];
+  let k, d;
   for (k in perfil.destrezas) {
     if (!Object.prototype.hasOwnProperty.call(perfil.destrezas, k)) continue;
     d = perfil.destrezas[k];
@@ -75,9 +76,9 @@ CB.adulto.metricas = function (perfil) {
     if (d.n >= 6 && CB.adaptativo.precision1er(d) < 0.5) flojas.push(k);
   }
 
-  var repCompletas = 0, repTotal = 0;
+  let repCompletas = 0, repTotal = 0;
   (perfil.respuestas || []).forEach(function (r) {
-    var flags = r[7] || 0;
+    const flags = r[7] || 0;
     if (flags & 1) { repTotal++; if (flags & 32) repCompletas++; }
   });
 
@@ -103,7 +104,7 @@ CB.adulto.metricas = function (perfil) {
 
 /* Semáforo por bloque. NUNCA solo color: la clase CSS añade símbolo y texto. */
 CB.adulto.semaforo = function (perfil) {
-  var bloques = {
+  const bloques = {
     'Numeración': ['numeracion', 'valor_posicional'],
     'Sumas': ['suma_sin_llevar', 'suma_llevada'],
     'Restas': ['resta_sin_llevar', 'resta_llevada'],
@@ -113,7 +114,8 @@ CB.adulto.semaforo = function (perfil) {
     'Dinero': ['dinero'],
     'Vocabulario': ['vocabulario']
   };
-  var out = [], nombre, slugs, n = 0, p = 0, i, d;
+  const out = [];
+  let nombre, slugs, n = 0, p = 0, i, d;
 
   for (nombre in bloques) {
     if (!Object.prototype.hasOwnProperty.call(bloques, nombre)) continue;
@@ -124,7 +126,7 @@ CB.adulto.semaforo = function (perfil) {
     }
     /* Con menos de 6 observaciones NO se emite juicio: «sin datos suficientes»
        es una respuesta honesta y «rojo» con n=2 no lo es. */
-    var nivel;
+    let nivel;
     if (n < 6) nivel = 'sindatos';
     else if (p / n >= 0.8) nivel = 'verde';
     else if (p / n >= 0.55) nivel = 'ambar';
@@ -137,7 +139,7 @@ CB.adulto.semaforo = function (perfil) {
 
 /* Pintado del panel */
 CB.adulto.crearResumen = function (metricas) {
-  var caja = CB.ui.crear('div', 'adulto__caja');
+  const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'De un vistazo'));
   CB.adulto.metrica(caja, 'Tiempo de pantalla hoy',
     Math.round(metricas.m1_tiempoHoy / 60) + ' min');
@@ -155,22 +157,22 @@ CB.adulto.crearResumen = function (metricas) {
 };
 
 CB.adulto.crearTablaBloques = function (metricas) {
-  var caja = CB.ui.crear('div', 'adulto__caja');
+  const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Por bloques de contenido'));
-  var tabla = CB.ui.crear('table', 'adulto__tabla');
-  var cabecera = CB.ui.crear('tr');
+  const tabla = CB.ui.crear('table', 'adulto__tabla');
+  const cabecera = CB.ui.crear('tr');
   ['Bloque', 'Situación', 'Preguntas'].forEach(function (texto) {
     cabecera.appendChild(CB.ui.crear('th', null, texto));
   });
-  var thead = CB.ui.crear('thead');
+  const thead = CB.ui.crear('thead');
   thead.appendChild(cabecera);
   tabla.appendChild(thead);
-  var tbody = CB.ui.crear('tbody');
+  const tbody = CB.ui.crear('tbody');
   metricas.m4_semaforo.forEach(function (situacion) {
-    var fila = CB.ui.crear('tr');
+    const fila = CB.ui.crear('tr');
     fila.appendChild(CB.ui.crear('td', null, situacion.bloque));
-    var celdaSituacion = CB.ui.crear('td');
-    var indicador = CB.ui.crear('span', 'semaforo',
+    const celdaSituacion = CB.ui.crear('td');
+    const indicador = CB.ui.crear('span', 'semaforo',
       situacion.precision == null ? '' : situacion.precision + ' %');
     indicador.setAttribute('data-nivel', situacion.nivel);
     celdaSituacion.appendChild(indicador);
@@ -184,22 +186,22 @@ CB.adulto.crearTablaBloques = function (metricas) {
 };
 
 CB.adulto.crearMatrizProblemas = function (metricas) {
-  var caja = CB.ui.crear('div', 'adulto__caja');
+  const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Problemas de enunciado, por tipo'));
   caja.appendChild(CB.ui.crear('p', null,
     'Dos problemas con los mismos números y la misma operación tienen ' +
     'dificultades muy distintas según cómo estén contados. Esta tabla es la ' +
     'información más accionable del panel.'));
-  var tabla = CB.ui.crear('table', 'adulto__tabla matriz-subtipos');
-  var cabecera = CB.ui.crear('tr');
+  const tabla = CB.ui.crear('table', 'adulto__tabla matriz-subtipos');
+  const cabecera = CB.ui.crear('tr');
   ['Tipo de problema', 'Intentos', 'Aciertos', 'Tiempo medio'].forEach(function (texto) {
     cabecera.appendChild(CB.ui.crear('th', null, texto));
   });
   tabla.appendChild(cabecera);
   CB.gen.problemas.SUBTIPOS.forEach(function (subtipo) {
-    var dato = metricas.m6_subtipos[subtipo];
+    const dato = metricas.m6_subtipos[subtipo];
     if (!dato || !dato.intentos) return;
-    var fila = CB.ui.crear('tr');
+    const fila = CB.ui.crear('tr');
     fila.appendChild(CB.ui.crear('td', null, CB.adulto.NOMBRE_SUBTIPO[subtipo] || subtipo));
     fila.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato', String(dato.intentos)));
     fila.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato',
@@ -213,9 +215,9 @@ CB.adulto.crearMatrizProblemas = function (metricas) {
 };
 
 CB.adulto.crearRecomendaciones = function (perfil, metricas) {
-  var caja = CB.ui.crear('div', 'adulto__caja');
+  const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Qué conviene trabajar'));
-  var codigos = Object.keys(metricas.m7_errores).filter(function (codigo) {
+  const codigos = Object.keys(metricas.m7_errores).filter(function (codigo) {
     return metricas.m7_errores[codigo].vecesDiscriminante >= 2;
   }).sort(function (a, b) {
     return metricas.m7_errores[b].vecesDiscriminante - metricas.m7_errores[a].vecesDiscriminante;
@@ -230,11 +232,11 @@ CB.adulto.crearRecomendaciones = function (perfil, metricas) {
   }
 
   codigos.forEach(function (codigo) {
-    var recomendacion = CB.datos.RECOMENDACIONES[codigo];
+    const recomendacion = CB.datos.RECOMENDACIONES[codigo];
     if (!recomendacion) return;
     caja.appendChild(CB.ui.crear('h3', null, recomendacion.frase));
     caja.appendChild(CB.ui.crear('p', null, '10 minutos: ' + recomendacion.actividad));
-    var ejemplos = (metricas.m7_errores[codigo].ejemplos || []).join(' · ');
+    const ejemplos = (metricas.m7_errores[codigo].ejemplos || []).join(' · ');
     if (ejemplos) caja.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Ejemplos: ' + ejemplos));
     caja.appendChild(CB.ui.boton('Imprimir ficha de refuerzo', 'btn-adulto', function () {
       CB.adulto.fichaRefuerzo(perfil, codigo);
@@ -244,7 +246,7 @@ CB.adulto.crearRecomendaciones = function (perfil, metricas) {
 };
 
 CB.adulto.crearResumenJuego = function (metricas) {
-  var caja = CB.ui.crear('div', 'adulto__caja');
+  const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Cómo está jugando'));
   CB.adulto.metrica(caja, 'Respuestas muy rápidas sin acertar', String(metricas.m8_azares));
   caja.appendChild(CB.ui.crear('p', 'texto texto--menor',
@@ -256,7 +258,7 @@ CB.adulto.crearResumenJuego = function (metricas) {
       : Math.round(metricas.m9_reparaciones * 100) + ' % de ' + metricas.m9_reparacionesTotal);
   CB.adulto.metrica(caja, 'Luces apagadas (últimas 10 partidas)', String(metricas.lucesApagadas));
   if (metricas.m10_animo.length) {
-    var caras = ['me ha costado', 'normal', 'contento'];
+    const caras = ['me ha costado', 'normal', 'contento'];
     CB.adulto.metrica(caja, 'Cómo dice que se ha sentido',
       metricas.m10_animo.map(function (animo) { return caras[animo.cara] || '?'; }).join(', '));
   }
@@ -265,13 +267,13 @@ CB.adulto.crearResumenJuego = function (metricas) {
 
 CB.adulto.crearSeccionOffline = function () {
   if (!CB.offline || !CB.offline.DISPONIBLE) return null;
-  var caja = CB.ui.crear('div', 'adulto__caja');
+  const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Sin conexión'));
   caja.appendChild(CB.ui.crear('p', null,
     'El juego ya funciona sin internet: no pide nada a la red. Lo único que ' +
     'no se guarda por su cuenta es la música, porque son 42 MB.'));
 
-  var estado = CB.ui.crear('p', 'texto texto--menor', 'Comprobando…');
+  const estado = CB.ui.crear('p', 'texto texto--menor', 'Comprobando…');
   caja.appendChild(estado);
   CB.offline.musicaGuardada(function (cantidad) {
     estado.textContent = cantidad === 0
@@ -279,8 +281,8 @@ CB.adulto.crearSeccionOffline = function () {
       : 'Guardadas ' + cantidad + ' de 9 pistas.';
   });
 
-  var fila = CB.ui.crear('div', 'fila');
-  var descargar = CB.ui.boton('Descargar la música (42 MB)', 'btn-adulto', function () {
+  const fila = CB.ui.crear('div', 'fila');
+  const descargar = CB.ui.boton('Descargar la música (42 MB)', 'btn-adulto', function () {
     descargar.disabled = true;
     estado.textContent = 'Descargando… 0 de 9';
     CB.offline.descargarMusica(
@@ -289,7 +291,7 @@ CB.adulto.crearSeccionOffline = function () {
       },
       function (resultado) {
         descargar.disabled = false;
-        var hechas = resultado.hechas || 0;
+        const hechas = resultado.hechas || 0;
         if (resultado.ok) {
           estado.textContent = 'Listo: las ' + hechas + ' pistas están guardadas.';
         } else if (resultado.fallos) {
@@ -316,12 +318,12 @@ CB.adulto.crearSeccionOffline = function () {
 };
 
 CB.adulto.crearSeccionDatos = function (perfil) {
-  var caja = CB.ui.crear('div', 'adulto__caja');
+  const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Datos'));
   caja.appendChild(CB.ui.crear('p', null, CB.LEGAL.PRIVACIDAD));
   caja.appendChild(CB.ui.crear('p', null, CB.LEGAL.LIMITACION));
 
-  var fila = CB.ui.crear('div', 'fila');
+  const fila = CB.ui.crear('div', 'fila');
   fila.appendChild(CB.ui.boton('Ver informe imprimible', 'btn-adulto', function () {
     CB.adulto.imprimirInforme(perfil.id);
   }));
@@ -337,7 +339,7 @@ CB.adulto.crearSeccionDatos = function (perfil) {
   }));
   caja.appendChild(fila);
 
-  var aviso = CB.ui.crear('p', 'texto texto--menor');
+  const aviso = CB.ui.crear('p', 'texto texto--menor');
   aviso.id = 'adulto-aviso-datos';
   aviso.setAttribute('role', 'status');
   caja.appendChild(aviso);
@@ -349,19 +351,19 @@ CB.adulto.crearSeccionDatos = function (perfil) {
 };
 
 CB.adulto.pintar = function () {
-  var perfil = CB.perfil;
-  var cont = document.getElementById('adulto-contenido');
+  const perfil = CB.perfil;
+  const cont = document.getElementById('adulto-contenido');
   if (!perfil || !cont) return;
   CB.ui.vaciar(cont);
 
-  var m = CB.adulto.metricas(perfil);
+  const m = CB.adulto.metricas(perfil);
 
   cont.appendChild(CB.ui.crear('h1', null, 'Panel de personas adultas'));
   cont.appendChild(CB.ui.crear('p', null, perfil.mote + ' · ' + m.diasJugados +
     (m.diasJugados === 1 ? ' día jugado' : ' días jugados')));
 
   /* Alcance declarado, LITERAL, en la primera pantalla del panel (§1.3). */
-  var aviso = CB.ui.crear('div', 'adulto__aviso');
+  const aviso = CB.ui.crear('div', 'adulto__aviso');
   aviso.appendChild(CB.ui.crear('h3', null, 'Qué mide y qué no mide este juego'));
   aviso.appendChild(CB.ui.crear('p', null, CB.LEGAL.ALCANCE));
   aviso.appendChild(CB.ui.crear('p', null, CB.LEGAL.SECUENCIACION));
@@ -373,7 +375,7 @@ CB.adulto.pintar = function () {
   cont.appendChild(aviso);
 
   if (CB.almacen.sinDisco) {
-    var alerta = CB.ui.crear('div', 'adulto__aviso');
+    const alerta = CB.ui.crear('div', 'adulto__aviso');
     alerta.appendChild(CB.ui.crear('h3', null, 'Aviso: no se está guardando en disco'));
     alerta.appendChild(CB.ui.crear('p', null,
       'El navegador no permite guardar. El progreso de esta sesión se perderá ' +
@@ -400,7 +402,7 @@ CB.adulto.pintar = function () {
   cont.appendChild(CB.adulto.cajaAjustes(perfil));
 
   /* Sin conexión */
-  var seccionOffline = CB.adulto.crearSeccionOffline();
+  const seccionOffline = CB.adulto.crearSeccionOffline();
   if (seccionOffline) cont.appendChild(seccionOffline);
 
   /* Datos */
@@ -414,7 +416,7 @@ CB.adulto.pintar = function () {
 };
 
 CB.adulto.metrica = function (cont, etiqueta, valor) {
-  var d = CB.ui.crear('div', 'metrica');
+  const d = CB.ui.crear('div', 'metrica');
   d.appendChild(CB.ui.crear('span', null, etiqueta));
   d.appendChild(CB.ui.crear('span', 'metrica__valor', valor));
   cont.appendChild(d);
@@ -462,18 +464,18 @@ CB.adulto.AJUSTES = [
 ];
 
 CB.adulto.cajaAjustes = function (perfil) {
-  var caja = CB.ui.crear('div', 'adulto__caja');
+  const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Ajustes'));
 
   CB.adulto.AJUSTES.forEach(function (a) {
-    var fila = CB.ui.crear('div', 'metrica');
-    var izq = CB.ui.crear('span');
+    const fila = CB.ui.crear('div', 'metrica');
+    const izq = CB.ui.crear('span');
     izq.appendChild(CB.ui.crear('span', null, a.t));
     if (a.nota) izq.appendChild(CB.ui.crear('p', 'texto texto--menor', a.nota));
     fila.appendChild(izq);
 
     if (a.tipo === 'bool') {
-      var b = CB.ui.boton(perfil.ajustes[a.k] ? 'Sí' : 'No', 'btn-adulto', function () {
+      const b = CB.ui.boton(perfil.ajustes[a.k] ? 'Sí' : 'No', 'btn-adulto', function () {
         perfil.ajustes[a.k] = !perfil.ajustes[a.k];
         b.textContent = perfil.ajustes[a.k] ? 'Sí' : 'No';
         CB.a11y.aplicarAjustes(perfil.ajustes, CB.almacen.ajustesDispositivo());
@@ -482,9 +484,9 @@ CB.adulto.cajaAjustes = function (perfil) {
       b.className = 'btn-adulto';
       fila.appendChild(b);
     } else {
-      var sel = CB.ui.crear('span');
+      const sel = CB.ui.crear('span');
       a.ops.forEach(function (op) {
-        var b2 = CB.ui.crear('button', 'btn-adulto', op[1]);
+        const b2 = CB.ui.crear('button', 'btn-adulto', op[1]);
         b2.type = 'button';
         if (perfil.ajustes[a.k] === op[0]) b2.style.fontWeight = 'bold';
         b2.addEventListener('click', function () {
@@ -501,10 +503,10 @@ CB.adulto.cajaAjustes = function (perfil) {
 
   /* Ajustes del APARATO, separados: en modo aula con 30 perfiles, mezclarlos
      hace que el maestro no entienda por qué a 12 alumnos no les aparece (§15.2). */
-  var ap = CB.almacen.ajustesDispositivo();
-  var f2 = CB.ui.crear('div', 'metrica');
+  const ap = CB.almacen.ajustesDispositivo();
+  const f2 = CB.ui.crear('div', 'metrica');
   f2.appendChild(CB.ui.crear('span', null, 'Modo aula (hasta 30 perfiles)'));
-  var ba = CB.ui.boton(ap.modoAula ? 'Sí' : 'No', 'btn-adulto', function () {
+  const ba = CB.ui.boton(ap.modoAula ? 'Sí' : 'No', 'btn-adulto', function () {
     ap.modoAula = !ap.modoAula;
     CB.almacen.guardarAjustesDispositivo(ap);
     ba.textContent = ap.modoAula ? 'Sí' : 'No';
@@ -512,9 +514,9 @@ CB.adulto.cajaAjustes = function (perfil) {
   f2.appendChild(ba);
   caja.appendChild(f2);
 
-  var f3 = CB.ui.crear('div', 'metrica');
+  const f3 = CB.ui.crear('div', 'metrica');
   f3.appendChild(CB.ui.crear('span', null, 'Modo proyección (pizarra digital)'));
-  var bp = CB.ui.boton(ap.modoProyeccion ? 'Sí' : 'No', 'btn-adulto', function () {
+  const bp = CB.ui.boton(ap.modoProyeccion ? 'Sí' : 'No', 'btn-adulto', function () {
     ap.modoProyeccion = !ap.modoProyeccion;
     CB.almacen.guardarAjustesDispositivo(ap);
     CB.a11y.aplicarAjustes(perfil.ajustes, ap);
@@ -528,9 +530,9 @@ CB.adulto.cajaAjustes = function (perfil) {
 
 /* Informe imprimible */
 CB.adulto.imprimirInforme = function (perfilId) {
-  var perfil = CB.perfil;
-  var m = CB.adulto.metricas(perfil);
-  var cuerpo = document.getElementById('informe-cuerpo');
+  const perfil = CB.perfil;
+  const m = CB.adulto.metricas(perfil);
+  const cuerpo = document.getElementById('informe-cuerpo');
   CB.ui.vaciar(cuerpo);
 
   cuerpo.appendChild(CB.ui.crear('h1', null, 'Cubomática — informe de ' + perfil.mote));
@@ -538,7 +540,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
     'Fecha: ' + CB.util.hoyISO() + ' · ' + m.diasJugados + ' días jugados · ' +
     m.m2_partidas + ' expediciones'));
 
-  var av = CB.ui.crear('div', 'adulto__aviso');
+  const av = CB.ui.crear('div', 'adulto__aviso');
   av.appendChild(CB.ui.crear('p', null, CB.LEGAL.ALCANCE));
   av.appendChild(CB.ui.crear('p', null, CB.LEGAL.SECUENCIACION));
   av.appendChild(CB.ui.crear('p', null,
@@ -546,17 +548,17 @@ CB.adulto.imprimirInforme = function (perfilId) {
   cuerpo.appendChild(av);
 
   cuerpo.appendChild(CB.ui.crear('h2', null, 'Por bloques'));
-  var t = CB.ui.crear('table', 'adulto__tabla');
-  var trh = CB.ui.crear('tr');
+  const t = CB.ui.crear('table', 'adulto__tabla');
+  const trh = CB.ui.crear('tr');
   ['Bloque', 'Situación', 'Preguntas'].forEach(function (x) {
     trh.appendChild(CB.ui.crear('th', null, x));
   });
   t.appendChild(trh);
   m.m4_semaforo.forEach(function (s) {
-    var tr = CB.ui.crear('tr');
+    const tr = CB.ui.crear('tr');
     tr.appendChild(CB.ui.crear('td', null, s.bloque));
-    var td = CB.ui.crear('td');
-    var sp = CB.ui.crear('span', 'semaforo', s.precision == null ? '' : s.precision + ' %');
+    const td = CB.ui.crear('td');
+    const sp = CB.ui.crear('span', 'semaforo', s.precision == null ? '' : s.precision + ' %');
     sp.setAttribute('data-nivel', s.nivel);
     td.appendChild(sp); tr.appendChild(td);
     tr.appendChild(CB.ui.crear('td', null, String(s.n)));
@@ -564,7 +566,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
   });
   cuerpo.appendChild(t);
 
-  var cods = Object.keys(m.m7_errores).filter(function (c) {
+  const cods = Object.keys(m.m7_errores).filter(function (c) {
     return m.m7_errores[c].vecesDiscriminante >= 2;
   }).slice(0, 3);
   cuerpo.appendChild(CB.ui.crear('h2', null, 'Qué conviene trabajar en casa o en el aula'));
@@ -573,7 +575,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
       'Sin evidencia suficiente para señalar un procedimiento concreto.'));
   } else {
     cods.forEach(function (c) {
-      var rec = CB.datos.RECOMENDACIONES[c];
+      const rec = CB.datos.RECOMENDACIONES[c];
       if (!rec) return;
       cuerpo.appendChild(CB.ui.crear('h3', null, rec.frase));
       cuerpo.appendChild(CB.ui.crear('p', null, rec.actividad));
@@ -584,34 +586,34 @@ CB.adulto.imprimirInforme = function (perfilId) {
     CB.LEGAL.NORMA + ' — ' + CB.LEGAL.PRIVACIDAD));
 
   CB.pantallas.ir('p-informe');
-  var b = document.getElementById('btn-imprimir');
+  const b = document.getElementById('btn-imprimir');
   if (b) b.onclick = function () { window.print(); };
 };
 
 /* Ficha de refuerzo en papel: 10 ítems del tipo exacto que falla */
 CB.adulto.fichaRefuerzo = function (perfil, codigoError) {
-  var rec = CB.datos.RECOMENDACIONES[codigoError];
-  var err = CB.ERRORES[codigoError];
+  const rec = CB.datos.RECOMENDACIONES[codigoError];
+  const err = CB.ERRORES[codigoError];
   if (!rec || !err) return;
 
-  var cuerpo = document.getElementById('informe-cuerpo');
+  const cuerpo = document.getElementById('informe-cuerpo');
   CB.ui.vaciar(cuerpo);
 
-  var ficha = CB.ui.crear('div', 'ficha-refuerzo');
+  const ficha = CB.ui.crear('div', 'ficha-refuerzo');
   ficha.appendChild(CB.ui.crear('h1', null, 'Ficha de refuerzo · ' + perfil.mote));
   ficha.appendChild(CB.ui.crear('p', null, rec.frase));
   ficha.appendChild(CB.ui.crear('p', null, 'Antes de la ficha: ' + rec.actividad));
 
-  var niveles = CB.catalogo.todos().filter(function (n) {
+  const niveles = CB.catalogo.todos().filter(function (n) {
     return n.letra === err.familia && !n.ampliacion;
   });
-  var nivel = niveles[Math.floor(niveles.length / 2)] || niveles[0];
+  const nivel = niveles[Math.floor(niveles.length / 2)] || niveles[0];
 
-  var rej = CB.ui.crear('div', 'ficha-refuerzo__rejilla');
-  var i;
+  const rej = CB.ui.crear('div', 'ficha-refuerzo__rejilla');
+  let i;
   for (i = 0; i < 10 && nivel; i++) {
-    var rng = CB.util.mulberry32(CB.util.hash32(perfil.id + codigoError + i));
-    var item = nivel.generar(rng, 2, { ajustes: perfil.ajustes, techo: 999,
+    const rng = CB.util.mulberry32(CB.util.hash32(perfil.id + codigoError + i));
+    const item = nivel.generar(rng, 2, { ajustes: perfil.ajustes, techo: 999,
                                        bolsas: CB.gen.problemas.nuevoEstadoBolsas() });
     if (!item) continue;
     rej.appendChild(CB.ui.crear('div', 'ficha-refuerzo__ejercicio',
@@ -624,17 +626,17 @@ CB.adulto.fichaRefuerzo = function (perfil, codigoError) {
   cuerpo.appendChild(ficha);
 
   CB.pantallas.ir('p-informe');
-  var b = document.getElementById('btn-imprimir');
+  const b = document.getElementById('btn-imprimir');
   if (b) b.onclick = function () { window.print(); };
 };
 
 /* CSV */
 CB.adulto.descargarCSV = function (perfil) {
-  var lineas = ['fecha;itemId;nivel;destreza;beta;D;rt_ms;correcta;valor_dado;flags'];
+  const lineas = ['fecha;itemId;nivel;destreza;beta;D;rt_ms;correcta;valor_dado;flags'];
   (perfil.respuestas || []).forEach(function (r) {
-    var nivelId = String(r[1]).split('#')[0];
-    var nivel = CB.catalogo.get(nivelId);
-    var f = new Date(r[0]);
+    const nivelId = String(r[1]).split('#')[0];
+    const nivel = CB.catalogo.get(nivelId);
+    const f = new Date(r[0]);
     lineas.push([
       CB.util.hoyISO(f), r[1], nivelId, nivel ? nivel.destreza : '',
       r[2], r[3], r[4], r[5], r[6], r[7]
@@ -646,9 +648,9 @@ CB.adulto.descargarCSV = function (perfil) {
 
 CB.adulto.descargar = function (texto, nombre, tipo) {
   try {
-    var blob = new Blob([texto], { type: tipo + ';charset=utf-8' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
+    const blob = new Blob([texto], { type: tipo + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
     a.href = url; a.download = nombre;
     document.body.appendChild(a);
     a.click();
@@ -662,35 +664,35 @@ CB.adulto.descargar = function (texto, nombre, tipo) {
 /* Borrar exige escribir la palabra BORRAR (§15.8). */
 
 CB.adulto.restaurar = function (cont) {
-  var aviso = document.getElementById('adulto-aviso-datos');
+  const aviso = document.getElementById('adulto-aviso-datos');
   function decir(t) {
     if (aviso) aviso.textContent = t;
     CB.a11y.anunciar(t);
   }
 
-  var input = document.createElement('input');
+  const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json,application/json';
   input.style.display = 'none';
 
   input.addEventListener('change', function () {
-    var f = input.files && input.files[0];
+    const f = input.files && input.files[0];
     if (!f) return;
     if (f.size > 2 * 1024 * 1024) {
       decir('Ese fichero es demasiado grande para ser una copia de Cubomática.');
       return;
     }
-    var lector = new FileReader();
+    const lector = new FileReader();
     lector.onerror = function () { decir('No se ha podido leer el fichero.'); };
     lector.onload = function () {
-      var crudo;
+      let crudo;
       try {
         crudo = JSON.parse(String(lector.result));
       } catch (e) {
         decir('Ese fichero no es una copia de Cubomática: no se entiende su contenido.');
         return;
       }
-      var v = CB.almacen.validarImportado(crudo, CB.datos.MOTES);
+      const v = CB.almacen.validarImportado(crudo, CB.datos.MOTES);
       if (!v.ok) {
         decir(v.motivo === 'version'
           ? 'Esa copia viene de una versión más nueva del juego. Actualiza Cubomática antes de restaurarla.'
@@ -698,9 +700,9 @@ CB.adulto.restaurar = function (cont) {
         return;
       }
 
-      var p = v.perfil;
-      var idx = CB.almacen.indice();
-      var existe = idx.some(function (e) { return e.id === p.id; });
+      const p = v.perfil;
+      const idx = CB.almacen.indice();
+      const existe = idx.some(function (e) { return e.id === p.id; });
       /* Si ya hay un perfil con ese id, se restaura ENCIMA: es lo que espera
          quien recupera su propia copia. Si es nuevo, se añade al índice. */
       CB.almacen.guardarPerfil(p);
@@ -720,11 +722,11 @@ CB.adulto.restaurar = function (cont) {
 };
 
 CB.adulto.confirmarBorrado = function (perfil, cont) {
-  var caja = CB.ui.crear('div', 'adulto__aviso');
+  const caja = CB.ui.crear('div', 'adulto__aviso');
   caja.appendChild(CB.ui.crear('p', null,
     'Esto borra para siempre el progreso de ' + perfil.mote +
     '. Escribe BORRAR para confirmar.'));
-  var campo = CB.ui.crear('input');
+  const campo = CB.ui.crear('input');
   campo.type = 'text';
   campo.setAttribute('aria-label', 'Escribe BORRAR');
   caja.appendChild(campo);

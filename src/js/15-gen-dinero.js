@@ -49,8 +49,9 @@ CB.gen.dinero.nombre = function (v) {
 
 /* Reparte un importe en piezas reales, de mayor a menor. */
 CB.gen.dinero.descomponer = function (importe, conBilletes) {
-  var piezas = [], resto = importe, i;
-  var valores = conBilletes
+  const piezas = [];
+  let resto = importe, i;
+  const valores = conBilletes
     ? CB.gen.dinero.BILLETES.slice().reverse().concat(CB.gen.dinero.MONEDAS.slice().reverse())
     : CB.gen.dinero.MONEDAS.slice().reverse();
   for (i = 0; i < valores.length; i++) {
@@ -64,8 +65,8 @@ CB.gen.dinero.descomponer = function (importe, conBilletes) {
 
 /* E1 Reconocer monedas y billetes */
 CB.gen.dinero.E1 = function (rng, D) {
-  var todos = CB.gen.dinero.MONEDAS.concat(CB.gen.dinero.BILLETES);
-  var v = CB.util.elegir(rng, todos);
+  const todos = CB.gen.dinero.MONEDAS.concat(CB.gen.dinero.BILLETES);
+  const v = CB.util.elegir(rng, todos);
   return {
     formato: 'opciones4',
     consigna: 'Toca ' + CB.gen.dinero.nombre(v) + '.',
@@ -83,7 +84,8 @@ CB.gen.dinero.E1 = function (rng, D) {
 
 /* E2 Contar con monedas de 1 y 2 € */
 CB.gen.dinero.E2 = function (rng, D) {
-  var n = CB.util.ent(rng, 3, (D === 1) ? 5 : 8), piezas = [], total = 0, i, v;
+  const n = CB.util.ent(rng, 3, (D === 1) ? 5 : 8), piezas = [];
+  let total = 0, i, v;
   for (i = 0; i < n; i++) {
     v = CB.util.elegir(rng, CB.gen.dinero.MONEDAS);
     piezas.push(v); total += v;
@@ -101,8 +103,9 @@ CB.gen.dinero.E2 = function (rng, D) {
 
 /* E3 Contar con billetes */
 CB.gen.dinero.E3 = function (rng, D) {
-  var n = CB.util.ent(rng, 2, (D === 1) ? 3 : 4), piezas = [], total = 0, i, v;
-  var pool = (D === 3) ? CB.gen.dinero.BILLETES : [5, 10, 20];
+  const n = CB.util.ent(rng, 2, (D === 1) ? 3 : 4);
+  let piezas = [], total = 0, i, v;
+  const pool = (D === 3) ? CB.gen.dinero.BILLETES : [5, 10, 20];
   for (i = 0; i < n; i++) {
     v = CB.util.elegir(rng, pool);
     if (total + v > 100) break;
@@ -122,8 +125,8 @@ CB.gen.dinero.E3 = function (rng, D) {
 
 /* E4 Equivalencias entre billetes */
 CB.gen.dinero.E4 = function (rng, D) {
-  var grande = CB.util.elegir(rng, [10, 20, 50, 100]);
-  var pequeno = CB.util.elegir(rng, CB.gen.dinero.BILLETES.filter(function (v) {
+  const grande = CB.util.elegir(rng, [10, 20, 50, 100]);
+  let pequeno = CB.util.elegir(rng, CB.gen.dinero.BILLETES.filter(function (v) {
     return v < grande && grande % v === 0;
   }));
   if (pequeno == null) pequeno = 5;
@@ -139,7 +142,7 @@ CB.gen.dinero.E4 = function (rng, D) {
 
 /* E5 Pagar con importe exacto */
 CB.gen.dinero.E5 = function (rng, D) {
-  var precio = CB.util.ent(rng, 3, (D === 1) ? 12 : 50);
+  const precio = CB.util.ent(rng, 3, (D === 1) ? 12 : 50);
   return {
     formato: 'monedas',
     consigna: 'Paga justo ' + CB.gen.dinero.euros(precio) + '.',
@@ -154,8 +157,8 @@ CB.gen.dinero.E5 = function (rng, D) {
 
 /* E6 El cambio */
 CB.gen.dinero.E6 = function (rng, D) {
-  var precio = CB.util.ent(rng, 2, (D === 1) ? 8 : 18);
-  var pagaCon = CB.util.elegir(rng, CB.gen.dinero.BILLETES.filter(function (v) {
+  const precio = CB.util.ent(rng, 2, (D === 1) ? 8 : 18);
+  let pagaCon = CB.util.elegir(rng, CB.gen.dinero.BILLETES.filter(function (v) {
     return v > precio && v <= 20;
   }));
   if (pagaCon == null) pagaCon = 20;
@@ -172,8 +175,8 @@ CB.gen.dinero.E6 = function (rng, D) {
 
 /* E7 La compra: gasto total */
 CB.gen.dinero.E7 = function (rng, D) {
-  var a = CB.util.ent(rng, 2, (D === 1) ? 15 : 45);
-  var b = CB.util.ent(rng, 2, (D === 1) ? 15 : 45);
+  const a = CB.util.ent(rng, 2, (D === 1) ? 15 : 45);
+  let b = CB.util.ent(rng, 2, (D === 1) ? 15 : 45);
   if (a + b > 99) b = 99 - a;
   return {
     formato: 'teclado',
@@ -193,8 +196,8 @@ CB.gen.dinero.E8 = function (rng, D) {
 };
 
 CB.gen.dinero.E8reconocer = function (rng, D) {
-  var todas = CB.gen.dinero.PIEZAS_CENTIMO.map(CB.gen.dinero.pieza);
-  var v = CB.util.elegir(rng, todas);
+  const todas = CB.gen.dinero.PIEZAS_CENTIMO.map(CB.gen.dinero.pieza);
+  const v = CB.util.elegir(rng, todas);
   return {
     formato: 'opciones4',
     consigna: 'Toca ' + CB.gen.dinero.nombre(v) + '.',
@@ -211,8 +214,8 @@ CB.gen.dinero.E8reconocer = function (rng, D) {
 };
 
 CB.gen.dinero.E8equivalencia = function (rng, D) {
-  var c = CB.util.elegir(rng, CB.gen.dinero.CENTIMOS);
-  var cuantas = Math.round(100 / c);
+  const c = CB.util.elegir(rng, CB.gen.dinero.CENTIMOS);
+  const cuantas = Math.round(100 / c);
   return {
     formato: 'opciones4',
     /* SIEMPRE entero + la palabra «céntimos». Nunca «0,50 €». */

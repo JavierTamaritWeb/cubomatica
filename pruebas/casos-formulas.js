@@ -1,9 +1,9 @@
 /* casos-formulas.js — Los 30 casos de PLAN §11.7 + las 6 aserciones A1-A6 */
 
 CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
-  var N = {
+  const N = {
     S9: { Pb: 100, tI: 8000,  tL: 24000 },
     N3: { Pb: 80,  tI: 6000,  tL: 18000 },
     R8: { Pb: 110, tI: 9000,  tL: 27000 },
@@ -14,7 +14,7 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
   };
 
   /* id, nivel, rt, modo, intento, correcto, azar, mT, puntos, gemas */
-  var CASOS = [
+  const CASOS = [
     ['C01','S9', 8000,'normal',  1,1,0, 1.40, 140, 3],
     ['C02','S9', 4000,'normal',  1,1,0, 1.40, 140, 3],
     ['C03','S9',  600,'normal',  1,1,0, 1.40, 140, 3],
@@ -47,7 +47,7 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
     ['C30','V1', 7000,'normal',  1,1,0, 1.40,  98, 2]
   ];
 
-  var i, c, base, r, malos = 0;
+  let i, c, base, r, malos = 0;
   for (i = 0; i < CASOS.length; i++) {
     c = CASOS[i];
     base = N[c[1]];
@@ -67,42 +67,43 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
        malos + ' casos discrepan');
 
   /* Las 6 aserciones */
-  var it = { puntosBase: 100, tIdeal: 8000, tLimite: 24000 };
+  const it = { puntosBase: 100, tIdeal: 8000, tLimite: 24000 };
 
   /* A1 — tres fallos consecutivos NO bajan el marcador */
-  var est = { puntos: 500 };
-  var antes = est.puntos, k;
+  const est = { puntos: 500 };
+  const antes = est.puntos;
+  let k;
   for (k = 0; k < 3; k++) {
-    var f = CB.puntuacion.calcular(it, 12000, { correcto: false, intento: 1, modoTiempo: 'normal' });
+    const f = CB.puntuacion.calcular(it, 12000, { correcto: false, intento: 1, modoTiempo: 'normal' });
     CB.puntuacion.acumular(est, f.puntos);
   }
   t.igual(est.puntos, antes, 'A1 · tres fallos dejan el marcador idéntico');
 
   /* A2 — C03: acierto legítimo en 600 ms da 140 y NO es azar */
-  var c03 = CB.puntuacion.calcular(it, 600, { correcto: true, intento: 1, modoTiempo: 'normal' });
-  var az = CB.antiazar.evaluar({ destreza: 'suma_llevada' }, 600, true, [], {});
+  const c03 = CB.puntuacion.calcular(it, 600, { correcto: true, intento: 1, modoTiempo: 'normal' });
+  const az = CB.antiazar.evaluar({ destreza: 'suma_llevada' }, 600, true, [], {});
   t.ok(c03.puntos === 140 && az.azar === false,
        'A2 · acierto en 600 ms = 140 puntos y azar === false',
        'puntos ' + c03.puntos + ', azar ' + az.azar);
 
   /* A3 — «Sin prisa» no es ni el que más puntúa ni el que menos */
-  var c01 = CB.puntuacion.calcular(it, 8000,  { correcto: true, intento: 1, modoTiempo: 'normal' });
-  var c12 = CB.puntuacion.calcular(it, 12000, { correcto: true, intento: 1, modoTiempo: 'sinPrisa' });
-  var c06 = CB.puntuacion.calcular(it, 24000, { correcto: true, intento: 1, modoTiempo: 'normal' });
+  const c01 = CB.puntuacion.calcular(it, 8000,  { correcto: true, intento: 1, modoTiempo: 'normal' });
+  const c12 = CB.puntuacion.calcular(it, 12000, { correcto: true, intento: 1, modoTiempo: 'sinPrisa' });
+  const c06 = CB.puntuacion.calcular(it, 24000, { correcto: true, intento: 1, modoTiempo: 'normal' });
   t.ok(c12.puntos < c01.puntos && c12.puntos > c06.puntos,
        'A3 · 85 < 140 y 85 > 60 (antifarmeo del modo accesible)',
        c12.puntos + ' vs ' + c01.puntos + ' / ' + c06.puntos);
 
   /* A4 — salir en el primer ítem no produce NaN */
-  var b0 = CB.puntuacion.bonoFinal(0.9, true, true, 0, 0);
+  const b0 = CB.puntuacion.bonoFinal(0.9, true, true, 0, 0);
   t.ok(b0.factor === 1 && b0.total === 0 && b0.extras.length === 0,
        'A4 · bonoFinal con 0 preguntas devuelve {1, [], 0} sin NaN');
 
   /* A5 — los casos de penalización dan exactamente 0, jamás negativo */
-  var negativos = 0;
+  let negativos = 0;
   ['normal', 'conCalma', 'sinPrisa'].forEach(function (m) {
     [true, false].forEach(function (azar) {
-      var r2 = CB.puntuacion.calcular(it, 12000,
+      const r2 = CB.puntuacion.calcular(it, 12000,
         { correcto: false, azar: azar, intento: 1, modoTiempo: m });
       if (r2.puntos !== 0 || r2.gemas !== 0) negativos++;
     });
@@ -110,19 +111,19 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
   t.igual(negativos, 0, 'A5 · los 6 casos de penalización dan exactamente 0');
 
   /* A6 — bono final */
-  var b6 = CB.puntuacion.bonoFinal(0.92, true, true, 15, 1500);
+  const b6 = CB.puntuacion.bonoFinal(0.92, true, true, 15, 1500);
   t.ok(Math.abs(b6.factor - 1.45) < 1e-9 && b6.total === 675,
        'A6 · bonoFinal(0,92, sí, sí, 15, 1500) = factor 1,45 y total 675',
        'factor ' + b6.factor + ', total ' + b6.total);
 
   /* Invariante global: ningún valor negativo en ninguna combinación */
-  var neg = 0, rt, intento;
+  let neg = 0, rt, intento;
   for (rt = 0; rt <= 60000; rt += 2500) {
     for (intento = 1; intento <= 2; intento++) {
       ['normal', 'conCalma', 'sinPrisa'].forEach(function (m2) {
         [true, false].forEach(function (c2) {
           [true, false].forEach(function (a2) {
-            var x = CB.puntuacion.calcular(it, rt,
+            const x = CB.puntuacion.calcular(it, rt,
               { correcto: c2, azar: a2, intento: intento, modoTiempo: m2 });
             if (x.puntos < 0 || x.gemas < 0 || !isFinite(x.puntos)) neg++;
           });

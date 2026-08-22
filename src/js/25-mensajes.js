@@ -9,7 +9,7 @@ CB.mensajes.RECIENTES_ACIERTO = 12;
 CB.mensajes.RECIENTES_ANIMO   = 10;
 
 CB.mensajes.listaDe = function (cat) {
-  var M = CB.datos.MENSAJES;
+  const M = CB.datos.MENSAJES;
   if (cat === 'A')  return M.acierto_A;
   if (cat === 'B')  return M.acierto_B;
   if (cat === 'C')  return M.acierto_C;
@@ -35,7 +35,7 @@ CB.mensajes.nuevoEstado = function () {
 
 CB.mensajes.asegurar = function (perfil) {
   if (!perfil.mensajes) perfil.mensajes = CB.mensajes.nuevoEstado();
-  var m = perfil.mensajes;
+  const m = perfil.mensajes;
   if (!m.acierto) m.acierto = { bolsaA: [], bolsaB: [], bolsaC: [], bolsaD: [], ultimos12: [] };
   if (!m.animo)   m.animo   = { bolsa1: [], bolsa2: [], ultimos10: [] };
   if (!m.acierto.ultimos12) m.acierto.ultimos12 = [];
@@ -85,18 +85,18 @@ CB.mensajes.categoriaAnimo = function (ctx) {
 /* Rellena {proc} y {pista} con la frase de la destreza REAL del ítem. Un elogio
    de procedimiento solo educa si nombra el procedimiento correcto. */
 CB.mensajes.rellenar = function (plantilla, ctx, rng) {
-  var t = String(plantilla);
-  var r = rng || CB.util.mulberry32(CB.util.hash32(t));
+  let t = String(plantilla);
+  const r = rng || CB.util.mulberry32(CB.util.hash32(t));
 
   if (t.indexOf('{proc}') !== -1) {
-    var procs = CB.datos.MENSAJES.PROCEDIMIENTOS[ctx.destreza];
-    var proc = procs ? procs[CB.util.ent(r, 0, procs.length - 1)]
+    const procs = CB.datos.MENSAJES.PROCEDIMIENTOS[ctx.destreza];
+    const proc = procs ? procs[CB.util.ent(r, 0, procs.length - 1)]
                      : 'Has resuelto el bloque.';
     t = t.replace('{proc}', proc);
   }
   if (t.indexOf('{pista}') !== -1) {
-    var pistas = CB.datos.MENSAJES.PISTAS[ctx.destreza];
-    var pista = pistas ? pistas[CB.util.ent(r, 0, pistas.length - 1)]
+    const pistas = CB.datos.MENSAJES.PISTAS[ctx.destreza];
+    const pista = pistas ? pistas[CB.util.ent(r, 0, pistas.length - 1)]
                        : 'Vuelve a leerlo con calma.';
     t = t.replace('{pista}', pista);
   }
@@ -105,16 +105,17 @@ CB.mensajes.rellenar = function (plantilla, ctx, rng) {
 
 /* Saca un índice de la bolsa de esa categoría, evitando los recientes. */
 CB.mensajes.sacarDeBolsa = function (estadoBolsas, claveBolsa, n, recientes, evitarGlobales, offset, rng) {
-  var bolsa = new CB.util.BolsaBarajada(n, rng, estadoBolsas[claveBolsa]);
+  const bolsa = new CB.util.BolsaBarajada(n, rng, estadoBolsas[claveBolsa]);
 
   /* `recientes` son índices GLOBALES; se traducen a locales de esta bolsa. */
-  var evitarLocal = [], i, g;
+  const evitarLocal = [];
+  let i, g;
   for (i = 0; i < evitarGlobales.length; i++) {
     g = evitarGlobales[i] - offset;
     if (g >= 0 && g < n) evitarLocal.push(g);
   }
 
-  var idx = bolsa.sacar(evitarLocal);
+  const idx = bolsa.sacar(evitarLocal);
   estadoBolsas[claveBolsa] = bolsa.estado();
   return idx;
 };
@@ -126,21 +127,21 @@ CB.mensajes.sacarDeBolsa = function (estadoBolsas, claveBolsa, n, recientes, evi
  */
 CB.mensajes.acierto = function (ctx) {
   ctx = ctx || {};
-  var perfil = ctx.perfil || {};
-  var m = CB.mensajes.asegurar(perfil);
-  var rng = ctx.rng || CB.util.mulberry32(CB.util.hash32(String(m.acierto.ultimos12.length)));
+  const perfil = ctx.perfil || {};
+  const m = CB.mensajes.asegurar(perfil);
+  const rng = ctx.rng || CB.util.mulberry32(CB.util.hash32(String(m.acierto.ultimos12.length)));
 
-  var cat = CB.mensajes.categoriaAcierto(ctx);
-  var lista = CB.mensajes.listaDe(cat);
-  var clave = 'bolsa' + cat;
-  var offset = CB.mensajes.CATS_ACIERTO.indexOf(cat) * 21;
+  const cat = CB.mensajes.categoriaAcierto(ctx);
+  const lista = CB.mensajes.listaDe(cat);
+  const clave = 'bolsa' + cat;
+  const offset = CB.mensajes.CATS_ACIERTO.indexOf(cat) * 21;
 
-  var idx = CB.mensajes.sacarDeBolsa(
+  let idx = CB.mensajes.sacarDeBolsa(
     m.acierto, clave, lista.length, m.acierto.ultimos12, m.acierto.ultimos12, offset, rng
   );
   if (idx < 0) idx = 0;
 
-  var global = offset + idx;
+  const global = offset + idx;
   m.acierto.ultimos12.push(global);
   while (m.acierto.ultimos12.length > CB.mensajes.RECIENTES_ACIERTO) {
     m.acierto.ultimos12.shift();
@@ -152,21 +153,21 @@ CB.mensajes.acierto = function (ctx) {
 /* Nunca contiene elogio de persona ni acusación: el criterio 7.2 del RD pide literalmente «valorando el error como una oportunidad de aprendizaje». */
 CB.mensajes.animo = function (ctx) {
   ctx = ctx || {};
-  var perfil = ctx.perfil || {};
-  var m = CB.mensajes.asegurar(perfil);
-  var rng = ctx.rng || CB.util.mulberry32(CB.util.hash32(String(m.animo.ultimos10.length)));
+  const perfil = ctx.perfil || {};
+  const m = CB.mensajes.asegurar(perfil);
+  const rng = ctx.rng || CB.util.mulberry32(CB.util.hash32(String(m.animo.ultimos10.length)));
 
-  var cat = CB.mensajes.categoriaAnimo(ctx);
-  var lista = CB.mensajes.listaDe(cat);
-  var clave = (cat === 'P1') ? 'bolsa1' : 'bolsa2';
-  var offset = CB.mensajes.CATS_ANIMO.indexOf(cat) * 24;
+  const cat = CB.mensajes.categoriaAnimo(ctx);
+  const lista = CB.mensajes.listaDe(cat);
+  const clave = (cat === 'P1') ? 'bolsa1' : 'bolsa2';
+  const offset = CB.mensajes.CATS_ANIMO.indexOf(cat) * 24;
 
-  var idx = CB.mensajes.sacarDeBolsa(
+  let idx = CB.mensajes.sacarDeBolsa(
     m.animo, clave, lista.length, m.animo.ultimos10, m.animo.ultimos10, offset, rng
   );
   if (idx < 0) idx = 0;
 
-  var global = offset + idx;
+  const global = offset + idx;
   m.animo.ultimos10.push(global);
   while (m.animo.ultimos10.length > CB.mensajes.RECIENTES_ANIMO) {
     m.animo.ultimos10.shift();
@@ -188,20 +189,20 @@ CB.mensajes.animo = function (ctx) {
  */
 CB.mensajes.grito = function (ctx) {
   ctx = ctx || {};
-  var perfil = ctx.perfil || {};
-  var m = CB.mensajes.asegurar(perfil);
-  var lista = CB.datos.MENSAJES.GRITOS.acierto;
-  var clave = 'bolsaAcierto';
-  var rng = ctx.rng || CB.util.mulberry32(CB.util.hash32(clave + lista.length));
+  const perfil = ctx.perfil || {};
+  const m = CB.mensajes.asegurar(perfil);
+  const lista = CB.datos.MENSAJES.GRITOS.acierto;
+  const clave = 'bolsaAcierto';
+  const rng = ctx.rng || CB.util.mulberry32(CB.util.hash32(clave + lista.length));
 
-  var idx = CB.mensajes.sacarDeBolsa(m.gritos, clave, lista.length, [], [], 0, rng);
+  let idx = CB.mensajes.sacarDeBolsa(m.gritos, clave, lista.length, [], [], 0, rng);
   if (idx < 0) idx = 0;
   return lista[idx];
 };
 
 /* Contrato de tamaño, para casos-mensajes.js (M1 y M2). */
 CB.mensajes.contrato = function () {
-  var M = CB.datos.MENSAJES;
+  const M = CB.datos.MENSAJES;
   return {
     aciertoTotal: M.acierto.length,
     animoTotal: M.animo.length,

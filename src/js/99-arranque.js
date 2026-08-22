@@ -33,24 +33,24 @@ CB.calibracion.iniciar = function () {
 };
 
 CB.calibracion.servir = function () {
-  var i = CB.calibracion.indice;
+  const i = CB.calibracion.indice;
 
   if (i >= CB.calibracion.ITEMS.length) { CB.calibracion.terminar(); return; }
 
-  var it = CB.calibracion.ITEMS[i];
+  const it = CB.calibracion.ITEMS[i];
   /* Lo lee el botón del altavoz de esta pantalla: aquí no hay estado de partida
      de donde sacar el enunciado. */
   CB.calibracion.consignaActual = it.consigna;
 
   /* Decir dónde está y por qué no hay reloj. Sin esto son cuatro preguntas
      sueltas que parecen una partida a la que le falta el cronómetro. */
-  var paso = document.getElementById('cal-paso');
+  const paso = document.getElementById('cal-paso');
   if (paso) {
     paso.textContent = 'Pregunta ' + (i + 1) + ' de ' + CB.calibracion.ITEMS.length +
       ' · Sin reloj y sin puntos: solo para saber por dónde empezar.';
   }
 
-  var enun = document.getElementById('cal-enunciado');
+  const enun = document.getElementById('cal-enunciado');
   CB.ui.vaciar(enun);
   enun.appendChild(CB.ui.crear('p',
     'enunciado' + (it.teclado ? ' enunciado--operacion' : ''), it.consigna));
@@ -60,18 +60,18 @@ CB.calibracion.servir = function () {
   CB.voz.leer(it.consigna);
   CB.a11y.anunciar(it.consigna);
 
-  var contestada = false;
+  let contestada = false;
 
   function responder(valor) {
     if (contestada) return;
     contestada = true;
-    var ok = Number(valor) === it.respuesta;
+    const ok = Number(valor) === it.respuesta;
     if (ok) CB.calibracion.aciertos++;
     /* Sin cronómetro, sin luces, sin puntuación: esto no parece un test. */
     CB.ui.mensaje(ok ? '¡Muy bien!' : 'Vamos con la siguiente.', ok ? 'acierto' : 'animo');
     CB.audio.sfx(ok ? 'acierto' : 'picar');
     CB.calibracion.indice++;
-    var indiceEsperado = CB.calibracion.indice;
+    const indiceEsperado = CB.calibracion.indice;
     setTimeout(function () {
       if (CB.pantallas.actual !== 'p-calibracion' ||
           CB.calibracion.indice !== indiceEsperado) return;
@@ -84,18 +84,18 @@ CB.calibracion.servir = function () {
   if (it.teclado) {
     CB.componentes.tecladoBloques(it, responder, { bloqueoMs: 300 });
   } else {
-    var ops = it.opciones.map(function (v) { return { valor: v }; });
+    const ops = it.opciones.map(function (v) { return { valor: v }; });
     CB.componentes.opciones4(it, ops, responder, { bloqueoMs: 300 });
   }
 };
 
 CB.calibracion.terminar = function () {
-  var perfil = CB.perfil;
-  var a = CB.calibracion.aciertos;
+  const perfil = CB.perfil;
+  const a = CB.calibracion.aciertos;
 
   /* trimestreDeclarado se DEDUCE, nunca se pregunta (§7.2). */
-  var porResultado = (a >= 4) ? 3 : (a === 3 ? 2 : 1);
-  var porCalendario = CB.CURRICULO.trimestrePorFecha(CB.util.hoyISO());
+  const porResultado = (a >= 4) ? 3 : (a === 3 ? 2 : 1);
+  let porCalendario = CB.CURRICULO.trimestrePorFecha(CB.util.hoyISO());
   if (porCalendario === 'verano') porCalendario = 3;
 
   /* Se toma el MENOR de los dos: más vale empezar por debajo y subir. */
@@ -103,19 +103,19 @@ CB.calibracion.terminar = function () {
   perfil.calibrado = true;
 
   /* Los 4 resultados fijan el theta inicial de cada destreza tocada. */
-  var hoy = CB.util.hoyISO();
+  const hoy = CB.util.hoyISO();
   CB.calibracion.ITEMS.forEach(function (it, i) {
-    var d = perfil.destrezas[it.destreza] ||
+    const d = perfil.destrezas[it.destreza] ||
             (perfil.destrezas[it.destreza] = CB.adaptativo.nuevaDestreza(hoy));
     d.theta = (i < a) ? 1080 : 920;
   });
 
   CB.almacen.guardarPerfil(perfil);
 
-  var cierre = '¡Ya está! Ya sabemos por dónde empezar. Ahora sí empieza el ' +
+  const cierre = '¡Ya está! Ya sabemos por dónde empezar. Ahora sí empieza el ' +
                'juego: con reloj, con luces y con gemas. Puedes parar cuando ' +
                'quieras con Pausa.';
-  var paso = document.getElementById('cal-paso');
+  const paso = document.getElementById('cal-paso');
   if (paso) paso.textContent = cierre;
   CB.ui.mensaje(cierre, 'acierto');
   CB.a11y.anunciar(cierre);
@@ -133,15 +133,15 @@ CB.calibracion.terminar = function () {
 CB.perfiles = {};
 
 CB.perfiles.pintar = function () {
-  var cont = document.getElementById('lista-perfiles');
+  const cont = document.getElementById('lista-perfiles');
   if (!cont) return;
   CB.ui.vaciar(cont);
 
-  var idx = CB.almacen.indice();
+  const idx = CB.almacen.indice();
   idx.forEach(function (e) {
-    var t = CB.ui.crear('div', 'tarjeta-perfil');
-    var av = CB.ui.crear('div', 'tarjeta-perfil__avatar');
-    var pal = CB.datos.AVATARES[CB.util.clamp(e.avatar || 0, 0, 15)];
+    const t = CB.ui.crear('div', 'tarjeta-perfil');
+    const av = CB.ui.crear('div', 'tarjeta-perfil__avatar');
+    const pal = CB.datos.AVATARES[CB.util.clamp(e.avatar || 0, 0, 15)];
     av.style.background = pal.casco;
     t.appendChild(av);
     t.appendChild(CB.ui.crear('div', null, e.mote));
@@ -151,9 +151,9 @@ CB.perfiles.pintar = function () {
     cont.appendChild(t);
   });
 
-  var ap = CB.almacen.ajustesDispositivo();
-  var tope = ap.modoAula ? CB.almacen.TOPES.aula.perfiles : CB.almacen.TOPES.domestico.perfiles;
-  var btn = document.getElementById('btn-nuevo-perfil');
+  const ap = CB.almacen.ajustesDispositivo();
+  const tope = ap.modoAula ? CB.almacen.TOPES.aula.perfiles : CB.almacen.TOPES.domestico.perfiles;
+  const btn = document.getElementById('btn-nuevo-perfil');
   if (btn) {
     btn.hidden = idx.length >= tope;
     btn.onclick = function () { CB.perfiles.crear(); };
@@ -161,45 +161,45 @@ CB.perfiles.pintar = function () {
 };
 
 CB.perfiles.crear = function () {
-  var idx = CB.almacen.indice();
-  var hoy = CB.util.hoyISO();
-  var semilla = CB.util.hash32(hoy + idx.length + (CB.almacen.bytesUsados() || 0));
-  var rng = CB.util.mulberry32(semilla);
+  const idx = CB.almacen.indice();
+  const hoy = CB.util.hoyISO();
+  const semilla = CB.util.hash32(hoy + idx.length + (CB.almacen.bytesUsados() || 0));
+  const rng = CB.util.mulberry32(semilla);
 
   /* El mote sale de la lista CERRADA de 120: jamás nombre real, correo, edad ni
      ubicación (§15.8). */
-  var usados = idx.map(function (e) { return e.mote; });
-  var libres = CB.datos.MOTES.filter(function (m) { return usados.indexOf(m) === -1; });
-  var mote = CB.util.elegir(rng, libres.length ? libres : CB.datos.MOTES);
-  var avatar = CB.util.ent(rng, 0, 15);
-  var id = 'p-' + semilla.toString(16);
+  const usados = idx.map(function (e) { return e.mote; });
+  const libres = CB.datos.MOTES.filter(function (m) { return usados.indexOf(m) === -1; });
+  const mote = CB.util.elegir(rng, libres.length ? libres : CB.datos.MOTES);
+  const avatar = CB.util.ent(rng, 0, 15);
+  const id = 'p-' + semilla.toString(16);
 
   /* Los ajustes se COPIAN del último perfil como valor por defecto; nunca se
      heredan de forma implícita después (§15.2). */
-  var previos = null;
+  let previos = null;
   if (idx.length) {
-    var ultimo = CB.almacen.leerPerfil(idx[idx.length - 1].id);
+    const ultimo = CB.almacen.leerPerfil(idx[idx.length - 1].id);
     if (ultimo && ultimo.ajustes && !ultimo.error) {
       previos = JSON.parse(JSON.stringify(ultimo.ajustes));
     }
   }
 
-  var perfil = CB.almacen.perfilNuevo(id, mote, avatar, hoy, previos);
+  const perfil = CB.almacen.perfilNuevo(id, mote, avatar, hoy, previos);
   CB.almacen.guardarPerfil(perfil);
   CB.almacen.fijarUltimoPerfil(id);
   CB.perfiles.activar(id);
 };
 
 CB.perfiles.activar = function (id) {
-  var p = CB.almacen.leerPerfil(id);
+  const p = CB.almacen.leerPerfil(id);
   if (!p) return;
   if (p.error) {
 
     CB.a11y.anunciar(p.mensaje);
     CB.pantallas.ir('p-perfiles');
-    var lista = document.getElementById('lista-perfiles');
+    const lista = document.getElementById('lista-perfiles');
     if (lista && lista.parentNode) {
-      var aviso = document.getElementById('aviso-perfil-roto');
+      let aviso = document.getElementById('aviso-perfil-roto');
       if (!aviso) {
         aviso = CB.ui.crear('p', 'texto texto--menor');
         aviso.id = 'aviso-perfil-roto';
@@ -220,28 +220,28 @@ CB.perfiles.activar = function (id) {
 
 /* Ajustes visibles para el niño */
 CB.ajustesNino = function (props) {
-  var cont = document.getElementById('lista-ajustes');
+  const cont = document.getElementById('lista-ajustes');
   if (!cont) return;
   CB.ui.vaciar(cont);
-  var perfil = CB.perfil;
+  const perfil = CB.perfil;
 
-  var enPausa = !!(props && props.desdePausa) ||
+  const enPausa = !!(props && props.desdePausa) ||
                 !!(CB.partida.estado && CB.partida.estado.pausada);
-  var titulo = document.getElementById('ajustes-titulo');
+  const titulo = document.getElementById('ajustes-titulo');
   if (titulo) titulo.textContent = enPausa ? 'En pausa' : 'Ajustes';
 
   function fila(etiqueta, valor, alPulsar) {
-    var f = CB.ui.crear('div', 'ajuste');
+    const f = CB.ui.crear('div', 'ajuste');
     f.appendChild(CB.ui.crear('span', 'ajuste__etiqueta', etiqueta));
-    var b = CB.ui.boton(valor, '', function () { alPulsar(b); });
+    const b = CB.ui.boton(valor, '', function () { alPulsar(b); });
     f.appendChild(b);
     cont.appendChild(f);
     return b;
   }
 
-  var ap = CB.almacen.ajustesDispositivo();
+  const ap = CB.almacen.ajustesDispositivo();
   fila('Sonido', CB.audio.silenciado ? 'No' : 'Sí', function (b) {
-    var s = CB.audio.silenciar(!CB.audio.silenciado);
+    const s = CB.audio.silenciar(!CB.audio.silenciado);
     ap.silencio = s;
     CB.almacen.guardarAjustesDispositivo(ap);
     b.textContent = s ? 'No' : 'Sí';
@@ -249,7 +249,7 @@ CB.ajustesNino = function (props) {
 
   /* La música tiene su propio nivel, aparte del de los efectos, y llega hasta el silencio total en un solo toque. */
   fila('Música', CB.musica.NIVELES[CB.musica.nivelActual()].etiqueta, function (b) {
-    var i = (CB.musica.nivelActual() + 1) % CB.musica.NIVELES.length;
+    const i = (CB.musica.nivelActual() + 1) % CB.musica.NIVELES.length;
     CB.musica.fijarNivel(i);
     ap.nivelMusica = i;
     CB.almacen.guardarAjustesDispositivo(ap);
@@ -258,10 +258,10 @@ CB.ajustesNino = function (props) {
 
   if (perfil) {
     /* Los tres modos de tiempo se pueden cambiar también desde la pausa. */
-    var nombres = { conCalma: 'Con calma', normal: 'Normal', sinPrisa: 'Sin prisa' };
-    var orden = ['conCalma', 'normal', 'sinPrisa'];
+    const nombres = { conCalma: 'Con calma', normal: 'Normal', sinPrisa: 'Sin prisa' };
+    const orden = ['conCalma', 'normal', 'sinPrisa'];
     fila('El reloj', nombres[perfil.ajustes.modoTiempo] || 'Con calma', function (b) {
-      var i = orden.indexOf(perfil.ajustes.modoTiempo);
+      const i = orden.indexOf(perfil.ajustes.modoTiempo);
       perfil.ajustes.modoTiempo = orden[(i + 1) % orden.length];
       b.textContent = nombres[perfil.ajustes.modoTiempo];
       if (CB.partida.estado) CB.partida.estado.modoTiempo = perfil.ajustes.modoTiempo;
@@ -305,15 +305,15 @@ CB.DONDE_SUENA = {
 };
 
 CB.creditos = function () {
-  var legal = document.getElementById('creditos-legal');
-  var curri = document.getElementById('creditos-curriculo');
-  var mus = document.getElementById('creditos-musica');
+  const legal = document.getElementById('creditos-legal');
+  const curri = document.getElementById('creditos-curriculo');
+  const mus = document.getElementById('creditos-musica');
 
   if (mus) {
     CB.ui.vaciar(mus);
     mus.appendChild(CB.ui.crear('h2', null, 'Música'));
     CB.musica.CREDITOS.forEach(function (c) {
-      var linea = CB.DONDE_SUENA[c.clave] + ' — ' + c.autor + ' (Pixabay ' + c.id + ')';
+      const linea = CB.DONDE_SUENA[c.clave] + ' — ' + c.autor + ' (Pixabay ' + c.id + ')';
       mus.appendChild(CB.ui.crear('p', 'texto texto--menor', linea));
     });
     mus.appendChild(CB.ui.crear('p', 'texto texto--menor', CB.musica.LICENCIA));
@@ -340,12 +340,12 @@ CB.creditos = function () {
 CB.pantallas.alEntrar['p-mapa'] = function () {
   CB.mapaDestrezas.pintarMundos();
   /* Con un solo mundo abierto, el foco va al único botón que hace algo. */
-  var abiertos = CB.MUNDOS.filter(function (m) {
+  const abiertos = CB.MUNDOS.filter(function (m) {
     return CB.perfil && CB.perfil.mundos[m.id] && CB.perfil.mundos[m.id].desbloqueado;
   });
   if (abiertos.length === 1) {
-    var rejilla = document.getElementById('rejilla-mundos');
-    var cavar = rejilla ? rejilla.querySelector('.btn-bloque--primario') : null;
+    const rejilla = document.getElementById('rejilla-mundos');
+    const cavar = rejilla ? rejilla.querySelector('.btn-bloque--primario') : null;
     if (cavar) CB.a11y.enfocar(cavar);
   }
 };
@@ -365,14 +365,14 @@ CB.pantallas.alSalir['p-partida'] = function () { CB.ui.reloj.parar(); };
 
 /* Arranque */
 CB.arranque = function () {
-  var t0 = CB.util.ahora();
+  const t0 = CB.util.ahora();
 
   CB.texturas.generarTodas();
   CB.sprites.precalentar();
 
   CB.ui.iniciarParticulas();
 
-  var ap = CB.almacen.ajustesDispositivo();
+  const ap = CB.almacen.ajustesDispositivo();
   CB.audio.silenciado = !!ap.silencio;
   CB.audio.vol = (ap.volumen == null) ? 0.7 : ap.volumen;
   CB.audio.conectarVisibilidad();
@@ -387,10 +387,10 @@ CB.arranque = function () {
   CB.partida.sincronizarSonido();
 
   /* Perfil activo */
-  var ultimo = CB.almacen.ultimoPerfil();
-  var idx = CB.almacen.indice();
+  const ultimo = CB.almacen.ultimoPerfil();
+  const idx = CB.almacen.indice();
   if (ultimo && idx.some(function (e) { return e.id === ultimo; })) {
-    var p = CB.almacen.leerPerfil(ultimo);
+    const p = CB.almacen.leerPerfil(ultimo);
     if (p && !p.error) {
       CB.perfil = p;
       CB.almacen.podar(p, {});                 // poda también AL ARRANCAR
@@ -400,7 +400,7 @@ CB.arranque = function () {
   }
 
   /* Botones de la portada */
-  var jugar = document.getElementById('btn-jugar');
+  const jugar = document.getElementById('btn-jugar');
   if (jugar) {
     jugar.addEventListener('click', function () {
       CB.audio.iniciar();                      // primer gesto real del usuario
@@ -414,7 +414,7 @@ CB.arranque = function () {
     });
   }
 
-  var tranquila = document.getElementById('btn-tranquila');
+  const tranquila = document.getElementById('btn-tranquila');
   if (tranquila) {
     tranquila.addEventListener('click', function () {
       CB.audio.iniciar();
@@ -423,16 +423,16 @@ CB.arranque = function () {
     });
   }
 
-  var otra = document.getElementById('btn-otra');
+  const otra = document.getElementById('btn-otra');
   if (otra) {
     /* Un solo toque, sin diálogos (§3.7). */
     otra.addEventListener('click', function () {
-      var m = CB.perfil ? CB.mapaDestrezas.mundoActual(CB.perfil).id : 'M1';
+      const m = CB.perfil ? CB.mapaDestrezas.mundoActual(CB.perfil).id : 'M1';
       CB.partida.iniciar({ mundoId: m, modo: 'expedicion' });
     });
   }
 
-  var tranquilaFin = document.getElementById('btn-tranquila-fin');
+  const tranquilaFin = document.getElementById('btn-tranquila-fin');
   if (tranquilaFin) {
     tranquilaFin.addEventListener('click', function () {
       CB.partida.iniciar({ mundoId: 'M1', modo: 'tranquila' });
@@ -440,18 +440,18 @@ CB.arranque = function () {
   }
 
   /* Momento socioafectivo del fin de partida */
-  var caras = document.querySelectorAll('#fin-animo .animo__cara');
-  var i;
+  const caras = document.querySelectorAll('#fin-animo .animo__cara');
+  let i;
   for (i = 0; i < caras.length; i++) {
     (function (b) {
       b.addEventListener('click', function () {
         if (!CB.perfil) return;
-        var v = parseInt(b.getAttribute('data-animo'), 10);
+        const v = parseInt(b.getAttribute('data-animo'), 10);
         CB.perfil.animo.push({ fechaISO: CB.util.hoyISO(), cara: v });
-        var h = CB.perfil.historial;
+        const h = CB.perfil.historial;
         if (h.length) h[h.length - 1].animo = v;
-        var todas = document.querySelectorAll('#fin-animo .animo__cara');
-        var j;
+        const todas = document.querySelectorAll('#fin-animo .animo__cara');
+        let j;
         for (j = 0; j < todas.length; j++) todas[j].setAttribute('aria-pressed', 'false');
         b.setAttribute('aria-pressed', 'true');
         CB.almacen.guardarPerfil(CB.perfil);
@@ -510,14 +510,14 @@ CB.arranque.pistaJugar = function (perfil) {
 
 /* PINTA, no navega: el contrato de alEntrar (ver casos-regresiones.js, E1). */
 CB.pantallas.alEntrar['p-portada'] = function () {
-  var b = document.getElementById('btn-jugar');
+  const b = document.getElementById('btn-jugar');
   if (b) b.textContent = CB.arranque.rotuloJugar(CB.perfil);
-  var p = document.getElementById('portada-pista');
+  const p = document.getElementById('portada-pista');
   if (p) p.textContent = CB.arranque.pistaJugar(CB.perfil);
 };
 
 CB.arranque.esRecarga = function (perfil, ahoraMs) {
-  var g = perfil && perfil.partidaEnCurso;
+  const g = perfil && perfil.partidaEnCurso;
   if (!g || g.guardadaTs == null) return false;
   return (ahoraMs - g.guardadaTs) < CB.arranque.MS_RECARGA;
 };
@@ -540,12 +540,12 @@ CB.arranque.despertarAudio = function (ev) {
 /* UN SOLO OYENTE, en el documento y en fase de captura. */
 CB.arranque.conectarSonidoBotones = function (raiz) {
   if (!raiz) return false;
-  var marca = raiz.documentElement || raiz;
+  const marca = raiz.documentElement || raiz;
   if (marca.getAttribute && marca.getAttribute('data-clic') === 'si') return false;
   if (marca.setAttribute) marca.setAttribute('data-clic', 'si');
 
   raiz.addEventListener('click', function (ev) {
-    var b = ev.target;
+    let b = ev.target;
     if (!b || !b.closest) return;
     b = b.closest('button');
     if (!b || b.disabled) return;
@@ -561,21 +561,21 @@ CB.arranque.TECLAS_MUDAS = ['Shift', 'Control', 'Alt', 'AltGraph', 'Meta',
 
 CB.arranque.esCampo = function (el) {
   if (!el || !el.tagName) return false;
-  var t = el.tagName;
+  const t = el.tagName;
   if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return true;
   return el.isContentEditable === true;
 };
 
 CB.arranque.esActivable = function (el) {
   if (!el || !el.tagName) return false;
-  var t = el.tagName;
+  const t = el.tagName;
   if (t === 'BUTTON' || t === 'SUMMARY') return true;
   return t === 'A' && el.hasAttribute('href');
 };
 
 CB.arranque.conectarSonidoTeclas = function (raiz) {
   if (!raiz) return false;
-  var marca = raiz.documentElement || raiz;
+  const marca = raiz.documentElement || raiz;
   if (marca.getAttribute && marca.getAttribute('data-clic-tecla') === 'si') return false;
   if (marca.setAttribute) marca.setAttribute('data-clic-tecla', 'si');
 

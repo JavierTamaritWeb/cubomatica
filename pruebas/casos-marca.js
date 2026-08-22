@@ -1,19 +1,20 @@
 /* casos-marca.js — Auditoría de marca EN RUNTIME, sin fetch (PLAN §14.6) */
 
 CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial)', function () {
-  var t = CB.pruebas;
+  const t = CB.pruebas;
 
   /* La lista negra va en UNA sola línea a propósito: auditar.sh exime este
      fichero pero comprueba que cada línea que la menciona sea su declaración. */
-  var NEGRA = ['minecraft', 'creeper', 'steve', 'enderman', 'netherite', 'redstone', 'piglin', 'mojangles', 'minecraftia'];  // lista negra
+  const NEGRA = ['minecraft', 'creeper', 'steve', 'enderman', 'netherite', 'redstone', 'piglin', 'mojangles', 'minecraftia'];  // lista negra
 
   /* Recorrido de todo lo exportado en CB, salvo los dos lugares donde el aviso
      legal SÍ debe aparecer. */
-  var texto = '', visto = [];
+  let texto = '';
+  const visto = [];
   function recorrer(obj, ruta, prof) {
     if (prof > 4 || !obj || visto.indexOf(obj) !== -1) return;
     visto.push(obj);
-    var k, v;
+    let k, v;
     for (k in obj) {
       if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
       if (ruta === 'CB' && k === 'LEGAL') continue;      // exento: §21.1
@@ -32,8 +33,8 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
   }
   recorrer(CB, 'CB', 0);
 
-  var norm = texto.toLowerCase();
-  var encontradas = NEGRA.filter(function (p) {
+  const norm = texto.toLowerCase();
+  const encontradas = NEGRA.filter(function (p) {
     return new RegExp('\\b' + p + '\\b').test(norm);
   });
   /* «…craft» al final de palabra, que es como se cuelan los derivados */
@@ -44,7 +45,7 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
     encontradas.join(', '));
 
   /* Lo mismo sobre el CSS realmente cargado */
-  var css = '', i, j, reglas;
+  let css = '', i, j, reglas;
   try {
     for (i = 0; i < document.styleSheets.length; i++) {
       try { reglas = document.styleSheets[i].cssRules; } catch (e) { continue; }
@@ -52,7 +53,7 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
       for (j = 0; j < reglas.length; j++) css += ' ' + reglas[j].cssText;
     }
   } catch (e) { }
-  var enCss = NEGRA.filter(function (p) {
+  const enCss = NEGRA.filter(function (p) {
     return new RegExp('\\b' + p + '\\b').test(css.toLowerCase());
   });
   t.ok(enCss.length === 0, 'ninguna cadena de la lista negra aparece en el CSS cargado',
@@ -65,15 +66,15 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
     'el aviso declara expresamente la ausencia de afiliación');
 
   /* innerHTML: solo con literales, nunca con variables (§15.8) */
-  var conInnerHTML = [];
+  const conInnerHTML = [];
   function buscarInnerHTML(obj, ruta, prof) {
     if (prof > 3 || !obj) return;
-    var k, v;
+    let k, v;
     for (k in obj) {
       if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
       try { v = obj[k]; } catch (e) { continue; }
       if (typeof v === 'function') {
-        var src;
+        let src;
         try { src = Function.prototype.toString.call(v); } catch (e) { continue; }
         if (/\.innerHTML\s*=/.test(src)) conInnerHTML.push(ruta + '.' + k);
       } else if (v && typeof v === 'object' && prof < 3) {
@@ -87,7 +88,7 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
     conInnerHTML.join(', '));
 
   /* Frontera: el motor y los generadores son PUROS */
-  var PUROS = [
+  const PUROS = [
     ['CB.puntuacion', CB.puntuacion], ['CB.antiazar', CB.antiazar],
     ['CB.vidas', CB.vidas], ['CB.adaptativo', CB.adaptativo],
     ['CB.logros', CB.logros], ['CB.mensajes', CB.mensajes],
@@ -99,9 +100,10 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
     ['CB.gen.vocabulario', CB.gen.vocabulario], ['CB.catalogo', CB.catalogo],
     ['CB.distractores', CB.distractores]
   ];
-  var impuros = [], conRandom = [], conISO = [];
+  const impuros = [], conRandom = [], conISO = [];
   PUROS.forEach(function (par) {
-    var nombre = par[0], mod = par[1], k, src;
+    const nombre = par[0], mod = par[1];
+    let k, src;
     for (k in mod) {
       if (!Object.prototype.hasOwnProperty.call(mod, k)) continue;
       if (typeof mod[k] !== 'function') continue;
@@ -122,9 +124,9 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
     'FRONTERA · cero toISOString en todo el proyecto', conISO.join(', '));
 
   /* Los literales de clave viven solo en 01-almacen.js */
-  var conClave = [];
+  const conClave = [];
   PUROS.forEach(function (par) {
-    var k, src;
+    let k, src;
     for (k in par[1]) {
       if (typeof par[1][k] !== 'function') continue;
       try { src = Function.prototype.toString.call(par[1][k]); } catch (e) { continue; }
@@ -135,8 +137,8 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
     'los literales de clave «cubomatica.…» solo existen en 01-almacen.js', conClave.join(', '));
 
   /* Vocabulario prohibido en la interfaz del niño (§12.4) */
-  var acusatorio = CB.antiazar.PROHIBIDO_EN_INTERFAZ.filter(function (p) {
-    var enMensajes = CB.datos.MENSAJES.acierto.concat(CB.datos.MENSAJES.animo)
+  const acusatorio = CB.antiazar.PROHIBIDO_EN_INTERFAZ.filter(function (p) {
+    const enMensajes = CB.datos.MENSAJES.acierto.concat(CB.datos.MENSAJES.animo)
       .some(function (m) { return CB.util.normalizar(m).indexOf(CB.util.normalizar(p)) !== -1; });
     return enMensajes;
   });
@@ -147,13 +149,13 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
     'Gluglú se presenta como accidente del entorno, no como juez');
 
   /* Vocabulario prohibido en la pantalla de fin (§3.7) */
-  var PROHIBIDO_FIN = ['has perdido', 'game over', 'fin de la partida', 'fallaste',
+  const PROHIBIDO_FIN = ['has perdido', 'game over', 'fin de la partida', 'fallaste',
                        'te has quedado sin'];
-  var srcFin = Function.prototype.toString.call(CB.partida.pintarFin).toLowerCase();
+  const srcFin = Function.prototype.toString.call(CB.partida.pintarFin).toLowerCase();
   /* Aparecen en el comentario que los prohíbe: se comprueba que no estén en los
      textos reales de la tabla. */
-  var textosFin = srcFin.split('var textos')[1] || '';
-  var enTextos = PROHIBIDO_FIN.filter(function (p) { return textosFin.indexOf(p) !== -1; });
+  const textosFin = srcFin.split('var textos')[1] || '';
+  const enTextos = PROHIBIDO_FIN.filter(function (p) { return textosFin.indexOf(p) !== -1; });
   t.ok(enTextos.length === 0,
     'la pantalla de fin no contiene «has perdido», «game over» ni «fallaste»',
     enTextos.join(', '));

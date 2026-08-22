@@ -3,6 +3,11 @@
 var CB = CB || {};
 CB.pruebas = CB.pruebas || {};
 
+/* El bundle vive bajo dist/ en producción, pero la suite vive un nivel más
+   abajo. Sin esta raíz propia los elementos <audio> pedían /pruebas/audio/ y
+   un 404 podía quedar escondido detrás del resumen verde. */
+if (CB.musica) CB.musica.RAIZ = '../dist/audio/';
+
 CB.pruebas.suites = [];
 CB.pruebas.modoLargo = false;
 CB.pruebas.total = 0;
@@ -18,7 +23,7 @@ CB.pruebas._actual = null;
 
 CB.pruebas.ok = function (cond, texto, detalle) {
   CB.pruebas.total++;
-  var li = document.createElement('div');
+  const li = document.createElement('div');
   li.className = 'caso ' + (cond ? 'ok' : 'mal');
   li.textContent = (cond ? '✔ ' : '✘ ') + texto + (cond || !detalle ? '' : ' → ' + detalle);
   if (CB.pruebas._actual) CB.pruebas._actual.appendChild(li);
@@ -33,7 +38,7 @@ CB.pruebas.igual = function (a, b, texto) {
 
 CB.pruebas.saltar = function (texto, motivo) {
   CB.pruebas.saltados++;
-  var li = document.createElement('div');
+  const li = document.createElement('div');
   li.className = 'caso saltado';
   li.textContent = '– ' + texto + ' (saltado: ' + motivo + ')';
   if (CB.pruebas._actual) CB.pruebas._actual.appendChild(li);
@@ -45,7 +50,7 @@ CB.pruebas.capturarErroresGlobales = function () {
   CB.pruebas._capturaGlobalInstalada = true;
 
   function registrar(tipo, causa) {
-    var detalle = causa && (causa.stack || causa.message) ?
+    const detalle = causa && (causa.stack || causa.message) ?
       (causa.stack || causa.message) : String(causa || 'sin detalle');
     CB.pruebas.ok(false, tipo, detalle);
     CB.pruebas.render();
@@ -63,9 +68,11 @@ CB.pruebas.capturarErroresGlobales();
 
 /* Si el navegador no deja leerlas —pasa al abrir la página por `file://`— devuelve null, y quien llama debe tratar ese null como un fallo con instrucciones, nunca como un permiso para saltarse la comprobación. */
 CB.pruebas.claseEnHoja = function (nombre) {
-  var busca = '.' + nombre.replace(/^\./, '');
-  var i, hojas = document.styleSheets, reglas;
-  var visto = false;
+  const busca = '.' + nombre.replace(/^\./, '');
+  let i;
+  const hojas = document.styleSheets;
+  let reglas;
+  let visto = false;
   for (i = 0; i < hojas.length; i++) {
     try { reglas = hojas[i].cssRules; } catch (e) { continue; }   // otra procedencia
     if (!reglas) continue;
@@ -76,13 +83,13 @@ CB.pruebas.claseEnHoja = function (nombre) {
 };
 
 CB.pruebas._buscaEn = function (reglas, busca) {
-  var k, r;
+  let k, r;
   for (k = 0; k < reglas.length; k++) {
     r = reglas[k];
     if (r.selectorText && r.selectorText.indexOf(busca) !== -1) {
       /* Que no case `.veta-larga` cuando se pregunta por `.veta`: detrás del
          nombre solo puede venir algo que no sea letra, cifra, guion ni _. */
-      var re = new RegExp('\\' + busca.replace(/[-]/g, '\\-') + '(?![\\w-])');
+      const re = new RegExp('\\' + busca.replace(/[-]/g, '\\-') + '(?![\\w-])');
       if (re.test(r.selectorText)) return true;
     }
     if (r.cssRules && CB.pruebas._buscaEn(r.cssRules, busca)) return true;
@@ -92,15 +99,15 @@ CB.pruebas._buscaEn = function (reglas, busca) {
 
 /* Perfil sintético limpio para las pruebas que necesitan uno. */
 CB.pruebas.perfilNuevo = function () {
-  var p = CB.almacen.perfilNuevo('p-test', 'Topo Cavador', 0, CB.util.hoyISO(), null);
+  const p = CB.almacen.perfilNuevo('p-test', 'Topo Cavador', 0, CB.util.hoyISO(), null);
   p.trimestreDeducido = 3;
   p.calibrado = true;
   return p;
 };
 
 CB.pruebas.render = function () {
-  var r = document.getElementById('resumen');
-  var verde = CB.pruebas.fallos === 0;
+  const r = document.getElementById('resumen');
+  const verde = CB.pruebas.fallos === 0;
   r.className = verde ? 'verde' : 'rojo';
   r.textContent = (verde ? 'TODO EN VERDE — ' : 'HAY FALLOS — ') +
     CB.pruebas.total + ' comprobaciones, ' + CB.pruebas.fallos + ' fallos' +
@@ -119,25 +126,25 @@ CB.pruebas.ejecutar = function (largo) {
   CB.pruebas.fallos = 0;
   CB.pruebas.saltados = 0;
 
-  var salida = document.getElementById('salida');
+  const salida = document.getElementById('salida');
   while (salida.firstChild) salida.removeChild(salida.firstChild);
 
-  var i = 0;
-  var t0 = CB.util.ahora();
+  let i = 0;
+  const t0 = CB.util.ahora();
 
   function siguiente() {
     if (i >= CB.pruebas.suites.length) {
       CB.pruebas.ejecutando = false;
       CB.pruebas.render();
-      var r = document.getElementById('resumen');
+      const r = document.getElementById('resumen');
       r.textContent += '  ·  ' + Math.round(CB.util.ahora() - t0) + ' ms';
       document.getElementById('progreso').style.width = '100%';
       return;
     }
-    var s = CB.pruebas.suites[i];
-    var caja = document.createElement('div');
+    const s = CB.pruebas.suites[i];
+    const caja = document.createElement('div');
     caja.className = 'suite';
-    var h = document.createElement('h2');
+    const h = document.createElement('h2');
     h.textContent = s.nombre;
     caja.appendChild(h);
     salida.appendChild(caja);
@@ -154,7 +161,7 @@ CB.pruebas.ejecutar = function (largo) {
 
     /* El catch mantiene viva la cadena, así que el cerrojo se suelta siempre en
        el `if` de arriba: una suite que revienta no lo deja echado. */
-    var devuelto;
+    let devuelto;
     try {
       devuelto = s.fn();
     } catch (e) {
@@ -179,7 +186,7 @@ CB.pruebas.conectarBotones = function () {
   document.getElementById('btn-rapida').onclick = function () { CB.pruebas.ejecutar(false); };
   document.getElementById('btn-larga').onclick = function () { CB.pruebas.ejecutar(true); };
   document.getElementById('btn-limpiar').onclick = function () {
-    var s = document.getElementById('salida');
+    const s = document.getElementById('salida');
     while (s.firstChild) s.removeChild(s.firstChild);
     document.getElementById('resumen').textContent = 'Preparado.';
     document.getElementById('resumen').className = '';

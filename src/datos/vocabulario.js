@@ -92,16 +92,17 @@ CB.datos.FUNCIONALES = [
 
 /* Construcción de la lista blanca */
 CB.datos.LISTA_BLANCA = (function () {
-  var set = {}, i, j, o, partes;
+  const set = {};
+  let i, j, o;
 
   function meter(palabra) {
     if (!palabra) return;
-    var p = String(palabra).toLowerCase().trim();
+    const p = String(palabra).toLowerCase().trim();
     if (p) set[p] = true;
   }
   function meterFrase(frase) {
-    var w = String(frase).toLowerCase().split(/\s+/);
-    for (var k = 0; k < w.length; k++) meter(w[k]);
+    const w = String(frase).toLowerCase().split(/\s+/);
+    for (let k = 0; k < w.length; k++) meter(w[k]);
   }
 
   for (i = 0; i < CB.datos.FUNCIONALES.length; i++) meter(CB.datos.FUNCIONALES[i]);
@@ -124,7 +125,7 @@ CB.datos.LISTA_BLANCA = (function () {
 
   /* Formas verbales concretas que usan las plantillas y que no salen de las
      listas anteriores. Se declaran una a una: la lista blanca es un contrato. */
-  partes = ['reparte', 'reparten', 'cambia', 'cambian', 'gana', 'ganan',
+  const partes = ['reparte', 'reparten', 'cambia', 'cambian', 'gana', 'ganan',
             'pierde', 'pierden', 'compra', 'compran', 'vende', 'venden',
             'recoge', 'recogen', 'coge', 'cogen', 'come', 'comen',
             'regala', 'regalan', 'presta', 'prestan', 'planta', 'plantan',
