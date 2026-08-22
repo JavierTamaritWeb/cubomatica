@@ -1,15 +1,4 @@
-/* ============================================================================
-   43-mapa-destrezas.js — La Cantera: el mapa de vetas del niño
-   ----------------------------------------------------------------------------
-   POR DEFECTO SOLO EL MUNDO ACTUAL (PLAN §20, mejora 1). Presentar 92 vetas de
-   golpe a un niño de 7 años produce parálisis, no competencia percibida: la
-   misma pantalla que pretende sostener su motivación acabaría documentando su
-   incompetencia. «Ver toda la cantera» es una vista secundaria.
-
-   Es una recompensa INFORMATIVA en lugar de numérica: el niño ve crecer su
-   conocimiento, no su marcador. Es el antídoto contra el efecto de
-   sobrejustificación.
-   ========================================================================== */
+/* 43-mapa-destrezas.js — La Cantera: el mapa de vetas del niño */
 
 var CB = CB || {};
 CB.mapaDestrezas = CB.mapaDestrezas || {};
@@ -102,7 +91,7 @@ CB.mapaDestrezas.pintar = function () {
   }
 };
 
-/* ── El mapa de mundos ──────────────────────────────────────────────────── */
+/* El mapa de mundos */
 CB.mapaDestrezas.pintarMundos = function () {
   var perfil = CB.perfil;
   if (!perfil) return;
@@ -112,10 +101,7 @@ CB.mapaDestrezas.pintarMundos = function () {
 
   var saludo = document.getElementById('mapa-saludo');
   if (saludo) {
-    /* conMusgo, NO vencidosHoy: el mismo predicado que pinta el 🌿 de la Cantera.
-       Con vencidosHoy el saludo prometía vetas con musgo que no existían en
-       ningún sitio. CB.partida sigue usando vencidosHoy para elegir qué servir:
-       son dos preguntas distintas y solo una se le enseña al niño. */
+    /* CB.partida sigue usando vencidosHoy para elegir qué servir: son dos preguntas distintas y solo una se le enseña al niño. */
     var conMusgo = CB.memoria.conMusgo(perfil, CB.util.hoyISO());
     saludo.textContent = conMusgo.length
       ? ('Hay ' + conMusgo.length + (conMusgo.length === 1 ? ' veta' : ' vetas') +
@@ -170,11 +156,7 @@ CB.mapaDestrezas.pintarMundos = function () {
           function () { CB.jefes.iniciar(m.id); }));
       }
 
-      /* jefeSinFallos SE ESCRIBÍA Y NO LO LEÍA NADIE en todo el proyecto. Se lee
-         aquí, y solo aquí: es un RECUERDO retrospectivo, no una apuesta. Durante
-         el combate no se enseña, porque un distintivo que se puede perder es la
-         racha que se pierde, patrón oscuro que este proyecto declara prohibido —y
-         que además contradice la regla del jefe: aquí no se puede perder nada. */
+      /* Se lee aquí, y solo aquí: es un RECUERDO retrospectivo, no una apuesta. */
       if (estado.jefeSinFallos) {
         tarjeta.appendChild(CB.ui.crear('span', 'distintivo', 'cerrado sin un fallo'));
       }

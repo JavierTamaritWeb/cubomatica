@@ -1,24 +1,5 @@
 #!/usr/bin/env node
-/* ============================================================================
-   cruzar-clases.mjs — el juez del renombrado BEM
-   ----------------------------------------------------------------------------
-   POR QUÉ EXISTE: una clase renombrada en el CSS y no en el JS no produce
-   NINGÚN error. `CB.ui.crear('div', 'veta-icono')` sigue creando el div; sale
-   sin estilo, la consola queda limpia y la suite sigue en verde. Con ~170
-   clases repartidas entre CSS, HTML y JS, ese es el único modo de fallo real
-   de la migración a BEM, y ningún test del proyecto lo ve hoy.
-
-   POR QUÉ AQUÍ Y NO EN LA SUITE DEL NAVEGADOR: pruebas/pruebas.html monta
-   maquetas reducidas de las 17 pantallas, no el index.html real. Contra esas
-   maquetas, la mitad de las clases del juego parecerían no usarse. El cruce
-   necesita leer los ficheros de verdad, así que es trabajo de la auditoría.
-
-   CERO DEPENDENCIAS a propósito: solo node:fs y node:path, para que corra en un
-   clon limpio sin `npm install`, igual que hace hoy auditar.sh.
-
-   Uso:  node herramientas/cruzar-clases.mjs [--json] [--estricto]
-         --estricto  sale con código 1 si hay hallazgos (modo auditoría)
-   ========================================================================== */
+/* cruzar-clases.mjs — el juez del renombrado BEM */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -28,19 +9,11 @@ const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const JSON_ = process.argv.includes('--json');
 const ESTRICTO = process.argv.includes('--estricto');
 
-/* ── Rutas. Se resuelven las dos disposiciones para que la herramienta
-      sobreviva al `git mv` a src/ de la fase 2 sin tocarla. ─────────────── */
+/* Rutas. Se resuelven las dos disposiciones para que la herramienta */
 const D = (...p) => join(RAIZ, ...p);
 const HAY_SRC = existsSync(D('src', 'index.html'));
 const BASE = HAY_SRC ? D('src') : RAIZ;
 
-/* EL UNIVERSO CSS SE LEE DEL COMPILADO, no de las fuentes.
-   Con Sass, media docena de clases no existen literalmente en ningun .scss: son
-   `.bioma--#{$bioma}`, `.cielo--#{$i}` y `.veta[data-estado="#{$estado}"]`,
-   generadas por @each desde los mapas de _mixins.scss. Leyendo la fuente
-   desaparecian diez clases del universo y la direccion 2 las denunciaba a todas
-   como inexistentes.
-   Ademas es lo correcto: lo que hay que cruzar es lo que se SIRVE. */
 const CSS_COMPILADO = D('dist', 'css', 'cubomatica.css');
 const DIR_CSS = existsSync(join(BASE, 'scss')) ? join(BASE, 'scss') : join(BASE, 'css');
 const DIR_JS     = join(BASE, 'js');
@@ -53,17 +26,8 @@ const ficheros = (dir, ext) =>
 const leer = f => readFileSync(f, 'utf8');
 const corto = f => f.slice(RAIZ.length + 1);
 
-/* ══════════════════════════════════════════════════════════════════════════
-   1. Despiece de comentarios
-   ══════════════════════════════════════════════════════════════════════════ */
+/* 1. Despiece de comentarios */
 
-/* Respeta cadenas y conserva los saltos de línea, para que los números de línea
-   sigan siendo útiles al señalar un desajuste.
-   Este mismo algoritmo está también en pruebas/auditar.mjs. Son dos copias de
-   veinte líneas y se ha decidido dejarlas: unirlas obligaría a que la auditoría
-   importara de herramientas/ o al revés, y las dos tienen como requisito duro
-   correr sueltas en un clon sin `npm install`. La copia se paga una vez; el
-   acoplamiento se paga siempre. */
 function sinComentariosJS(texto) {
   let salida = '', i = 0, cadena = null, linea = false, bloque = false, escapado = false;
   while (i < texto.length) {
@@ -91,15 +55,9 @@ function sinComentariosJS(texto) {
 const sinComentariosCSS = t => t.replace(/\/\*[\s\S]*?\*\//g, ' ');
 const sinComentariosHTML = t => t.replace(/<!--[\s\S]*?-->/g, ' ');
 
-/* ══════════════════════════════════════════════════════════════════════════
-   2. Universo CSS — clases declaradas
-   ══════════════════════════════════════════════════════════════════════════ */
+/* 2. Universo CSS — clases declaradas */
 
-/* Extrae los preludios de regla llevando la cuenta de la profundidad de llaves.
-   Hace falta la máquina de estados y no basta un grep: dentro de @keyframes los
-   preludios son «from», «to» y porcentajes, y dentro de @font-face, @page y
-   @property no hay selectores en absoluto. Un grep de /\.[a-z-]+/ sobre el
-   fichero entero recogería además trozos de declaraciones. */
+/* Extrae los preludios de regla llevando la cuenta de la profundidad de llaves. */
 function selectoresDe(css) {
   const sel = [];
   let buf = '', i = 0, cadena = null, escapado = false;
@@ -156,9 +114,7 @@ function universoCSS() {
   return { donde, selectoresConId };
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   3. Universo HTML — clases e ids escritos en la maqueta
-   ══════════════════════════════════════════════════════════════════════════ */
+/* 3. Universo HTML — clases e ids escritos en la maqueta */
 
 function universoHTML(ruta) {
   const clases = new Set(), ids = new Set();
@@ -173,21 +129,7 @@ function universoHTML(ruta) {
   return { clases, ids };
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   4. Universo JS — dos extracciones, con precisión distinta a propósito
-   ──────────────────────────────────────────────────────────────────────────
-   Las dos direcciones del cruce quieren precisiones opuestas:
-
-     · Dirección 1 (CSS → uso): pasarse recogiendo es SEGURO — a lo sumo una
-       clase muerta pasa por viva. Quedarse corto produce falsas alarmas.
-       Se usa la extracción PERMISIVA: todo literal de cadena.
-
-     · Dirección 2 (uso → CSS): pasarse es PELIGROSO — una frase en español
-       se denunciaría como clase inexistente, y el JS está lleno de cadenas que
-       el niño lee en pantalla. Quedarse corto es seguro.
-       Se usa la extracción ESTRICTA: solo los sitios donde una cadena ES una
-       clase, que son exactamente los que tocará el codemod de la fase 5.
-   ══════════════════════════════════════════════════════════════════════════ */
+/* 4. Universo JS — dos extracciones, con precisión distinta a propósito */
 
 const CADENA = String.raw`'((?:[^'\\]|\\.)*)'`;
 const ARG1   = String.raw`(?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|[^,()]*)`;
@@ -200,10 +142,7 @@ const PATRONES_ESTRICTOS = [
   // setAttribute('class', 'a b')
   new RegExp(String.raw`setAttribute\s*\(\s*['"]class['"]\s*,\s*${CADENA}`, 'g'),
 ];
-/* classList.X(...): NO todo argumento es una clase. `toggle('sin-movimiento',
-   rm === 'si' || rm !== 'no')` lleva dos literales en la condición que no son
-   clases de nada. Se parte por comas de primer nivel y se toma solo lo que la
-   API declara como nombre de clase. */
+/* Se parte por comas de primer nivel y se toma solo lo que la API declara como nombre de clase. */
 const RE_CLASSLIST = /classList\.(add|remove|toggle|contains|replace)\s*\(([^)]*)\)/g;
 const ARGS_CLASE = { add: 'todos', remove: 'todos', toggle: 1, contains: 1, replace: 2 };
 // querySelector('.a .b') — de un selector solo interesan sus tokens de clase
@@ -235,10 +174,7 @@ function argumentos(texto) {
 }
 const literalPuro = a => /^'(?:[^'\\]|\\.)*'$/.test(a) ? a.slice(1, -1) : null;
 
-/* ── Excepciones declaradas ────────────────────────────────────────────────
-   Clases que el JS aplica a propósito SIN que exista una regla CSS: son puntos
-   de enganche para querySelector, no estilo. Cada una necesita su motivo, y la
-   lista es cerrada: cualquier clase nueva sin estilo es un hallazgo. */
+/* Excepciones declaradas */
 const GANCHOS_SIN_ESTILO = {
   'enunciado__frase': 'engancha CB.ui.resaltarLinea; el <p> se pinta con las reglas de p',
 };
@@ -306,19 +242,8 @@ function universoJS() {
   return { estricto, permisivo, prefijos, idsPedidos, idsCreados };
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   5. El cruce
-   ══════════════════════════════════════════════════════════════════════════ */
+/* 5. El cruce */
 
-/* Sin el CSS compilado, las clases que generan los @each no existen en ninguna
-   parte y las dos direcciones darian una lista larguisima de falsos positivos.
-   Un fallo falso en una auditoria es peor que no comprobar: se desactiva.
-
-   PERO SALIR 0 EN MODO ESTRICTO ERA PEOR TODAVIA. El bloque 8 de la auditoria
-   toma ese cero por bueno y escribe «cero clases muertas, cero fantasma» sin
-   que se haya cruzado nada: verde por no haber mirado, y precisamente en la
-   unica situacion en la que hay que mirar —un renombrado a medio construir—.
-   Suelto sigue saliendo 0 con su explicacion; con --estricto es rojo. */
 if (!existsSync(CSS_COMPILADO)) {
   console.log('CRUCE DE CLASES  ·  ' + (ESTRICTO ? 'ROJO' : 'saltado') +
               ': no hay ' + corto(CSS_COMPILADO) +
@@ -372,9 +297,7 @@ for (const [id, sitios] of [...js.idsPedidos].sort()) {
   idsHuerfanos.push({ id, origen: [...sitios].join(', ') });
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   6. Informe
-   ══════════════════════════════════════════════════════════════════════════ */
+/* 6. Informe */
 
 const resumen = {
   clasesCSS: css.donde.size,
@@ -406,12 +329,7 @@ if (JSON_) {
   bloque('selectores que estilan por #id', css.selectoresConId, x => x);
 }
 
-/* CERO SELECTORES POR ID, y en absoluto: «casi cero» no se puede auditar.
-   Eran 20. Estilar a traves de un id ata el estilo a que ese nodo sea unico y
-   se llame asi, con una especificidad que solo se puede vencer con otro id —de
-   hecho habia un `#p-portada #portada-pista` con DOS, puesto ahi para ganarle a
-   una clase—. Los ids siguen en el HTML: los necesitan getElementById,
-   CB.pantallas.IDS y los data-ir. Lo que se ha quitado es estilar POR ellos. */
+/* Estilar a traves de un id ata el estilo a que ese nodo sea unico y se llame asi, con una especificidad que solo se puede vencer con otro id —de hecho habia un `#p-portada #portada-pista` con DOS, puesto ahi para ganarle a una clase—. */
 if (ESTRICTO && (fantasmas.length || huerfanas.length || idsHuerfanos.length ||
                  css.selectoresConId.length)) {
   process.exit(1);

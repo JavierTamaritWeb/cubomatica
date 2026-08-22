@@ -1,13 +1,4 @@
-/* ============================================================================
-   11-gen-sumas.js — S1…S16
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   Las sumas se construyen DÍGITO A DÍGITO con un patrón de llevadas declarado,
-   no «a ver qué sale». Así el nivel «DU + DU con UNA llevada» sirve siempre
-   exactamente eso, y el invariante correspondiente se puede comprobar sobre los
-   92.000 ítems de la suite sin depender de la suerte del rng.
-   ========================================================================== */
+/* 11-gen-sumas.js — S1…S16 */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
@@ -95,7 +86,7 @@ function itemSuma(s, destreza) {
   };
 }
 
-/* ── S1  Sumas hasta 10, sin llevar ─────────────────────────────────────── */
+/* S1 Sumas hasta 10, sin llevar */
 CB.gen.sumas.S1 = function (rng, D) {
   var techo = (D === 1) ? 6 : 10;
   var a = CB.util.ent(rng, 0, techo);
@@ -103,14 +94,14 @@ CB.gen.sumas.S1 = function (rng, D) {
   return itemSuma({ a: a, b: b, r: a + b });
 };
 
-/* ── S2  Sumas hasta 20 sin llevar ──────────────────────────────────────── */
+/* S2 Sumas hasta 20 sin llevar */
 CB.gen.sumas.S2 = function (rng, D) {
   var a = CB.util.ent(rng, 10, (D === 1) ? 14 : 19);
   var b = CB.util.ent(rng, 0, 9 - (a % 10));
   return itemSuma({ a: a, b: b, r: a + b });
 };
 
-/* ── S3  Dobles hasta 10 + 10 ───────────────────────────────────────────── */
+/* S3 Dobles hasta 10 + 10 */
 CB.gen.sumas.S3 = function (rng, D) {
   var a = CB.util.ent(rng, 1, (D === 1) ? 5 : 10);
   var it = itemSuma({ a: a, b: a, r: a + a });
@@ -119,38 +110,38 @@ CB.gen.sumas.S3 = function (rng, D) {
   return it;
 };
 
-/* ── S4  Sumar 10 ───────────────────────────────────────────────────────── */
+/* S4 Sumar 10 */
 CB.gen.sumas.S4 = function (rng, D) {
   var a = CB.util.ent(rng, 1, (D === 1) ? 49 : 89);
   return itemSuma({ a: a, b: 10, r: a + 10 });
 };
 
-/* ── S5  DU + U sin llevar ──────────────────────────────────────────────── */
+/* S5 DU + U sin llevar */
 CB.gen.sumas.S5 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [false, false], 2, 1, 99));
 };
 
-/* ── S6  DU + DU sin llevar ─────────────────────────────────────────────── */
+/* S6 DU + DU sin llevar */
 CB.gen.sumas.S6 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [false, false], 2, 2, 99));
 };
 
-/* ── S7  DU + U con llevada ─────────────────────────────────────────────── */
+/* S7 DU + U con llevada */
 CB.gen.sumas.S7 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false], 2, 1, 199));
 };
 
-/* ── S8  DU + DU con UNA llevada ────────────────────────────────────────── */
+/* S8 DU + DU con UNA llevada */
 CB.gen.sumas.S8 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false], 2, 2, 99));
 };
 
-/* ── S9  DU + DU con llevada, hasta 199 ─────────────────────────────────── */
+/* S9 DU + DU con llevada, hasta 199 */
 CB.gen.sumas.S9 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false], 2, 2, 199));
 };
 
-/* ── S10 Tres sumandos de una cifra ─────────────────────────────────────── */
+/* S10 Tres sumandos de una cifra */
 CB.gen.sumas.S10 = function (rng, D) {
   var techo = (D === 1) ? 15 : 27;
   var a, b, c, k = 0;
@@ -168,17 +159,17 @@ CB.gen.sumas.S10 = function (rng, D) {
   };
 };
 
-/* ── S11 CDU + DU sin llevar ────────────────────────────────────────────── */
+/* S11 CDU + DU sin llevar */
 CB.gen.sumas.S11 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [false, false, false], 3, 2, 599));
 };
 
-/* ── S12 CDU + DU con UNA llevada ───────────────────────────────────────── */
+/* S12 CDU + DU con UNA llevada */
 CB.gen.sumas.S12 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false, false], 3, 2, 599));
 };
 
-/* ── S13 Sumar decenas completas ────────────────────────────────────────── */
+/* S13 Sumar decenas completas */
 CB.gen.sumas.S13 = function (rng, D) {
   var a = CB.util.ent(rng, 1, (D === 1) ? 20 : 49) * 10;
   var b = CB.util.ent(rng, 1, 9) * 10;
@@ -188,17 +179,17 @@ CB.gen.sumas.S13 = function (rng, D) {
   return it;
 };
 
-/* ── S14 CDU + CDU sin llevar ───────────────────────────────────────────── */
+/* S14 CDU + CDU sin llevar */
 CB.gen.sumas.S14 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [false, false, false], 3, 3, 999));
 };
 
-/* ── S15 CDU + CDU con UNA llevada ──────────────────────────────────────── */
+/* S15 CDU + CDU con UNA llevada */
 CB.gen.sumas.S15 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false, false], 3, 3, 999));
 };
 
-/* ── S16 Tres sumandos con decenas ──────────────────────────────────────── */
+/* S16 Tres sumandos con decenas */
 CB.gen.sumas.S16 = function (rng, D) {
   var a = CB.util.ent(rng, 1, 9) * 10 + CB.util.ent(rng, 0, 9);
   var b = CB.util.ent(rng, 1, 9) * 10;

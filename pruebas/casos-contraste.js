@@ -1,24 +1,9 @@
-/* casos-contraste.js — Ratios WCAG par a par sobre las variables CSS calculadas
-   ----------------------------------------------------------------------------
-   El plan v1 decía que el contraste estaba «auditado por casos-marca.js». Un
-   fichero de auditoría de MARCA no puede auditar CONTRASTE: son cosas sin
-   relación y no tiene acceso a los valores calculados de las variables CSS.
-
-   El contraste es una obligación legal (EN 301 549) para material escolar: no
-   puede depender de una afirmación sin respaldo. */
+/* casos-contraste.js — Ratios WCAG par a par sobre las variables CSS calculadas */
 
 CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   var t = CB.pruebas;
 
-  /* Acepta las dos formas de hex. Hasta 1.7.0 solo admitía seis dígitos, y eso
-     bastaba mientras el CSS lo escribiera una persona. Con minificado, cssnano
-     acorta #000000 a #000 —es CSS igual de válido—, hex() devolvía null y la
-     comprobación de alto contraste se SALTABA.
-
-     Ese es el modo de fallo que este fichero no se puede permitir: no se ponía
-     roja, se ponía gris. Una verificación WCAG que desaparece en silencio de
-     material escolar es peor que no tenerla, porque el informe sigue en verde.
-     Por eso ahora, además, se exige abajo que no se salte ninguna. */
+  /* Hasta 1.7.0 solo admitía seis dígitos, y eso bastaba mientras el CSS lo escribiera una persona. */
   function hex(v) {
     var s = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
     if (/^#[0-9A-Fa-f]{6}$/.test(s)) return s;
@@ -40,12 +25,6 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
     return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
   }
 
-  /* Los pares REALMENTE usados, uno por uno.
-     NOTA sobre el foco (desviación documentada en docs/decisiones.md): el plan
-     pedía [--foco-oro, --bg-texto-panel] ≥ 3,0, que es inalcanzable —el oro
-     sobre crema da 1,54:1 y ningún oro reconocible llega a 3:1 sobre un fondo
-     claro—. Se implementa un indicador de DOS TONOS, que es la solución
-     correcta para WCAG 2.4.11, y se verifican sus dos pares reales. */
   CB.pruebas.PARES = [
     ['--bg-texto-panel',   '--texto-principal',      4.5, 'texto principal sobre panel crema'],
     ['--bg-texto-panel',   '--texto-secundario',     4.5, 'texto secundario sobre panel crema'],
@@ -62,16 +41,7 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
     ['--foco-borde',       '--bg-texto-panel',       3.0, 'anillo de foco: borde contra panel'],
     ['--foco-borde',       '--bg-pantalla',          1.0, 'anillo de foco sobre fondo oscuro'],
     ['--alto-contraste-bg','--alto-contraste-texto', 7.0, 'modo de alto contraste'],
-    /* LA CIFRA DE LAS DOCE PIEZAS DE DINERO, EN UN PAR Y NO EN SEIS.
-       Aquí había seis pares, uno por color de pieza, porque la cifra iba escrita
-       ENCIMA del dibujo y cada color de billete era su propio fondo de texto. En
-       1.20.0 las piezas pasan a ser fotografías y la cifra baja a una cinta opaca
-       propia: sobre una foto no hay contraste que medir —la foto tiene los
-       colores que tiene— y la única forma honesta de garantizar la cifra es
-       sacarla de encima de la imagen. Así que ahora el par es uno, y es el de la
-       cinta.
-       Los colores de las piezas siguen declarados como fondo de respaldo, pero ya
-       no llevan texto encima, así que no son pares de contraste. */
+
     ['--bg-texto-oscuro',  '--texto-claro',          4.5, 'la cifra en la cinta de cada moneda y cada billete']
   ];
 
@@ -107,11 +77,6 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   var sospechosas = ['.enunciado', '.enunciado--operacion', '.texto--menor', '.panel-bloque',
                      '.btn-bloque', '.mensaje-resultado', '.veta', '.cromo'];
 
-  /* PRIMERO: que las ocho clases EXISTAN en la hoja cargada. Aquí había un
-     `if (!el) return;` que convertía «esta clase ya no existe» en «nada que
-     comprobar», en verde. Con eso, renombrar cualquiera de las ocho apagaba en
-     silencio una comprobación que es obligación legal, y el resumen seguía
-     diciendo que todo estaba medido. Un nombre que ya no está es un fallo. */
   sospechosas.forEach(function (sel) {
     var hay = t.claseEnHoja(sel);
     if (hay === null) sinMedir.push(sel);
@@ -156,14 +121,7 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   t.ok(numOpcion >= 44,
     'los dígitos en tipografía pixel van a 44 px o más (6/8/9 y 1/7 se confunden por debajo)',
     numOpcion + ' px');
-  /* --lado-respuesta es ahora min(--lado-deseado, --lado-techo), y
-     getPropertyValue devuelve el TEXTO SIN RESOLVER: «min(var(--lado-deseado),
-     var(--lado-techo))». parseInt de eso da NaN, y NaN >= 64 es false: esta
-     comprobacion se habria puesto roja el dia del responsive por una razon que
-     no tiene nada que ver con el tamano del boton.
 
-     Se renderiza para leer el valor real, que es la misma sonda que este fichero
-     ya usaba unas lineas mas abajo para --e3, que tambien es un calc(). */
   var sondaLado = document.createElement('div');
   sondaLado.style.position = 'absolute';
   sondaLado.style.width = 'var(--lado-respuesta)';
@@ -182,17 +140,7 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
   t.ok(e3 >= 16, 'la separación entre botones es de al menos 16 px', e3 + ' px');
 });
 
-/* ── E63 · El par del botón BLOQUEADO, medido sobre el botón de verdad ───────
-   No sobre los tokens a mano: sobre getComputedStyle de un botón montado y
-   deshabilitado. Los tokens dicen lo que alguien quiso; el botón dice lo que se
-   ve, y entre una cosa y otra caben la especificidad y la cascada — que es
-   exactamente lo que dejaba el OK del teclado verde y brillante mientras las
-   otras once teclas estaban de piedra.
-
-   El par de antes era --deco-piedra-osc sobre --deco-piedra: 1,52:1 medido,
-   frente al 4,5 que exige WCAG 1.4.3. Durante los 800 ms de construcción de cada
-   ítem no se distinguía el 7 del 1. Y son 800 ms POR ÍTEM, treinta veces por
-   sesión. */
+/* E63 · El par del botón BLOQUEADO, medido sobre el botón de verdad */
 CB.pruebas.suite('Contraste: el teclado bloqueado también se lee', function () {
   var t = CB.pruebas;
 

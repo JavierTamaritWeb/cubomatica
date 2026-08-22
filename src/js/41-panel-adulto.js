@@ -1,17 +1,4 @@
-/* ============================================================================
-   41-panel-adulto.js — Panel para familias y maestros
-   ----------------------------------------------------------------------------
-   LA PUERTA PARENTAL ES DE LECTURA, NO DE CÁLCULO. Poner una multiplicación
-   difícil como cerradura en un juego de matemáticas enseña exactamente lo
-   contrario de lo que el juego defiende: que las matemáticas son un muro. Se
-   pide localizar una palabra concreta en una frase, que un adulto resuelve en
-   dos segundos y un lector de 2.º no.
-
-   HONESTIDAD DEL INFORME (PLAN §17.3): se distingue siempre entre lo que el
-   juego MIDE y lo que NO mide, y solo se emiten hipótesis de error a partir de
-   evidencia DISCRIMINANTE. Si dos códigos empatan, se cuentan ambos y no se
-   afirma ninguno.
-   ========================================================================== */
+/* 41-panel-adulto.js — Panel para familias y maestros */
 
 var CB = CB || {};
 CB.adulto = CB.adulto || {};
@@ -24,20 +11,7 @@ CB.adulto.FRASES_PUERTA = [
   { frase: 'Una vagoneta cruza el túnel cargada', n: 2 }
 ];
 
-/* PINTA el panel; NO navega hasta él.
-
-   Esta función es el handler de CB.pantallas.alEntrar['p-adulto'], y llamaba
-   como primera línea a CB.pantallas.ir('p-adulto'). Es decir: ir() invocaba al
-   handler, y el handler volvía a llamar a ir(). Recursión infinita, desbordamiento
-   de pila, y el catch de ir() mandaba al usuario a la pantalla de error.
-
-   Efecto real: pulsar la llave de la portada NUNCA abría el panel del adulto.
-   Se iba a «algo ha ido mal». Con ello quedaban fuera de alcance los ajustes,
-   el informe imprimible, la exportación del progreso y los interruptores de las
-   tablas del 6 al 9 y de los céntimos.
-
-   Los otros siete handlers de alEntrar solo pintan, que es el contrato. Este era
-   el único que navegaba. */
+/* Efecto real: pulsar la llave de la portada NUNCA abría el panel del adulto. */
 CB.adulto.abrir = function () {
   var puerta = document.getElementById('adulto-puerta');
   var contenido = document.getElementById('adulto-contenido');
@@ -77,7 +51,7 @@ CB.adulto.abrir = function () {
   };
 };
 
-/* ── Las 10 métricas ────────────────────────────────────────────────────── */
+/* Las 10 métricas */
 CB.adulto.metricas = function (perfil) {
   var hoy = CB.util.hoyISO();
   var h = perfil.historial || [];
@@ -161,7 +135,219 @@ CB.adulto.semaforo = function (perfil) {
   return out;
 };
 
-/* ── Pintado del panel ──────────────────────────────────────────────────── */
+/* Pintado del panel */
+CB.adulto.crearResumen = function (metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'De un vistazo'));
+  CB.adulto.metrica(caja, 'Tiempo de pantalla hoy',
+    Math.round(metricas.m1_tiempoHoy / 60) + ' min');
+  CB.adulto.metrica(caja, 'Expediciones completadas', String(metricas.m2_partidas));
+  CB.adulto.metrica(caja, 'Duración media de la partida',
+    Math.round(metricas.m2_duracionMedia / 60) + ' min ' + (metricas.m2_duracionMedia % 60) + ' s');
+  CB.adulto.metrica(caja, 'Aciertos (últimas 10 partidas)',
+    metricas.m3_precisionTotal == null ? 'sin datos' : Math.round(metricas.m3_precisionTotal * 100) + ' %');
+  CB.adulto.metrica(caja, 'Aciertos a la primera',
+    metricas.m3_precision1er == null ? 'sin datos' : Math.round(metricas.m3_precision1er * 100) + ' %');
+  caja.appendChild(CB.ui.crear('p', null,
+    'Lo esperable en 2.º es entre el 80 % y el 90 % de aciertos. Por debajo, el ' +
+    'juego bajará solo la dificultad; por encima, la subirá.'));
+  return caja;
+};
+
+CB.adulto.crearTablaBloques = function (metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Por bloques de contenido'));
+  var tabla = CB.ui.crear('table', 'adulto__tabla');
+  var cabecera = CB.ui.crear('tr');
+  ['Bloque', 'Situación', 'Preguntas'].forEach(function (texto) {
+    cabecera.appendChild(CB.ui.crear('th', null, texto));
+  });
+  var thead = CB.ui.crear('thead');
+  thead.appendChild(cabecera);
+  tabla.appendChild(thead);
+  var tbody = CB.ui.crear('tbody');
+  metricas.m4_semaforo.forEach(function (situacion) {
+    var fila = CB.ui.crear('tr');
+    fila.appendChild(CB.ui.crear('td', null, situacion.bloque));
+    var celdaSituacion = CB.ui.crear('td');
+    var indicador = CB.ui.crear('span', 'semaforo',
+      situacion.precision == null ? '' : situacion.precision + ' %');
+    indicador.setAttribute('data-nivel', situacion.nivel);
+    celdaSituacion.appendChild(indicador);
+    fila.appendChild(celdaSituacion);
+    fila.appendChild(CB.ui.crear('td', null, String(situacion.n)));
+    tbody.appendChild(fila);
+  });
+  tabla.appendChild(tbody);
+  caja.appendChild(tabla);
+  return caja;
+};
+
+CB.adulto.crearMatrizProblemas = function (metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Problemas de enunciado, por tipo'));
+  caja.appendChild(CB.ui.crear('p', null,
+    'Dos problemas con los mismos números y la misma operación tienen ' +
+    'dificultades muy distintas según cómo estén contados. Esta tabla es la ' +
+    'información más accionable del panel.'));
+  var tabla = CB.ui.crear('table', 'adulto__tabla matriz-subtipos');
+  var cabecera = CB.ui.crear('tr');
+  ['Tipo de problema', 'Intentos', 'Aciertos', 'Tiempo medio'].forEach(function (texto) {
+    cabecera.appendChild(CB.ui.crear('th', null, texto));
+  });
+  tabla.appendChild(cabecera);
+  CB.gen.problemas.SUBTIPOS.forEach(function (subtipo) {
+    var dato = metricas.m6_subtipos[subtipo];
+    if (!dato || !dato.intentos) return;
+    var fila = CB.ui.crear('tr');
+    fila.appendChild(CB.ui.crear('td', null, CB.adulto.NOMBRE_SUBTIPO[subtipo] || subtipo));
+    fila.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato', String(dato.intentos)));
+    fila.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato',
+      dato.aciertos + ' (' + Math.round(dato.aciertos / dato.intentos * 100) + ' %)'));
+    fila.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato',
+      Math.round(dato.rtMedioMs / 1000) + ' s'));
+    tabla.appendChild(fila);
+  });
+  caja.appendChild(tabla);
+  return caja;
+};
+
+CB.adulto.crearRecomendaciones = function (perfil, metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Qué conviene trabajar'));
+  var codigos = Object.keys(metricas.m7_errores).filter(function (codigo) {
+    return metricas.m7_errores[codigo].vecesDiscriminante >= 2;
+  }).sort(function (a, b) {
+    return metricas.m7_errores[b].vecesDiscriminante - metricas.m7_errores[a].vecesDiscriminante;
+  }).slice(0, 3);
+
+  if (!codigos.length) {
+    caja.appendChild(CB.ui.crear('p', null,
+      'Todavía no hay evidencia suficiente para señalar un error concreto. ' +
+      'Hacen falta al menos dos respuestas que apunten sin ambigüedad al mismo ' +
+      'procedimiento.'));
+    return caja;
+  }
+
+  codigos.forEach(function (codigo) {
+    var recomendacion = CB.datos.RECOMENDACIONES[codigo];
+    if (!recomendacion) return;
+    caja.appendChild(CB.ui.crear('h3', null, recomendacion.frase));
+    caja.appendChild(CB.ui.crear('p', null, '10 minutos: ' + recomendacion.actividad));
+    var ejemplos = (metricas.m7_errores[codigo].ejemplos || []).join(' · ');
+    if (ejemplos) caja.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Ejemplos: ' + ejemplos));
+    caja.appendChild(CB.ui.boton('Imprimir ficha de refuerzo', 'btn-adulto', function () {
+      CB.adulto.fichaRefuerzo(perfil, codigo);
+    }));
+  });
+  return caja;
+};
+
+CB.adulto.crearResumenJuego = function (metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Cómo está jugando'));
+  CB.adulto.metrica(caja, 'Respuestas muy rápidas sin acertar', String(metricas.m8_azares));
+  caja.appendChild(CB.ui.crear('p', 'texto texto--menor',
+    'El juego no se lo reprocha nunca: solo deja de puntuar esa pregunta y da ' +
+    'un momento de pausa. Si el número es alto, suele indicar cansancio o que ' +
+    'la dificultad está por encima, no mala intención.'));
+  CB.adulto.metrica(caja, 'Explicaciones seguidas hasta el final',
+    metricas.m9_reparaciones == null ? 'sin datos'
+      : Math.round(metricas.m9_reparaciones * 100) + ' % de ' + metricas.m9_reparacionesTotal);
+  CB.adulto.metrica(caja, 'Luces apagadas (últimas 10 partidas)', String(metricas.lucesApagadas));
+  if (metricas.m10_animo.length) {
+    var caras = ['me ha costado', 'normal', 'contento'];
+    CB.adulto.metrica(caja, 'Cómo dice que se ha sentido',
+      metricas.m10_animo.map(function (animo) { return caras[animo.cara] || '?'; }).join(', '));
+  }
+  return caja;
+};
+
+CB.adulto.crearSeccionOffline = function () {
+  if (!CB.offline || !CB.offline.DISPONIBLE) return null;
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Sin conexión'));
+  caja.appendChild(CB.ui.crear('p', null,
+    'El juego ya funciona sin internet: no pide nada a la red. Lo único que ' +
+    'no se guarda por su cuenta es la música, porque son 42 MB.'));
+
+  var estado = CB.ui.crear('p', 'texto texto--menor', 'Comprobando…');
+  caja.appendChild(estado);
+  CB.offline.musicaGuardada(function (cantidad) {
+    estado.textContent = cantidad === 0
+      ? 'Ahora mismo no hay ninguna pista guardada.'
+      : 'Guardadas ' + cantidad + ' de 9 pistas.';
+  });
+
+  var fila = CB.ui.crear('div', 'fila');
+  var descargar = CB.ui.boton('Descargar la música (42 MB)', 'btn-adulto', function () {
+    descargar.disabled = true;
+    estado.textContent = 'Descargando… 0 de 9';
+    CB.offline.descargarMusica(
+      function (intentadas, total) {
+        estado.textContent = 'Descargando… ' + intentadas + ' de ' + total;
+      },
+      function (resultado) {
+        descargar.disabled = false;
+        var hechas = resultado.hechas || 0;
+        if (resultado.ok) {
+          estado.textContent = 'Listo: las ' + hechas + ' pistas están guardadas.';
+        } else if (resultado.fallos) {
+          estado.textContent = 'Guardadas ' + hechas + ' de 9. ' + resultado.fallos +
+            (resultado.fallos === 1
+              ? ' pista no se ha podido descargar'
+              : ' pistas no se han podido descargar') +
+            '. Comprueba la conexión y vuelve a intentarlo.';
+        } else if (resultado.motivo === 'cancelado') {
+          estado.textContent = 'Descarga cancelada. Guardadas ' + hechas + ' de 9.';
+        } else {
+          estado.textContent = 'No se ha podido guardar ninguna pista. Puedes volver a intentarlo.';
+        }
+        CB.a11y.anunciar(estado.textContent);
+      });
+  });
+  fila.appendChild(descargar);
+  fila.appendChild(CB.ui.boton('Borrar lo guardado y recargar',
+    'btn-adulto btn-adulto--peligro', function () {
+      CB.offline.olvidarTodo(function () { location.reload(); });
+    }));
+  caja.appendChild(fila);
+  return caja;
+};
+
+CB.adulto.crearSeccionDatos = function (perfil) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Datos'));
+  caja.appendChild(CB.ui.crear('p', null, CB.LEGAL.PRIVACIDAD));
+  caja.appendChild(CB.ui.crear('p', null, CB.LEGAL.LIMITACION));
+
+  var fila = CB.ui.crear('div', 'fila');
+  fila.appendChild(CB.ui.boton('Ver informe imprimible', 'btn-adulto', function () {
+    CB.adulto.imprimirInforme(perfil.id);
+  }));
+  fila.appendChild(CB.ui.boton('Descargar CSV', 'btn-adulto', function () {
+    CB.adulto.descargarCSV(perfil);
+  }));
+  fila.appendChild(CB.ui.boton('Exportar copia (.json)', 'btn-adulto', function () {
+    CB.adulto.descargar(CB.almacen.exportar(perfil),
+      'cubomatica-' + perfil.mote.replace(/\s+/g, '-') + '.json', 'application/json');
+  }));
+  fila.appendChild(CB.ui.boton('Restaurar copia (.json)', 'btn-adulto', function () {
+    CB.adulto.restaurar(caja);
+  }));
+  caja.appendChild(fila);
+
+  var aviso = CB.ui.crear('p', 'texto texto--menor');
+  aviso.id = 'adulto-aviso-datos';
+  aviso.setAttribute('role', 'status');
+  caja.appendChild(aviso);
+  caja.appendChild(CB.ui.boton('Borrar este perfil',
+    'btn-adulto btn-adulto--peligro', function () {
+      CB.adulto.confirmarBorrado(perfil, caja);
+    }));
+  return caja;
+};
+
 CB.adulto.pintar = function () {
   var perfil = CB.perfil;
   var cont = document.getElementById('adulto-contenido');
@@ -195,236 +381,30 @@ CB.adulto.pintar = function () {
     cont.appendChild(alerta);
   }
 
-  /* ── Métricas 1-3 ──────────────────────────────────────────────────── */
-  var caja1 = CB.ui.crear('div', 'adulto__caja');
-  caja1.appendChild(CB.ui.crear('h2', null, 'De un vistazo'));
-  CB.adulto.metrica(caja1, 'Tiempo de pantalla hoy',
-    Math.round(m.m1_tiempoHoy / 60) + ' min');
-  CB.adulto.metrica(caja1, 'Expediciones completadas', String(m.m2_partidas));
-  CB.adulto.metrica(caja1, 'Duración media de la partida',
-    Math.round(m.m2_duracionMedia / 60) + ' min ' + (m.m2_duracionMedia % 60) + ' s');
-  CB.adulto.metrica(caja1, 'Aciertos (últimas 10 partidas)',
-    m.m3_precisionTotal == null ? 'sin datos' : Math.round(m.m3_precisionTotal * 100) + ' %');
-  CB.adulto.metrica(caja1, 'Aciertos a la primera',
-    m.m3_precision1er == null ? 'sin datos' : Math.round(m.m3_precision1er * 100) + ' %');
-  caja1.appendChild(CB.ui.crear('p', null,
-    'Lo esperable en 2.º es entre el 80 % y el 90 % de aciertos. Por debajo, el ' +
-    'juego bajará solo la dificultad; por encima, la subirá.'));
-  cont.appendChild(caja1);
+  /* Métricas 1-3 */
+  cont.appendChild(CB.adulto.crearResumen(m));
 
-  /* ── Métrica 4: semáforo ───────────────────────────────────────────── */
-  var caja2 = CB.ui.crear('div', 'adulto__caja');
-  caja2.appendChild(CB.ui.crear('h2', null, 'Por bloques de contenido'));
-  var tabla = CB.ui.crear('table', 'adulto__tabla');
-  var thead = CB.ui.crear('thead');
-  var trh = CB.ui.crear('tr');
-  ['Bloque', 'Situación', 'Preguntas'].forEach(function (t) {
-    trh.appendChild(CB.ui.crear('th', null, t));
-  });
-  thead.appendChild(trh); tabla.appendChild(thead);
-  var tbody = CB.ui.crear('tbody');
-  m.m4_semaforo.forEach(function (s) {
-    var tr = CB.ui.crear('tr');
-    tr.appendChild(CB.ui.crear('td', null, s.bloque));
-    var td = CB.ui.crear('td');
-    var sp = CB.ui.crear('span', 'semaforo',
-      s.precision == null ? '' : (s.precision + ' %'));
-    sp.setAttribute('data-nivel', s.nivel);
-    td.appendChild(sp);
-    tr.appendChild(td);
-    tr.appendChild(CB.ui.crear('td', null, String(s.n)));
-    tbody.appendChild(tr);
-  });
-  tabla.appendChild(tbody);
-  caja2.appendChild(tabla);
-  cont.appendChild(caja2);
+  /* Métrica 4: semáforo */
+  cont.appendChild(CB.adulto.crearTablaBloques(m));
 
-  /* ── Métrica 6: la matriz de los 20 subtipos ───────────────────────── */
-  var caja3 = CB.ui.crear('div', 'adulto__caja');
-  caja3.appendChild(CB.ui.crear('h2', null, 'Problemas de enunciado, por tipo'));
-  caja3.appendChild(CB.ui.crear('p', null,
-    'Dos problemas con los mismos números y la misma operación tienen ' +
-    'dificultades muy distintas según cómo estén contados. Esta tabla es la ' +
-    'información más accionable del panel.'));
-  var t2 = CB.ui.crear('table', 'adulto__tabla matriz-subtipos');
-  var th2 = CB.ui.crear('tr');
-  ['Tipo de problema', 'Intentos', 'Aciertos', 'Tiempo medio'].forEach(function (t) {
-    th2.appendChild(CB.ui.crear('th', null, t));
-  });
-  t2.appendChild(th2);
-  CB.gen.problemas.SUBTIPOS.forEach(function (s) {
-    var p = m.m6_subtipos[s];
-    if (!p || !p.intentos) return;
-    var tr = CB.ui.crear('tr');
-    tr.appendChild(CB.ui.crear('td', null, CB.adulto.NOMBRE_SUBTIPO[s] || s));
-    var td1 = CB.ui.crear('td', 'matriz-subtipos__dato', String(p.intentos)); tr.appendChild(td1);
-    var td2 = CB.ui.crear('td', 'matriz-subtipos__dato',
-      p.aciertos + ' (' + Math.round(p.aciertos / p.intentos * 100) + ' %)');
-    tr.appendChild(td2);
-    tr.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato', Math.round(p.rtMedioMs / 1000) + ' s'));
-    t2.appendChild(tr);
-  });
-  caja3.appendChild(t2);
-  cont.appendChild(caja3);
+  /* Métrica 6: la matriz de los 20 subtipos */
+  cont.appendChild(CB.adulto.crearMatrizProblemas(m));
 
-  /* ── Métrica 7: errores frecuentes con su actividad de 10 minutos ──── */
-  var caja4 = CB.ui.crear('div', 'adulto__caja');
-  caja4.appendChild(CB.ui.crear('h2', null, 'Qué conviene trabajar'));
-  var codigos = Object.keys(m.m7_errores).filter(function (c) {
-    return m.m7_errores[c].vecesDiscriminante >= 2;
-  }).sort(function (a, b) {
-    return m.m7_errores[b].vecesDiscriminante - m.m7_errores[a].vecesDiscriminante;
-  }).slice(0, 3);
+  /* Métrica 7: errores frecuentes con su actividad de 10 minutos */
+  cont.appendChild(CB.adulto.crearRecomendaciones(perfil, m));
 
-  if (!codigos.length) {
-    caja4.appendChild(CB.ui.crear('p', null,
-      'Todavía no hay evidencia suficiente para señalar un error concreto. ' +
-      'Hacen falta al menos dos respuestas que apunten sin ambigüedad al mismo ' +
-      'procedimiento.'));
-  } else {
-    codigos.forEach(function (c) {
-      var rec = CB.datos.RECOMENDACIONES[c];
-      if (!rec) return;
-      caja4.appendChild(CB.ui.crear('h3', null, rec.frase));
-      caja4.appendChild(CB.ui.crear('p', null, '10 minutos: ' + rec.actividad));
-      var ejemplos = (m.m7_errores[c].ejemplos || []).join(' · ');
-      if (ejemplos) caja4.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Ejemplos: ' + ejemplos));
-      caja4.appendChild(CB.ui.boton('Imprimir ficha de refuerzo', 'btn-adulto', function () {
-        CB.adulto.fichaRefuerzo(perfil, c);
-      }));
-    });
-  }
-  cont.appendChild(caja4);
+  /* Métricas 8-10 */
+  cont.appendChild(CB.adulto.crearResumenJuego(m));
 
-  /* ── Métricas 8-10 ─────────────────────────────────────────────────── */
-  var caja5 = CB.ui.crear('div', 'adulto__caja');
-  caja5.appendChild(CB.ui.crear('h2', null, 'Cómo está jugando'));
-  CB.adulto.metrica(caja5, 'Respuestas muy rápidas sin acertar', String(m.m8_azares));
-  caja5.appendChild(CB.ui.crear('p', 'texto texto--menor',
-    'El juego no se lo reprocha nunca: solo deja de puntuar esa pregunta y da ' +
-    'un momento de pausa. Si el número es alto, suele indicar cansancio o que ' +
-    'la dificultad está por encima, no mala intención.'));
-  CB.adulto.metrica(caja5, 'Explicaciones seguidas hasta el final',
-    m.m9_reparaciones == null ? 'sin datos'
-      : Math.round(m.m9_reparaciones * 100) + ' % de ' + m.m9_reparacionesTotal);
-  CB.adulto.metrica(caja5, 'Luces apagadas (últimas 10 partidas)', String(m.lucesApagadas));
-  if (m.m10_animo.length) {
-    var caras = ['me ha costado', 'normal', 'contento'];
-    CB.adulto.metrica(caja5, 'Cómo dice que se ha sentido',
-      m.m10_animo.map(function (a) { return caras[a.cara] || '?'; }).join(', '));
-  }
-  cont.appendChild(caja5);
-
-  /* ── Ajustes ───────────────────────────────────────────────────────── */
+  /* Ajustes */
   cont.appendChild(CB.adulto.cajaAjustes(perfil));
 
-  /* ── Sin conexión ──────────────────────────────────────────────────────
-     SOLO aparece si de verdad se puede: con doble clic desde file:// no hay
-     service worker y la sección no existe. Nada de «esta función no está
-     disponible»: un aviso sobre algo que el usuario no ha pedido es ruido.
+  /* Sin conexión */
+  var seccionOffline = CB.adulto.crearSeccionOffline();
+  if (seccionOffline) cont.appendChild(seccionOffline);
 
-     Y va AQUÍ, en el panel del adulto, detrás de la puerta parental, porque
-     descargar 42 MB en el disco de un aparato escolar es una decisión informada
-     de una persona adulta, no un efecto colateral de darle a jugar. */
-  if (CB.offline && CB.offline.DISPONIBLE) {
-    var cajaSC = CB.ui.crear('div', 'adulto__caja');
-    cajaSC.appendChild(CB.ui.crear('h2', null, 'Sin conexión'));
-    cajaSC.appendChild(CB.ui.crear('p', null,
-      'El juego ya funciona sin internet: no pide nada a la red. Lo único que ' +
-      'no se guarda por su cuenta es la música, porque son 42 MB.'));
-
-    var estadoSC = CB.ui.crear('p', 'texto texto--menor', 'Comprobando…');
-    cajaSC.appendChild(estadoSC);
-    CB.offline.musicaGuardada(function (n) {
-      estadoSC.textContent = n === 0
-        ? 'Ahora mismo no hay ninguna pista guardada.'
-        : 'Guardadas ' + n + ' de 9 pistas.';
-    });
-
-    var filaSC = CB.ui.crear('div', 'fila');
-    var btnBajar = CB.ui.boton('Descargar la música (42 MB)', 'btn-adulto', function () {
-      btnBajar.disabled = true;
-      estadoSC.textContent = 'Descargando… 0 de 9';
-      CB.offline.descargarMusica(
-        function (intentadas, total) {
-          estadoSC.textContent = 'Descargando… ' + intentadas + ' de ' + total;
-        },
-        /* El mensaje distingue los tres finales, porque antes los tres decían
-           «Listo»: terminar sin fallos, terminar con pistas caídas, y no haber
-           podido empezar. Decir «guardadas» cuando no lo están es lo que hace
-           que alguien se lleve la tableta a un sitio sin wifi. */
-        function (r) {
-          btnBajar.disabled = false;
-          var n = r.hechas || 0;
-          if (r.ok) {
-            estadoSC.textContent = 'Listo: las ' + n + ' pistas están guardadas.';
-          } else if (r.fallos) {
-            estadoSC.textContent = 'Guardadas ' + n + ' de 9. ' + r.fallos +
-              (r.fallos === 1 ? ' pista no se ha podido descargar' : ' pistas no se han podido descargar') +
-              '. Comprueba la conexión y vuelve a intentarlo.';
-          } else if (r.motivo === 'cancelado') {
-            estadoSC.textContent = 'Descarga cancelada. Guardadas ' + n + ' de 9.';
-          } else {
-            estadoSC.textContent = 'No se ha podido guardar ninguna pista. Puedes volver a intentarlo.';
-          }
-          CB.a11y.anunciar(estadoSC.textContent);
-        });
-    });
-    filaSC.appendChild(btnBajar);
-
-    /* El botón que un maestro puede pulsar sin saber qué es un service worker
-       cuando algo se queda pegado. Es el remedio contra el peor fallo posible de
-       esta parte: una versión vieja servida desde la caché para siempre. */
-    filaSC.appendChild(CB.ui.boton('Borrar lo guardado y recargar', 'btn-adulto btn-adulto--peligro',
-      function () {
-        CB.offline.olvidarTodo(function () { location.reload(); });
-      }));
-    cajaSC.appendChild(filaSC);
-    cont.appendChild(cajaSC);
-  }
-
-  /* ── Datos ─────────────────────────────────────────────────────────── */
-  var caja7 = CB.ui.crear('div', 'adulto__caja');
-  caja7.appendChild(CB.ui.crear('h2', null, 'Datos'));
-  caja7.appendChild(CB.ui.crear('p', null, CB.LEGAL.PRIVACIDAD));
-  caja7.appendChild(CB.ui.crear('p', null, CB.LEGAL.LIMITACION));
-
-  var fila = CB.ui.crear('div', 'fila');
-  fila.appendChild(CB.ui.boton('Ver informe imprimible', 'btn-adulto', function () {
-    CB.adulto.imprimirInforme(perfil.id);
-  }));
-  fila.appendChild(CB.ui.boton('Descargar CSV', 'btn-adulto', function () {
-    CB.adulto.descargarCSV(perfil);
-  }));
-  fila.appendChild(CB.ui.boton('Exportar copia (.json)', 'btn-adulto', function () {
-    CB.adulto.descargar(CB.almacen.exportar(perfil),
-      'cubomatica-' + perfil.mote.replace(/\s+/g, '-') + '.json', 'application/json');
-  }));
-
-  /* RESTAURAR. Faltaba, y su ausencia dejaba sin efecto la única respuesta que
-     el proyecto da a su propia limitación estructural: el README dice «haz una
-     copia con Exportar al terminar cada trimestre», y esa copia no se podía
-     volver a meter. Exportar sin importar es un botón que promete algo que no
-     cumple. CB.almacen.validarImportado() ya existía, estaba probado y no lo
-     llamaba nadie.
-
-     El fichero lo elige la persona adulta en su propio disco: no hay red, no
-     hay servidor y no se lee nada que no se haya señalado a mano. */
-  fila.appendChild(CB.ui.boton('Restaurar copia (.json)', 'btn-adulto', function () {
-    CB.adulto.restaurar(caja7);
-  }));
-  caja7.appendChild(fila);
-
-  var aviso = CB.ui.crear('p', 'texto texto--menor');
-  aviso.id = 'adulto-aviso-datos';
-  aviso.setAttribute('role', 'status');
-  caja7.appendChild(aviso);
-
-  var borrar = CB.ui.boton('Borrar este perfil', 'btn-adulto btn-adulto--peligro', function () {
-    CB.adulto.confirmarBorrado(perfil, caja7);
-  });
-  caja7.appendChild(borrar);
-  cont.appendChild(caja7);
+  /* Datos */
+  cont.appendChild(CB.adulto.crearSeccionDatos(perfil));
 
   cont.appendChild(CB.ui.boton('◀ Salir', 'btn-bloque', function () {
     /* Sin ternario: las dos ramas decían 'p-portada'. Al panel se entra por la
@@ -463,7 +443,7 @@ CB.adulto.NOMBRE_SUBTIPO = {
   IGUALACION_6: 'Igualar · referente, quitar'
 };
 
-/* ── Ajustes pedagógicos (viven en perfil.ajustes, §15.2) ───────────────── */
+/* Ajustes pedagógicos (viven en perfil.ajustes, §15.2) */
 CB.adulto.AJUSTES = [
   { k: 'modoTiempo', t: 'Reloj', tipo: 'opciones',
     ops: [['conCalma', 'Con calma (recomendado)'], ['normal', 'Normal'], ['sinPrisa', 'Sin prisa']] },
@@ -546,7 +526,7 @@ CB.adulto.cajaAjustes = function (perfil) {
   return caja;
 };
 
-/* ── Informe imprimible ─────────────────────────────────────────────────── */
+/* Informe imprimible */
 CB.adulto.imprimirInforme = function (perfilId) {
   var perfil = CB.perfil;
   var m = CB.adulto.metricas(perfil);
@@ -608,7 +588,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
   if (b) b.onclick = function () { window.print(); };
 };
 
-/* ── Ficha de refuerzo en papel: 10 ítems del tipo exacto que falla ─────── */
+/* Ficha de refuerzo en papel: 10 ítems del tipo exacto que falla */
 CB.adulto.fichaRefuerzo = function (perfil, codigoError) {
   var rec = CB.datos.RECOMENDACIONES[codigoError];
   var err = CB.ERRORES[codigoError];
@@ -648,7 +628,7 @@ CB.adulto.fichaRefuerzo = function (perfil, codigoError) {
   if (b) b.onclick = function () { window.print(); };
 };
 
-/* ── CSV ────────────────────────────────────────────────────────────────── */
+/* CSV */
 CB.adulto.descargarCSV = function (perfil) {
   var lineas = ['fecha;itemId;nivel;destreza;beta;D;rt_ms;correcta;valor_dado;flags'];
   (perfil.respuestas || []).forEach(function (r) {
@@ -680,12 +660,7 @@ CB.adulto.descargar = function (texto, nombre, tipo) {
 };
 
 /* Borrar exige escribir la palabra BORRAR (§15.8). */
-/* Restaurar un perfil desde un .json exportado.
 
-   Todo lo que entra pasa por CB.almacen.validarImportado(), que es la ÚNICA
-   superficie de ataque del proyecto: recorta a los campos permitidos, obliga a
-   que el mote salga de la lista cerrada de 120, valida el color contra un
-   patrón y acota el tamaño de los arrays. Aquí no se salta ni un paso. */
 CB.adulto.restaurar = function (cont) {
   var aviso = document.getElementById('adulto-aviso-datos');
   function decir(t) {

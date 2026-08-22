@@ -1,31 +1,4 @@
-/* ============================================================================
-   22-vidas.js — Requisitos 9 y 10: las 3 luces del casco y las luces extra
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA (opera sobre un objeto de estado que se le pasa).
-
-   LA REGLA, EN UNA SOLA REDACCIÓN (PLAN §12.1, copiada a docs/decisiones.md):
-
-     1. El tiempo agotado NUNCA apaga una luz, en ninguna circunstancia.
-        Ni el primero, ni ninguno. (WCAG 2.2.1 Timing Adjustable, nivel A.)
-     2. La detección de azar NUNCA apaga una luz.
-     3. Se apaga una luz ÚNICAMENTE al fallar el SEGUNDO intento de un ítem,
-        después de haber visto la tarjeta de reparación.
-     4. SALVAGUARDA ANTI-BLOQUEO: 3 tiempos agotados consecutivos → modo «Sin
-        prisa»; 6 en la partida → fin amable con motivoFin 'pausa'.
-        Sin esta salvaguarda, un niño que dejase correr el tiempo en todos los
-        ítems NO PERDÍA NUNCA UNA LUZ y la partida no terminaba jamás: el sistema
-        de 3 vidas quedaba anulado por una estrategia trivial.
-     5. Tope 5. Iniciales 3.
-     6. El exceso va a perfil.vidasReserva (máx. 2). NO se convierte en gemas:
-        prometer una vida y entregar otra cosa erosiona la confianza en el
-        sistema de logros, que es justo lo que sostiene el requisito 10.
-     7. Al apagarse la 3.ª: fin conservando el 100 % de gemas y TODO el progreso.
-
-   Se llama CB.vidas y no CB.luces porque «vidas» es el vocabulario del requisito
-   del usuario. Lo que cambia es la METÁFORA VISUAL: luces de cristal que se
-   apagan y se encienden, no corazones que estallan. Un corazón roto es
-   irreversible en el imaginario infantil, y eso hace ilegible la vida extra.
-   ========================================================================== */
+/* 22-vidas.js — Requisitos 9 y 10: las 3 luces del casco y las luces extra */
 
 var CB = CB || {};
 CB.vidas = CB.vidas || {};
@@ -78,20 +51,14 @@ CB.vidas.fallo = function (est, intento, modo) {
              abrePista: false, abreReparacion: true, apagada: false };
   }
 
-  /* Durante el combate de jefe, el fallo NO apaga luces: solo repara un bloque
-     de la armadura y alarga el combate. Un niño que recorre un mundo entero y
-     «muere» en el jefe pierde la recompensa de cierre: es el punto de abandono
-     clásico (§12.9). */
+  /* Durante el combate de jefe, el fallo NO apaga luces: solo repara un bloque de la armadura y alarga el combate. */
   if (modo === 'jefe') {
     return { luces: est.luces, intento: intento,
              abrePista: false, abreReparacion: false, apagada: false };
   }
 
   if (intento === 1) {
-    /* Primer fallo: PISTA de Rocarr. NO apaga luz. NO rompe racha.
-       El campo se llama `abrePista` y no `abreReparacion`: la tarjeta de
-       reparación es cosa del SEGUNDO fallo, y confundir los dos nombres es
-       confundir los dos escalones de la escalera anti-frustración. */
+
     return { luces: est.luces, intento: 1,
              abrePista: true, abreReparacion: false, apagada: false };
   }

@@ -1,10 +1,9 @@
-/* casos-motor.js — El niño sintético INDEPENDIENTE, el DAG, las fechas, la
-   cuota, los logros de luz y la regla de las luces. */
+/* casos-motor.js — El niño sintético INDEPENDIENTE, el DAG, las fechas, la */
 
 CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   var t = CB.pruebas;
 
-  /* ── DAG ──────────────────────────────────────────────────────────────── */
+  /* DAG */
   t.ok(CB.grafo.esAciclico(), 'el grafo de prerrequisitos es acíclico');
   var h = CB.grafo.huerfanos();
   t.ok(h.length === 0, 'todo nivel es alcanzable desde los que no tienen prerrequisitos',
@@ -21,7 +20,7 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   t.ok(vacios.length === 0, 'candidatos() nunca devuelve [] para ninguna de las 13 destrezas',
        vacios.join(', '));
 
-  /* ── La regla de las luces (§12.1) ─────────────────────────────────────── */
+  /* La regla de las luces (§12.1) */
   var est = CB.vidas.nuevoEstado(0);
   t.igual(est.luces, 3, 'la partida empieza con 3 luces');
 
@@ -31,16 +30,7 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   t.ok(r.finAmable && r.motivoFin === 'pausa',
        'la función pura ofrece fin amable a los 6 tiempos agotados');
 
-  /* PERO ESO NO PASA NUNCA EN UNA PARTIDA, y decirlo importa: este test estaba
-     escrito como «SALVAGUARDA», dando a entender que el juego tiene DOS
-     protecciones para un niño que se queda sin tiempo una y otra vez. Tiene
-     una. A los 3 tiempos seguidos, cambiaModo pone la partida en «Sin prisa»,
-     que apaga el cronómetro; desde ahí no puede volver a agotarse el tiempo y
-     el contador se queda clavado en 3, muy por debajo de los 6.
-
-     Un test en verde sobre una rama que el juego no puede ejecutar es
-     exactamente el fraude que casos-curriculo.js dice no querer. Se deja la
-     comprobación de la función pura, y se añade la de la verdad de integración. */
+  /* PERO ESO NO PASA NUNCA EN UNA PARTIDA, y decirlo importa: este test estaba escrito como «SALVAGUARDA», dando a entender que el juego tiene DOS protecciones para un niño que se queda sin tiempo una y otra vez. */
   t.ok(CB.vidas.TIMEOUTS_CAMBIA_MODO < CB.vidas.TIMEOUTS_FIN,
        'el cambio de modo llega ANTES que el fin amable, y por eso lo hace inalcanzable',
        CB.vidas.TIMEOUTS_CAMBIA_MODO + ' < ' + CB.vidas.TIMEOUTS_FIN);
@@ -108,7 +98,7 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   var luzNoV1 = CB.logros.LISTA.filter(function (l) { return l.luz && l.version !== 1; });
   t.igual(luzNoV1.length, 0, 'los 3 logros de luz son evaluables en v1');
 
-  /* ── Anti-azar ────────────────────────────────────────────────────────── */
+  /* Anti-azar */
   var perfilA = CB.pruebas.perfilNuevo();
   var falsos = 0, rt;
   for (rt = 50; rt < 3000; rt += 25) {
@@ -135,7 +125,7 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   t.ok(CB.antiazar.EFECTOS.apagaLuz === false && CB.antiazar.EFECTOS.restaPuntosGanados === false,
        'los efectos del azar no apagan luz ni restan puntos ganados');
 
-  /* ── Escalera anti-frustración ────────────────────────────────────────── */
+  /* Escalera anti-frustración */
   t.igual(CB.escalera.siguienteEscalon(0, 1).escalon, 1, 'escalón 1 · pista al primer fallo');
   t.igual(CB.escalera.siguienteEscalon(0, 2).escalon, 2, 'escalón 2 · reparación al segundo');
   t.igual(CB.escalera.siguienteEscalon(2, 2).escalon, 3, 'escalón 3 · baja D y pasa a opciones');
@@ -155,11 +145,6 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
 CB.pruebas.suite('Motor: el niño sintético independiente', function () {
   var t = CB.pruebas;
 
-  /* MODELO INDEPENDIENTE (PLAN §19.1). Si el simulador respondiera con el mismo
-     modelo logístico que usa CB.adaptativo para elegir β, el test sería
-     TAUTOLÓGICO: la convergencia estaría garantizada por construcción y no
-     probaría nada. Aquí θ_real es DESCONOCIDO para el motor, hay adivinanza (c)
-     y desliz (s), y θ_real deriva con el aprendizaje. */
   function simular(thetaReal, sesiones, semilla) {
     var rng = CB.util.mulberry32(semilla);
     var perfil = CB.pruebas.perfilNuevo();
@@ -291,7 +276,7 @@ CB.pruebas.suite('Motor: fechas, memoria, cuota y almacenamiento', function () {
     'el mote se sustituye por uno de la lista cerrada de 120', sucio.perfil.mote);
   t.igual(sucio.perfil.colorBloque, '#5AA02C', 'colorBloque no válido cae al valor por defecto');
   t.igual(sucio.perfil.avatar, 15, 'avatar se acota a [0,15]');
-  t.ok(/^[A-Za-z0-9\-]+$/.test(sucio.perfil.id), 'el id se regenera si trae caracteres raros');
+  t.ok(/^[A-Za-z0-9-]+$/.test(sucio.perfil.id), 'el id se regenera si trae caracteres raros');
   t.igual(sucio.perfil.respuestas.length, 800, 'los arrays desmedidos se truncan');
   t.ok(sucio.perfil.campoDesconocido === undefined,
     'las claves desconocidas de primer nivel se descartan (lista blanca)');

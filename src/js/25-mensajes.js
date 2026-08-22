@@ -1,19 +1,4 @@
-/* ============================================================================
-   25-mensajes.js — Requisitos 4 y 5: enhorabuena variada y ánimo al fallar
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA (opera sobre el objeto perfil que se le pasa).
-
-   POR QUÉ CADA CATEGORÍA TIENE SU PROPIA BOLSA (PLAN §14.7): el plan v1 tenía 84
-   mensajes en 4 categorías elegidos por contexto. La bolsa EFECTIVA era la de la
-   categoría —15-20 mensajes— y un niño con racha veía repetido el mismo elogio
-   de racha en 15 aciertos seguidos. Muy por debajo de los «40 minutos sin
-   repetir» que el propio plan prometía.
-
-   Ahora: 4 categorías × EXACTAMENTE 21, cada una con su BolsaBarajada persistida
-   en el perfil. Ningún mensaje se repite hasta agotar la bolsa de SU categoría.
-   Además, nunca se repite uno de los `ultimos12` globales: si la bolsa solo
-   ofrece uno ya reciente, se toma el siguiente de la bolsa.
-   ========================================================================== */
+/* 25-mensajes.js — Requisitos 4 y 5: enhorabuena variada y ánimo al fallar */
 
 var CB = CB || {};
 CB.mensajes = CB.mensajes || {};
@@ -39,11 +24,7 @@ CB.mensajes.nuevoEstado = function () {
   return {
     acierto: { bolsaA: [], bolsaB: [], bolsaC: [], bolsaD: [], ultimos12: [] },
     animo:   { bolsa1: [], bolsa2: [], ultimos10: [] },
-    /* SIN GUION BAJO DELANTE, y no es estilo. CB.almacen.sanear() borra todas
-       las claves que empiezan por «_», así que una bolsa llamada `_gritos` se
-       reiniciaría en cada guardado y el grito volvería a repetirse cada dos por
-       tres sin que nada fallara. Es exactamente lo que le pasó a la dificultad D
-       (E45), que era un trinquete de una sola dirección por este mismo motivo. */
+
     gritos:  { bolsaAcierto: [] },
     /* Los cinco micro-descansos también van en bolsa. Sin guion bajo, por lo
        mismo: sanear() borra esas claves y la bolsa se reiniciaría en cada
@@ -168,11 +149,7 @@ CB.mensajes.acierto = function (ctx) {
   return CB.mensajes.rellenar(lista[idx], ctx, rng);
 };
 
-/**
- * Mensaje motivador al fallar. Requisito 5.
- * Nunca contiene elogio de persona ni acusación: el criterio 7.2 del RD pide
- * literalmente «valorando el error como una oportunidad de aprendizaje».
- */
+/* Nunca contiene elogio de persona ni acusación: el criterio 7.2 del RD pide literalmente «valorando el error como una oportunidad de aprendizaje». */
 CB.mensajes.animo = function (ctx) {
   ctx = ctx || {};
   var perfil = ctx.perfil || {};

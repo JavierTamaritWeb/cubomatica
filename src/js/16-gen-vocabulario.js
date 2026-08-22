@@ -1,21 +1,4 @@
-/* ============================================================================
-   16-gen-vocabulario.js — V1…V8 (Diccionario de Bloques)
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   Da cobertura al criterio 6.1 del primer ciclo, literal: «Reconocer lenguaje
-   matemático sencillo presente en la vida cotidiana, adquiriendo vocabulario
-   específico básico». Es lo que casi ninguna aplicación de cálculo entrena, y es
-   la mitad de por qué un niño no entiende un enunciado.
-
-   NOTA SOBRE V2: «minuendo» y «sustraendo» son terminología que el RD no sitúa
-   explícitamente en primer ciclo. Se marcan en el Diccionario con el distintivo
-   «palabra de mayores» y NO cuentan para ningún requisito de progresión.
-
-   Estos niveles declaran diagnostico:false: simular un error numérico sobre una
-   palabra no tiene sentido, y el informe no emite hipótesis sobre ellos
-   (invariante 6-bis).
-   ========================================================================== */
+/* 16-gen-vocabulario.js — V1…V8 (Diccionario de Bloques) */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
@@ -71,7 +54,7 @@ CB.gen.vocabulario.V6 = function (rng, D) { return itemVocab('V6', rng, D); };
 CB.gen.vocabulario.V7 = function (rng, D) { return itemVocab('V7', rng, D); };
 CB.gen.vocabulario.V8 = function (rng, D) { return itemVocab('V8', rng, D); };
 
-/* ── V4 Comparar: se responde en la balanza, no eligiendo palabra ───────── */
+/* V4 Comparar: se responde en la balanza, no eligiendo palabra */
 CB.gen.vocabulario.V4 = function (rng, D) {
   var a = CB.util.ent(rng, 1, (D === 1) ? 20 : 99);
   var b = CB.util.ent(rng, 1, (D === 1) ? 20 : 99);
@@ -91,7 +74,7 @@ CB.gen.vocabulario.V4 = function (rng, D) {
   };
 };
 
-/* ── V5 Orden y posición: se responde ordenando ─────────────────────────── */
+/* V5 Orden y posición: se responde ordenando */
 CB.gen.vocabulario.V5 = function (rng, D) {
   var inicio = CB.util.ent(rng, 1, 14);
   var cuantos = (D === 1) ? 3 : 4;

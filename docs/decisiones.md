@@ -3721,3 +3721,35 @@ procedencia sin obligar a conocer qué `@use ... as *` se ejecutó antes.
 El plan de mejoras de 1.8.0 se elimina del árbol actual porque ya estaba
 ejecutado y duplicaba el historial. Sus decisiones estables viven aquí y el
 documento original permanece recuperable en Git.
+
+---
+
+## D-1.23.3 — Calidad JavaScript y comentarios que justifican código
+
+La aplicación conserva scripts clásicos concatenados sobre `window.CB`. Pasar a
+ES Modules rompería el uso principal mediante doble clic y el contrato de carga
+que verifica la suite. La mejora de calidad se hace dentro de esa frontera:
+ESLint analiza fuentes, datos, pruebas, herramientas y construcción; impide
+variables implícitas, código inalcanzable, comparaciones inseguras y errores de
+promesas, y fija techos de complejidad, profundidad, tamaño y anidamiento.
+`npm run entregar` ejecuta esta puerta antes de construir.
+
+El validador de problemas y el panel adulto se dividen por responsabilidad sin
+cambiar su API pública. Los callbacks asíncronos guardan la identidad del estado
+y del ítem que los creó: si el niño cambia de pantalla o empieza otra partida,
+el callback anterior termina sin tocar el estado nuevo. El ejecutor captura los
+errores globales y las promesas rechazadas para que una excepción tardía no
+pueda convivir con un resumen verde.
+
+Los comentarios JavaScript habían llegado al 25 % de las líneas. Se reduce al
+10 % con una regla equivalente a la adoptada para Sass: el ejecutable conserva
+contratos JSDoc, invariantes, seguridad, compatibilidad y motivos no evidentes;
+no conserva relatos cronológicos, alternativas ya descartadas ni descripciones
+literales de la instrucción siguiente. Ese historial vive en este documento y
+en `CHANGELOG.md`, donde puede leerse sin interrumpir el flujo del código.
+
+BrowserSync se retira por dos motivos unidos: su árbol mantenía cinco avisos de
+seguridad altos y hacía más difícil garantizar qué se inyectaba en cada página.
+El servidor de desarrollo usa `node:http`, separa juego y pruebas, aplica
+`Cache-Control: no-store` y recarga solo el juego mediante eventos enviados por
+el servidor. No se añade ninguna dependencia de producción.

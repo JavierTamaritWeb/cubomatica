@@ -1,12 +1,4 @@
-/* ============================================================================
-   29-grafo.js — DAG de prerrequisitos de los 92 niveles
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA. Lee CB.catalogo, no lo modifica.
-
-   casos-motor.js verifica: el grafo es ACÍCLICO, TODO nodo es alcanzable desde
-   el conjunto de niveles con prerrequisitos:[], y NINGUNA destreza con
-   ampliacion:true es prerrequisito de una nuclear (CU5).
-   ========================================================================== */
+/* 29-grafo.js — DAG de prerrequisitos de los 92 niveles */
 
 var CB = CB || {};
 CB.grafo = CB.grafo || {};
@@ -84,7 +76,7 @@ CB.grafo.prerrequisitoDominado = function (nivelId, perfil) {
   return null;
 };
 
-/* ── Verificaciones estructurales, usadas por casos-motor.js ────────────── */
+/* Verificaciones estructurales, usadas por casos-motor.js */
 
 CB.grafo.esAciclico = function () {
   var ids = CB.catalogo.ids();

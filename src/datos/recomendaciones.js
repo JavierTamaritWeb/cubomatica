@@ -1,23 +1,11 @@
-/* ============================================================================
-   recomendaciones.js — Los 24 códigos de error → frase llana → actividad de aula
-   ----------------------------------------------------------------------------
-   CU8 (PLAN §6.3) comprueba que este fichero y CB.ERRORES tienen EXACTAMENTE el
-   mismo conjunto de claves, y que ninguna entrada tiene la frase o la actividad
-   vacías. Si alguien añade un código en 18-distractores.js y se olvida de la
-   recomendación, la suite se pone en rojo.
-
-   La frase va dirigida a una persona adulta sin formación matemática. Nada de
-   «error de transferencia en el algoritmo aditivo»: «se olvida de llevar».
-   La actividad es SIEMPRE manipulativa y de 10 minutos, porque el remedio de un
-   error de procedimiento no está en más pantalla.
-   ========================================================================== */
+/* recomendaciones.js — Los 24 códigos de error → frase llana → actividad de aula */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
 
 CB.datos.RECOMENDACIONES = {
 
-  /* ── Sumas ───────────────────────────────────────────────────────────── */
+  /* Sumas */
   'E-S-LLEV-OLV': {
     frase: 'Suma bien las columnas pero se olvida de llevar la decena.',
     actividad: 'Con 20 palillos y gomas: que sume 8 + 5 juntando palillos y que ATE un ' +
@@ -42,7 +30,7 @@ CB.datos.RECOMENDACIONES = {
                'sumas en la cuadrícula SIN resolverlas: el objetivo del día es solo colocar.'
   },
 
-  /* ── Restas ──────────────────────────────────────────────────────────── */
+  /* Restas */
   'E-R-INV': {
     frase: 'Cuando el número de arriba es menor, resta al revés: quita el pequeño del ' +
            'grande dentro de la columna. Es el error de resta más común de 2.º.',
@@ -73,7 +61,7 @@ CB.datos.RECOMENDACIONES = {
                'resultado va a ser MAYOR o MENOR que el número de partida, antes de operar.'
   },
 
-  /* ── Numeración ──────────────────────────────────────────────────────── */
+  /* Numeración */
   'E-N-POS': {
     frase: 'Confunde el valor de las cifras según su lugar: lee 34 donde pone 43.',
     actividad: 'Tabla de valor posicional en una hoja, con dos columnas: D y U. Dictadle ' +
@@ -100,7 +88,7 @@ CB.datos.RECOMENDACIONES = {
                'a mayor y luego al revés, diciendo en alto en qué sentido va.'
   },
 
-  /* ── Multiplicación ──────────────────────────────────────────────────── */
+  /* Multiplicación */
   'E-M-SUMA': {
     frase: 'Suma los dos factores en vez de multiplicar: para 3 × 4 responde 7.',
     actividad: 'Hueveras o cajas de 4: que ponga 3 huevos en cada una de las 4 y cuente. ' +
@@ -117,7 +105,7 @@ CB.datos.RECOMENDACIONES = {
                'cada uno, ¿cuántas galletas hay?». Que lo diga mirando los platos.'
   },
 
-  /* ── Problemas ───────────────────────────────────────────────────────── */
+  /* Problemas */
   'E-P-PALCLAVE': {
     frase: 'Se guía por la palabra suelta y no por lo que cuenta el problema: ve «más» y ' +
            'suma, aunque el problema pidiera restar.',
@@ -137,7 +125,7 @@ CB.datos.RECOMENDACIONES = {
                'operación concreta que falla, sin enunciado, es lo que hace falta.'
   },
 
-  /* ── Dinero ──────────────────────────────────────────────────────────── */
+  /* Dinero */
   'E-E-VALOR': {
     frase: 'Cuenta las piezas en vez de su valor: tres monedas de 2 € le parecen 3 €.',
     actividad: 'Monedas de verdad sobre la mesa. Que haga montones por valor y cuente ' +
@@ -150,7 +138,7 @@ CB.datos.RECOMENDACIONES = {
                'devuelva el cambio contando hacia arriba desde el precio.'
   },
 
-  /* ── Vocabulario ─────────────────────────────────────────────────────── */
+  /* Vocabulario */
   'E-V-TERMINO': {
     frase: 'Confunde dos términos del vocabulario matemático.',
     actividad: 'Tarjetas con la palabra por una cara y un dibujo por la otra. Cinco minutos ' +

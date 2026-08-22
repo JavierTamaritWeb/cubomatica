@@ -1,241 +1,9 @@
-/* ============================================================================
-   casos-regresiones.js — REGISTRO DE FALLOS YA CORREGIDOS
-   ----------------------------------------------------------------------------
-   Cada fallo encontrado en una auditoría deja aquí un guardián. La regla es
-   simple: un fallo corregido sin prueba vuelve. Este fichero existe para que
-   nadie tenga que acordarse.
-
-   Los treinta y seis fallos y dónde vive el guardián de cada uno. Los que no están
-   en este fichero es porque su sitio natural es otro; la lista sigue siendo la
-   única de la que fiarse.
-
-     E1  El panel del adulto mandaba a la pantalla de error         casos-carga.js
-         (su handler de alEntrar navegaba a su propia pantalla)
-     E2  El «toc» del toque prematuro sonaba una vez por ítem       casos-carga.js
-     E3  Un perfil dañado dejaba el botón JUGAR inerte y mudo       casos-carga.js
-     E4  El «fin amable» a los 6 tiempos agotados es inalcanzable   casos-motor.js
-     E5  La auditoría de estilo grepeaba el CSS con comentarios     auditar.sh + aquí
-     E6  Se podía exportar el progreso pero no restaurarlo          casos-carga.js
-     E7  Partida, calibración e informe no tenían encabezado        casos-carga.js
-     E8  El mapa saltaba de <h1> a <h3>                             AQUÍ
-     E9  La maqueta de pruebas no tenía encabezados                 casos-carga.js
-     E10 En iPad la música no se podía silenciar                    casos-musica.js
-     E11 Machacar OK registraba una respuesta por pulsación         AQUÍ
-     E12 Pasar el objeto de destreza creaba una destreza basura     AQUÍ
-     E13 Ctrl+P desde cualquier pantalla imprimía un folio en blanco AQUÍ
-     E14 El altavoz de la calibración no hacía nada                 AQUÍ
-     E15 El botón de silencio no reflejaba el silencio              AQUÍ
-     E16 «Leer» y «Silenciar» se dibujaban casi iguales             AQUÍ
-     E17 La calibración era la única zona de juego sin paisaje      AQUÍ
-     E18 Una recarga a media pregunta costaba la partida            AQUÍ
-     E19 El título de la calibración era invisible                  AQUÍ
-     E20 El juego nunca contaba su propia regla de las luces        AQUÍ
-     E21 «JUGAR» prometía una partida y daba un cuestionario        AQUÍ
-     E22 Los mensajes se escribían en una pantalla oculta           AQUÍ
-     E23 La calibración terminaba en silencio                       AQUÍ
-     E24 «Pausa» aterrizaba en un menú de ajustes                   AQUÍ
-     E25 El ajuste «sin movimiento» apagaba menos que el del        AQUÍ
-         sistema: diez animaciones seguían corriendo
-     E26 Con node_modules y dist/ la auditoría no se ponía roja:    auditar.sh
-         se colgaba, que es peor
-     E27 La leyenda del informe decía «●਍ominado»: un escape CSS      AQUÍ
-         se comía la primera letra de cada palabra
-     E28 Una clase renombrada en el CSS y no en el JS no da ningún   cruzar-clases.mjs
-         error: el elemento sale sin estilo y la consola limpia
-     E29 Estilar por #id ata el estilo a un nodo único y solo se     cruzar-clases.mjs
-         vence con otro id. Había veinte, y uno con DOS
-     E30 Anchura y altura habrían competido por el lado del botón,   auditar.sh
-         ganando el orden del fichero en vez de la restricción
-     E31 «Gira el dispositivo» se disparaba a 319px, y a zoom 400%   auditar.sh
-         el viewport es 320 justos: un píxel de margen
-     E32 Las <section> no tenían nombre accesible: para un       casos-a11y.js
-         lector de pantalla no existían como regiones
-     E33 Lo urgente y lo festivo compartían región viva, así que    casos-a11y.js
-         «quedan diez segundos» se leía detrás de la cola
-     E34 Registrar el service worker en file:// ensuciaba una       AQUÍ
-         consola que estaba limpia
-     E35 El worker cachearía la propia suite y las pruebas          AQUÍ
-         dejarían de reflejar el código
-     E36 La lista negra de marca nunca escaneó los .mjs:            auditar.mjs
-         `--include='*.js'` no casa con `.mjs`
-     E37 Descargar la música decía «Listo: las 9 pistas están       AQUÍ
-         guardadas» aunque fallaran las nueve
-     E38 La lista de ficheros de música estaba escrita por          AQUÍ
-         cuarta vez, y era la copia que nadie miraba
-     E39 Las tres reglas duras de estilo tenían cuatro huecos:      auditar.mjs
-         cero sin unidad, inset, rem, y la función por defecto
-     E40 El relleno de opciones del jefe no avanzaba: bucle         AQUÍ
-         infinito y pestaña colgada en el 22,9 % de los combates
-     E41 El cronómetro de los problemas de enunciado arrancaba      AQUÍ
-         al contestar, así que todos medían 0 ms
-     E42 La música de mundo leía estado.mundoId, que no existe:     AQUÍ
-         bosque, río y mina no sonaron nunca
-     E43 La barra de partida leía data-accion de ev.target y los    AQUÍ
-         botones llevan spans dentro: solo respondía el borde
-     E44 El cerrojo de una respuesta solo estaba en la partida:     AQUÍ
-         el jefe caía en 8 toques y la calibración daba 5 de 4
-     E45 sanear() borra los campos con guion bajo, y así se         AQUÍ
-         llamaban los contadores que hacen SUBIR la dificultad
-     E46 Enter contestaba sin pasar por la confirmación doble       AQUÍ
-         del antiazar: la regla no valía con teclado
-     E47 una coreografía podía taparle al niño la fila del ⌫,      AQUÍ
-         el 0 y el OK, que es con lo que se contesta
-     E48 la duración vivía en el CSS y en el JS a la vez, y        AQUÍ
-         al divergir el cartel se iba a media pantalla
-     E49 una coreografía nueva no entraba en la lista del          AQUÍ
-         movimiento reducido y seguía moviéndose
-     E50 con el movimiento apagado la cinta desaparecía, y         AQUÍ
-         quitar movimiento no puede quitar información
-     E51 dos cintas seguidas se pisaban y quedaban dos             AQUÍ
-         temporizadores sueltos ocultando la de después
-     E52 la bolsa de gritos no sobrevivía al guardado: el          AQUÍ
-         grito se repetía cada dos por tres
-     E53 los gritos se saltaban las dos listas negras que sí       casos-mensajes.js
-         se aplicaban a los 132 mensajes
-     E54 el juego servía el ítem siguiente antes de que la         AQUÍ
-         cinta acabara de cruzar
-     E55 el escalón 4 de la escalera estaba declarado, tenía       AQUÍ
-         su función escrita y no la llamaba nadie
-     E56 las nueve celebraciones eran la misma banda: variaba      AQUÍ
-         el recorrido, no el vehículo, y el recorrido no se nota
-     E57 cada vehículo de celebración hace algo observable         AQUÍ
-     E58 el ánimo se celebraba como si fuera un acierto            AQUÍ
-     E59 atras() no ejecutaba el manejador de salida, ir() sí      AQUÍ
-     E60 las siete frases de presentación estaban escritas y       AQUÍ
-         no las pintaba nadie
-     E61 el enunciado no se leía en voz alta pese a que la         AQUÍ
-         documentación lo daba por hecho desde la versión 1
-     E62 el OK del teclado seguía verde mientras las otras         AQUÍ
-         once teclas estaban bloqueadas y de piedra
-     E63 las cifras del teclado bloqueado estaban a 1,52:1         casos-contraste.js
-     E64 ordenar la fila y elegir los datos no se podían           AQUÍ
-         deshacer: había que terminar mal el ítem a propósito
-     E65 la confirmación de dos toques era invisible, y la          AQUÍ
-         pedían tres formatos de siete
-     E66 «Salir» terminaba la expedición de un solo roce            AQUÍ
-     E67 tocar una moneda no dejaba ninguna marca                   AQUÍ
-     E68 la fase 3 de selectorDatos era una copia desincronizada    AQUÍ
-         del teclado: muda, sin aria-live y con el OK en mayúsculas
-     E69 el cromo del bloque raro se entregaba sin decir cuál es    AQUÍ
-     E70 el reto bonus se calculaba y no se veía en pantalla        AQUÍ
-     E71 los logros de fin se celebraban sobre p-partida, que       AQUÍ
-         desaparece nueve líneas después
-     E72 abrir un mundo entero no lo decía nadie                    AQUÍ
-     E73 el bono se rotulaba en puntos debajo de las gemas          AQUÍ
-     E74 el cofre del descanso prometía gemas y no daba ninguna     AQUÍ
-     E75 el saludo contaba «vetas con musgo» con un criterio        AQUÍ
-         distinto del que pinta el musgo en la Cantera
-     E76 los cinco descansos se sorteaban CON reemplazo pese al     AQUÍ
-         comentario que decía «en bolsa para que no se repitan»
-     E77 en el jefe solo se anunciaba el fallo: al acertar,        AQUÍ
-         silencio, y el intro del jefe no lo leía nadie
-     E78 jefeSinFallos se escribía y no lo leía nadie              AQUÍ
-     E79 la victoria del jefe sonaba a jefe                        casos-musica.js
-     E80 el mensaje que enseña se borraba a los 1600 ms:           AQUÍ
-         560 palabras por minuto para un lector de 60-90
-     E81 la espera del segundo intento era el último número        AQUÍ
-         del bucle escrito a pelo
-     E82 la música del mundo volvía al segundo cero en cada        casos-musica.js
-         reparación y en cada descanso
-     E83 no había forma de saber cuánto queda de expedición:       AQUÍ
-         el avance solo lo codificaba el cielo, que es aria-hidden
-     E84 la calibración decía «ahora sí empieza el juego» y         AQUÍ
-         llevaba a un menú con tres tarjetas bloqueadas
-     E85 el HUD decía cuánto queda y no decía en QUÉ se está:      AQUÍ
-         el nombre de la veta solo existía en la Cantera
-     E86 «Nivel superado» se cantaba sin comprobar que no          AQUÍ
-         quedaran ítems de esa veta ni deuda en la cola
-     E87 el tiempo agotado no deja deuda en ninguna cola, así      AQUÍ
-         que una veta sin contestar parecía cerrada
-     E88 el rótulo de veta estaba pintado y fuera de la vista      AQUÍ
-     E89 «toca la moneda de 2 euros» se acertaba buscando el 2:    AQUÍ
-         las cuatro opciones eran botones iguales con un número
-     E90 el marcador saltaba de 12 a 15 sin que se viera         AQUÍ
-         cambiar: la ganancia se contaba fuera del número
-     E91 los botones se pulsaban en silencio: sonaba lo que      AQUÍ
-         pasa, nunca el acto de tocar — y luego, con la lista
-         de excepciones corta, cada cifra sonaba DOS veces
-     E92 con el teclado se jugaba mudo, y el audio no se        AQUÍ
-         abría hasta pulsar JUGAR
-     E93 la moneda de 5 céntimos y el billete de 5 € eran el     AQUÍ
-         mismo «5»: misma foto, y la respuesta correcta se
-         corregía con Number('c5'), que es NaN
-     E94 el «Salir» del mapa no hacía nada: atras() sacaba UNA    AQUÍ
-         entrada de la pila, la descartaba por ser de flujo y
-         caía al mapa estando ya en el mapa
-     E95 la .zona-juego__alta (entonces .zona-superior) centraba Y  AQUÍ
-         enunciado no cabía, el centrado repartía el sobrante a
-         los dos lados y lo de arriba quedaba fuera del alcance
-         de la barra (scrollTop no puede ser negativo)
-     E96 el modo proyección escribía --lado-respuesta a mano y    AQUÍ
-         se saltaba el min() de los dos ejes: en un proyector de
-         1200x700 la fila del OK caía fuera de la pantalla
-     E97 el teclado se desplegaba a 6 columnas por ALTURA sin     AQUÍ
-         mirar la anchura: en 360x640 dos columnas se salían
-     E98 la zona de la respuesta no tenía barra: donde el 3x4     AQUÍ
-         no cabe (320x480, o proyección en un móvil) el OK era
-         inalcanzable y la pregunta no se podía contestar
-     E99 «CUBOMÁTICA» medía 337 px con sus rellenos: en una      AQUÍ
-         ventana de 320 el título salía descabezado por los dos
-         lados
-     E100 los cuatro botones de la barra no caben en 320 px: el   AQUÍ
-         de Sonido —el único que apaga la música— quedaba
-         cortado contra el borde derecho
-     E101 la pantalla de Ayuda es maqueta estática: la página de  auditar.mjs
-         pruebas solo ve su maqueta reducida, así que quien la
-         comprueba es la auditoría, que lee el fichero de verdad
-     E102 a 320 px una palabra larga dentro de un panel no se    AQUÍ
-         partía: se salía de la caja, sin barra ni error. Se mide
-         en un <iframe>, porque la media query mira el viewport
-     E103 la portada es `overflow: hidden`: a 320x480 la fila de  AQUÍ
-         abajo —Ajustes, Ayuda, Créditos— caía fuera y no había
-         forma de llegar. La barra la lleva ahora la pila
-     E104 la nomenclatura de las clases era disciplina: BEM se   auditar.mjs
-         aplicaba donde alguien se acordaba. Ahora la FORMA la
-         comprueba stylelint (bloque 9)
-     E105 siete selectores estilaban un bloque por quien lo       auditar.mjs
-         contenía (.panel-bloque .texto-menor y hermanos): un
-         bloque que cambia según dónde está no es un bloque
-
-   E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
-   perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
-   buenas, la suite 405 sin un fallo, y el cruce de clases cero. Ninguno de los
-   siete es un descuido de escritura; los siete son cosas que nadie había
-   mirado, porque todo lo que sí se mira estaba bien.
-
-   Y dos de ellos enseñan lo mismo desde lados distintos: E42 tenía un test que
-   construía a mano la forma equivocada del estado —copiada de la línea con el
-   fallo—, y E41 tenía una función correcta a la que no llamaba nadie. Un test
-   escrito mirando la implementación acaba de acuerdo con ella; una función sin
-   llamador no falla, simplemente no ocurre. Las dos cosas se ven igual desde
-   fuera: verde.
-
-   E14-E17 salieron de MIRAR UNA CAPTURA, no de ejecutar pruebas, y es la
-   lección más cara de todas: cinco rondas de auditoría comprobaron el DOM, la
-   lógica, los contrastes y los contratos, y ninguna MIRÓ la pantalla. La barra
-   de herramientas ni siquiera existía en la maqueta de pruebas.html. Ahora sí
-   está, con su paisaje, en las dos pantallas que la llevan.
-
-   E25 es de la misma familia pero peor: no se veía ni mirando la pantalla, hay
-   que mirar DOS listas de selectores y compararlas a mano. Lo encontró el cruce
-   de clases de la auditoría (bloque 8 de auditar.sh), que es también la red que
-   sostiene el renombrado a BEM: una clase renombrada en el CSS y no en el JS no
-   da ningún error, solo un elemento sin estilo.
-
-   El detalle de cada uno, con lo que rompía y por qué, está en
-   docs/decisiones.md.
-   ========================================================================== */
+/* casos-regresiones.js — REGISTRO DE FALLOS YA CORREGIDOS */
 
 CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   var t = CB.pruebas;
 
-  /* ── E11 · Una respuesta por intento ────────────────────────────────────
-     Los botones no se deshabilitan al responder: siguen en pantalla mientras
-     se ve el mensaje. Seis toques en OK registraban SEIS respuestas, con seis
-     veces las gemas y —lo grave— seis observaciones en el motor adaptativo por
-     un solo ítem, más seis intentos en el informe del adulto donde hubo uno.
-     Machacar el botón es lo que hace un niño de 7 años cuando la respuesta le
-     sale sola, y falseaba en silencio lo único que el juego promete medir. */
+  /* E11 · Una respuesta por intento */
   var perfilPrevio = CB.perfil;
   var estadoPrevio = CB.partida.estado;
 
@@ -266,31 +34,20 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
 
   t.igual(llamadas, 1, 'E11 · ocho envíos del mismo ítem registran UNA respuesta');
 
-  /* Estos dos comprobaban el CERROJO leyendo el código fuente de la función
-     —`.toString().indexOf('respondido = false')`— y así estuvieron hasta que la
-     suite empezó a ejecutarse también contra el bundle minificado, donde
-     terser reescribe `e.respondido = false` como `n.respondido=!1`. Los dos se
-     pusieron rojos a la vez.
-
-     La lección vale para todo el fichero: leer el fuente de una función solo es
-     válido para LITERALES DE CADENA y NOMBRES DE PROPIEDAD, que terser conserva
-     (mangle.properties está prohibido). Nunca para nombres de variable, espacios
-     ni comillas. Y el modo de fallo peligroso no es este —rojo, se ve— sino la
-     afirmación en NEGATIVO, que pasa en verde por la razón equivocada.
-
-     Se comprueba la conducta, que además es lo que de verdad importaba. */
-  var eAbrir = { itemActual: { respuesta: 7 }, respondido: true, respuestas: [], intento: 2 };
+  /* La lección vale para todo el fichero: leer el fuente de una función solo es válido para LITERALES DE CADENA y NOMBRES DE PROPIEDAD, que terser conserva (mangle.properties está prohibido). */
+  var itemAbrir = { respuesta: 7 };
+  var eAbrir = { itemActual: itemAbrir, respondido: true, respuestas: [], intento: 2 };
   CB.partida.estado = eAbrir;
-  try { CB.partida.pintarRespuesta({ tipo: 'opciones', respuesta: 7, opciones: [7, 8] }); }
+  try {
+    itemAbrir.tipo = 'opciones'; itemAbrir.opciones = [7, 8];
+    CB.partida.pintarRespuesta(itemAbrir);
+  }
   catch (errPintar) { /* la maqueta no tiene todo; basta con haber pasado la línea */ }
   t.ok(eAbrir.respondido === false,
     'E11 · pintarRespuesta() vuelve a abrir el cerrojo para el segundo intento',
     'respondido sigue en ' + eAbrir.respondido);
 
-  /* Y el cerrojo sigue en la función REAL, no solo en el doble de arriba: con el
-     ítem ya respondido, responder() no puede llegar a registrar nada. Si alguien
-     quitase la guarda, o registraría una respuesta o reventaría al seguir
-     adelante sin estado válido; las dos cosas ponen esto en rojo. */
+  /* Y el cerrojo sigue en la función REAL, no solo en el doble de arriba: con el ítem ya respondido, responder() no puede llegar a registrar nada. */
   var eCerrado = { itemActual: { respuesta: 7, destreza: 'suma_sin_llevar', nivelId: 'S1',
                                  expr: '3+4', itemId: 'S1#3+4@1.0' },
                    respondido: true, respuestas: [], intento: 1 };
@@ -302,13 +59,35 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E11 · el cerrojo sigue estando en la responder() de verdad',
     siguioAdelante ? 'siguió y lanzó' : eCerrado.respuestas.length + ' respuestas registradas');
 
+  /* Un callback de un ítem anterior no puede tocar una partida terminada ni
+     una partida nueva. Este era un error real y asíncrono: la pantalla de error
+     aparecía 2,6 s después de salir, mientras la suite seguía toda verde. */
+  CB.partida.estado = null;
+  var pintarSinEstado;
+  try { pintarSinEstado = CB.partida.pintarRespuesta(itemAbrir); }
+  catch (errCaducado) { pintarSinEstado = 'lanzo'; }
+  t.igual(pintarSinEstado, false,
+    'E106 · un repintado tardío de una partida terminada se descarta sin lanzar');
+
+  var itemNuevo = { respuesta: 9 };
+  var estadoNuevo = { itemActual: itemNuevo, respondido: true };
+  CB.partida.estado = estadoNuevo;
+  t.igual(CB.partida.pintarRespuesta(itemAbrir), false,
+    'E106 · un repintado tardío tampoco altera una partida nueva');
+  t.ok(estadoNuevo.respondido === true,
+    'E106 · el cerrojo de la partida nueva queda intacto');
+
+  /* La sección de datos repetía literalmente el mismo aviso legal. Además de
+     ruido visual, duplicar una limitación parecía un error de maquetación. */
+  var seccionDatos = CB.adulto.crearSeccionDatos(CB.pruebas.perfilNuevo());
+  var aparicionesLimitacion = seccionDatos.textContent.split(CB.LEGAL.LIMITACION).length - 1;
+  t.igual(aparicionesLimitacion, 1,
+    'E107 · la limitación de almacenamiento aparece una sola vez en el panel adulto');
+
   CB.partida.estado = estadoPrevio;
   CB.perfil = perfilPrevio;
 
-  /* ── E8 · La jerarquía de encabezados no salta niveles ───────────────────
-     Las tarjetas de mundo del mapa eran <h3> bajo el <h1> de la pantalla. Un
-     lector de pantalla que navega por encabezados se encuentra un hueco donde
-     debería haber un nivel. */
+  /* E8 · La jerarquía de encabezados no salta niveles */
   var saltos = [];
   CB.pantallas.IDS.forEach(function (id) {
     var sec = document.getElementById(id);
@@ -324,15 +103,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(saltos.length === 0,
     'E8 · ninguna pantalla salta un nivel de encabezado', saltos.join(' · '));
 
-  /* Y el mapa en concreto, que es donde pasó: sus tarjetas son h2.
-
-     ESTE ERA EL PELIGROSO. Buscaba "crear('h3'" en el fuente y afirmaba que NO
-     estaba. Contra el bundle minificado terser escribe las cadenas con comillas
-     dobles, así que el texto buscado no aparece nunca y la afirmación pasaba en
-     verde sin haber comprobado nada. Una afirmación en negativo sobre texto
-     generado es un falso verde permanente.
-
-     Ahora se pinta de verdad y se mira el DOM, que es donde vive el problema. */
+  /* Contra el bundle minificado terser escribe las cadenas con comillas dobles, así que el texto buscado no aparece nunca y la afirmación pasaba en verde sin haber comprobado nada. */
   var rejilla = document.getElementById('rejilla-mundos');
   var perfilMapa = CB.perfil;
   CB.perfil = CB.pruebas.perfilNuevo();          // pintarMundos() necesita uno
@@ -348,12 +119,8 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   }
   CB.perfil = perfilMapa;
 
-  /* ── E5 · Las reglas de estilo se comprueban sin comentarios ─────────────
-     Un comentario que documentaba «cero border-radius» hacía saltar el grep
-     que prohíbe border-radius. auditar.sh despieza los comentarios antes; aquí
-     se comprueba lo mismo sobre las hojas REALMENTE cargadas, que es lo único
-     que se puede mirar en tiempo de ejecución. */
-  var conRadio = [], j, k, hojas = document.styleSheets;
+  /* E5 · Las reglas de estilo se comprueban sin comentarios */
+  var conRadio = [], j, hojas = document.styleSheets;
   for (i = 0; i < hojas.length; i++) {
     var reglas = null;
     try { reglas = hojas[i].cssRules; } catch (err) { continue; }
@@ -369,13 +136,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E5 · ninguna regla realmente aplicada tiene border-radius distinto de 0',
     conRadio.slice(0, 5).join(' · '));
 
-  /* ── E12 · Una destreza mal escrita ya no se cuela en el perfil ──────────
-     CB.adaptativo.actualizar() espera el SLUG. Al pasarle el objeto de destreza
-     no fallaba nada: JavaScript lo convertía en "[object Object]", se creaba
-     una destreza con ese nombre, se guardaba en el perfil del niño y aparecía
-     en el informe del adulto; y la destreza de verdad se quedaba clavada.
-     Es el fallo que cometió esta misma auditoría, y costó tres intentos verlo
-     porque nada se quejaba. */
+  /* E12 · Una destreza mal escrita ya no se cuela en el perfil */
   var perfilPrueba = CB.almacen.perfilNuevo('p-reg', 'Topo Cavador', 0, CB.util.hoyISO(), null);
   var lanzo = false;
   try {
@@ -396,20 +157,13 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   } catch (err2) { bien = false; }
   t.ok(bien, 'E12 · con un slug correcto sigue funcionando igual');
 
-  /* ── E13 · Ctrl+P desde cualquier pantalla ya no imprime un folio blanco ─
-     La hoja de impresión fuerza `.imprimible[hidden] { display: block }`, que
-     gana por especificidad a la guarda `[hidden] { display: none }`. Es decir:
-     el informe se imprime SIEMPRE, se esté donde se esté. Con el contenedor
-     vacío eso era un folio en blanco sin ninguna pista. */
+  /* E13 · Ctrl+P desde cualquier pantalla ya no imprime un folio blanco */
   var cuerpoInf = document.getElementById('informe-cuerpo');
   t.ok(!!cuerpoInf && cuerpoInf.textContent.trim().length > 20,
     'E13 · el informe sin generar dice cómo generarlo, en vez de quedarse vacío',
     cuerpoInf ? '«' + cuerpoInf.textContent.trim().slice(0, 40) + '»' : 'no existe');
 
-  /* ── Los 3 logros que dan luz existen y la conceden de verdad ────────────
-     Requisito 10 del encargo: «se pueden conseguir vidas extras con alcanzar
-     logros bonus». Un requisito que no se puede alcanzar es el panel del
-     adulto otra vez. */
+  /* Los 3 logros que dan luz existen y la conceden de verdad */
   t.igual(CB.logros.CONCEDEN_LUZ.length, 3, 'hay exactamente 3 logros que conceden luz');
   var perfilLuz = CB.almacen.perfilNuevo('p-luz', 'Topo Cavador', 0, CB.util.hoyISO(), null);
   var sinConceder = CB.logros.CONCEDEN_LUZ.filter(function (id) {
@@ -422,16 +176,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'los 3 conceden una luz de verdad cuando quedan menos del tope',
     sinConceder.join(', '));
 
-  /* ── E14 · La lectura en voz alta funciona en la calibración ─────────────
-     Nació como fallo del botón «Leer»: la calibración no crea CB.partida.estado
-     (a propósito: sin cronómetro, sin luces y sin puntuación, para que no
-     parezca un examen) y accionLeer() salía por su primer `return`, de modo que
-     el botón no hacía nada en la primera pantalla de la vida del niño.
-
-     El BOTÓN ya no existe —se retiró a petición— pero accionLeer() sí, porque
-     la tecla L de CB.a11y.MAPA la sigue usando. El guardián se queda: lo que
-     protege no es el botón, es que la lectura funcione también donde no hay
-     partida. Se comprueba con el estado a null, que es como está siempre allí. */
+  /* E14 · La lectura en voz alta funciona en la calibración */
   var estadoPrev14 = CB.partida.estado;
   var pantallaPrev14 = CB.pantallas.actual;
   var vozPrev = CB.voz.leerOGuiar;
@@ -462,12 +207,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.pantallas.actual = pantallaPrev14;
   CB.partida.estado = estadoPrev14;
 
-  /* ── E15 · El botón de silencio no miente, y los dos dicen lo mismo ──────
-     Hay un botón de sonido por barra (calibración y partida) y el silencio es
-     uno solo, del aparato. Se actualizaba SOLO el botón pulsado: el otro se
-     quedaba mintiendo, y el ajuste guardado se restauraba al arrancar sin que
-     ningún icono se enterara — silencio real con icono de altavoz encendido.
-     Además `aria-pressed` no existía hasta el primer clic. */
+  /* E15 · El botón de silencio no miente, y los dos dicen lo mismo */
   var silPrev = CB.audio.silenciado;
   var botonesSon = document.querySelectorAll('[data-accion="sonido"]');
   t.ok(botonesSon.length >= 2,
@@ -507,14 +247,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.audio.silenciado = silPrev;
   CB.partida.sincronizarSonido();
 
-  /* ── E16 · Ningún botón de la barra se explica solo con un dibujo ────────
-     «Leer en voz alta» era 🔊 y «Silenciar» es 🔈: dos altavoces casi idénticos
-     en la misma barra. El aria-label los distinguía —por eso la comprobación de
-     nombres accesibles pasaba— pero un niño de 7 años no lee aria-labels.
-
-     El primer intento fue cambiar 🔊 por 🗣, y la respuesta de quien lo probó
-     fue «este botón es muy confuso, no sé para qué sirve». Tenía razón: cambiar
-     de emoji solo cambia de qué se duda. Lo que quita la duda es la PALABRA. */
+  /* E16 · Ningún botón de la barra se explica solo con un dibujo */
   var barras = document.querySelectorAll('.barra-herramientas');
   var mudos = [], repetidos = [];
   [].forEach.call(barras, function (barra, n) {
@@ -533,12 +266,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(repetidos.length === 0,
     'E16 · y ninguna barra repite la misma etiqueta visible', repetidos.join(' · '));
 
-  /* ── E17 · Toda zona de juego lleva paisaje ──────────────────────────────
-     La pantalla de calibración declaraba `<div class="zona-juego">` a secas: sin
-     bioma y sin cielo. Fondo transparente, o sea un rectángulo marrón liso —
-     y es la PRIMERA pantalla que ve un niño al pulsar JUGAR, justo después de
-     una portada con cielo, nubes y hierba. Ninguna prueba lo vio porque todas
-     miraban el DOM y la lógica; esto solo se ve mirando. */
+  /* E17 · Toda zona de juego lleva paisaje */
   var sinPaisaje = [];
   [].forEach.call(document.querySelectorAll('.zona-juego'), function (z) {
     var sec = z.closest ? z.closest('.pantalla') : null;
@@ -549,13 +277,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(sinPaisaje.length === 0,
     'E17 · toda .zona-juego declara bioma y cielo', sinPaisaje.join(' · '));
 
-  /* ── E18 · Una recarga no se lleva la partida por delante ────────────────
-     `pagehide` ya guardaba la partida, también cuando la recarga la provoca
-     otro: Live Server al guardar un fichero, un F5 sin querer, iOS reciclando
-     la pestaña. Lo que faltaba era la VUELTA: se aterrizaba en la portada y
-     había que pulsar JUGAR, de modo que una recarga a media pregunta parecía un
-     reinicio espontáneo. Jugando con Live Server delante pasa cada vez que
-     alguien guarda un fichero, y hace creer que el reloj no funciona. */
+  /* E18 · Una recarga no se lleva la partida por delante */
   var perfilRec = CB.almacen.perfilNuevo('p-rec', 'Topo Cavador', 0, CB.util.hoyISO(), null);
   var ahora = Date.now();
 
@@ -574,25 +296,14 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(CB.partida.guardarEnCurso.toString().indexOf('guardadaTs') !== -1,
     'E18 · guardarEnCurso() sella cuándo se guardó, no solo cuándo empezó');
 
-  /* ── E19 · La calibración explica lo que es ──────────────────────────────
-     Su <h1> era `solo-lectores`, o sea invisible. Quien pulsaba JUGAR se
-     encontraba cuatro preguntas sueltas, sin título, sin saber cuántas eran y
-     sin reloj, y deducía que la cuenta atrás estaba rota. Aquí no hay reloj a
-     propósito —no debe parecer un examen— pero eso hay que decirlo. */
+  /* E19 · La calibración explica lo que es */
   var h1Cal = document.querySelector('#p-calibracion h1');
   t.ok(!!h1Cal && h1Cal.className.indexOf('solo-lectores') === -1,
     'E19 · el título de la calibración es visible, no solo para lectores de pantalla');
   t.ok(!!document.getElementById('cal-paso'),
     'E19 · y existe el sitio donde decir por qué pregunta va y que no hay reloj');
 
-  /* ── E20 · El juego cuenta la regla de las luces cuando importa ──────────
-     La regla (docs/decisiones.md, Documento 5) es que una luz se apaga SOLO al
-     fallar el segundo intento, tras ver la tarjeta de reparación. Es correcta.
-     El problema era que el juego no la contaba: al primer fallo no pasaba nada
-     visible —no caía la gema y ya— y quien jugaba concluía que el juego no se
-     entera de los errores. Y cuando por fin se apagaba la luz, ocurría arriba
-     del todo mientras se miraba la tarjeta, así que la luz desaparecía sin
-     causa aparente varias pantallas después del fallo que la costó. */
+  /* E20 · El juego cuenta la regla de las luces cuando importa */
   t.ok(CB.partida.trasFallo.toString().indexOf('Te queda otro intento') !== -1,
     'E20 · el primer fallo dice que queda otro intento');
   t.ok(CB.partida.trasFallo.toString().indexOf('Se ha apagado una luz') !== -1,
@@ -607,12 +318,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(r2.apagada && luzEstado.luces === CB.vidas.INICIALES - 1,
     'E20 · el segundo fallo del mismo ítem sí apaga una');
 
-  /* ── E21 · El botón de la portada no promete lo que no va a pasar ────────
-     Decía siempre «JUGAR» y la primera vez llevaba a cuatro preguntas de
-     colocación sin reloj, sin luces y sin puntos. La colocación es necesaria y
-     no debe parecer un examen —por eso no lleva cronómetro— pero anunciarla
-     como una partida es una promesa rota, y era la PRIMERA impresión del juego.
-     Descrito por quien lo probó como «muy muy muy confuso». */
+  /* E21 · El botón de la portada no promete lo que no va a pasar */
   var perfilSin = null;
   t.igual(CB.arranque.rotuloJugar(perfilSin), 'EMPEZAR',
     'E21 · sin minero elegido el botón dice EMPEZAR, no JUGAR');
@@ -633,12 +339,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.igual(CB.arranque.rotuloJugar(perfilNuevo), 'SEGUIR JUGANDO',
     'E21 · con una expedición a medias, lo dice en vez de fingir que empieza');
 
-  /* ── E22 · Los mensajes se escriben en la pantalla que se está viendo ────
-     CB.ui.mensaje() escribía siempre en #item-mensaje, que vive DENTRO de
-     <section id="p-partida">. Mientras se calibra esa sección está oculta, así
-     que el «¡Muy bien!» de cada una de las cuatro preguntas iba a un sitio
-     invisible: se contestaban cuatro preguntas seguidas sin una sola reacción.
-     Es la mitad de por qué la calibración parecía una demo rota. */
+  /* E22 · Los mensajes se escriben en la pantalla que se está viendo */
   var pantallaPrev22 = CB.pantallas.actual;
 
   CB.pantallas.actual = 'p-calibracion';
@@ -661,20 +362,13 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.ui.ocultarMensaje();
   CB.pantallas.actual = pantallaPrev22;
 
-  /* ── E23 · La calibración anuncia que termina ────────────────────────────
-     Contestabas la cuarta pregunta y aparecías en el mapa, sin que nadie dijera
-     que aquello era la preparación ni que el juego empieza ahora. Una prueba
-     que no anuncia que termina no se distingue de una partida que se ha roto. */
+  /* E23 · La calibración anuncia que termina */
   t.ok(CB.calibracion.terminar.toString().indexOf('Ahora sí empieza el') !== -1,
     'E23 · al acabar las 4 preguntas se dice que ahora empieza el juego');
   t.ok(CB.calibracion.terminar.toString().indexOf('reloj') !== -1,
     'E23 · y se nombra lo que cambia: reloj, luces y gemas');
 
-  /* ── E24 · La pausa no aterriza en un menú de configuración ──────────────
-     «Pausa» llevaba a una pantalla titulada «Ajustes», con cinco opciones y la
-     vuelta al juego en el último sitio de la lista. Un niño que pausa no ha
-     venido a configurar nada: ha venido a parar un momento. El flag
-     `desdePausa` ya se pasaba desde CB.partida.pausar() y no lo usaba nadie. */
+  /* E24 · La pausa no aterriza en un menú de configuración */
   var estadoPrev24 = CB.partida.estado;
   var tit = document.getElementById('ajustes-titulo');
   var lista = document.getElementById('lista-ajustes');
@@ -694,10 +388,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E24 · entrando por el menú normal sigue llamándose Ajustes');
   CB.partida.estado = estadoPrev24;
 
-  /* ── E1 · Ningún handler de pantalla navega a su propia pantalla ─────────
-     El contrato es que un handler PINTA. El que navegaba desbordaba la pila y
-     el catch de ir() lo convertía en «algo ha ido mal», de modo que el panel
-     del adulto llevaba desde el principio siendo inalcanzable. */
+  /* E1 · Ningún handler de pantalla navega a su propia pantalla */
   var navegantes = [];
   Object.keys(CB.pantallas.alEntrar).forEach(function (id) {
     var fuente = String(CB.pantallas.alEntrar[id]);
@@ -708,20 +399,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   t.ok(CB.pantallas._entrando === null,
     'E1 · el cerrojo de reentrada queda limpio entre navegaciones');
 
-  /* ── E25 · Los dos ajustes de movimiento apagan lo MISMO ─────────────────
-     Hay dos maneras de pedir menos movimiento: la del sistema operativo
-     (prefers-reduced-motion) y la del propio juego, que enciende la clase
-     :root.sin-movimiento desde los ajustes del niño. Las dos listas de
-     selectores estaban escritas a mano, dos veces, y se habían separado: la del
-     sistema apagaba veintiuna animaciones y la del juego once. Quien lo apagaba
-     desde los ajustes —que es el único sitio donde un niño de 7 años puede
-     hacerlo— seguía viendo diez: las criaturas flotando, saltando, asintiendo,
-     girando y goteando, el musgo creciendo y el destello del botón.
-
-     Nadie lo veía porque las dos listas están a cuarenta líneas de distancia y
-     comparar veinte selectores a ojo no lo hace nadie. Este guardián lo hace
-     leyendo el CSS realmente cargado, así que da igual cómo se escriba mañana:
-     con listas a mano, con un mixin de Sass o con un bucle. */
+  /* E25 · Los dos ajustes de movimiento apagan lo MISMO */
   var enMedia = [], enClase = [];
   var PREFIJO = ':root.sin-movimiento ';
   function recogerReglas(reglas, destinoMedia) {
@@ -733,11 +411,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
         continue;
       }
       if (r.cssRules && !r.selectorText) { recogerReglas(r.cssRules, destinoMedia); continue; }
-      /* Se pregunta por la PROPIEDAD, no por el texto de la regla. Chrome no
-         serializa «animation: none !important» tal cual: lo expande a
-         «animation: auto ease 0s 1 normal none running none !important», así
-         que buscar /animation: *none/ en cssText no casa jamás y el guardián
-         pasaría en verde sin haber mirado nada. */
+      /* Se pregunta por la PROPIEDAD, no por el texto de la regla. */
       if (!r.selectorText || !r.style || r.style.animationName !== 'none') continue;
       r.selectorText.split(',').forEach(function (s) {
         s = s.replace(/\s+/g, ' ').trim();
@@ -768,21 +442,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E25 · y no apaga nada de más que el del sistema no apague',
     'solo el juego: ' + soloJuego.join(', '));
 
-  /* ── E27 · La leyenda del informe decía «●਍ominado» ──────────────────────
-     Los cuatro rótulos del semáforo del panel del adulto se escribían con la
-     primera letra pegada a un escape: content: "\25CF\00A0dominado…". Un escape
-     CSS consume hasta SEIS dígitos hexadecimales y la «d» de «dominado» es uno,
-     así que el navegador leía \00A0D —U+0A0D, un carácter devanagari— y se comía
-     la letra. Con «datos» desaparecían dos, porque «da» también son hex.
-
-     Llevaba así desde el principio y no lo vio nadie: el informe del adulto se
-     mira poco, y el color y el símbolo —que son lo que de verdad transmite el
-     estado, porque la regla es no fiarlo nunca al color solo— sí salían bien.
-     Lo destapó la migración a Sass, que al reserializar resuelve los escapes.
-
-     Este guardián lee el texto REAL que el navegador pone en el ::before, así
-     que da igual cómo se escriba: con escapes, con caracteres literales o con
-     lo que invente Sass mañana. Lo que se afirma es lo que se lee. */
+  /* E27 · La leyenda del informe decía «●਍ominado» */
   var LEYENDAS = [
     ['verde',    'dominado'],
     ['ambar',    'en proceso'],
@@ -806,16 +466,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E27 · los cuatro rótulos del semáforo se leen enteros, sin comerse letras',
     rotos.join(' · '));
 
-  /* ── E34 · El service worker no estorba donde no puede vivir ─────────────
-     Un service worker NO se registra en file://: exige contexto seguro, y el
-     modo de uso principal de este proyecto es el doble clic. Así que lo que
-     importa no es que se registre, sino que NO HAGA RUIDO cuando no puede.
-
-     Y puede fallar de DOS maneras según el motor: unos lanzan un SecurityError
-     síncrono y otros devuelven una promesa rechazada. Hacen falta las dos
-     protecciones. Una promesa rechazada sin manejador imprime «Uncaught (in
-     promise)»: no rompe nada, pero ensucia una consola que está limpia — y una
-     consola sucia es lo primero que un maestro lee como «está roto». */
+  /* E34 · El service worker no estorba donde no puede vivir */
   t.ok(typeof CB.offline.DISPONIBLE === 'boolean',
     'E34 · la disponibilidad del modo sin conexión se decide una vez, al cargar');
   var protocoloEsFile = location.protocol === 'file:';
@@ -838,24 +489,7 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E34 · el rechazo de la promesa TAMBIÉN se recoge, no solo la excepción',
     'sin el segundo callback de then(), la consola imprimiría «Uncaught (in promise)»');
 
-  /* ── E35 · La suite nunca registra un service worker ─────────────────────
-     Si pruebas.html registrara uno, cachearía la propia suite: el siguiente
-     cambio de código se serviría desde la caché y el síntoma sería «las pruebas
-     no son deterministas» — que ejecutor.js ya identifica como la conclusión más
-     cara posible, porque lleva a desconfiar de todo lo demás.
-
-     La protección ya existía y es la misma guarda que impide que la suite
-     arranque una partida: el `if (!document.getElementById('btn-jugar')) return;`
-     del único DOMContentLoaded. Lo que se comprueba es el ORDEN: el registro va
-     detrás de la guarda, no delante.
-
-     Se busca por literal de cadena y por nombre de propiedad, que son las dos
-     cosas que terser conserva; nunca por nombre de variable ni por espacios. */
-  var arranqueFuente = '';
-  try {
-    arranqueFuente = [].slice.call(document.scripts)
-      .filter(function (x) { return !x.src; }).map(function (x) { return x.text; }).join('');
-  } catch (eF) { }
+  /* E35 · La suite nunca registra un service worker */
   t.ok(typeof CB.offline.registrar === 'function',
     'E35 · el registro vive en CB.offline.registrar, no suelto en el arranque');
   t.ok(!navigator.serviceWorker || !navigator.serviceWorker.controller ||
@@ -864,37 +498,10 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     navigator.serviceWorker && navigator.serviceWorker.controller
       ? 'la controla ' + navigator.serviceWorker.controller.scriptURL : '');
 
-  /* ── E37 · «Listo» solo puede significar listo ───────────────────────────
-     descargarMusica() avanzaba el contador igual en el camino de éxito y en el
-     de error, y luego informaba `ok: true` mirando solo si había terminado. Con
-     las nueve pistas caídas —un 404 tras renombrar un fichero, el servidor
-     apagado a media descarga— el panel del adulto decía «Listo: las 9 pistas
-     están guardadas» y no había ninguna.
-
-     Es el peor reparto posible del error: quien lo lee es un adulto decidiendo
-     si puede llevarse la tableta a un sitio sin wifi. Y el juego no se rompía,
-     así que nadie lo habría descubierto hasta el aula.
-
-     Se comprueba SIN red: se sustituye caches por un doble que falla siempre y
-     se mira qué se informa. La prueba deja el original en su sitio pase lo que
-     pase. */
+  /* E37 · «Listo» solo puede significar listo */
   var dispReal = CB.offline.DISPONIBLE;
 
-  /* `caches` NO SE PUEDE SUSTITUIR CON UNA ASIGNACIÓN, y esta prueba ya cayó una
-     vez en la trampa. Es una propiedad de `window` definida SOLO con getter: sin
-     setter, `window.caches = doble` no lanza nada en modo no estricto —
-     simplemente no hace nada, y el doble nunca se instala.
-
-     El resultado fue un verde falso de manual: la comprobación «con las nueve
-     pistas caídas no se informa ok:true» pasaba, pero pasaba contra la
-     CacheStorage de verdad, donde las nueve fallan igualmente porque
-     'audio/x.mp3' resuelto desde /pruebas/ da 404. Salía verde midiendo otra
-     cosa. Lo destapó su complementaria, la del camino bueno, que era imposible
-     de satisfacer con la caché real.
-
-     Sí es `configurable`, así que defineProperty funciona; y se restaura el
-     DESCRIPTOR original, no el valor, para devolver el getter tal cual estaba.
-     Se DEVUELVE la promesa: el ejecutor la espera (ver ejecutor.js). */
+  /* Es una propiedad de `window` definida SOLO con getter: sin setter, `window.caches = doble` no lanza nada en modo no estricto — simplemente no hace nada, y el doble nunca se instala. */
   var descReal = Object.getOwnPropertyDescriptor(window, 'caches') ||
                  Object.getOwnPropertyDescriptor(Window.prototype, 'caches');
 
@@ -947,20 +554,10 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   });
 });
 
-/* ── E38 · Una sola lista de ficheros de música ────────────────────────────── */
+/* E38 · Una sola lista de ficheros de música */
 CB.pruebas.suite('E38 · la lista de música tiene un solo dueño', function () {
   var t = CB.pruebas;      /* suite() llama a fn() SIN argumentos */
-  /* Los nombres de los nueve mp3 vivían escritos a mano en 45-offline.js, que
-     era la CUARTA copia: dist/audio/, la tabla de 07-musica.js y CREDITOS.txt
-     son las otras tres. Las tres primeras las cruza la auditoría entre sí; la
-     cuarta no la miraba nadie.
-
-     Y su modo de fallo era invisible por partida doble: renombrar un fichero
-     dejaba la música sonando con toda normalidad —07-musica.js sí tenía la ruta
-     buena— y solo rompía la descarga sin conexión, que además informaba de
-     éxito por el fallo E37. Dos defectos que se tapaban el uno al otro.
-
-     Ahora las rutas salen de CB.musica, su dueño único. */
+  /* Y su modo de fallo era invisible por partida doble: renombrar un fichero dejaba la música sonando con toda normalidad —07-musica.js sí tenía la ruta buena— y solo rompía la descarga sin conexión, que además informaba de éxito por el… */
   t.ok(typeof CB.offline.urlesPistas === 'function',
     'E38 · las rutas de música se derivan, no se escriben otra vez');
   var urles = CB.offline.urlesPistas();
@@ -983,25 +580,7 @@ CB.pruebas.suite('E38 · la lista de música tiene un solo dueño', function () 
     'E38 · ningún nombre de mp3 escrito a mano en el código sin conexión');
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E40 · El relleno de opciones del jefe no avanzaba
-   ══════════════════════════════════════════════════════════════════════════
-   CB.jefes.opciones() completa hasta cuatro botones cuando los distractores
-   propuestos no llegan. El candidato se calculaba como `correcta +
-   lista.length` DENTRO del while: si ese número ya estaba en la lista no se
-   añadía nada, la longitud no cambiaba, y la vuelta siguiente calculaba
-   exactamente el mismo candidato. Bucle infinito sin salida.
-
-   No es un caso de laboratorio. Barrido exhaustivo del espacio real de la
-   mecánica «reflejo» de Cristalina (a de 5 a 40, b de 1 a a, sobra de 1 a 9):
-   1,29 % de los turnos, o sea el 22,9 % de los combates de veinte turnos. Y
-   como el rng va sembrado con perfil + mundo + fecha, el niño al que le toca lo
-   reproduce igual cada vez que lo reintenta ese día: «se cuelga en Cristalina»,
-   todos los días, hasta mañana.
-
-   Se prueba la conducta, no la forma: se piden opciones para los casos que
-   colgaban y se comprueba que vuelven. Si no volvieran, esta suite no daría
-   rojo — se quedaría colgada, que es exactamente el fallo. */
+/* E40 · El relleno de opciones del jefe no avanzaba */
 CB.pruebas.suite('E40 · el jefe siempre puede completar sus opciones', function () {
   var t = CB.pruebas;
 
@@ -1067,22 +646,7 @@ CB.pruebas.suite('E40 · el jefe siempre puede completar sus opciones', function
   CB.jefes.estado = previo;
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E41 · Los problemas de enunciado medían 0 ms
-   ══════════════════════════════════════════════════════════════════════════
-   CB.partida.marcarLectura() existía, estaba bien escrita y documentada, y no
-   la llamaba NADIE salvo responder() — es decir, el instante exacto de
-   contestar. `t0` se ponía a ahora() y el rt que se calculaba en la línea
-   siguiente era 0. Medido en navegador: 3.743 ms reales, rt registrado 0.
-
-   Lo que rompía: multiplicador de tiempo 1,4 (el tope) y 3 gemas de bono por
-   rapidez en todos los problemas; 0 ms en el informe del adulto; y en el
-   antiazar, rt = 0 dispara S1 siempre, de modo que tres problemas fallados
-   seguidos añadían S3 y el niño que lee despacio quedaba marcado como que
-   responde al tuntún.
-
-   Se prueba lo único que importa: que un problema contestado después de
-   esperar de verdad registra un rt distinto de cero. */
+/* E41 · Los problemas de enunciado medían 0 ms */
 CB.pruebas.suite('E41 · el cronómetro de los problemas mide el tiempo real', function () {
   var t = CB.pruebas;
 
@@ -1145,18 +709,7 @@ CB.pruebas.suite('E41 · el cronómetro de los problemas mide el tiempo real', f
   CB.partida.estado = previo;
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E42 · La música de mundo leía una propiedad inexistente
-   ══════════════════════════════════════════════════════════════════════════
-   claveDePantalla() leía CB.partida.estado.mundoId. El estado que construye
-   CB.partida.iniciar() no tiene `mundoId`: tiene `mundo`, el objeto entero.
-   `mundoId` es el nombre del PARÁMETRO de iniciar({mundoId:…}), y de ahí se
-   copió. Resultado: undefined → null → respaldo, y bosque, río y mina no
-   sonaron nunca. Toda expedición sonaba a pradera.
-
-   El guardián no vuelve a inventarse la forma del estado —eso es justo lo que
-   hacía el test que lo daba por bueno—: la saca de las claves que escribe
-   iniciar() y comprueba que la propiedad que lee la música está entre ellas. */
+/* E42 · La música de mundo leía una propiedad inexistente */
 CB.pruebas.suite('E42 · la música lee el estado que existe de verdad', function () {
   var t = CB.pruebas;
 
@@ -1165,12 +718,6 @@ CB.pruebas.suite('E42 · la música lee el estado que existe de verdad', functio
   var previaPantalla = CB.pantallas.actual;
   CB.perfil = CB.pruebas.perfilNuevo();
 
-  /* NO SE CONSTRUYE EL ESTADO A MANO. Ese era el fallo del test viejo: se
-     inventaba `{mundoId: m.id}` copiándolo de la línea que tenía el error, y así
-     test e implementación se daban la razón mutuamente mientras tres pistas no
-     sonaban. Aquí la partida la monta CB.partida.iniciar(), que es la única
-     autoridad sobre la forma del estado, y se le pregunta a la música por ESE
-     objeto. Si mañana alguien renombra el campo, este guardián se entera. */
   var mal = [], pistas = [];
   CB.MUNDOS.forEach(function (m) {
     var e = CB.partida.iniciar({ mundoId: m.id, modo: 'expedicion' });
@@ -1202,18 +749,7 @@ CB.pruebas.suite('E42 · la música lee el estado que existe de verdad', functio
   CB.pantallas.actual = previaPantalla;
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E43 · La barra de partida solo respondía en el borde
-   ══════════════════════════════════════════════════════════════════════════
-   conectarBarra leía data-accion directamente de ev.target. Los cuatro botones
-   de la barra llevan dentro <span class="btn-bloque__ico"> y <span
-   class="btn-bloque__rotulo"> —existen porque E15/E16 exigen palabra visible en
-   todo botón de barra—, así que un toque sobre el emoji o sobre la palabra tenía
-   como target el span, que no lleva el atributo. Pista, Pausa, Sonido y Salir
-   no hacían nada salvo que se acertara en los pocos píxeles de padding.
-
-   Se ve peor que un botón muerto: el botón se hunde igual, porque eso es CSS.
-   31-pantallas.js ya subía por el árbol para data-ir desde 1.0.0. */
+/* E43 · La barra de partida solo respondía en el borde */
 CB.pruebas.suite('E43 · la barra responde tocando el icono y el rótulo', function () {
   var t = CB.pruebas;
 
@@ -1229,10 +765,6 @@ CB.pruebas.suite('E43 · la barra responde tocando el icono y el rótulo', funct
   boton.appendChild(rot);
   document.body.appendChild(boton);
 
-  /* Se comprueba el resolutor, no el oyente. Instalar conectarBarra() aquí
-     dejaría un oyente de documento puesto para siempre y la segunda ejecución
-     de la suite contaría el doble —y «las pruebas no son deterministas» es la
-     conclusión más cara posible, como dice ejecutor.js. */
   t.igual(CB.partida.accionDe(ico), 'pista',
     'E43 · tocar el icono de dentro del botón resuelve la acción');
   t.igual(CB.partida.accionDe(rot), 'pista',
@@ -1264,28 +796,11 @@ CB.pruebas.suite('E43 · la barra responde tocando el icono y el rótulo', funct
   document.body.removeChild(suelto);
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E44 · El cerrojo de una respuesta solo estaba en la partida
-   ══════════════════════════════════════════════════════════════════════════
-   E11 arregló esto en CB.partida.responder y dejó allí escrito el porqué
-   entero: los botones no se deshabilitan al responder, siguen en pantalla
-   mientras se lee el mensaje, y machacarlos —que es lo que hace un niño de 7
-   años cuando la respuesta le sale sola— registraba una respuesta por toque.
-
-   Los otros dos sitios donde se contesta se quedaron sin él:
-
-     · el jefe: los cuatro botones viven los 900 ms de la animación. Medido,
-       5 toques = 5 bloques. Ocho toques derriban al jefe entero antes del
-       segundo turno, y cada toque encolaba además otro turno.
-     · la calibración: los botones viven los 1.300 ms del mensaje. Medido,
-       5 toques en la primera pregunta = 5 aciertos sobre 4 ítems. Y esos cuatro
-       aciertos son lo ÚNICO que fija trimestreDeducido, o sea el techo de
-       números de todo el juego: un niño de primer trimestre acababa colocado en
-       el tercero por pulsar dos veces. */
+/* E44 · El cerrojo de una respuesta solo estaba en la partida */
 CB.pruebas.suite('E44 · una respuesta por turno también en jefes y calibración', function () {
   var t = CB.pruebas;
 
-  /* ── El jefe ── */
+  /* El jefe */
   var previoJefe = CB.jefes.estado;
   CB.jefes.estado = {
     mundo: CB.catalogo.getMundo('M1'), jefe: 'Tronquete',
@@ -1304,7 +819,7 @@ CB.pruebas.suite('E44 · una respuesta por turno también en jefes y calibració
     'E44 · y cuatro toques en una equivocada reponen UNO, no cuatro');
   CB.jefes.estado = previoJefe;
 
-  /* ── La calibración ── */
+  /* La calibración */
   var perfilPrevio = CB.perfil;
   var pantallaPrevia = CB.pantallas.actual;
   var bloqueoPrevio = CB.partida.bloqueado;
@@ -1348,19 +863,7 @@ CB.pruebas.suite('E44 · una respuesta por turno también en jefes y calibració
   CB.calibracion.aciertos = 0;
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E45 · La dificultad D solo sabía bajar
-   ══════════════════════════════════════════════════════════════════════════
-   CB.almacen.sanear() descarta por diseño toda clave que empiece por `_`
-   —«campos internos, no se guardan»— y los contadores de actualizarD se
-   llamaban `_racha` y `_fallos`. Se borraban en cada guardado; `D`, no.
-
-   El trinquete resultante: SUBIR exigía 3 aciertos seguidos del mismo nivel, y
-   una partida sirve como mucho 3 ítems del mismo nivel
-   (CB.partida.MAX_REPETICIONES), o sea un pleno dentro de una única sesión
-   porque al día siguiente la racha volvía a cero. BAJAR bastaban 2 fallos, y
-   además trasFallo pone D = 1 a la segunda caída del concepto — y eso sí
-   persistía. La dificultad podía caer para siempre y casi nunca subir. */
+/* E45 · La dificultad D solo sabía bajar */
 CB.pruebas.suite('E45 · los contadores de dificultad sobreviven al guardado', function () {
   var t = CB.pruebas;
 
@@ -1394,23 +897,8 @@ CB.pruebas.suite('E45 · los contadores de dificultad sobreviven al guardado', f
     conGuion.join(', '));
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E46 · Enter se saltaba la confirmación del antiazar
-   ══════════════════════════════════════════════════════════════════════════
-   En tecladoBloques, la rama de Enter llamaba a alResponder directamente en vez
-   de pasar por pulsa('OK'), que es quien consulta pedirConfirmacion(). Tras una
-   detección de azar, la confirmación de dos toques se le aplicaba a quien juega
-   tocando y no a quien juega con teclado. F8 pide que se pueda jugar una partida
-   entera solo con teclado; lo que no pide es que el teclado tenga otras reglas. */
-/* LA SUITE DEVUELVE UNA PROMESA, y no por gusto. CB.componentes.montar() pone
-   CB.partida.bloqueado a true de forma SÍNCRONA y lo suelta en un setTimeout,
-   también con bloqueoMs 0. La primera versión de este guardián escribía la cifra
-   inmediatamente después de montar el teclado, con el bloqueo todavía echado:
-   pulsa() se iba por el return, el visor quedaba vacío, y «con confirmación
-   pendiente el primer Enter no contesta» salía en verde porque no había nada que
-   contestar. Verde por no haber llegado a probar nada, que es el verde que este
-   proyecto lleva tres rondas persiguiendo. Ahora se espera a que el bloqueo se
-   levante de verdad antes de tocar una tecla. */
+/* E46 · Enter se saltaba la confirmación del antiazar */
+
 CB.pruebas.suite('E46 · Enter pasa por la misma confirmación que el toque', function () {
   var t = CB.pruebas;
 
@@ -1475,22 +963,7 @@ CB.pruebas.suite('E46 · Enter pasa por la misma confirmación que el toque', fu
   });
 });
 
-/* ══ E47-E55 · La cinta, y el escalón que llevaba desde el principio sin
-      llamar a nadie ═══════════════════════════════════════════════════════════
-
-   Los ocho primeros protegen un componente NUEVO, así que no hay un fallo
-   histórico que reproducir: hay un fallo histórico que NO repetir. El de E47 ya
-   se cometió una vez con el cartel de prisa —tapaba la fila del ⌫, el 0 y el OK,
-   justo el botón con el que se contesta— y está contado en el comentario de
-   _componentes.scss. Con nueve coreografías en vez de una, la probabilidad de
-   volver a cometerlo se multiplica por nueve; de ahí que se mida, no se confíe.
-
-   E55 sí es un fallo con historia: la escalera anti-frustración declaraba cinco
-   escalones y el cuarto no estaba implementado. CB.grafo.prerrequisitoDominado()
-   existía, estaba documentada «para el escalón 4», y no la invocaba nadie. Es la
-   misma familia que E41: una función correcta que nunca se ejecuta no falla
-   nunca, simplemente no ocurre.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E47-E55 · La cinta, y el escalón que llevaba desde el principio sin */
 
 /* Todas las reglas y fotogramas de la cinta, leídos del CSS REALMENTE CARGADO.
    Del cargado y no del fuente: es lo único que sigue valiendo si mañana esto se
@@ -1522,28 +995,8 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
     'E47 · se leen los fotogramas de la cinta del CSS cargado',
     'encontrados ' + Object.keys(c.fotogramas).length);
 
-  /* ESTE GUARDIÁN NACIÓ AL REVÉS Y HAY QUE CONTARLO. Su primera versión decía
-     «ningún modificador de cinta reposiciona el cartel», y con eso dejó blindada
-     por prueba justo la monotonía que había que corregir: si nadie puede mover
-     nada, las nueve celebraciones son la misma banda en el mismo sitio, y la
-     variedad se queda en el recorrido, que es lo que menos se nota.
-
-     Lo que hay que prohibir no es que un cartel se coloque distinto: es que
-     invada la zona con la que se contesta. Eso ya pasó una vez —el aviso de
-     prisa caía sobre la fila del ⌫, el 0 y el OK— y está contado en
-     _componentes.scss. Así que la regla pasa a ser de TERRITORIO. */
-  /* DOS UMBRALES, Y NO SON EL MISMO. Aquí había un `TOPE = 45` que usaba solo la
-     segunda comprobación, mientras la primera llevaba un 30 escrito a mano; leído
-     deprisa parece una constante muerta y un número duplicado, y unificarlos en
-     30 pone roja la segunda —el cartel del logro se declara al 38 % y ahí está
-     bien—. No es un descuido: son dos reglas distintas sobre dos cosas distintas.
-
-     · Un FOTOGRAMA visible no puede bajar del 30 %: se mueve, y lo que se mueve
-       tapa el teclado justo mientras el niño va a tocarlo.
-     · Una COLOCACIÓN fija puede llegar al 45 %: se queda quieta, se ve entera y
-       no cruza por delante de nada.
-
-     El nombre común era lo único que sobraba. */
+  /* Así que la regla pasa a ser de TERRITORIO. */
+  /* Aquí había un `TOPE = 45` que usaba solo la segunda comprobación, mientras la primera llevaba un 30 escrito a mano; leído deprisa parece una constante muerta y un número duplicado, y unificarlos en 30 pone roja la segunda —el cartel del… */
   var TOPE_FOTOGRAMA = 30;
   var TOPE_COLOCACION = 45;
 
@@ -1563,10 +1016,7 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
     'E47 · ningún fotograma visible empuja la cinta hacia el teclado',
     invaden.join(' · '));
 
-  /* Y la regla de territorio sobre los dos carteles que se colocan: la cinta y
-     el cartel del logro. Ninguno puede declarar un `top` que los meta en la
-     mitad inferior. Que se coloquen DISTINTO es ahora deseable; lo que no pueden
-     es bajar. */
+  /* Y la regla de territorio sobre los dos carteles que se colocan: la cinta y el cartel del logro. */
   var arriba = [];
   c.reglas.forEach(function (r) {
     var top = r.style.top;
@@ -1585,14 +1035,6 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
   t.igual(pasan.length, 0,
     'E47 · lo que se superpone deja pasar el toque', pasan.join(', '));
 
-  /* Y SIGUEN SIENDO ABSOLUTOS. Esto no es una comprobación de estilo: es la
-     única que ve el fallo que ya se ha cometido dos veces. _biomas.scss pone
-     `position: relative` a todo hijo directo de .pantalla y de .zona-juego que
-     no esté en su lista de exclusiones, y gana por orden de cascada. Un
-     superpuesto que se olvide de apuntarse ahí conserva su `top`, deja de ser
-     absoluto, y aparece cientos de píxeles por debajo del borde inferior: no se
-     ve, y NADA falla. Le pasó al aviso de prisa en 1.7.0 y al cartel del logro
-     en 1.8.1, con la suite entera en verde las dos veces. */
   var relativos = ['cinta', 'cartel-festejo'].filter(function (id) {
     var el = document.getElementById(id);
     return el && getComputedStyle(el).position !== 'absolute';
@@ -1616,10 +1058,7 @@ CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
   t.igual(sinFotogramas.length, 0,
     'E48 · toda coreografía de la tabla existe en el CSS', sinFotogramas.join(', '));
 
-  /* Vuelta: todo fotograma cinta-* está en la tabla. Sin esta dirección, una
-     animación huérfana se queda en la hoja sin que nada la dispare, y eso no da
-     ningún error: simplemente no se ve nunca. La única excepción declarada es
-     cinta-arde, que es el parpadeo del texto y no una coreografía. */
+  /* Sin esta dirección, una animación huérfana se queda en la hoja sin que nada la dispare, y eso no da ningún error: simplemente no se ve nunca. */
   var huerfanos = Object.keys(c.fotogramas).filter(function (n) {
     return n !== 'cinta-arde' && tabla.indexOf(n.replace(/^cinta-/, '')) === -1;
   });
@@ -1636,15 +1075,7 @@ CB.pruebas.suite('E48 · la duración vive en un solo sitio', function () {
   t.igual(conDuracion.length, 0,
     'E48 · el CSS no fija la duración de ninguna coreografía', conDuracion.join(', '));
 
-  /* Todas con steps(): es la regla dura del proyecto y ahora hay nueve sitios
-     donde saltársela.
-
-     Se excluyen las reglas que APAGAN la animación, y no es una excepción de
-     conveniencia: «animation: none !important» pone animationTimingFunction en
-     'ease', porque la forma abreviada devuelve todas las sub-propiedades a su
-     valor inicial. Sin excluirlas, este guardián acusa de movimiento suavizado
-     precisamente a las dos reglas que existen para que no haya movimiento
-     ninguno. Es la misma trampa de serialización que ya costó un rato en E27. */
+  /* Todas con steps(): es la regla dura del proyecto y ahora hay nueve sitios donde saltársela. */
   var suaves = c.reglas.filter(function (r) {
     var f = r.style.animationTimingFunction;
     if (!f || f.indexOf('steps(') !== -1) return false;
@@ -1681,11 +1112,6 @@ CB.pruebas.suite('E49-E50 · con el movimiento apagado la cinta se para pero se 
     if (cs.opacity !== '1') invisibles.push(k + ' → opacidad ' + cs.opacity);
   });
 
-  /* Y LOS OTROS VEHÍCULOS. Son elementos distintos, así que cada uno necesita su
-     entrada en $animados: es exactamente donde nació E25. La insignia y el
-     cartel tienen que quedarse quietos Y SEGUIR VIÉNDOSE; la sacudida es la
-     única cuya información está en el movimiento, y por eso su excepción le pone
-     un marco de oro en vez de dejarla en nada. */
   [['insignia-gemas', 'insignia insignia--brota', true],
    ['cartel-festejo', 'cartel cartel--brota', true],
    ['zona-juego', 'zona-juego zona-juego--sacude', false]].forEach(function (v) {
@@ -1730,14 +1156,7 @@ CB.pruebas.suite('E51 · dos cintas seguidas no se pisan', function () {
 
   CB.ui.cinta.ocultar();
 
-  /* SE ESPÍA clearTimeout, y no es rebuscado: es la única forma de ver el fallo.
-     La primera versión de este guardián comprobaba las clases y el valor de
-     _salida, y con el `ocultar()` de mostrar() borrado a propósito SEGUÍA EN
-     VERDE — porque reasignar className repone las clases igual, y _salida
-     cambia igual al programar el segundo temporizador. El fallo real es otro: el
-     temporizador de la primera cinta se queda vivo y dispara a mitad de la
-     segunda, escondiéndola antes de tiempo. Eso solo se ve mirando si alguien lo
-     canceló. */
+  /* Eso solo se ve mirando si alguien lo canceló. */
   var limpiados = [], origClear = window.clearTimeout;
   window.clearTimeout = function (id) { limpiados.push(id); return origClear.call(window, id); };
   /* Que el doble se haya instalado se AFIRMA. Si la propiedad fuese de solo
@@ -1822,14 +1241,7 @@ CB.pruebas.suite('E54 · el ítem siguiente no llega antes que la cinta', functi
   t.igual(CB.ui.festejo.espera('inventada', 1600), 1600,
     'E54 · una clave que no existe deja la espera de siempre');
 
-  /* ── E80 · el tiempo de lectura ───────────────────────────────────────────
-     El mensaje de acierto son 13-15 palabras y se borraba a los 1600 ms: 560
-     palabras por minuto, para un lector de 2.º que va a 60-90. La única parte
-     del mensaje que enseña algo —la frase de procedimiento— no se leía nunca.
-
-     LOS TRES `t.igual` DE ARRIBA SON EL GUARDIÁN DE VERDAD de este cambio: si
-     siguen valiendo, el tercer parámetro no se ha colado en las llamadas de dos
-     argumentos. Se dice aquí para que nadie los borre por parecer redundantes. */
+  /* E80 · el tiempo de lectura */
   var largo = 'Muy bien. Has pedido prestada una decena y la has deshecho bien ' +
               'sin equivocarte en ninguna columna del ejercicio completo.';
   t.ok(CB.ui.festejo.espera('normal', 1600, largo) > 1600,
@@ -1846,11 +1258,7 @@ CB.pruebas.suite('E54 · el ítem siguiente no llega antes que la cinta', functi
 CB.pruebas.suite('E55 · el escalón 4 lleva al prerrequisito, y alguien lo llama', function () {
   var t = CB.pruebas;
 
-  /* Primero la escalera. NO se copia aquí el umbral: se le PREGUNTA a ella cuál
-     es. Escribir el número a mano en el test es lo que produjo E43 —dos
-     implementaciones de la misma escalera y solo una probada, la que no se
-     usaba— y de hecho la primera versión de este guardián puso 4 donde el módulo
-     dice 3, y se puso roja contra código correcto. */
+  /* Escribir el número a mano en el test es lo que produjo E43 —dos implementaciones de la misma escalera y solo una probada, la que no se usaba— y de hecho la primera versión de este guardián puso 4 donde el módulo dice 3, y se puso roja… */
   var umbral = -1, f;
   for (f = 0; f <= 8; f++) {
     if (CB.escalera.siguienteEscalon(f, 2).accion === 'prerrequisito') { umbral = f; break; }
@@ -1882,12 +1290,6 @@ CB.pruebas.suite('E55 · el escalón 4 lleva al prerrequisito, y alguien lo llam
   t.igual(CB.grafo.prerrequisitoDominado(conPre.id, limpio), null,
     'E55 · sin nada dominado devuelve null en vez de inventarse un nivel');
 
-  /* Y LA PARTE QUE FALTABA DE VERDAD: que alguien la llame. El fallo no era la
-     función, que estaba bien; era que servirItem() no tenía por dónde recibir el
-     nivel. Se comprueba el conducto, y se comprueba sobre el estado que produce
-     CB.partida.iniciar() de verdad: construirlo a mano aquí sería fabricar la
-     forma que a mí me conviene, que es como el test de E42 estuvo años de
-     acuerdo con el fallo que tenía que denunciar. */
   var perfilPrevio = CB.perfil;
   CB.perfil = perfil;
   var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
@@ -1897,10 +1299,6 @@ CB.pruebas.suite('E55 · el escalón 4 lleva al prerrequisito, y alguien lo llam
     t.igual(estado.prerrequisitoPendiente, null,
       'E55 · y empieza vacío, sin colar nada en el primer ítem');
 
-    /* Y AQUÍ ESTÁ LO QUE DE VERDAD FALTABA: que la acción se APLIQUE. Que la
-       escalera devuelva 'prerrequisito' y que el grafo encuentre el nivel no
-       sirve de nada si nadie junta las dos cosas, que es exactamente lo que
-       pasaba. Se le pasa el escalón real y se mira el estado real. */
     var hecho = CB.partida.aplicarEscalon(esc, { nivelId: conPre.id }, perfil, estado);
     t.igual(hecho, 'prerrequisito', 'E55 · el escalón 4 se aplica, no se ignora');
     t.igual(estado.prerrequisitoPendiente, encontrado,
@@ -1916,22 +1314,7 @@ CB.pruebas.suite('E55 · el escalón 4 lleva al prerrequisito, y alguien lo llam
   CB.perfil = perfilPrevio;
 });
 
-/* ══ E56-E58 · La variedad tiene que ser de VEHÍCULO ════════════════════════
-
-   E56 es el fallo que motivó todo esto, y es el más difícil de los que llevo
-   escritos porque no es un error de lógica: es un error de diseño que ninguna
-   prueba podía ver. La primera versión de 1.8.0 daba a cada momento su propia
-   coreografía —nueve recorridos distintos— pero las nueve eran la MISMA banda:
-   mismo ancho, mismo sitio, misma letra, mismo tamaño. Verde en todo, y en
-   pantalla el mismo rectángulo veinte veces por sesión.
-
-   Peor: el guardián E47 original decía «ningún modificador reposiciona el
-   cartel», con lo que la monotonía quedó blindada por una prueba. Cuando una
-   comprobación impide la corrección, la comprobación es parte del fallo.
-
-   Lo que se puede medir de esto, y por tanto lo que se mide: que las
-   celebraciones no compartan todas el mismo vehículo.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E56-E58 · La variedad tiene que ser de VEHÍCULO */
 
 CB.pruebas.suite('E56 · las celebraciones no son todas el mismo cartel', function () {
   var t = CB.pruebas;
@@ -2052,26 +1435,13 @@ CB.pruebas.suite('E58 · el ánimo no se celebra', function () {
     'E58 · grito() ya solo recibe el contexto, sin tipo');
 });
 
-/* ══ E59-E61 · Fase 6 del plan: tres conductos que no estaban conectados ═════
-
-   Ninguno de los tres es un error de lógica. Las funciones estaban escritas, bien
-   escritas y documentadas; lo que faltaba era que alguien las llamara. Es la
-   familia de E41 (marcarLectura) y de E55 (el escalón 4), y van cinco.
-
-   NUMERACIÓN: el plan los llamaba E56-E58, pero esos números se los llevó 1.8.1
-   mientras el plan esperaba. Se numeran de corrido por orden de escritura, que es
-   la única regla que no se desincroniza.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E59-E61 · Fase 6 del plan: tres conductos que no estaban conectados */
 
 CB.pruebas.suite('E59 · atras() también ejecuta el manejador de salida', function () {
   var t = CB.pruebas;
   var pantallaPrevia = CB.pantallas.actual;
   var pilaPrevia = CB.pantallas.pila.slice();
 
-  /* ir() lo ejecutaba y atras() no, así que la mitad de las salidas del juego no
-     limpiaban nada. El síntoma no era un error: era el salvavidas de la tarjeta
-     de reparación poniéndose a leer los tres pasos, a los 25 s, encima de otra
-     pantalla. */
   var llamados = [];
   var salirPrevio = CB.pantallas.alSalir['p-mapa'];
   CB.pantallas.alSalir['p-mapa'] = function () { llamados.push('p-mapa'); };
@@ -2110,11 +1480,6 @@ CB.pruebas.suite('E60 · cada componente se presenta la primera vez que se ve', 
 
   t.igual(claves.length, 7, 'E60 · están las siete frases de presentación');
 
-  /* Toda clave tiene que ser un componente que EXISTE. Las claves son nombres de
-     función —'ordenarFila', 'selectorSigno'— y NO coinciden con los valores de
-     item.formato, que son 'ordenar' y 'signo'. Resolver la frase desde el formato
-     habría devuelto undefined en casi todos los casos sin fallar: la familia de
-     E42. Este aserto es lo que impide que alguien lo «simplifique» así. */
   var inexistentes = claves.filter(function (k) {
     return typeof CB.componentes[k] !== 'function';
   });
@@ -2145,15 +1510,7 @@ CB.pruebas.suite('E60 · cada componente se presenta la primera vez que se ve', 
   t.ok(saneado.componentesVistos && saneado.componentesVistos.indexOf('balanza') !== -1,
     'E60 · la lista sobrevive a sanear()');
 
-  /* ── Y AHORA EL CONDUCTO, QUE ES LO QUE FALTABA ──────────────────────────
-     Todo lo de arriba comprueba las dos funciones sueltas, y las dos funciones
-     sueltas llevaban años siendo correctas: lo que no existía era la llamada.
-     Sembrando el fallo —quitar la comprobación de necesitaPresentacion y dejar
-     solo marcarVisto— este guardián seguía EN VERDE. Es exactamente la debilidad
-     que el propio plan anunciaba: «un guardián que solo comprueba la primera vez
-     pasa en verde con la función a medio conectar».
-
-     Así que se sirve un ítem de verdad y se mira la pantalla. */
+  /* Y AHORA EL CONDUCTO, QUE ES LO QUE FALTABA */
   var perfilPrevio = CB.perfil;
   var limpio = CB.pruebas.perfilNuevo();
   CB.perfil = limpio;
@@ -2162,11 +1519,7 @@ CB.pruebas.suite('E60 · cada componente se presenta la primera vez que se ve', 
 
   if (t.ok(!!(estado && nodo), 'E60 · hay partida y nodo de mensaje')) {
     estado.proximoDescanso = 99;
-    /* NO se llama a servirItem() aquí: CB.partida.iniciar() YA sirvió el primer
-       ítem. Llamarlo otra vez servía el SEGUNDO, cuyo primer gesto es ocultar el
-       mensaje, y entonces esto medía la pantalla después de haberla limpiado. La
-       primera versión de este bloque lo hacía y se ponía roja contra código
-       correcto. Se le pregunta al estado en el que iniciar() lo dejó. */
+
     var primera = nodo.textContent;
     var vistosTrasUna = limpio.componentesVistos.slice();
 
@@ -2193,10 +1546,6 @@ CB.pruebas.suite('E60 · cada componente se presenta la primera vez que se ve', 
 CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', function () {
   var t = CB.pruebas;
 
-  /* SE INSTALAN DOBLES CON defineProperty y se restauran POR DESCRIPTOR. La
-     asignación directa se cae en silencio si la propiedad no es escribible, y
-     entonces esto mediría la función de verdad, es decir, nada. Es la lección de
-     window.caches. */
   var descLeer = Object.getOwnPropertyDescriptor(CB.voz, 'leer');
   var descGuiada = Object.getOwnPropertyDescriptor(CB.voz, 'lecturaGuiada');
   var descDisp = Object.getOwnPropertyDescriptor(CB.voz, 'disponible');
@@ -2224,13 +1573,6 @@ CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', funct
   CB.perfil = perfil;
   var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
 
-  /* SE SIRVE UN PROBLEMA DE VERDAD. La primera versión de este guardián escribía
-     estado.itemActual a mano y llamaba a servirItem(), que genera el suyo propio
-     desde el guion — y el mundo M1 no sirve problemas de enunciado. Resultado: no
-     se leía nada, y la mitad A pasaba en VERDE por no haber servido ningún
-     problema, no por tener la voz apagada. Vacuidad de manual, y la cazó la mitad
-     B al ponerse roja. Ahora el guion se fuerza a un nivel de problemas real y se
-     AFIRMA que lo servido trae subtipo antes de medir nada. */
   var idProblema = null;
   var ids = CB.catalogo.ids(), k, niv;
   for (k = 0; k < ids.length; k++) {
@@ -2294,23 +1636,7 @@ CB.pruebas.suite('E61 · el enunciado se lee solo, pero solo cuando debe', funct
   CB.perfil = perfilPrevio;
 });
 
-/* ══ E62 · El teclado bloqueado no puede tener una tecla que finja ═══════════
-
-   Fase 7 del plan. El bloqueo de 800 ms al montar es correcto y no se toca: está
-   para que un toque heredado del ítem anterior no conteste el siguiente. Lo que
-   estaba mal es cómo se ve.
-
-   `.teclado-bloques .btn-bloque[data-tecla="ok"]` vale (0,3,0) y
-   `.btn-bloque:disabled` vale (0,2,0): ganaba el verde. Once teclas de piedra y
-   hundidas, y la única que el niño quiere pulsar, brillante. No es un detalle
-   estético: es la diferencia entre «espera» y «pulsa, que no pasa nada», y lo
-   segundo se lee como que el juego está roto.
-
-   Y con el movimiento apagado era peor. La excepción del mixin
-   desactivar-movimiento valía (0,2,1) con su prefijo y anulaba el hundido, así
-   que en el ajuste que MÁS necesita señales no cromáticas el color se quedaba
-   como única señal.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E62 · El teclado bloqueado no puede tener una tecla que finja */
 
 CB.pruebas.suite('E62 · con el teclado bloqueado, el OK tampoco engaña', function () {
   var t = CB.pruebas;
@@ -2334,14 +1660,7 @@ CB.pruebas.suite('E62 · con el teclado bloqueado, el OK tampoco engaña', funct
     'E62 · bloqueado, el OK tiene el mismo fondo que las demás teclas',
     'OK ' + fondoOk + ' vs 1 ' + fondoUno);
 
-  /* Y EL HUNDIDO SOBREVIVE AL AJUSTE DE MOVIMIENTO REDUCIDO.
-     Esto se comprueba sobre las REGLAS, no sobre el estilo calculado, y no es
-     pereza: en la maqueta de pruebas los botones no tienen caja de composición
-     —getBoundingClientRect() da 0— y Chrome devuelve `transform: none` para todo
-     elemento sin renderizar, valga lo que valga la regla. Medirlo ahí daba
-     `none` incluso con un `style.transform` puesto a mano, es decir, habría sido
-     un guardián que se pone rojo mida lo que mida. Se leen las dos reglas que
-     compiten y se comprueba la relación entre ellas, que es el invariante real. */
+  /* Esto se comprueba sobre las REGLAS, no sobre el estilo calculado, y no es pereza: en la maqueta de pruebas los botones no tienen caja de composición —getBoundingClientRect() da 0— y Chrome devuelve `transform: none` para todo elemento… */
   var reglaDesactivado = null, reglaMonta = null, h, i, hojas, r;
   for (h = 0; h < document.styleSheets.length; h++) {
     try { hojas = document.styleSheets[h].cssRules; } catch (eH) { continue; }
@@ -2358,10 +1677,6 @@ CB.pruebas.suite('E62 · con el teclado bloqueado, el OK tampoco engaña', funct
     'E62 · el botón bloqueado declara su hundido',
     reglaDesactivado ? reglaDesactivado.style.transform : 'no se encuentra la regla');
 
-  /* LA CLAVE. Con el prefijo, la excepción del movimiento reducido vale (0,2,1) y
-     le gana a .btn-bloque:disabled (0,2,0): sin el :not(:disabled) anulaba
-     también el hundido, y en el ajuste que MÁS necesita señales que no sean
-     color el color se quedaba como única señal. */
   t.ok(!!reglaMonta, 'E62 · existe la excepción de movimiento reducido para los botones');
   if (reglaMonta) {
     t.ok(/:not\(:disabled\)/.test(reglaMonta.selectorText),
@@ -2370,16 +1685,7 @@ CB.pruebas.suite('E62 · con el teclado bloqueado, el OK tampoco engaña', funct
   }
 });
 
-/* ══ E64-E67 · Fase 8: deshacer, confirmar y no perder la partida por un roce ═
-
-   TRAMPA OBLIGATORIA EN LOS CUATRO. CB.componentes.montar() bloquea de forma
-   síncrona y desbloquea en un temporizador, incluso con bloqueoMs: 0. Tocar en la
-   línea siguiente a montar el componente entra por el early return y NO PASA
-   NADA — y entonces «el primer toque no contesta» pasa en verde por no haber
-   habido primer toque. Es la vacuidad que dejó a E46 sin valor durante toda su
-   vida. Aquí se espera al desbloqueo y se AFIRMA que el primer gesto entró antes
-   de comprobar nada de lo que viene después.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E64-E67 · Fase 8: deshacer, confirmar y no perder la partida por un roce */
 
 CB.pruebas._desbloqueo = function () {
   return new Promise(function (listo) {
@@ -2467,17 +1773,7 @@ CB.pruebas.suite('E65 · la confirmación se ve, y alcanza a los siete formatos'
     mas.click();
     t.igual(respuestas.length, 1, 'E65 · el segundo toque sí contesta');
 
-    /* Y los cuatro que antes se la saltaban la piden ahora.
-       SE ACEPTA LA DELEGACIÓN, y conviene explicar por qué: al unificar los
-       teclados (fase 9), selectorDatos dejó de contener la palabra
-       `pedirConfirmacion` —la pide el teclado en el que delega— y este aserto se
-       puso rojo contra código correcto. Es la fragilidad que el proyecto ya tiene
-       anotada: leer el texto fuente de una función solo vale para literales y
-       nombres de propiedad, y aquí se estaba usando para inferir comportamiento.
-
-       Se deja el barrido porque cubre seis formatos de un vistazo, pero el
-       séptimo lo comprueba E68 CONDUCIENDO las tres fases, que es la única forma
-       honesta de saberlo. */
+    /* Es la fragilidad que el proyecto ya tiene anotada: leer el texto fuente de una función solo vale para literales y nombres de propiedad, y aquí se estaba usando para inferir comportamiento. */
     var conCerrojo = ['tecladoBloques', 'opciones4', 'balanza', 'selectorSigno',
                       'ordenarFila', 'monedas', 'selectorDatos'].filter(function (f) {
       var src = String(CB.componentes[f]);
@@ -2597,21 +1893,7 @@ CB.pruebas.suite('E67 · tocar una moneda deja marca, y reiniciar la borra', fun
   });
 });
 
-/* ══ E68 · Fase 9: los tres teclados eran uno mal copiado ════════════════════
-
-   La fase 3 de selectorDatos —la de escribir el resultado de un problema, que se
-   usa en TODOS los problemas de enunciado desde el segundo trimestre— era una
-   copia del teclado con seis diferencias, todas en su contra: ⌫ mudo, dígito
-   mudo, visor sin role ni aria-live, sin mirar CB.partida.bloqueado, sin
-   confirmación del antiazar, y data-tecla="OK" en mayúsculas — que hace que
-   [data-tecla="ok"] no lo alcance y ni siquiera reciba el verde del primario.
-
-   LO QUE DE VERDAD VIGILA ESTE GUARDIÁN no es nada de eso. Unificar teclados es
-   fácil; lo difícil es no perder por el camino los cuatro campos de diagnóstico
-   que viajan con la respuesta, porque de ellos sale el informe del adulto y NO SE
-   VEN EN PANTALLA. Un informe que empieza a decir que el niño falla la
-   comprensión lectora cuando lo que falla es la cuenta no da ningún error.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E68 · Fase 9: los tres teclados eran uno mal copiado */
 
 CB.pruebas.suite('E68 · la fase 3 usa el teclado de verdad, y no pierde el informe', function () {
   var t = CB.pruebas;
@@ -2676,10 +1958,6 @@ CB.pruebas.suite('E68 · la fase 3 usa el teclado de verdad, y no pierde el info
       t.ok('faseOperacionOk' in e, 'E68 · llega faseOperacionOk');
       t.ok('signoElegido' in e, 'E68 · llega el signo elegido');
 
-      /* Y LA CONFIRMACIÓN DEL ANTIAZAR, conducida de verdad. E65 la comprueba
-         leyendo el código fuente de los otros seis formatos; para este no puede,
-         porque delega. Aquí se toca el OK con el cerrojo puesto y se mira si
-         contesta, que es lo único que de verdad lo demuestra. */
       recibido = null;
       CB.componentes._confirmacionPendiente = true;
       /* El visor NO se vacía al contestar —lo remonta la partida al servir el ítem
@@ -2700,15 +1978,7 @@ CB.pruebas.suite('E68 · la fase 3 usa el teclado de verdad, y no pierde el info
   });
 });
 
-/* ══ E69-E73 · Fase 10: cinco premios que el juego calculaba y no enseñaba ═══
-
-   Ninguno es un fallo de cálculo. Los cinco se guardaban bien en el perfil. Lo
-   que faltaba era decirlo, y por eso ninguno daba error: el juego funcionaba, el
-   niño no se enteraba.
-
-   Todos los asertos miran el DOM —textContent, hidden, la identidad del nodo—,
-   nunca el texto fuente de una función.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E69-E73 · Fase 10: cinco premios que el juego calculaba y no enseñaba */
 
 CB.pruebas.suite('E69 · el cromo del bloque raro dice cuál es', function () {
   var t = CB.pruebas;
@@ -2810,12 +2080,6 @@ CB.pruebas.suite('E72 · abrir un mundo se dice, y una sola vez', function () {
   var perfil = CB.pruebas.perfilNuevo();
   CB.perfil = perfil;
 
-  /* Se completa M1 para que al terminar se abra M2. SE LE PREGUNTA AL CATÁLOGO
-     cuáles son sus niveles nucleares: la primera versión filtraba por
-     `nivel.mundo === 'M1'`, una propiedad QUE NO EXISTE —el nivel no guarda su
-     mundo—, así que no marcaba ninguno y las cuatro aserciones de abajo se
-     ponían rojas contra código correcto. Suponer la forma de un dato ajeno es
-     exactamente lo que se cobró E42. */
   var nucleares = CB.catalogo.nuclearesDe('M1'), i;
   for (i = 0; i < nucleares.length; i++) {
     perfil.niveles[nucleares[i]] = { n: 10, aciertos: 10, caja: 3, D: 2,
@@ -2830,11 +2094,7 @@ CB.pruebas.suite('E72 · abrir un mundo se dice, y una sola vez', function () {
   var caja = document.getElementById('fin-hitos');
   var texto = (document.getElementById('fin-hitos-lista') || {}).textContent || '';
 
-  /* SE AFIRMA, NO SE RAMIFICA. La primera versión de este guardián decía
-     `if (abierto) { ...comprobar... } else { pasa }`, y con el fallo sembrado
-     —capturar los mundos abiertos DESPUÉS de abrirlos— `abierto` era siempre
-     falso y el guardián se iba por el else en verde. Un guardián que solo
-     comprueba cuando la cosa ocurre no comprueba que la cosa ocurra. */
+  /* Un guardián que solo comprueba cuando la cosa ocurre no comprueba que la cosa ocurra. */
   t.ok(!!perfil.mundos.M2 && perfil.mundos.M2.desbloqueado,
     'E72 · con M1 completo, la expedición abre el mundo siguiente');
   t.ok(/Se ha abierto/.test(texto),
@@ -2893,10 +2153,7 @@ CB.pruebas.suite('E73 · el bono habla en gemas, no en puntos', function () {
     t.ok(true, 'E73 · esta partida no dio bono');
   }
 
-  /* EL RÉCORD, afirmado y no ramificado: es un perfil nuevo con 1000 puntos, así
-     que la primera expedición bate el récord por definición. Si esto se pusiera
-     rojo sería porque el récord se lee DESPUÉS de pisarlo, y entonces
-     `puntos > récord` no es cierto nunca. */
+  /* Si esto se pusiera rojo sería porque el récord se lee DESPUÉS de pisarlo, y entonces `puntos > récord` no es cierto nunca. */
   var lista = document.getElementById('fin-hitos-lista');
   t.ok(!!lista && /mejor expedición/i.test(lista.textContent),
     'E73 · la primera expedición de un perfil bate su récord y se dice',
@@ -2915,11 +2172,7 @@ CB.pruebas.suite('E73 · el bono habla en gemas, no en puntos', function () {
   if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
 });
 
-/* ══ E74-E76 · Fase 11: textos que prometían lo que el código no hace ════════
-
-   Tres promesas rotas. Ninguna daba error: el juego decía una cosa y hacía otra,
-   y solo se ve leyendo las dos a la vez.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E74-E76 · Fase 11: textos que prometían lo que el código no hace */
 
 CB.pruebas.suite('E74 · el cofre del descanso no promete gemas', function () {
   var t = CB.pruebas;
@@ -2959,17 +2212,8 @@ CB.pruebas.suite('E75 · el musgo se cuenta con el criterio que lo pinta', funct
 
   var hoy = CB.util.hoyISO();
 
-  /* PERFIL DE PRIMERA SEMANA, que es el caso que delata el fallo: destrezas
-     practicadas hace días pero que NUNCA llegaron a afianzada. vencidosHoy las
-     cuenta —R < 0.7— y la Cantera no pinta ni una, porque 'oxidada' exige haber
-     sido sólida antes. Con un perfil maduro los dos números pueden coincidir por
-     casualidad y el guardián pasaría en verde con el fallo dentro. */
-  /* LA DESTREZA LA CREA CB.adaptativo.nuevaDestreza(), no yo. La primera versión
-     de este montaje la escribía a mano y le ponía `ultimoISO`, UNA PROPIEDAD QUE
-     NO EXISTE: recuperabilidad() lee `ultimoRepasoISO`, así que devolvía 1 y no
-     había ni una destreza vencida. Dos aserciones rojas contra código correcto,
-     por suponer la forma de un dato en vez de pedírsela a quien lo produce. Es
-     E42, y van tres veces en esta serie. */
+  /* PERFIL DE PRIMERA SEMANA, que es el caso que delata el fallo: destrezas practicadas hace días pero que NUNCA llegaron a afianzada. */
+
   var perfil = CB.pruebas.perfilNuevo();
   perfil.destrezas = {};
   var slugs = ['numeracion', 'suma_sin_llevar', 'resta_sin_llevar'];
@@ -3005,12 +2249,7 @@ CB.pruebas.suite('E75 · el musgo se cuenta con el criterio que lo pinta', funct
     'E75 · una destreza que fue sólida y se olvidó sí sale con musgo',
     JSON.stringify(musgo2));
 
-  /* ── Y AHORA EL SALUDO DE VERDAD, que es lo que faltaba ──────────────────
-     Todo lo de arriba comprueba conMusgo() en abstracto, y sembrando el fallo
-     —devolver vencidosHoy() al saludo del mapa— este guardián SEGUÍA EN VERDE,
-     porque no tocaba el mapa por ningún sitio. Aquí se pinta la Cantera con el
-     perfil de primera semana y se compara el NÚMERO DEL SALUDO con lo que dice
-     conMusgo. Con vencidosHoy el saludo prometería vetas que no existen. */
+  /* Y AHORA EL SALUDO DE VERDAD, que es lo que faltaba */
   var perfilPrevio = CB.perfil;
   var pantallaPrevia = CB.pantallas.actual;
   var primeraSemana = CB.pruebas.perfilNuevo();
@@ -3024,10 +2263,7 @@ CB.pruebas.suite('E75 · el musgo se cuenta con el criterio que lo pinta', funct
   CB.perfil = primeraSemana;
   var saludo = document.getElementById('mapa-saludo');
   if (t.ok(!!saludo, 'E75 · hay saludo del mapa en la maqueta')) {
-    /* CENTINELA. La primera versión llamaba a pintar(), y el saludo NO lo escribe
-       pintar() sino pintarMundos(): el texto se quedaba como estaba, el número
-       leído era 0, el esperado era 0, y el guardián daba verde con el fallo
-       dentro. Se marca el nodo antes y se afirma que alguien lo ha reescrito. */
+
     saludo.textContent = 'SIN PINTAR';
     CB.mapaDestrezas.pintarMundos();
     t.ok(saludo.textContent !== 'SIN PINTAR',
@@ -3062,10 +2298,6 @@ CB.pruebas.suite('E76 · los cinco descansos no se repiten, y sobreviven al guar
   var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (!t.ok(!!estado, 'E76 · hay partida')) { CB.perfil = perfilPrevio; return; }
 
-  /* CINCO DESCANSOS CON UN GUARDADO POR MEDIO. Sin el guardado, un guardián así
-     pasa en verde con una bolsa que se reinicia en cada `sanear()`: es
-     literalmente el fallo de E45, y el motivo de que esta clave no lleve guion
-     bajo. */
   var vistos = [], i, titulo = document.getElementById('descanso-titulo');
   for (i = 0; i < 5; i++) {
     CB.partida.microDescanso();
@@ -3086,7 +2318,7 @@ CB.pruebas.suite('E76 · los cinco descansos no se repiten, y sobreviven al guar
   CB.perfil = perfilPrevio;
 });
 
-/* ══ E77-E79 · Fase 12: ocho turnos sin celebrar nada ═══════════════════════ */
+/* E77-E79 · Fase 12: ocho turnos sin celebrar nada */
 
 CB.pruebas.suite('E77 · el jefe anuncia también los aciertos, y se presenta', function () {
   var t = CB.pruebas;
@@ -3163,11 +2395,7 @@ CB.pruebas.suite('E78 · «cerrado sin un fallo» se lee de verdad', function ()
     if (!e) return null;
     /* SE JUEGA DE VERDAD con responder(), no fijando el campo a mano: si se
        fijara, el guardián nunca vería que responder dejó de ponerlo a false. */
-    /* SE CONDUCE EL TURNO A MANO. responder() programa turno() con setTimeout, y
-       terminar() solo se llama desde turno(): un bucle síncrono de responder()
-       baja los bloques a cero y NO TERMINA NUNCA el combate, así que
-       jefeSinFallos no llega a escribirse. La primera versión de este guardián
-       se puso roja por eso, contra código correcto. */
+    /* responder() programa turno() con setTimeout, y terminar() solo se llama desde turno(): un bucle síncrono de responder() baja los bloques a cero y NO TERMINA NUNCA el combate, así que jefeSinFallos no llega a escribirse. */
     if (fallar) { CB.jefes.responder(false); CB.jefes.turno(); }
     var i;
     for (i = 0; i < 40 && CB.jefes.estado; i++) {
@@ -3227,15 +2455,11 @@ CB.pruebas.suite('E81 · la espera del segundo intento sale de la fuente única'
     'E81 · la tabla queda como estaba');
 });
 
-/* ══ E83 · Fase 14: cuánto queda ═══════════════════════════════════════════ */
+/* E83 · Fase 14: cuánto queda */
 
 CB.pruebas.suite('E83 · el HUD dice por qué bloque va la expedición', function () {
   var t = CB.pruebas;
 
-  /* SE AFIRMA PRIMERO QUE EL NODO ESTÁ EN LA MAQUETA. Sin esto, pintarHUD sale
-     por su `if` y TODO lo de abajo pasaría por vacuidad: cero bloques contra cero
-     bloques esperados. Es la trampa que ya documentó el plan de 1.7.0 para los
-     nodos que un módulo cachea o busca en tiempo de ejecución. */
   var gal = document.getElementById('hud-galeria');
   if (!t.ok(!!gal, 'E83 · #hud-galeria existe en la maqueta de pruebas')) return;
 
@@ -3279,10 +2503,7 @@ CB.pruebas.suite('E83 · el HUD dice por qué bloque va la expedición', functio
     t.igual(gal.querySelectorAll('b[data-caido="si"]').length, 0,
       'E83 · y ninguno cavado todavía');
 
-    /* Y AVANZA AL SERVIR EL SIGUIENTE. Esta es la aserción que caza una llamada
-       que se olvide de pasar el total, y también el fallo de contar con el índice
-       equivocado: pintándolo solo en trasAcierto la fila iba un bloque por detrás
-       toda la partida, porque ahí e.indice es todavía el del ítem respondido. */
+    /* Esta es la aserción que caza una llamada que se olvide de pasar el total, y también el fallo de contar con el índice equivocado: pintándolo solo en trasAcierto la fila iba un bloque por detrás toda la partida, porque ahí e.indice es… */
     estado.proximoDescanso = 99;
     estado.indice = 4;
     CB.partida.servirItem();
@@ -3295,16 +2516,7 @@ CB.pruebas.suite('E83 · el HUD dice por qué bloque va la expedición', functio
   if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
 });
 
-/* ══ E84 · Fase 15: el primer minuto ════════════════════════════════════════
-
-   La calibración decía literalmente «Ahora sí empieza el juego: con reloj, con
-   luces y con gemas» y a continuación aparecía un menú con tres tarjetas
-   bloqueadas y una jugable. Es E21 un escalón más adelante: una frase que promete
-   una cosa y una pantalla que hace otra.
-
-   ESTA SUITE DEVUELVE UNA PROMESA. El salto ocurre dentro de un setTimeout de
-   3400 ms: medir en el mismo turno daría siempre «sigue en la calibración», que
-   es verde y no comprueba nada. */
+/* E84 · Fase 15: el primer minuto */
 
 CB.pruebas.suite('E84 · al acabar la calibración se empieza a jugar', function () {
   var t = CB.pruebas;
@@ -3337,11 +2549,6 @@ CB.pruebas.suite('E84 · al acabar la calibración se empieza a jugar', function
         t.igual(CB.partida.estado.mundo.id, 'M1',
           'E84 · en la Pradera, el único mundo abierto');
 
-        /* EL ORDEN IMPORTA, y esta es la aserción que lo protege. iniciar() acaba
-           en servirItem(), que lee perfil.trimestreDeducido; si el salto se
-           adelantara al guardarPerfil, el primer ítem se serviría con el valor por
-           defecto en vez del recién calibrado. La partida arrancaría igual y con
-           la dificultad equivocada: un fallo que no se ve. */
         t.igual(perfil.trimestreDeducido, 3,
           'E84 · y con el trimestre recién deducido, no con el de por defecto',
           String(perfil.trimestreDeducido));
@@ -3355,27 +2562,7 @@ CB.pruebas.suite('E84 · al acabar la calibración se empieza a jugar', function
   });
 });
 
-/* ══ E85-E88 · Saber dónde estás ═════════════════════════════════════════════
-
-   La expedición encadena hasta veinte ítems de siete vetas distintas, barajados,
-   y lo único que decía el HUD era cuánto quedaba. En qué se está —qué se está
-   practicando— solo aparecía en la Cantera, dos pantallas atrás y antes de
-   empezar. Cambiar de veta era, visto desde la silla, que la pregunta cambiara
-   de tema sin causa.
-
-   El barajado NO se toca, y conviene dejar dicho por qué: la práctica intercalada
-   retiene mejor que la agrupada, y agrupar el guion por vetas para que «pasar de
-   nivel» fuera literal habría sido cambiar la pedagogía por la maqueta. Lo que se
-   arregla es lo que faltaba —decirlo—, no lo que funcionaba.
-
-   Y de ahí sale el riesgo que vigilan E86 y E87: en cuanto existe una cinta que
-   dice «Nivel superado», hay que asegurarse de que sea VERDAD. Con el guion
-   barajado, una veta que se deja atrás puede volver tres ítems después por dos
-   caminos —quedar más ítems suyos en el guion, o deber un repaso por haberla
-   fallado— y hay un tercero que no deja rastro en ninguna cola: el tiempo
-   agotado. Cantarlo sin comprobar los tres es prometer algo que el propio juego
-   desmiente un minuto después.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E85-E88 · Saber dónde estás */
 
 CB.pruebas.suite('E85 · el HUD dice en qué veta se está', function () {
   var t = CB.pruebas;
@@ -3391,10 +2578,6 @@ CB.pruebas.suite('E85 · el HUD dice en qué veta se está', function () {
   var pantallaPrevia = CB.pantallas.actual;
   CB.perfil = CB.pruebas.perfilNuevo();
 
-  /* LA PARTIDA LA MONTA iniciar(), que es la única función que produce la forma
-     real del estado. Construir {guion: [...], mundo: {...}} a mano aquí sería
-     fabricar la forma que el test quiere ver: es exactamente lo que dejó E42
-     escondido durante toda la vida del proyecto. */
   var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   if (t.ok(!!estado, 'E85 · hay partida')) {
     var servido = CB.catalogo.get(estado.itemActual.nivelId);
@@ -3470,10 +2653,7 @@ CB.pruebas.suite('E86 · «Nivel superado» solo cuando de verdad lo está', fun
         t.ok(!!cerrada.nombre, 'E86 · con nombre, que es lo que se pinta');
       }
 
-      /* CASO 4 · seguir en la misma veta no es superarla. Parece obvio y es el
-         fallo que habría salido de comparar solo «quedan cero»: al servir el
-         último ítem de A, si nadie compara la veta anterior con la nueva, se
-         anuncia que se ha superado A mientras se está sirviendo A. */
+      /* Parece obvio y es el fallo que habría salido de comparar solo «quedan cero»: al servir el último ítem de A, si nadie compara la veta anterior con la nueva, se anuncia que se ha superado A mientras se está sirviendo A. */
       estado.vetaPrevia = A;
       t.igual(CB.partida.vetaSuperada(A), null,
         'E86 · servir otro ítem de la misma veta no la supera');
@@ -3534,25 +2714,6 @@ CB.pruebas.suite('E88 · el rótulo de veta se ve', function () {
   var rot = document.getElementById('hud-veta');
   if (!t.ok(!!rot, 'E88 · el rótulo está en la maqueta')) return;
 
-  /* ESTA ES LA LECCIÓN DE 1.8.1, Y VA POR TRES. El cartel de logro se pintó
-     `absolute` y se olvidó apuntarlo en la lista de exclusiones de
-     _biomas.scss: `position: relative` le ganó por orden de cascada, su `top`
-     pasó a ser relativo y quedó a 887 px, fuera de la vista, con la suite entera
-     en verde. Aquí se comprueba lo contrario —que el rótulo es de flujo— porque
-     es lo que le corresponde: si alguien lo saca del flujo para «colocarlo
-     mejor», el rótulo se va por debajo del borde y no falla nada.
-
-     Se lee la position CALCULADA, no la declarada: es la única que sabe quién
-     ganó la cascada.
-
-     Y HAY QUE DESTAPAR LA MAQUETA PARA MEDIRLA. Las diecisiete secciones de
-     prueba viven dentro de un <div hidden>, así que NADA de ahí tiene caja: la
-     primera versión de esta comprobación pedía `offsetHeight > 0` y devolvía 0
-     para el rótulo, para el HUD y para la galería por igual. Es el mismo error
-     que ya cazó a este proyecto con `transform`, que vale `none` en un elemento
-     sin caja: una medida de maqueta hecha sobre un árbol oculto no mide la
-     maqueta, mide el `hidden`. Se destapa, se mide y se vuelve a tapar en el
-     mismo turno. */
   var pantallaPrevia = CB.pantallas.actual;
   CB.pantallas.ir('p-partida');
 
@@ -3564,10 +2725,6 @@ CB.pruebas.suite('E88 · el rótulo de veta se ve', function () {
   t.ok(calc.position !== 'absolute' && calc.position !== 'fixed',
     'E88 · el rótulo va en el flujo, no superpuesto', calc.position);
 
-  /* Se AFIRMA que destapar ha servido de algo. Sin esto, si mañana la maqueta se
-     ocultara de otra manera —una clase, un contenedor más arriba— la línea de
-     abajo volvería a medir 0 y a ponerse roja sin decir por qué; o peor, alguien
-     la relajaría a `>= 0` y quedaría verde para siempre sin comprobar nada. */
   var alto = rot.getBoundingClientRect().height;
   t.ok(document.getElementById('hud-galeria').getBoundingClientRect().height > 0,
     'E88 · la maqueta destapada sí tiene caja: la medida significa algo');
@@ -3575,11 +2732,7 @@ CB.pruebas.suite('E88 · el rótulo de veta se ve', function () {
 
   maqueta.hidden = estabaOculta;
 
-  /* El nombre de la veta NUNCA se esconde: es el que contesta a la pregunta. El
-     del mundo puede apartarse en pantalla estrecha, pero apartarse no es
-     desaparecer —con display:none saldría también del árbol de accesibilidad, y
-     entonces quien usa lector de pantalla tendría menos información en la
-     pantalla pequeña que en la grande. */
+  /* El nombre de la veta NUNCA se esconde: es el que contesta a la pregunta. */
   var nombre = document.getElementById('hud-veta-nombre');
   var mundo = document.getElementById('hud-veta-mundo');
   if (nombre && mundo) {
@@ -3592,21 +2745,7 @@ CB.pruebas.suite('E88 · el rótulo de veta se ve', function () {
   if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
 });
 
-/* ══ E89 · La moneda que había que reconocer era un número ═══════════════════
-
-   `15-gen-dinero.js` abre diciendo que monedas y billetes son conjuntos separados
-   y que «el juego los distingue siempre visual y verbalmente». Lo cumplía en
-   pagar y en contar, donde la pieza se dibuja —el cuadrado de oro, el rectángulo
-   verde—, y no lo cumplía en E1, que es la única pregunta cuyo objeto ES
-   distinguirlos: las cuatro opciones salían como cuatro botones de madera
-   idénticos con un número dentro.
-
-   Lo que eso significa se ve mejor al revés: «Toca la moneda de 2 euros» con
-   opciones 1, 2, 5 y 10 se acierta leyendo el 2 del enunciado y buscando el 2.
-   Se puede sacar el nivel entero sin haber mirado nunca una moneda, que es justo
-   lo que el nivel dice que enseña. Es la familia de E70 —algo que se calcula y no
-   se ve— pero de la otra punta: algo que se ve y no era lo que había que ver.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E89 · La moneda que había que reconocer era un número */
 
 CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
   var t = CB.pruebas;
@@ -3653,23 +2792,7 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
   t.ok(rej && rej.classList.contains('rejilla-respuestas--dinero'),
     'E89 · la retícula deja que el ancho lo mande la pieza');
 
-  /* ── Y NINGUNA DENOMINACIÓN SE DIBUJA IGUAL QUE OTRA ──────────────────────
-     Dibujar las opciones como piezas no arregla nada si las doce piezas son el
-     mismo rectángulo: eso es el fallo original con otro traje. Las de verdad se
-     reconocen por la imagen y por el tamaño antes que por la cifra, y eso es lo
-     que se comprueba aquí — que las doce tengan huella distinta.
-
-     LA HUELLA CAMBIÓ EN 1.20.0 y el motivo importa. Era
-     `backgroundColor|width|boxShadow`, que servía cuando la pieza ERA su color y
-     su bisel. Ahora la pieza es una fotografía: los biseles se han ido —dibujaban
-     un marco cuadrado sobre el canto redondo de la moneda— y dos piezas pueden
-     compartir color de respaldo sin parecerse en nada. Lo que las distingue hoy
-     es la IMAGEN y la CAJA, así que eso es lo que se mide. Una comprobación que
-     sigue midiendo lo que ya no decide nada es una comprobación verde que no
-     mira.
-
-     Se lee el estilo CALCULADO, que devuelve la longitud declarada aunque el
-     elemento no tenga caja, así que esto vale dentro de la maqueta oculta. */
+  /* Y NINGUNA DENOMINACIÓN SE DIBUJA IGUAL QUE OTRA */
   var caja = CB.ui.crear('div');
   document.body.appendChild(caja);
   var huellas = {}, repes = [], sinDeclarar = [], urls = [];
@@ -3703,18 +2826,7 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
   CB.ui.vaciar(cont);
   if (CB.partida) CB.partida.bloqueado = false;
 
-  /* ── Y QUE EL FICHERO EXISTA, QUE NO ES LO MISMO ──────────────────────────
-     `getComputedStyle` devuelve la url tal cual esté escrita: una ruta mal
-     puesta se lee igual de bien que una buena y `background-image` NUNCA vale
-     `none` por eso —solo vale `none` si la variable no existe—. Es decir: la
-     comprobación de arriba, sola, pasaría en verde con las doce fotos borradas.
-     Lo único que distingue una ruta que llega de una que no es CARGARLA, así que
-     se cargan las doce y se mira `naturalWidth`.
-
-     La suite espera esta promesa (`ejecutor.js` la aguarda). Escrito como un
-     `onload` suelto, cualquier cosa que afirmase dentro llegaría después de que
-     el resumen estuviera impreso, que es la forma clásica de escribir una
-     comprobación que no comprueba. */
+  /* Y QUE EL FICHERO EXISTA, QUE NO ES LO MISMO */
   return Promise.all(urls.map(function (par) {
     return new Promise(function (listo) {
       var img = new Image();
@@ -3730,18 +2842,7 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
   });
 });
 
-/* ══ E90 · El marcador cambiaba de golpe ═════════════════════════════════════
-
-   Donde ponía 12 ponía 15 en el fotograma siguiente. Toda la ganancia se contaba
-   FUERA del número —la insignia «+1» que brota al lado, la hilera de «+2 por
-   rapidez»— y el sitio donde de verdad vive la puntuación no se enteraba. Un
-   salto instantáneo entre dos números de dos cifras no se ve: se descubre
-   después, y para entonces ya no se sabe de dónde salió.
-
-   Lo que hay que vigilar de una cuenta animada no es que se mueva, es que
-   ATERRICE. Un contador que se queda en 39 porque el reparto en pasos no era
-   entero es peor que no animar: la puntuación deja de ser la puntuación.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E90 · El marcador cambiaba de golpe */
 
 CB.pruebas.suite('E90 · la cifra sube, y aterriza donde debe', function () {
   var t = CB.pruebas;
@@ -3751,7 +2852,7 @@ CB.pruebas.suite('E90 · la cifra sube, y aterriza donde debe', function () {
   var raiz = document.documentElement;
   var teniaSinMov = raiz.classList.contains('sin-movimiento');
 
-  /* ── Con movimiento: cuenta, y el destino se alcanza exacto ────────────── */
+  /* Con movimiento: cuenta, y el destino se alcanza exacto */
   raiz.classList.remove('sin-movimiento');
   g.textContent = '0';
   CB.ui.contarHasta(g, 37);
@@ -3771,24 +2872,11 @@ CB.pruebas.suite('E90 · la cifra sube, y aterriza donde debe', function () {
       t.ok(!g.classList.contains('cifra-viva--sube'),
         'E90 · y se quita la marca al acabar');
 
-      /* ── NUNCA BAJA ──────────────────────────────────────────────────────
-         Empezar partida repinta el HUD con 0 mientras el nodo guarda las de la
-         anterior. Contar hacia atrás contradice la regla de que el marcador solo
-         sube, y además se vería como un castigo. */
+      /* NUNCA BAJA */
       CB.ui.contarHasta(g, 5);
       t.igual(g.textContent, '5', 'E90 · un destino menor se escribe, no se cuenta');
 
-      /* ── UNA CUENTA CANCELA A LA ANTERIOR ────────────────────────────────
-         Dos aciertos seguidos disparan dos cuentas sobre el mismo nodo. Sin
-         cancelar la primera, los dos intervalos escriben a la vez y el número
-         va y viene hasta que gana el que acabe más tarde — que es el que iba al
-         destino equivocado.
-
-         SE ESPERA. La primera versión de esta comprobación miraba el nodo en la
-         línea siguiente a lanzar la cuenta y esperaba ver ya el 12: una cuenta
-         que acaba de empezar sigue valiendo 0, así que la aserción estaba mal
-         escrita y salió roja contra código correcto. Lo que hay que mirar no es
-         el valor inmediato, es DÓNDE ATERRIZA. */
+      /* UNA CUENTA CANCELA A LA ANTERIOR */
       g.textContent = '0';
       CB.ui.contarHasta(g, 40);
       CB.ui.contarHasta(g, 12);
@@ -3797,9 +2885,7 @@ CB.pruebas.suite('E90 · la cifra sube, y aterriza donde debe', function () {
         t.igual(g.textContent, '12',
           'E90 · la segunda cuenta manda: la primera no sigue escribiendo');
 
-        /* ── SIN MOVIMIENTO: EL NÚMERO ENTERO, YA ──────────────────────────
-           Quitar movimiento no puede quitar información, y aquí la información
-           es la cifra. Se escribe el destino sin contar. */
+        /* SIN MOVIMIENTO: EL NÚMERO ENTERO, YA */
         raiz.classList.add('sin-movimiento');
         g.textContent = '0';
         CB.ui.contarHasta(g, 23);
@@ -3814,29 +2900,7 @@ CB.pruebas.suite('E90 · la cifra sube, y aterriza donde debe', function () {
   });
 });
 
-/* ══ E91 · Los botones se pulsaban en silencio ═══════════════════════════════
-
-   Sonaba lo que PASA —el acierto, el fallo, la gema, la luz que se apaga— pero
-   no el acto de tocar. Un botón de navegación, uno de ajustes o el de pausa se
-   pulsaban sin ninguna respuesta sonora, así que no había forma de saber si el
-   toque había entrado; y en una pantalla táctil de aula, con ruido alrededor, eso
-   es la mitad de la confirmación que hay.
-
-   Lo que se vigila aquí no es que suene: es CUÁNDO NO tiene que sonar. Un clic
-   que se añade encima de un sonido que ya dice algo no informa, tapa.
-
-   Y ESO ES LO QUE PASÓ, con la regla ya escrita en este mismo comentario. La
-   primera versión enumeraba a mano los tres botones que callan —el
-   deshabilitado, la moneda, el de silenciar— y la lista nació corta: la tecla
-   del teclado numérico ya trae su «picar» y el ⌫ su «toc», así que cada cifra
-   que escribía un niño sonaba DOS veces, con el clic tapando justo el sonido que
-   dice algo. Una regla buena aplicada en tres sitios de cinco, que es la familia
-   de fallos de la que este proyecto ya tiene tres (E44, E45, E46).
-
-   Ahora no hay lista: CB.audio cuenta las peticiones y el clic solo suena si el
-   gesto ha sido mudo. La comprobación que lo vigila es la del teclado de verdad,
-   más abajo — no la de un botón inventado.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E91 · Los botones se pulsaban en silencio */
 
 CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function () {
   var t = CB.pruebas;
@@ -3844,11 +2908,7 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
   t.ok(typeof CB.audio.EFECTOS.pulsar === 'function',
     'E91 · existe el efecto de pulsar');
 
-  /* EL MÁS FRECUENTE ES EL MÁS FLOJO. Es la misma regla que ordena la tabla de
-     celebraciones —el espectáculo es inversamente proporcional a la frecuencia—
-     aplicada al sonido: este se oye cien veces por sesión. Se comprueba contra el
-     «toc», que es el otro sonido de toque y tiene que seguir destacando sobre él,
-     porque dice lo contrario: «aún no». */
+  /* Es la misma regla que ordena la tabla de celebraciones —el espectáculo es inversamente proporcional a la frecuencia— aplicada al sonido: este se oye cien veces por sesión. */
   var oidas = [];
   var notaPrevia = CB.audio.nota, ruidoPrevio = CB.audio.ruido;
   CB.audio.nota = function (f, cuando, dur, tipo, gan) {
@@ -3878,24 +2938,11 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
       clic.tipo + ' contra ' + toc.tipo);
   }
 
-  /* ── LA REGLA, que es lo que de verdad se puede romper ───────────────────
-     El oyente vive en el documento, así que se prueba disparando clics de verdad
-     sobre botones de verdad y apuntando qué sonidos se piden.
-
-     SE ENVUELVE CB.audio.sfx, NO SE SUSTITUYE. La regla mira CB.audio.emitidos,
-     y ese contador solo se mueve si la petición llega al de verdad: un espía que
-     se limite a anotar el nombre deja el contador quieto, el clic genérico se
-     cree que el gesto ha sido mudo y suena igual. La suite mediría entonces una
-     conducta que el juego no tiene — y en verde, que es lo caro. */
+  /* LA REGLA, que es lo que de verdad se puede romper */
   var sfxPrevio = CB.audio.sfx;
   var pedidos = [];
   CB.audio.sfx = function (n) { pedidos.push(n); return sfxPrevio(n); };
 
-  /* SE CONECTA EL MISMO CÓDIGO QUE USA EL JUEGO, no una imitación. El oyente
-     vive fuera del DOMContentLoaded justamente para esto: el arranque devuelve
-     pronto cuando no hay #btn-jugar —así evitan las páginas de prueba echar a
-     andar un juego—, así que un oyente registrado ahí dentro no existiría aquí y
-     todo lo de abajo mediría el vacío. */
   var conectado = CB.arranque.conectarSonidoBotones(document);
   t.ok(conectado || document.documentElement.getAttribute('data-clic') === 'si',
     'E91 · el oyente de clic está conectado al documento');
@@ -3905,10 +2952,6 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
   var caja = CB.ui.crear('div');
   document.body.appendChild(caja);
 
-  /* LA DECISIÓN SE TOMA AL FINAL DEL GESTO, en un setTimeout(0). Mirar `pedidos`
-     en la línea siguiente al clic mediría siempre cero, y las ocho
-     comprobaciones de abajo saldrían verdes contra cualquier código: es el mismo
-     error que ya salió caro en E90 con la cuenta del marcador. */
   function pulsar(el) {
     pedidos = [];
     el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -3954,11 +2997,7 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
        alguien añada una pieza nueva. */
     t.igual(p, 'gema', 'E91 · una moneda no suena dos veces: ya trae su «gema»');
 
-    /* ── EL TECLADO NUMÉRICO DE VERDAD ────────────────────────────────────
-       Aquí estaba el fallo, y por eso no se prueba con un botón inventado que
-       llame a sfx: se monta el componente que usa el juego y se pulsa su tecla.
-       Un banco de pruebas hecho a mano habría estado de acuerdo con el código
-       equivocado, que es exactamente lo que enseñó E42. */
+    /* EL TECLADO NUMÉRICO DE VERDAD */
     CB.componentes.tecladoBloques({ respuesta: 7 }, function () { },
       { contenedor: teclado, vaciar: false, bloqueoMs: 0 });
     return new Promise(function (listo) { setTimeout(listo, 30); });
@@ -3982,23 +3021,7 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
   });
 });
 
-/* ══ E92 · Con el teclado se jugaba en silencio ══════════════════════════════
-
-   Se puede jugar una partida entera solo con el teclado —es criterio de HECHO de
-   F8, no una comodidad— y esa partida se jugaba muda. Las cifras sí sonaban,
-   porque el «picar» lo pone el componente; pero Enter, Escape, el Tab, las
-   flechas que mueven el foco por la rejilla, la L de leer y la P de pista no
-   sonaban nunca, y fuera de las tres pantallas de juego no sonaba NINGUNA tecla,
-   porque el manejador de 06-a11y.js devuelve pronto. Quien juega con el teclado
-   —que casi siempre es quien no puede usar el dedo— tenía la mitad de la
-   confirmación que tiene el resto.
-
-   Lo que se vigila es lo mismo que en E91 y por eso comparten contador: que
-   suene UNA vez. Y aquí hay dos maneras nuevas de sonar dos veces —Enter sobre
-   un botón, que el navegador convierte en un clic de verdad, y el dedo apoyado
-   en una tecla, que dispara treinta por segundo— más una de sonar donde no debe:
-   escribiendo en la puerta parental.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E92 · Con el teclado se jugaba en silencio */
 
 CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function () {
   var t = CB.pruebas;
@@ -4013,16 +3036,7 @@ CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function
   t.igual(CB.arranque.conectarSonidoTeclas(document), false,
     'E92 · y conectarlo dos veces no deja dos oyentes');
 
-  /* ── CUALQUIER GESTO ABRE EL AUDIO, NO SOLO JUGAR ───────────────────────
-     El contexto de Web Audio nace suspendido y solo lo despierta un gesto del
-     usuario, y los dos únicos sitios que lo despertaban eran los botones JUGAR y
-     «partida tranquila». Quien empezaba tocando «Ajustes» o «Perfiles» —o quien
-     navegaba con el teclado— no oía NADA en los primeros toques de la sesión,
-     que son justamente los que enseñan que el juego responde. Se ve poco porque
-     el camino que más se anda pasa por JUGAR.
-
-     Se sustituye CB.audio.iniciar para contar: abrir un AudioContext de verdad
-     en la suite dejaría el resto de comprobaciones pitando. */
+  /* CUALQUIER GESTO ABRE EL AUDIO, NO SOLO JUGAR */
   var iniciarPrevio = CB.audio.iniciar;
   var aperturas = 0;
   CB.audio.iniciar = function () { aperturas++; return null; };
@@ -4087,12 +3101,7 @@ CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function
        confirmación de que la tecla ha entrado es el carácter, que se ve. */
     t.igual(p, '', 'E92 · escribir en un campo no es pulsar un mando');
 
-    /* ── LO QUE YA SUENA, CALLA ───────────────────────────────────────────
-       Es la misma regla de E91 y el mismo contador. No se usa aquí el puente
-       de verdad —CB.a11y.conectarTeclado()— porque no tiene forma de quitarse:
-       registrarlo en la suite dejaría un oyente que responde a todas las teclas
-       que disparen las demás suites. Se imita lo único que importa de él: que
-       durante el gesto suene algo. */
+    /* LO QUE YA SUENA, CALLA */
     var propia = function () { CB.audio.sfx('toc'); };
     document.addEventListener('keydown', propia);
     return teclear({ key: '7' }).then(function (q) {
@@ -4102,10 +3111,7 @@ CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function
   }).then(function (p) {
     t.igual(p, 'toc', 'E92 · una tecla con voz propia no lleva clic encima');
 
-    /* ── ENTER SOBRE UN BOTÓN ─────────────────────────────────────────────
-       El navegador lo convierte en un clic de verdad, y de ese ya se encarga el
-       oyente de E91. Sin esta salida, cada Enter del teclado sonaría dos veces:
-       el mismo fallo que se acaba de arreglar, entrando por la otra puerta. */
+    /* ENTER SOBRE UN BOTÓN */
     boton.focus();
     var conFoco = document.activeElement === boton;
     if (!t.ok(conFoco, 'E92 · el botón de prueba se ha podido enfocar')) return '';
@@ -4125,35 +3131,11 @@ CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function
   });
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E93 · La moneda de 5 céntimos y el billete de 5 € eran el mismo «5»
-   ══════════════════════════════════════════════════════════════════════════
-   Al meter las monedas de céntimo, lo natural era llamarlas por su número: 5,
-   10, 20, 50. Y ahí está el choque, porque esos cuatro números YA SON los cuatro
-   billetes. Dos consecuencias, y la segunda es la mala:
-
-     · el CSS selecciona la fotografía por ese número, así que «la moneda de 20
-       céntimos» se habría pintado con la foto del billete de 20 €;
-
-     · y la corrección de `40-partida.js` compara con `Number(valor) ===
-       Number(item.respuesta)`, que para dos piezas distintas con el mismo número
-       da CIERTO. Tocar el billete de 5 € habría acertado la pregunta «toca la
-       moneda de 5 céntimos».
-
-   La salida fue nombrarlas 'c5' — y eso abre el fallo simétrico, que es el que
-   de verdad se cazó aquí: `Number('c5')` es NaN, `NaN === NaN` es falso, y
-   entonces la pregunta se falla SIEMPRE, incluso tocando la moneda correcta. Un
-   nivel entero imposible de superar, sin un solo error en consola.
-
-   Por eso este guardián no mira el código: sirve una partida de verdad y le pide
-   a `CB.partida.responder` que corrija, que es el único sitio donde esto se
-   decide. Y comprueba las dos direcciones: que la buena acierta y que la mala
-   falla —una comparación rota en el otro sentido daría todo por bueno—.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E93 · La moneda de 5 céntimos y el billete de 5 € eran el mismo «5» */
 CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo número', function () {
   var t = CB.pruebas;
 
-  /* ── A · La pieza: distinta foto, distinto atributo, distinto nombre ───── */
+  /* A · La pieza: distinta foto, distinto atributo, distinto nombre */
   var caja = CB.ui.crear('div');
   document.body.appendChild(caja);
   var cinco = CB.ui.pieza('span', 5);            // el billete de 5 €
@@ -4175,7 +3157,7 @@ CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo núme
     'E93 · y en singular cuando toca: «1 céntimo», no «1 céntimos»');
   document.body.removeChild(caja);
 
-  /* ── B · El generador: cinco piezas, ninguna repetida, ningún euro ─────── */
+  /* B · El generador: cinco piezas, ninguna repetida, ningún euro */
   var vistas = {}, intrusos = [], repetidos = [], s;
   for (s = 0; s < 40; s++) {
     var item = CB.gen.dinero.E8(CB.util.mulberry32(s + 1), 1);
@@ -4195,12 +3177,7 @@ CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo núme
     'E93 · con semillas suficientes salen las cinco, incluida la de 1 céntimo',
     Object.keys(vistas).join(','));
 
-  /* ── C · LA CORRECCIÓN, DONDE ESTABA EL FALLO ─────────────────────────────
-     Con una partida de verdad, porque `responder()` es el único sitio donde se
-     decide si algo es correcto y no hay forma honesta de preguntárselo aparte.
-     Se toma el ítem que iniciar() ya sirvió —con su nivelId y su destreza— y se
-     le cambia solo la respuesta: fabricar un ítem a mano sería fabricar también
-     la forma que la partida no produce, que es la lección de E42. */
+  /* C · LA CORRECCIÓN, DONDE ESTABA EL FALLO */
   var perfilPrevio = CB.perfil;
   var estadoPrevio = CB.partida.estado;
   var bloqueoPrevio = CB.partida.bloqueado;
@@ -4208,11 +3185,7 @@ CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo núme
   CB.partida.bloqueado = false;
 
   var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
-  /* Y SE ABRE EL CERROJO DESPUÉS DE INICIAR, no antes: servir el primer ítem
-     monta el componente, y montar() bloquea 800 ms. Puesto antes, `responder()`
-     se sale en su primera línea y las dos comprobaciones de abajo miden un
-     estado que no se ha tocado —verde o rojo por el motivo equivocado—. Es la
-     misma trampa que el `bloqueoMs` de E46. */
+
   CB.partida.bloqueado = false;
   if (t.ok(!!(estado && estado.itemActual), 'E93 · hay partida con un ítem servido')) {
     estado.itemActual.respuesta = 'c20';
@@ -4239,23 +3212,7 @@ CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo núme
   CB.perfil = perfilPrevio;
 });
 
-
-/* ────────────────────────────────────────────────────────────────────────────
-   E94 · El «Salir» del mapa no hacía nada
-
-   atras() sacaba UNA entrada de la pila; si era una pantalla de flujo (partida,
-   jefe, descanso, reparación, error) la descartaba y caía al destino de
-   reserva, que con perfil activo es el mapa. Estando ya en el mapa, eso es
-   repintar la misma pantalla: el botón parecía muerto.
-
-   Y no era un rincón raro sino el camino normal del juego:
-   portada → mapa → partida → fin → SALIR deja la pila en [p-portada, p-mapa]
-   con «p-mapa» delante, porque atras() no apila. El siguiente Salir se sacaba
-   el mapa a sí mismo. Igual al volver del jefe (42-jefes.js va a p-mapa) o de
-   una expedición abandonada.
-
-   Se comprueba la conducta, no la implementación: dónde se acaba, no cómo.
-   ────────────────────────────────────────────────────────────────────────── */
+/* E94 · El «Salir» del mapa no hacía nada */
 CB.pruebas.suite('E94 · Salir siempre lleva a alguna parte distinta', function () {
   var t = CB.pruebas;
   var pantallaPrevia = CB.pantallas.actual;
@@ -4312,11 +3269,7 @@ CB.pruebas.suite('E94 · Salir siempre lleva a alguna parte distinta', function 
       'E94 · la pantalla a la que se sale es la region principal');
     var h = sec.querySelector('h1');
     if (h) {
-      /* SE MIRA LA PREPARACIÓN DEL FOCO, NO document.activeElement: una página
-         que el sistema no tiene en primer plano no da el foco a nadie, y la
-         aserción diría «roto» sobre código correcto. Lo que atras() no hacía
-         —y ir() sí— es exactamente esto: dejar el <h1> enfocable y nombrar la
-         región con él. */
+
       t.igual(h.getAttribute('tabindex'), '-1',
         'E94 · el titulo de destino queda enfocable, que es lo que atras() no hacia');
       t.igual(sec.getAttribute('aria-labelledby'), h.id,
@@ -4329,37 +3282,12 @@ CB.pruebas.suite('E94 · Salir siempre lleva a alguna parte distinta', function 
   if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
 });
 
-
-/* ══════════════════════════════════════════════════════════════════════════
-   E95 · Lo que centra y además tiene scroll esconde por arriba
-   ──────────────────────────────────────────────────────────────────────────
-   `.zona-juego__alta` —entonces `.zona-superior`— era a la vez caja centrada
-   (`justify-content: center`) y caja
-   con barra (`overflow-y: auto`). Mientras el contenido cabe no pasa nada; en
-   cuanto no cabe —el enunciado largo de un problema más el `.mensaje-resultado`,
-   que tiene un suelo de tres líneas— el centrado reparte el desbordamiento a los
-   DOS lados y lo que sobresale por arriba no se recupera de ninguna manera,
-   porque `scrollTop` no puede ser negativo. El niño ve el enunciado cortado por
-   la primera línea y la barra solo le lleva hacia abajo.
-
-   El remedio es la palabra clave `safe`, que existe justo para esto: centra
-   mientras quepa y se porta como `start` en cuanto desborda.
-
-   ESTO NO SE COMPRUEBA LEYENDO EL CSS. `getComputedStyle` diría «safe center» y
-   quedaría verde aunque el navegador no lo aplicara —y de hecho el mismo defecto
-   volvió a aparecer por el otro eje cuando el reparto en dos columnas alineó el
-   enunciado con `flex-end`, que es otra alineación posicional y recorta igual—.
-   Lo que se mide es la única consecuencia que le importa a quien juega: con la
-   barra arriba del todo, ¿se ve la primera línea?
-   ══════════════════════════════════════════════════════════════════════════ */
+/* E95 · Lo que centra y además tiene scroll esconde por arriba */
 CB.pruebas.suite('E95 · con scroll arriba del todo no falta nada por arriba', function () {
   var t = CB.pruebas;
   var caja = document.createElement('div');
   caja.className = 'zona-juego';
-  /* `flex: none` y el alto por las dos puntas: la caja se cuelga del <body>, que
-     es flex en la página de pruebas, y sin esto se encogía hasta su contenido
-     mínimo —la comprobación de control medía 32 px de hueco y fallaba sobre CSS
-     correcto—. */
+
   caja.style.flex = 'none';
   caja.style.minHeight = '200px'; caja.style.maxHeight = '200px';
   caja.style.width  = '260px';
@@ -4423,15 +3351,7 @@ CB.pruebas.suite('E95 · con scroll arriba del todo no falta nada por arriba', f
   }
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   Dos columnas desde 1200 px
-   ──────────────────────────────────────────────────────────────────────────
-   Desde `escritorio` el enunciado va a la izquierda y la respuesta a la derecha.
-   La consulta de medios depende de la VENTANA, así que la comprobación no puede
-   forzar el caso: pregunta a `matchMedia` en cuál de los dos está y exige el
-   reparto que le toca. Cada máquina ejecuta una de las dos ramas, y las dos son
-   afirmaciones sobre lo que se ve, no sobre lo que dice la hoja de estilos.
-   ══════════════════════════════════════════════════════════════════════════ */
+/* Dos columnas desde 1200 px */
 CB.pruebas.suite('Maquetación · el reparto cambia a dos columnas en pantalla ancha', function () {
   var t = CB.pruebas;
   var caja = document.createElement('div');
@@ -4477,34 +3397,7 @@ CB.pruebas.suite('Maquetación · el reparto cambia a dos columnas en pantalla a
   }
 });
 
-
-/* ══════════════════════════════════════════════════════════════════════════
-   E96-E98 · El teclado tiene que caber, y si no cabe, alcanzarse
-   ──────────────────────────────────────────────────────────────────────────
-   Tres fallos de la misma familia, encontrados midiendo la pantalla en quince
-   tamaños en vez de leyendo la hoja de estilos:
-
-   E96  `:root.modo-proyeccion` escribía `--lado-respuesta: 150px` DIRECTAMENTE,
-        que es el resultado del `min()` de los dos ejes. Se saltaba el reparto
-        entero —la anchura escribe --lado-deseado, la altura --lado-techo— y en
-        un proyector de 1200x700 el 3x4 a 150 px no cabía: la fila del OK quedaba
-        fuera de la zona de juego. Además la clase gana por ESPECIFICIDAD, así
-        que ningún `:root { --lado-techo }` posterior podía bajarlo; los tres
-        escalones de altura nombran ahora también la clase.
-
-   E97  La excepción documentada «en 660 px de alto el 3x4 no cabe, se despliega
-        a 6x2» se pedía por altura y no miraba la anchura. Seis columnas de 64 px
-        con sus huecos son 424 px: en un móvil de 360x640 —que entra por altura—
-        dos columnas se salían por la derecha, sin barra que las alcanzara.
-
-   E98  Y donde el teclado no cabe de ninguna manera sin bajar del suelo de 64 px
-        —320x480, que es tamaño soportado— la zona de la respuesta no tenía
-        barra: el OK era inalcanzable. Ahora la tiene, como la del enunciado.
-
-   NINGUNO SE COMPRUEBA LEYENDO EL CSS: los tres estaban escritos «bien» y los
-   tres se veían solo midiendo. Lo que se mide aquí es lo mismo que se midió para
-   encontrarlos.
-   ══════════════════════════════════════════════════════════════════════════ */
+/* E96-E98 · El teclado tiene que caber, y si no cabe, alcanzarse */
 CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto', function () {
   var t = CB.pruebas;
   var raiz = document.documentElement;
@@ -4533,18 +3426,13 @@ CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto',
   caja.appendChild(inf);
   document.body.appendChild(caja);
 
-  /* EL LADO SE MIDE EN UNA TECLA, NO EN LA VARIABLE. `--lado-respuesta` vale
-     `min(64px, 64px)`: las propiedades personalizadas no se resuelven en
-     getComputedStyle, así que leerla y pasarla por parseFloat da 0 y la
-     comprobación queda verde contra nada. El botón sí tiene un ancho real. */
   function ladoReal() { return tec.firstChild.getBoundingClientRect().width; }
   function techo() {
     return parseFloat(getComputedStyle(raiz).getPropertyValue('--lado-techo')) || 0;
   }
 
   try {
-    /* ── E96 ── El lado nunca se pasa del techo que impone la altura, y el modo
-       proyección —que escribe desde un selector CON CLASE— tampoco. */
+    /* E96 El lado nunca se pasa del techo que impone la altura, y el modo */
     t.ok(ladoReal() <= techo() + 0.5,
       'E96 · en modo normal la tecla respeta el techo que pone la altura',
       ladoReal() + ' > ' + techo());
@@ -4560,7 +3448,7 @@ CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto',
       String(ladoReal()));
     raiz.className = clasesPrevias;
 
-    /* ── E97 ── Ni una tecla fuera por la derecha, en la ventana que sea. */
+    /* E97 Ni una tecla fuera por la derecha, en la ventana que sea. */
     var rc = caja.getBoundingClientRect(), rt = tec.getBoundingClientRect();
     t.ok(rt.width <= rc.width + 1,
       'E97 · el teclado no es mas ancho que la zona, sea cual sea la ventana',
@@ -4570,9 +3458,7 @@ CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto',
       'E97 · y la ultima tecla no se sale por la derecha',
       'sobran ' + Math.round(ultima.right - rc.right) + ' px');
 
-    /* ── E98 ── Apretando la zona a la mitad de lo que necesita, el OK sigue
-       alcanzable. El alto va en la PROPIA zona: puesto en la caja de fuera no
-       aprieta nada, porque .zona-juego__baja no se encoge (flex: 0 0 auto). */
+    /* E98 Apretando la zona a la mitad de lo que necesita, el OK sigue */
     var altoNecesario = inf.scrollHeight;
     inf.style.minHeight = Math.round(altoNecesario / 2) + 'px';
     inf.style.maxHeight = Math.round(altoNecesario / 2) + 'px';
@@ -4595,21 +3481,7 @@ CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto',
   }
 });
 
-
-/* ══════════════════════════════════════════════════════════════════════════
-   E99-E100 · Lo que no cabe en 320 px se sale sin avisar
-   ──────────────────────────────────────────────────────────────────────────
-   320 px de ancho es tamaño SOPORTADO: el aviso de «gira el aparato» solo salta
-   por debajo de 320×420. Y ahí dos cosas se salían de la pantalla sin provocar
-   barra horizontal ni error ninguno —se recortaban y ya—: el título de la
-   portada, que con la tipografía de píxel y sus dos rellenos mide 337, y el
-   cuarto botón de la barra de herramientas, que es el de Sonido.
-
-   LAS DOS COMPROBACIONES MIDEN EN UNA CAJA DE 320 px, no en la ventana. Una
-   aserción sobre la ventana real solo probaría algo en las máquinas estrechas, y
-   quedaría verde por no aplicar en todas las demás — que es la peor forma de
-   estar verde.
-   ══════════════════════════════════════════════════════════════════════════ */
+/* E99-E100 · Lo que no cabe en 320 px se sale sin avisar */
 CB.pruebas.suite('E99-E100 · en 320 px no se sale nada por los bordes', function () {
   var t = CB.pruebas;
   var caja = document.createElement('div');
@@ -4667,28 +3539,7 @@ CB.pruebas.suite('E99-E100 · en 320 px no se sale nada por los bordes', functio
   }
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E102 · Una palabra que no cabe NO se parte sola: se sale
-   ──────────────────────────────────────────────────────────────────────────
-   La misma familia que E99-E100, un nivel más adentro. A 320 px una línea
-   dentro de `.contenido > .panel-bloque` se queda en unos 145 px —cosa de diez
-   caracteres de esta tipografía—, así que «expedición», «guardianes» o
-   «Cubomática» no caben en la caja. Y una palabra que no cabe no se parte por
-   su cuenta: sobresale, sin barra horizontal, sin error y sin que nada se ponga
-   rojo. Salió mirando la pantalla de Ayuda, que es casi toda texto en paneles,
-   pero la regla que lo arregla es del proyecto entero.
-
-   SE MIDE DENTRO DE UN <iframe> DE 320 px, Y ESO NO ES UN CAPRICHO. El arreglo
-   vive en `@media (max-width: 479px)`, y una media query se evalúa contra el
-   VIEWPORT, no contra la caja: el truco de E99-E100 —un div de 320 px en esta
-   misma página— deja la regla apagada y mide el estado roto creyendo que mide
-   el arreglado. Un iframe sí tiene viewport propio.
-
-   La hoja que se carga es la de ESTA página (la legible o la minificada, según
-   dónde se corra), y antes de medir nada se comprueba que de verdad se aplicó:
-   una hoja que no cargue dejaría el texto sin estilo, todo cabría, y la
-   comprobación saldría verde por no haber medido nada.
-   ══════════════════════════════════════════════════════════════════════════ */
+/* E102 · Una palabra que no cabe NO se parte sola: se sale */
 CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', function () {
   var t = CB.pruebas;
   var enlace = document.querySelector('link[rel="stylesheet"]');
@@ -4708,11 +3559,7 @@ CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', func
   return new Promise(function (listo) {
     var marco = document.createElement('iframe');
     marco.title = 'medida de 320 px';
-    /* FUERA DEL FLUJO Y FUERA DE PANTALLA. `body` de esta página es un flex, y
-       un iframe suelto dentro es un ítem flexible: el alto que se le pide lo
-       machaca el reparto del contenedor y el marco acaba midiendo cualquier
-       cosa. Con `position: fixed` manda el tamaño que se pide, y por eso se
-       comprueba dentro —innerWidth— antes de medir nada. */
+
     marco.style.cssText =
       'position:fixed;left:-2000px;top:0;width:320px;height:480px;border:0;display:block';
     marco.srcdoc = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">' +
@@ -4751,10 +3598,6 @@ CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', func
         'E102 · a 320 px nada de un panel de texto se sale de su caja',
         fuera.slice(0, 3).join(' · '));
 
-      /* Y el converso: el arreglo es partir la palabra, no encoger la letra.
-         Si alguien lo «arregla» con un font-size literal, «Letra grande» y el
-         modo proyección dejan de mandar justo en la pantalla más estrecha, que
-         es la lección que dejó E99. */
       var h2 = d.querySelector('h2');
       t.ok(marco.contentWindow.getComputedStyle(h2).overflowWrap === 'break-word',
         'E102 · y se arregla partiendo la palabra, no tocando el tamaño de letra',
@@ -4764,33 +3607,12 @@ CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', func
     };
 
     document.body.appendChild(marco);
-    /* Diez segundos, no cuatro: el plazo no mide nada del juego, solo evita que
-       la suite se quede colgada si el marco no carga. Con la máquina ocupada
-       —otra pestaña corriendo la suite, un navegador de capturas al lado— los
-       cuatro se agotaban y el rojo no decía nada verdadero. */
+    /* Diez segundos, no cuatro: el plazo no mide nada del juego, solo evita que la suite se quede colgada si el marco no carga. */
     setTimeout(function () { terminar('el marco no ha cargado en 10 s'); }, 10000);
   });
 });
 
-/* ══════════════════════════════════════════════════════════════════════════
-   E103 · La portada no se podía recorrer, y lo de abajo no existía
-   ──────────────────────────────────────────────────────────────────────────
-   `.pantalla--portada` es `overflow: hidden`, y con razón: las nubes y el cielo
-   van fuera de flujo y sacarían barras por el decorado. El efecto colateral era
-   que lo que no cabía a lo alto no se alcanzaba de ninguna forma. A 320×480
-   —tamaño soportado, el aviso de girar el aparato solo salta por debajo de
-   320×420— la pila del centro mide unos 968 px: la fila de abajo entera
-   (Ajustes, Ayuda, Créditos) caía fuera, sin barra, sin recorte visible y sin
-   nada que se pusiera rojo. Se veía al añadir el cuarto botón, pero el tercero
-   ya estaba fuera desde antes.
-
-   La barra la lleva ahora la pila, que es quien tiene el contenido, con la
-   alineación `safe` de E95: centrar Y desbordar reparte lo que sobra a los DOS
-   lados, y lo de arriba no se recupera nunca porque scrollTop no puede ser
-   negativo. Se comprueban las dos mitades —se llega abajo, y arriba no se corta
-   nada— porque arreglar una rompiendo la otra es exactamente lo que pasó en
-   E95.
-   ══════════════════════════════════════════════════════════════════════════ */
+/* E103 · La portada no se podía recorrer, y lo de abajo no existía */
 CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la portada', function () {
   var t = CB.pruebas;
   var enlace = document.querySelector('link[rel="stylesheet"]');
@@ -4813,10 +3635,7 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
   return new Promise(function (listo) {
     var marco = document.createElement('iframe');
     marco.title = 'portada de 320×480';
-    /* Con !important y a mano: la hoja del juego estila los iframes de esta
-       página, y un marco de 150 px de alto —el defecto de HTML— mediría otra
-       cosa y se pondría verde por no aplicar. Por eso el tamaño se comprueba
-       dentro antes de medir nada. */
+
     marco.style.cssText =
       'position:fixed;left:-2000px;top:0;width:320px;height:480px;border:0;display:block';
     marco.srcdoc = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">' +
@@ -4839,13 +3658,7 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
       var titulo = d.querySelector('.portada__titulo');
       if (!pila || !ultimo) return terminar('no está la pila dentro del marco');
 
-      /* SI FALTA UNA PIEZA, SE DICE. Antes solo se comprobaban `pila` y
-         `ultimo`, y `titulo` se medía sin mirar: al renombrar `.titulo-juego`
-         esta maqueta se quedó con el nombre viejo, `titulo` salió null, la
-         excepción murió dentro del onload y la promesa no se resolvió nunca.
-         El rojo decía «el marco no ha cargado en 4 s», que era falso: el marco
-         había cargado perfectamente. Un mensaje de fallo que miente cuesta más
-         que no tenerlo. */
+      /* Antes solo se comprobaban `pila` y `ultimo`, y `titulo` se medía sin mirar: al renombrar `.titulo-juego` esta maqueta se quedó con el nombre viejo, `titulo` salió null, la excepción murió dentro del onload y la promesa no se resolvió nunca. */
       if (!titulo) return terminar('la maqueta no trae .portada__titulo');
 
       var cs = w.getComputedStyle(pila);
@@ -4876,10 +3689,7 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
     };
 
     document.body.appendChild(marco);
-    /* Diez segundos, no cuatro: el plazo no mide nada del juego, solo evita que
-       la suite se quede colgada si el marco no carga. Con la máquina ocupada
-       —otra pestaña corriendo la suite, un navegador de capturas al lado— los
-       cuatro se agotaban y el rojo no decía nada verdadero. */
+    /* Diez segundos, no cuatro: el plazo no mide nada del juego, solo evita que la suite se quede colgada si el marco no carga. */
     setTimeout(function () { terminar('el marco no ha cargado en 10 s'); }, 10000);
   });
 });

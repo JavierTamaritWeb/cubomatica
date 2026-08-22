@@ -12,6 +12,54 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.23.3] — 2026-08-23
+
+**Tercera cifra.** Refactorización y endurecimiento del JavaScript sin cambiar
+el formato del perfil guardado ni la API pública `CB.*`.
+
+### Cambiado
+
+- El JavaScript cuenta con una puerta de calidad reproducible mediante ESLint,
+  integrada en `npm run estilo` y en `npm run entregar`. Comprueba errores
+  semánticos y limita complejidad, profundidad, tamaño y anidamiento sin romper
+  el contrato ES2017 clásico del bundle.
+- El validador de problemas y el panel adulto se dividen en funciones con una
+  sola responsabilidad y nombres explícitos. La API pública `CB.*` y el formato
+  del perfil permanecen intactos.
+- Las herramientas y pruebas eliminan variables muertas, escapes innecesarios y
+  retornos accidentales desde ejecutores de promesas.
+- Los comentarios JavaScript se reducen del 25 % al 10 % del código: quedan
+  contratos, invariantes, seguridad y títulos breves; el relato histórico sigue
+  centralizado en este registro y en `docs/decisiones.md`.
+- `gulp dev` deja de depender de BrowserSync: dos servidores HTTP pequeños,
+  construidos con Node, sirven el juego y las pruebas con `no-store`, recarga
+  por eventos y protección frente a recorridos de ruta.
+- El requisito de desarrollo pasa a Node 20.19 o posterior, compatible con la
+  puerta de calidad JavaScript actual.
+
+### Corregido
+
+- La limitación del almacenamiento local ya no aparece duplicada en la sección
+  de datos del panel adulto; E107 impide que vuelva a repetirse.
+- Los callbacks diferidos de partida, jefes, componentes y calibración comprueban
+  que el estado y el ítem siguen vigentes. Ya no pueden modificar una partida
+  nueva ni lanzar una excepción después de abandonar la anterior; E106 cubre
+  esta carrera.
+- El ejecutor de pruebas convierte `error` y `unhandledrejection` en fallos de la
+  suite, evitando un resumen verde cuando una excepción asíncrona queda fuera de
+  una prueba.
+
+### Seguridad
+
+- Se elimina BrowserSync y su árbol de dependencias. Las cinco vulnerabilidades
+  altas detectadas en la auditoría de paquetes quedan en cero, incluido el
+  parche de `nanoid`.
+
+### Pruebas
+
+- **854 comprobaciones, 0 fallos** en modalidad rápida y larga, contra los
+  bundles legible y minificado, sin excepciones ni errores de consola.
+
 ## [1.23.2] — 2026-08-22
 
 **Tercera cifra.** Limpieza de la arquitectura Sass y de la documentación; no

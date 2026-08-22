@@ -1,39 +1,5 @@
 #!/usr/bin/env node
-/* ============================================================================
-   auditar.mjs — LA AUDITORÍA QUE BLOQUEA LA ENTREGA
-   ----------------------------------------------------------------------------
-   POR QUÉ DEJA DE SER UN GUION DE SHELL, y son cuatro razones:
-
-   1. HABÍA DOS IMPLEMENTACIONES Y YA HABÍAN DIVERGIDO. `auditar.bat` cubría
-      cinco de los ocho bloques: le faltaban la versión, la documentación y el
-      peso. Mantener dos veces la misma lógica es exactamente el fallo que este
-      fichero persigue en otros —«un número repetido a mano en tres sitios está
-      mal en dos en cuanto alguien se despista una vez»— aplicado a sí mismo.
-   2. DEPENDÍA DE python3 Y perl. En Windows no hay ninguno de los dos por
-      defecto, y por eso el .bat estaba capado. Node ya es obligatorio desde que
-      hay compilación, así que el problema desaparece en vez de repartirse.
-   3. Los bloques nuevos no son trabajo de grep. El 3 lee UN fichero compilado en
-      vez de nueve fuentes; el 5 cruza tres estructuras contra un manifiesto.
-   4. `node --check` y la extracción de los doce globales necesitan Node igual.
-
-   RESTRICCIÓN AUTOIMPUESTA: solo `node:fs`, `node:path`, `node:child_process`.
-   CERO devDependencies. Tiene que correr en un clon recién descargado, sin
-   `npm install`, porque si no la puerta de entrega deja de ser una puerta y pasa
-   a ser un privilegio de quien tenga el entorno montado.
-
-   Y una regla que gobierna todo el fichero, escrita aquí para no volver a
-   discutirla en cada bloque:
-
-     · Toda comprobación de CONTENIDO DE CÓDIGO se hace sobre `src/`. Terser
-       reescribe `{ clave: 'calma' }` como `{clave:"calma"}`, así que cualquier
-       grep de texto sobre el bundle miente.
-     · Sobre `dist/` solo se comprueban INVARIANTES ESTRUCTURALES: existe,
-       parsea, conserva los doce globales, lleva el aviso legal, pesa menos de X.
-     · Y todo lo que mira `dist/` se SALTA CON AVISO si no está, en vez de
-       fallar. Un rojo falso acaba siempre igual: alguien desactiva la auditoría.
-
-   Uso:  node pruebas/auditar.mjs [--autoprueba]
-   ========================================================================== */
+/* auditar.mjs — LA AUDITORÍA QUE BLOQUEA LA ENTREGA */
 
 import { readFileSync, readdirSync, existsSync, statSync, writeFileSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -55,10 +21,7 @@ const salto = (m) => console.log('  \x1b[33m–\x1b[0m ' + m);
 const juzgar = (cond, bien, mal, detalle) => (cond ? verde(bien) : rojo(mal, detalle));
 const titulo = (n) => { console.log(''); console.log(n); };
 
-/* ── Recorrido de ficheros, con poda ───────────────────────────────────────
-   `node_modules` tiene 415 paquetes y `dist/` es el producto. Recorrerlos no es
-   que dé falsos positivos: es que TARDA MINUTOS, y una auditoría que se cuelga
-   no la ejecuta nadie. Es el fallo E26. */
+/* Recorrido de ficheros, con poda */
 const PODA = new Set(['node_modules', '.git', 'dist', 'vendor', '__pycache__']);
 function* recorrer(dir, podarDist = true) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -77,10 +40,6 @@ const listar = (dir, ext) =>
 const listarRecursivo = (dir, ext) =>
   existsSync(dir) ? [...recorrer(dir)].filter((f) => f.endsWith(ext)).sort() : [];
 
-/* Despiece de comentarios. Existe porque el comentario que DOCUMENTA una
-   prohibición hacía saltar el grep que la persigue: la auditoría se ponía roja
-   contra código perfectamente correcto, y la reacción típica ante un test que
-   grita en falso es desactivarlo. Es el fallo E5. */
 function sinComentariosJS(texto) {
   let s = '', i = 0, cad = null, linea = false, bloque = false, esc = false;
   while (i < texto.length) {
@@ -109,30 +68,7 @@ function buscar(ficheros, re, limpiar = sinComentariosJS) {
   return hits;
 }
 
-/* ── Las tres reglas duras de estilo, como funciones ───────────────────────
-   Están aquí arriba, y no dentro del bloque 3, para que la AUTOPRUEBA pueda
-   dispararlas contra violaciones inventadas. Sin eso, la autoprueba cubría tres
-   greps del bloque 2 y ninguno del 3 — y los del 3 resultaron ser justo los
-   flojos. Una autoprueba que no llega a la comprobación rota no vale nada.
-
-   CERO SE ESCRIBE DE MUCHAS MANERAS, y la versión anterior de estos tres
-   detectores solo conocía una. Los cuatro agujeros que tenían, encontrados
-   probándolos contra violaciones inventadas en vez de dar por bueno el verde:
-
-     · `border-radius: 0.5rem` pasaba. El filtro que perdonaba el cero,
-       /border-radius: *0/, casa con el CERO INICIAL de «0.5rem». La regla que
-       «tumba la construcción ante cualquier esquina redondeada» perdonaba justo
-       las escritas en rem y en em.
-     · `box-shadow: 0 0 4px` pasaba: el regex exigía `px` en los desplazamientos
-       y en CSS el cero no lleva unidad. Es la forma MÁS común de escribirla.
-     · `box-shadow: inset 0 0 8px` pasaba por lo mismo, y encima todo el relieve
-       del juego es inset.
-     · `transition: opacity 90ms` pasaba porque no nombra ninguna función — y la
-       función POR DEFECTO en CSS es `ease`. Una transición suave que no escribe
-       la palabra «ease» sigue siendo una transición suave.
-
-   Se lee declaración a declaración y capa a capa, no por línea: es lo que
-   permite mirar el tercer valor de una sombra de verdad. */
+/* Las tres reglas duras de estilo, como funciones */
 const cero = (v) => parseFloat(v) === 0;
 const ESTILO = {
   radios: (css) => [...css.matchAll(/border-radius:\s*([^;}]+)/g)].map((m) => m[1].trim())
@@ -158,22 +94,12 @@ const ESTILO = {
   suaves: (css) => [...css.matchAll(/(?:transition|animation):\s*([^;}]+)/g)].map((m) => m[1].trim())
     .filter((v) => !/steps\(/.test(v) && !/^(none|inherit|initial|unset)\b/.test(v)),
 
-  /* EL AGUJERO QUE ABRIÓ 1.8.0. El grep de arriba solo mira las formas
-     ABREVIADAS, `animation:` y `transition:`. Las nueve coreografías de la cinta
-     no la usan: el mixin coreografia() emite `animation-name` y
-     `animation-timing-function` por separado, a propósito, porque la duración la
-     pone el JS. Sin esta segunda comprobación, la regla dura del proyecto dejaba
-     de mirar precisamente las animaciones más nuevas — y no habría fallado, que
-     es lo peor: habría seguido en verde midiendo cada vez menos. */
+  /* El grep de arriba solo mira las formas ABREVIADAS, `animation:` y `transition:`. */
   suavesLargas: (css) => [...css.matchAll(/animation-timing-function:\s*([^;}]+)/g)]
     .map((m) => m[1].trim())
     .filter((v) => !/steps\(/.test(v) && !/^(inherit|initial|unset)\b/.test(v)),
 
-  /* Fotogramas que no dispara nadie. Una animación muerta no da ningún error:
-     simplemente no se ve, y nadie se entera de que se quedó a medio cablear. Es
-     lo que les pasó a las cinco que se retiraron en 1.7.0 —bloque-estalla,
-     bloque-agrieta, veta-sube, brillo-cofre, bloque-raro—, diseñadas y nunca
-     conectadas, y que estuvieron ahí versión tras versión sin que nada avisara. */
+  /* Es lo que les pasó a las cinco que se retiraron en 1.7.0 —bloque-estalla, bloque-agrieta, veta-sube, brillo-cofre, bloque-raro—, diseñadas y nunca conectadas, y que estuvieron ahí versión tras versión sin que nada avisara. */
   fotogramasHuerfanos: (css) => {
     const declarados = [...css.matchAll(/@keyframes\s+([A-Za-z0-9_-]+)/g)].map((m) => m[1]);
     const sinKeyframes = css.replace(/@keyframes\s+[A-Za-z0-9_-]+\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, '');
@@ -191,7 +117,7 @@ const HAY_DIST = existsSync(CSS_COMPILADO);
 console.log('\nCubomática — auditoría de entrega');
 console.log('=================================');
 
-/* ══ 1. LISTA NEGRA DE MARCA ══════════════════════════════════════════════ */
+/* 1. LISTA NEGRA DE MARCA */
 titulo('1. Marca registrada');
 const PATRON = /\bminecraft\b|\bcreeper\b|\bsteve\b|\benderman\b|\bmojang\b|\bnetherite\b|\bredstone\b|\bpiglin\b|\bmojangles\b|\bminecraftia\b|[a-z]craft\b/i;
 /* Exentos porque son los ficheros que DECLARAN la lista negra. Se comprueba
@@ -220,7 +146,7 @@ const nMoj = (leer(D('AVISO-LEGAL.txt')).match(/Mojang/g) || []).length;
 juzgar(nMoj === 2, 'AVISO-LEGAL.txt contiene exactamente 2 menciones a la marca',
   'AVISO-LEGAL.txt tiene ' + nMoj + ' menciones (deben ser 2)');
 
-/* ══ 2. FRONTERA DE ARQUITECTURA ══════════════════════════════════════════ */
+/* 2. FRONTERA DE ARQUITECTURA */
 titulo('2. Frontera de arquitectura');
 const PUROS = M.puros.map((f) => D('src', f));
 juzgar(!buscar(PUROS, /document\.|window\.|localStorage|navigator\./).length,
@@ -243,16 +169,12 @@ juzgar(!buscar(otros, /['"]cubomatica\./).length,
   'literales de clave fuera de 01-almacen.js',
   buscar(otros, /['"]cubomatica\./).join('\n'));
 
-/* ══ 3. REGLAS DURAS DE ESTILO ════════════════════════════════════════════ */
+/* 3. REGLAS DURAS DE ESTILO */
 titulo('3. Estilo de mundo de cubos');
 if (!HAY_DIST) {
   salto('saltado: no hay dist/css/cubomatica.css (ejecuta `npm run build`)');
 } else {
-  /* EL SUJETO ES EL COMPILADO Y EXPANDIDO, nunca el minificado. Con SCSS, un
-     mixin puede generar una sombra que ningún .scss escribe literalmente; y el
-     minificado es UNA sola línea, así que un filtro por línea sobre él o
-     descarta el fichero entero o lo conserva entero: deja de significar nada,
-     EN VERDE. Es la misma familia que «grep -c cuenta líneas». */
+  /* EL SUJETO ES EL COMPILADO Y EXPANDIDO, nunca el minificado. */
   const css = sinComentariosCSS(leer(CSS_COMPILADO));
 
   const radios = ESTILO.radios(css);
@@ -276,27 +198,11 @@ if (!HAY_DIST) {
   juzgar(!huerfanos.length, 'toda animación declarada la dispara alguna regla',
     'hay @keyframes que no usa nadie', huerfanos.join(', '));
 
-  /* Las MISMAS reglas sobre la fuente y EN POSITIVO. Los tres greps de arriba
-     miran el resultado y dicen «no hay ninguna»; estos miran la fuente y dicen
-     «no se PUEDE escribir». `paso()` y `bisel()` no tienen parámetro donde meter
-     un easing ni un desenfoque. */
-  /* Cada exclusión se nombra por su motivo, y NO se hereda. Antes había una
-     sola lista —«todo menos _mixins»— excluida porque el mixin `paso()`
-     es quien tiene derecho a escribir `transition:`; y esa misma lista se
-     reutilizaba para los colores, así que los 39 hex del mapa de materiales de
-     _mixins.scss quedaban sin mirar POR ACCIDENTE, mientras el verde
-     seguía diciendo «todos con nombre en _variables.scss». Verde y falso. */
+
   const SCSS = listarRecursivo(D('src/scss'), '.scss');
   const salvo = (lista, ...nombres) => lista.filter((f) => !nombres.some((n) => f.includes(n)));
 
-  /* SOLO `transition:`, no `animation:`. La puerta única existe para las
-     transiciones —`paso()` no tiene parámetro donde meter un easing, así que a
-     través de él es imposible escribir una suave—, pero las animaciones se
-     declaran también a mano con su propio `steps()` y son correctas. Extender
-     este grep a `animation:` pone en rojo código bueno, y una regla que grita en
-     falso acaba desactivada, llevándose por delante la que sí valía.
-     A las animaciones las cubre, mejor, el detector EN POSITIVO de arriba, que
-     mira el CSS compilado y exige steps() en todas. */
+  /* SOLO `transition:`, no `animation:`. */
   const aMano = buscar(salvo(SCSS, '_mixins'), /transition:/, sinComentariosCSS);
   juzgar(!aMano.length, 'ninguna transición escrita a mano: todas pasan por @include m.paso()',
     'hay transiciones fuera del mixin', aMano.join('\n'));
@@ -319,16 +225,7 @@ if (!HAY_DIST) {
     'ninguna regla baja el boton de ' + minLado + ' px (suelo tactil: 64)',
     'hay una regla que baja el boton a ' + minLado + ' px, por debajo del suelo de 64');
 
-  /* A zoom 400 % sobre 1280px el viewport CSS es EXACTAMENTE 320px (WCAG
-     1.4.10). El aviso de girar se disparaba en 319: un píxel de margen.
-
-     SE MIRA SOLO LA REGLA DEL AVISO, no todos los max-width del proyecto. La
-     versión anterior tomaba el máximo de TODAS las consultas max-width y exigía
-     que fuese ≤ 300. Hoy pasa porque solo hay una, pero el primer
-     `@media (max-width: 767px)` legítimo —lo más normal del mundo en una hoja
-     responsiva— habría tumbado la construcción con un mensaje sobre el aviso de
-     girar que no tiene nada que ver. Un rojo que miente sobre su causa se
-     desactiva, y con él se va la comprobación de verdad. */
+  /* SE MIRA SOLO LA REGLA DEL AVISO, no todos los max-width del proyecto. */
   const reglasAviso = [...css.matchAll(/@media[^{]*max-width: *(\d+)px[^{]*\{([\s\S]*?)\n\}/g)]
     .filter((m) => /\.aviso-gira\b/.test(m[2]));
   const anchosAviso = reglasAviso.map((m) => +m[1]);
@@ -340,23 +237,10 @@ if (!HAY_DIST) {
       : 'el aviso de girar salta a ' + maxAviso + 'px: a zoom 400% el viewport es 320 justos');
 }
 
-/* ══ 4. AUTONOMÍA: CERO ACTIVOS EXTERNOS ══════════════════════════════════ */
+/* 4. AUTONOMÍA: CERO ACTIVOS EXTERNOS */
 titulo('4. Autonomía: cero red, cero binarios salvo la musica y el dinero declarados');
 
-/* ── LA SEGUNDA LISTA CERRADA: LAS DOCE PIEZAS DE DINERO ─────────────────────
-   Hasta 1.19.0 aqui no habia lista: cero binarios, punto. Y el comentario que lo
-   justificaba decia que una imagen seria «una peticion de red que en file:// no
-   existe», que es FALSO — una imagen es un subrecurso como la hoja de estilos, y
-   el doble clic la abre igual—. Lo que prohibia las imagenes era esta linea, no
-   el navegador.
-
-   Se abre igual que se abrio para la musica y con las mismas tres condiciones,
-   que son las que hacen que esto sea una excepcion y no un agujero:
-     · la lista es CERRADA y esta escrita aqui;
-     · se comprueba en LOS DOS SENTIDOS —ni falta ninguna ni sobra ninguna—;
-     · y cada pieza tiene que estar DECLARADA EN EL CSS, porque un fichero que no
-       usa nadie es peso muerto que nadie volvera a mirar.
-   Todo lo demas sigue prohibido: una fuente, un icono, una captura. */
+/* LA SEGUNDA LISTA CERRADA: LAS DOCE PIEZAS DE DINERO */
 const PIEZAS = ['c1', 'c5', 'c10', 'c20', 'c50', '1', '2', '5', '10', '20', '50', '100'];
 const RUTAS_PIEZAS = PIEZAS.map((p) => 'dist/img/pieza-' + p + '.webp');
 
@@ -390,23 +274,13 @@ if (existsSync(D('dist/css/cubomatica.css'))) {
 const PISTAS = ['calma', 'cantera', 'jefe', 'mundo-bosque', 'mundo-mina',
                 'mundo-pradera', 'mundo-rio', 'tema-principal', 'victoria'];
 
-/* dist/audio/ NO es una carpeta generada: los nueve MP3 estan VERSIONADOS en
-   git, porque no se compilan desde nada —ya son el artefacto— y porque con
-   dist/ en el repositorio, tenerlos ademas en audio/ duplicaria 42 MB en el
-   arbol de trabajo de todo el que clone.
-   Si no estan, el problema no es que falte construir: es que se ha borrado algo
-   que si estaba. Decirlo asi evita tres rojos cripticos sobre pistas y creditos
-   que no explican que hacer. */
 const HAY_AUDIO = existsSync(D('dist/audio'));
 if (!HAY_AUDIO) {
   rojo('falta dist/audio/, que NO es una carpeta generada',
     'los 9 MP3 estan versionados en git. Recuperalos con `git checkout -- dist/audio`.');
 }
 
-/* La lista cerrada es lo que hace que la música sea una EXCEPCIÓN y no un
-   agujero. Los mp3 viven SOLO en dist/audio: no se compilan desde nada, y con
-   dist/ versionada tenerlos además en audio/ duplicaría 42 MB en el árbol de
-   trabajo de todo el que clone. */
+/* Los mp3 viven SOLO en dist/audio: no se compilan desde nada, y con dist/ versionada tenerlos además en audio/ duplicaría 42 MB en el árbol de trabajo de todo el que clone. */
 const AUDIO = /\.(mp3|wav|ogg|m4a|flac)$/i;
 const audioSuelto = [...recorrer(RAIZ, false)].filter(AUDIO.test.bind(AUDIO))
   .map(corto).filter((f) => !PISTAS.some((p) => f === 'dist/audio/' + p + '.mp3'));
@@ -444,7 +318,7 @@ const red = buscar(fuentes, /https?:\/\//, sinComentariosJS)
 juzgar(!red.length, 'ninguna petición de red en el código', 'hay referencias de red',
   red.join('\n'));
 
-/* ══ 5. CONTRATO DE CARGA ═════════════════════════════════════════════════ */
+/* 5. CONTRATO DE CARGA */
 titulo('5. Contrato de carga');
 const enDisco = listar(D('src/js'), '.js').concat(listar(D('src/datos'), '.js'));
 juzgar(enDisco.length === M.guiones.length,
@@ -460,15 +334,7 @@ juzgar(enHtml.length === M.guiones.length,
 const nSec = (html.match(/<section id="p-/g) || []).length;
 juzgar(nSec === 18, '18 <section> de pantalla', 'hay ' + nSec + ' secciones, deben ser 18');
 
-/* ── E101 · La AYUDA se comprueba aqui, no en el navegador ────────────────
-   La pantalla de ayuda es maqueta estatica: no hay ningun alEntrar que la
-   pinte, asi que la pagina de pruebas solo veria su maqueta REDUCIDA y estaria
-   comprobando el mock contra si mismo. Quien tiene delante el fichero de verdad
-   es esta auditoria. Se vigilan tres cosas y las tres se rompen en silencio:
-   que la pantalla exista, que se pueda llegar a ella desde algun boton, y que
-   los cuatro mundos que nombra sean los cuatro mundos que declara el catalogo
-   —renombrar un mundo en js/17-catalogo.js y dejar el nombre viejo en la ayuda
-   no da error, solo deja al nino leyendo un mapa que ya no existe. */
+/* E101 · La AYUDA se comprueba aqui, no en el navegador */
 const secAyuda = (html.match(/<section id="p-ayuda"[\s\S]*?<\/section>/) || [])[0] || '';
 juzgar(!!secAyuda && /<h1>/.test(secAyuda) && /data-salir/.test(secAyuda),
   'E101 · la pantalla de ayuda existe, con su <h1> y su salida',
@@ -487,7 +353,7 @@ const ausentes = enHtml.filter((f) => !existsSync(D('src', f)));
 juzgar(!ausentes.length, 'todos los guiones referenciados existen',
   'faltan ficheros', ausentes.join(', '));
 
-/* ══ 5c. LA CADENA DEL MANIFIESTO ═════════════════════════════════════════ */
+/* 5c. LA CADENA DEL MANIFIESTO */
 titulo('5c. Manifiesto, bundle y entrega');
 try {
   const salida = execFileSync(process.execPath, [D('herramientas/comprobar-dist.mjs')],
@@ -498,7 +364,7 @@ try {
   FALLOS++;
 }
 
-/* ══ 5b. VERSIÓN: UNA FUENTE, CINCO RÉPLICAS ══════════════════════════════ */
+/* 5b. VERSIÓN: UNA FUENTE, CINCO RÉPLICAS */
 titulo('5b. Versión');
 const VER = (leer(D('src/js/00-nucleo.js')).match(/CB\.VERSION *= *'(\d+\.\d+\.\d+)'/) || [])[1];
 if (!VER) {
@@ -526,7 +392,7 @@ if (!VER) {
   }
 }
 
-/* ══ 6. DOCUMENTACIÓN INTERNA ═════════════════════════════════════════════ */
+/* 6. DOCUMENTACIÓN INTERNA */
 titulo('6. Documentación interna');
 const sinCabecera = listar(D('docs'), '.md')
   .filter((f) => !leer(f).split('\n').slice(0, 3).join('\n').includes('No se distribuye con el juego'))
@@ -534,36 +400,11 @@ const sinCabecera = listar(D('docs'), '.md')
 juzgar(!sinCabecera.length, 'todo docs/*.md lleva la cabecera de no distribución',
   'sin la cabecera de no distribución', sinCabecera.join('\n'));
 
-/* ══ 7. PESO ══════════════════════════════════════════════════════════════ */
+/* 7. PESO */
 titulo('7. Peso');
-/* TRES presupuestos, no uno. El de ARRANQUE lo mide comprobar-dist.mjs porque
-   hay que sumar exactamente lo que dist/index.html referencia: dentro de dist/
-   conviven el bundle minificado que se sirve y el legible que solo usan la
-   auditoría y la suite, y pesar la carpeta daría más del doble de lo que nadie
-   descarga. */
-/* DOS PRESUPUESTOS, NO UNO, y el motivo importa. Había uno solo de 1 100 KB para
-   todo lo que no es dist/, y en 1.10.0 se pasó por 1 KB — enteramente por el
-   crecimiento de pruebas/: casos-regresiones.js había pasado de 1 358 a 2 473
-   líneas en cinco rondas de guardianes nuevos.
-
-   Subir el número a 1 200 y seguir habría sido aflojar el guardián hasta que deje
-   de decir nada, que es como mueren estos topes. Se parte: lo que se COMPILA
-   tiene su presupuesto —ahí sí, engordar es un problema— y las PRUEBAS tienen el
-   suyo, más holgado, porque que crezcan es exactamente lo que se quiere.
-
-   El tope que de verdad protege el arranque no es ninguno de estos dos: es el de
-   la descarga inicial del bloque 5, < 400 KB, y ese no se toca. */
-/* TRES CUBOS, NO DOS, y por el mismo motivo por el que en su día se partió el
-   único de 1 100 KB. `herramientas/` no se compila ni se entrega: es utillaje de
-   verificación —el cruce de clases, la comprobación de dist, los retratos de
-   pantalla, el volcado de CSS—, o sea de la misma naturaleza que `pruebas/` y de
-   naturaleza distinta a `src/`. Contarlo con las fuentes solo se sostenía
-   mientras fuera pequeño; en cuanto crece, el rojo dice «el juego ha engordado»
-   cuando lo que ha pasado es que se ha comprobado más, que es lo contrario de un
-   problema. Cada cubo tiene ahora su techo y cada techo significa una cosa.
-
-   El que de verdad protege a quien juega sigue siendo el del bloque 5: la
-   descarga de arranque, < 400 KB, y ese no se toca. */
+/* El de ARRANQUE lo mide comprobar-dist.mjs porque hay que sumar exactamente lo que dist/index.html referencia: dentro de dist/ conviven el bundle minificado que se sirve y el legible que solo usan la auditoría y la suite, y pesar la… */
+/* Había uno solo de 1 100 KB para todo lo que no es dist/, y en 1.10.0 se pasó por 1 KB — enteramente por el crecimiento de pruebas/: casos-regresiones.js había pasado de 1 358 a 2 473 líneas en cinco rondas de guardianes nuevos. */
+/* Contarlo con las fuentes solo se sostenía mientras fuera pequeño; en cuanto crece, el rojo dice «el juego ha engordado» cuando lo que ha pasado es que se ha comprobado más, que es lo contrario de un problema. */
 let bytesCompilado = 0, bytesPruebas = 0, bytesHerramientas = 0;
 for (const f of recorrer(RAIZ)) {
   const c = corto(f);
@@ -598,7 +439,7 @@ juzgar(mbMusica < 60, 'la musica ocupa ' + mbMusica + ' MB (presupuesto: < 60 MB
 juzgar(/[0-9]+ MB/.test(leer(D('README.md'))), 'README.md avisa del peso de la carpeta',
   'README.md no dice cuanto ocupa el juego con la musica');
 
-/* ══ 8. CRUCE DE CLASES ═══════════════════════════════════════════════════ */
+/* 8. CRUCE DE CLASES */
 titulo('8. Cruce de clases (CSS ↔ HTML ↔ JS)');
 try {
   const salida = execFileSync(process.execPath,
@@ -609,18 +450,7 @@ try {
   rojo('el cruce de clases ha encontrado desajustes', String(e.stdout || ''));
 }
 
-/* ══ 9. LA GRAMATICA DE LAS CLASES ════════════════════════════════════════
-   E104 · stylelint comprueba la FORMA de cada nombre: kebab-case, un solo `__`,
-   cero `#id`, anidamiento <= 2 y como mucho tres compuestos. La convencion
-   entera esta en docs/convencion-bem.md, y la configuracion —con el motivo de
-   cada regla apagada— en stylelint.config.mjs.
-
-   NO comprueba el SENTIDO: que `luz` deberia llamarse `luces__luz` no lo sabe
-   ninguna herramienta. Eso lo decide una persona y queda escrito en el mapa.
-
-   Se salta si no estan las dependencias: `npm install` no forma parte de clonar
-   el repositorio, y un rojo que diga «falta stylelint» no ayuda a nadie. Lo que
-   NO se salta nunca es E105, que solo necesita el CSS compilado. */
+/* 9. LA GRAMATICA DE LAS CLASES */
 titulo('9. Gramatica de las clases (BEM)');
 if (existsSync(D('node_modules', 'stylelint'))) {
   try {
@@ -635,23 +465,12 @@ if (existsSync(D('node_modules', 'stylelint'))) {
   salto('E104 · stylelint no esta instalado (npm install)');
 }
 
-/* E105 · CERO DESCENDENCIA ENTRE BLOQUES, que es la regla que ninguna
-   herramienta generica sabe leer porque la lista blanca es del proyecto.
-
-   Un bloque no puede cambiar segun quien lo contenga: si lo hace, deja de ser
-   un bloque. Habia siete selectores asi (`.panel-bloque .texto-menor` y sus
-   hermanos) y ahora el contenedor declara una variable y el bloque la consume.
-
-   Se mide sobre el CSS COMPILADO, no sobre las fuentes: ahi estan ya los
-   selectores que genera Sass con @each y los que emiten los mixins. */
+/* E105 · CERO DESCENDENCIA ENTRE BLOQUES, que es la regla que ninguna herramienta generica sabe leer porque la lista blanca es del proyecto. */
 if (!existsSync(CSS_COMPILADO)) {
   salto('E105 · descendencia entre bloques: no hay CSS compilado');
 } else {
   const cssE105 = sinComentariosCSS(leer(CSS_COMPILADO));
-  /* Lo que va dentro de un :not() NO cuenta: son exclusiones, no contexto. Es
-     lo que salva al unico selector estructural del proyecto —el
-     `.pantalla > *:not(.cielo):not(.cinta):not(.cartel)` de _biomas.scss, que
-     garantiza que todo hijo directo entra en el flujo y lo vigila E47—. */
+
   const bloqueDe = (compuesto) => {
     const limpio = compuesto.replace(/:not\([^)]*\)/g, '');
     const m = limpio.match(/\.([a-z][\w-]*)/);
@@ -681,11 +500,7 @@ if (!existsSync(CSS_COMPILADO)) {
     'descendencia entre bloques', [...new Set(acoplados)].join('\n'));
 }
 
-/* ══ AUTOPRUEBA ═══════════════════════════════════════════════════════════
-   Una auditoría que no se prueba a sí misma puede llevar meses en verde por
-   estar rota, y nadie se entera porque el verde es justo lo que se espera. Se
-   introduce una violación real en un fichero temporal y se comprueba que el
-   grep correspondiente la ve. */
+/* AUTOPRUEBA */
 if (process.argv.includes('--autoprueba')) {
   titulo('AUTOPRUEBA: ¿ve la auditoría lo que dice que ve?');
   const tmp = D('src/js/zz-autoprueba-temporal.js');
@@ -709,14 +524,7 @@ if (process.argv.includes('--autoprueba')) {
   juzgar(!falsoPositivo, 'y NO se dispara con la prohibición escrita en un comentario',
     'se dispara contra un comentario: volvería el fallo E5');
 
-  /* ── Las tres reglas duras de estilo ─────────────────────────────────────
-     ESTA ES LA PARTE QUE FALTABA, y no es un detalle: la autoprueba cubría los
-     tres greps del bloque 2 y ninguno del bloque 3, y los cuatro agujeros que
-     esta auditoría ha tenido durante toda la migración estaban todos en el
-     bloque 3. Una autoprueba que no llega hasta la comprobación rota da la
-     misma tranquilidad que no tenerla, y además la firma.
-
-     No hace falta escribir en disco: los detectores toman una cadena de CSS. */
+  /* Las tres reglas duras de estilo */
   const inventadas = [
     ['border-radius: 4px',        '.x{border-radius:4px}',                 'radios'],
     ['border-radius: 0.5rem',     '.x{border-radius:0.5rem}',              'radios'],
@@ -746,7 +554,7 @@ if (process.argv.includes('--autoprueba')) {
   }
 }
 
-/* ══ RESULTADO ════════════════════════════════════════════════════════════ */
+/* RESULTADO */
 console.log('');
 if (FALLOS === 0) {
   console.log('\x1b[32m════ AUDITORÍA EN VERDE: el proyecto se puede entregar ════\x1b[0m\n');

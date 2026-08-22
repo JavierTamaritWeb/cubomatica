@@ -3,22 +3,7 @@
 CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
   var t = CB.pruebas;
 
-  /* AQUÍ VIVÍA «el juego carga exactamente 44 scripts».
-     Esa cifra medía una sola cosa —«están las 44 aportaciones a CB»— de la única
-     manera posible sin empaquetador: contando etiquetas. Con un bundle hay UNA,
-     y contar deja de significar nada.
-
-     El invariante no desaparece, cambia de sitio y se parte en dos, cada mitad
-     donde puede comprobarse de verdad:
-
-       · la AUDITORÍA (herramientas/comprobar-dist.mjs) cuenta los ficheros en
-         disco, los cruza con manifiesto.json y reconstruye el bundle en memoria
-         para compararlo byte a byte. Eso demuestra el orden Y que dist/ está al
-         día, que es más de lo que el contador probaba.
-       · el NAVEGADOR comprueba lo que de verdad importaba: que el bundle DEFINA
-         todo lo que tiene que definir. Es lo que hacen las líneas de aquí abajo
-         —los 37 espacios de nombre, los 7 generadores, los 92 niveles, los 4
-         mundos y los 12 globales—, y siempre fueron la comprobación buena. */
+  /* El invariante no desaparece, cambia de sitio y se parte en dos, cada mitad donde puede comprobarse de verdad: · la AUDITORÍA (herramientas/comprobar-dist.mjs) cuenta los ficheros en disco, los cruza con manifiesto.json y reconstruye el… */
   var delJuego = [].slice.call(document.scripts).filter(function (s) {
     return s.src && s.src.indexOf('/pruebas/') === -1;
   });
@@ -57,15 +42,7 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
   t.ok(/^\d+\.\d+\.\d+$/.test(CB.VERSION || ''),
     'CB.VERSION existe y tiene formato x.y.z', String(CB.VERSION));
 
-  /* ── ENTRAR EN CADA UNA DE LAS 18 PANTALLAS ─────────────────────────────
-     No había ninguna prueba que ENTRARA en las pantallas: se comprobaba que las
-     <section> existieran, que es comprobar la maqueta. Con eso, el panel del
-     adulto llevaba desde el principio mandando al usuario a la pantalla de
-     error —su handler de alEntrar navegaba a su propia pantalla y desbordaba la
-     pila— y las 294 comprobaciones seguían en verde.
-
-     Aquí se entra de verdad en las 18 y se exige que ninguna falle y que cada
-     una deje CB.pantallas.actual en su sitio. */
+  /* ENTRAR EN CADA UNA DE LAS 18 PANTALLAS */
   var fallos = [];
   var pantallaPrevia = CB.pantallas.actual;
   var falloOriginal = CB.pantallas.fallo;
@@ -106,11 +83,7 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
 
   if (pantallaPrevia) { try { CB.pantallas.ir(pantallaPrevia); } catch (e4) { } }
 
-  /* ── Cada pantalla tiene UN encabezado y la jerarquía no salta niveles ──
-     CB.pantallas.ir() busca el <h1> para llevarle el foco al entrar. Partida,
-     calibración e informe no tenían ninguno: el foco se quedaba en <body> y
-     quien navega por encabezados con un lector de pantalla no se enteraba de
-     haber cambiado de sitio. Los tres llevan ahora un h1 .solo-lectores. */
+  /* Cada pantalla tiene UN encabezado y la jerarquía no salta niveles */
   var malEncabezado = [];
   CB.pantallas.IDS.forEach(function (id) {
     var sec = document.getElementById(id);
@@ -122,10 +95,7 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
     'las 18 pantallas declaran exactamente un <h1> en su maqueta',
     malEncabezado.join(', '));
 
-  /* ── Exportar SIN importar es un botón que promete y no cumple ──────────
-     CB.almacen.validarImportado() existía, estaba probado y no lo llamaba
-     nadie: se podía sacar una copia del progreso y no se podía volver a meter,
-     que es justo lo que el README recomienda hacer cada trimestre. */
+  /* Exportar SIN importar es un botón que promete y no cumple */
   t.ok(typeof CB.adulto.restaurar === 'function',
     'existe la restauración de una copia, no solo la exportación');
 
@@ -135,17 +105,7 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
     'lo que exporta el juego lo acepta su propio validador de importación',
     vuelta.ok ? '' : vuelta.motivo);
 
-  /* ── Los globales del proyecto son EXACTAMENTE estos ────────────────────
-     Sin módulos ni empaquetador, toda `function nombre()` en el ámbito de
-     fichero acaba en window. Hoy son doce, con nombres tan genéricos como
-     `tabla`, `serie`, `comparacion` o `ls`, y no chocan entre sí por suerte,
-     no por diseño: si el script 45 declara otra `function tabla()`, la segunda
-     pisa a la primera EN SILENCIO y la multiplicación deja de funcionar sin un
-     solo error en consola.
-
-     Esta lista cerrada convierte ese choque futuro en un test en rojo. Añadir
-     un global obliga a escribirlo aquí, que es justo el momento de mirar si el
-     nombre ya está cogido. */
+  /* Los globales del proyecto son EXACTAMENTE estos */
   var GLOBALES = ['ls', 'tramo', 'comparacion', 'serie', 'itemSuma', 'itemResta',
                   'itemMult', 'tabla', 'cuantos', 'itemVocab', 'digitos', 'desdeDigitos'];
   var faltan = GLOBALES.filter(function (n) { return typeof window[n] !== 'function'; });
@@ -153,11 +113,7 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
     'los ' + GLOBALES.length + ' auxiliares globales declarados siguen existiendo',
     faltan.join(', '));
 
-  /* ── El oyente del toque prematuro se registra UNA vez ──────────────────
-     conectarToc() se llama desde los siete componentes de respuesta, es decir
-     una vez por ítem, sobre #item-respuesta, que es un nodo permanente. Sin
-     cerrojo, en el ítem 12 había once oyentes y un toque prematuro reproducía
-     el «toc» once veces a la vez. */
+  /* El oyente del toque prematuro se registra UNA vez */
   var caja = document.createElement('div');
   var registrados = 0;
   var añadir = caja.addEventListener;
@@ -168,10 +124,7 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
     'conectarToc() sobre el mismo contenedor 20 veces registra UN solo oyente');
   t.igual(caja.getAttribute('data-toc'), 'si', 'y deja la marca visible en el nodo');
 
-  /* ── Un perfil ilegible NO se confunde con un perfil que no existe ──────
-     leerCrudo() se traga el fallo de JSON.parse y devuelve null igual que
-     cuando no hay nada. Con eso, activar() hacía «if (!p) return;» y pulsar
-     JUGAR sobre un perfil dañado no hacía absolutamente nada. */
+  /* Un perfil ilegible NO se confunde con un perfil que no existe */
   var claveFalsa = CB.almacen.claveDePerfil('perfil-de-prueba-ilegible');
   var previo = null;
   try { previo = localStorage.getItem(claveFalsa); } catch (e5) { }

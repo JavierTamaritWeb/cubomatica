@@ -1,14 +1,9 @@
-/* casos-reloj.js — La cuenta atrás de 30 s
-   ----------------------------------------------------------------------------
-   Lo que se comprueba aquí es la aritmética y las salvaguardas, no el dibujo.
-   Que el reloj de arena se vea bonito no lo puede decir un test; que quedarse
-   sin tiempo no apague una luz, y que «Sin prisa» apague la cuenta atrás
-   entera, sí, y son las dos cosas que no pueden romperse sin que nadie mire. */
+/* casos-reloj.js — La cuenta atrás de 30 s */
 
 CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
   var t = CB.pruebas;
 
-  /* ── Los segundos ───────────────────────────────────────────────────── */
+  /* Los segundos */
   var modos = Object.keys(CB.partida.SEGUNDOS_ITEM).sort();
   t.ok(modos.join('|') === 'conCalma|normal|sinPrisa',
     'SEGUNDOS_ITEM declara los tres modos de tiempo y solo esos', modos.join(','));
@@ -24,10 +19,7 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
   t.igual(CB.partida.msDeItem('modoQueNoExiste'), 30000,
     'un modo desconocido no deja el ítem sin límite ni con límite cero');
 
-  /* ── Quedarse sin tiempo no castiga ─────────────────────────────────────
-     Ya era así antes de que la cuenta atrás fuera visible. Ahora que se ve, es
-     más importante: un reloj en pantalla invita a pensar que al llegar a cero
-     pasa algo malo, y no pasa. */
+  /* Quedarse sin tiempo no castiga */
   var est = { luces: 3, timeoutsConsecutivos: 0, timeoutsPartida: 0 };
   var r1 = CB.vidas.timeout(est);
   var r2 = CB.vidas.timeout(est);
@@ -36,7 +28,7 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
   t.ok(r1.consecutivos === 1 && r2.consecutivos === 2,
     'los tiempos agotados se cuentan para bajar el ritmo, no para castigar');
 
-  /* ── El reloj de arena ──────────────────────────────────────────────── */
+  /* El reloj de arena */
   t.igual(CB.ui.reloj.SEG_PRISA, 10, '«Hurry up!» sale cuando quedan 10 segundos');
   t.ok(CB.ui.reloj.PASOS_ARENA >= 8 && CB.ui.reloj.PASOS_ARENA <= 40,
     'la arena baja a saltos, ni continua ni de dos en dos');
@@ -124,7 +116,7 @@ CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
   CB.ui.reloj.alta = previo.alta; CB.ui.reloj.baja = previo.baja;
   CB.ui.reloj.aviso = previo.aviso; CB.ui.reloj._totalMs = previo.total;
 
-  /* ── El sonido del aviso ────────────────────────────────────────────── */
+  /* El sonido del aviso */
   t.ok(typeof CB.audio.EFECTOS.prisa === 'function',
     'existe el efecto «prisa» que acompaña al cartel');
   t.igual(Object.keys(CB.audio.EFECTOS).length, 13,

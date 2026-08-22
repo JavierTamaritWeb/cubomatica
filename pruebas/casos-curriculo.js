@@ -1,7 +1,4 @@
-/* casos-curriculo.js — Las 8 comprobaciones CU1-CU8 de PLAN §6.3
-   El test de v1 solo miraba que el campo no estuviera vacío: cualquier etiqueta
-   inventada pasaba en verde. Era una comprobación de FORMA vendida como
-   comprobación de rigor. */
+/* casos-curriculo.js — Las 8 comprobaciones CU1-CU8 de PLAN §6.3 */
 
 CB.pruebas.suite('Currículo: CU1-CU8', function () {
   var t = CB.pruebas;
@@ -49,10 +46,6 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     'CU3b · ningún nivel declara la CE7 o la CE8 como criterio único: el juego NO evalúa la CE7',
     soloSocio.map(function (n) { return n.id; }).join(', '));
 
-  /* CU4 — cobertura ACOTADA: todo saber del bloque A tiene ≥1 nivel.
-     Ya NO existe «todo saber de 1.er ciclo tiene ≥1 nivel»: era imposible de
-     cumplir sin amputar la lista de saberes, que es exactamente el fraude
-     curricular que el test decía impedir. */
   var saberesA = Object.keys(CB.CURRICULO.saberes).filter(function (k) {
     return k.charAt(0) === 'A';
   });
@@ -131,7 +124,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   t.ok(incoherentes.length === 0,
     'simular() y diagnostico:false son mutuamente excluyentes', incoherentes.join(', '));
 
-  /* ── Rangos y contenidos concretos de 2.º ─────────────────────────────── */
+  /* Rangos y contenidos concretos de 2.º */
   var techos = CB.CURRICULO.techoTrimestre;
   t.ok(techos[1] === 199 && techos[2] === 599 && techos[3] === 999,
     'el techo por trimestre es 199 / 599 / 999 (§6.6)');

@@ -1,18 +1,4 @@
-/* ============================================================================
-   02-texturas.js — 8 texturas de 16×16 generadas por canvas. CERO .png
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado (§14.4): necesita document.createElement.
-   La lista v1 de exentos se olvidaba de este fichero y de 03-sprites.js, con lo
-   que el test de frontera habría fallado el primer día contra código correcto.
-
-   Se ejecuta UNA SOLA VEZ al arrancar. El resultado se vuelca a las variables
-   CSS --tex-* como data: URI, de modo que el CSS las usa sin saber de dónde
-   vienen y sin una sola petición de red.
-
-   El ruido usa PRNG con SEMILLA PROPIA: la misma textura en todos los
-   dispositivos y en todas las sesiones. Sin semilla fija, cada arranque
-   repintaría un mundo distinto y el niño lo notaría.
-   ========================================================================== */
+/* 02-texturas.js — 8 texturas de 16×16 generadas por canvas. CERO .png */
 
 var CB = CB || {};
 CB.texturas = CB.texturas || {};
@@ -33,7 +19,7 @@ CB.texturas.RECETAS = [
 ];
 
 CB.texturas.pintar = function (receta) {
-  var nombre = receta[0], semilla = receta[1];
+  var semilla = receta[1];
   var base = receta[2], claro = receta[3], oscuro = receta[4], patron = receta[5];
   var L = CB.texturas.LADO;
 

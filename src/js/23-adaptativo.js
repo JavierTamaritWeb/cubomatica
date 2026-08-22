@@ -1,20 +1,4 @@
-/* ============================================================================
-   23-adaptativo.js — Elo por DESTREZA (no por nivel)
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   POR QUÉ EL ELO VIVE EN LA DESTREZA Y NO EN EL NIVEL (PLAN §13.1): con 92
-   niveles y partidas de 15 ítems, la mayoría de los niveles tendrían n < 5. Un
-   Elo con 5 observaciones y K = 32 es RUIDO PURO, y elegirBeta seleccionaría
-   niveles al azar durante las primeras 10 sesiones. Con 13 slugs, cada uno
-   acumula muchas observaciones y converge deprisa.
-
-     perfil.destrezas  → indexado por los 13 SLUGS  → theta, n, rtMediana, …
-     perfil.niveles    → indexado por los 92 IDS    → n, aciertos, caja, D, …
-
-   El Mapa de Destrezas se pinta desde perfil.niveles: eso es INFORMACIÓN.
-   La elección de dificultad sale de perfil.destrezas: eso es MEDIDA.
-   ========================================================================== */
+/* 23-adaptativo.js — Elo por DESTREZA (no por nivel) */
 
 var CB = CB || {};
 CB.adaptativo = CB.adaptativo || {};
@@ -73,27 +57,7 @@ CB.adaptativo.esperado = function (theta, beta) {
   return 1 / (1 + Math.pow(10, (beta - theta) / 400));
 };
 
-/* ── POR QUÉ NO SE USA EL ELO CLÁSICO ────────────────────────────────────────
-   El plan pedía dos cosas incompatibles: la actualización de Elo estándar
-   `theta += K·(acierto − esperado)` y una banda objetivo con «probabilidad de
-   acierto esperada ≈ 0,80-0,88». El Elo clásico converge al punto en que el
-   acierto observado iguala a la expectativa logística; con adivinanza c y
-   desliz s, ese punto fijo está en L = c/(c+s), que para el teclado (c = 0,02,
-   s = 0,10) da un 16,7 % de aciertos. El niño sintético lo confirmó: 43,9 % y
-   64,2 %, cayendo, en lugar del 75-92 % exigido.
-
-   La regla que sí produce lo que el plan quiere es la de Robbins-Monro (la
-   escalera clásica de la psicofísica): mover theta contra un OBJETIVO DE TASA.
-
-        theta' = theta + K · (acierto − 0,80)
-
-   Converge exactamente al punto en que el niño acierta el 80 % de las veces,
-   sea cual sea su adivinanza o su desliz. Y da a `theta` un significado
-   directo y explicable: «la dificultad a la que este niño acierta 8 de cada
-   10». Con eso, la banda [theta−60, theta+120] de elegirBeta vuelve a ser
-   coherente con la zona de desarrollo próximo que el plan describe.
-
-   Documentado en docs/decisiones.md. Se recalibra en F10 con niños reales. */
+/* POR QUÉ NO SE USA EL ELO CLÁSICO */
 CB.adaptativo.OBJETIVO_ACIERTO = 0.80;
 
 /**
@@ -104,16 +68,7 @@ CB.adaptativo.OBJETIVO_ACIERTO = 0.80;
 CB.adaptativo.actualizar = function (destreza, acierto, beta, perfil) {
   if (!perfil.destrezas) perfil.destrezas = {};
 
-  /* `destreza` es el SLUG, no el objeto de destreza. Pasarle el objeto no daba
-     ningún error: JavaScript lo convertía a la cadena "[object Object]" y se
-     creaba una destreza con ese nombre, que se guardaba en el perfil del niño y
-     salía en el informe del adulto. Mientras tanto, la destreza de verdad no se
-     actualizaba nunca y su competencia estimada se quedaba clavada.
-
-     No es hipotético: es el fallo que cometí auditando este mismo motor, y
-     tardé tres intentos en verlo porque nada se quejaba. Trece slugs, lista
-     cerrada: cualquier otra cosa es un error de programación y tiene que
-     notarse. */
+  /* Mientras tanto, la destreza de verdad no se actualizaba nunca y su competencia estimada se quedaba clavada. */
   if (CB.adaptativo.SLUGS.indexOf(destreza) === -1) {
     throw new Error('CB.adaptativo.actualizar: destreza desconocida «' + destreza +
                     '». Se espera uno de los 13 slugs, no el objeto de destreza.');
@@ -131,17 +86,7 @@ CB.adaptativo.actualizar = function (destreza, acierto, beta, perfil) {
   return d.theta;
 };
 
-/* ── Banda objetivo ─────────────────────────────────────────────────────────
-   La banda va POR DEBAJO de theta, no por encima. El plan escribía
-   [theta−60, theta+120] y a la vez «probabilidad de acierto esperada ≈
-   0,80-0,88»; son incompatibles: con la logística de Elo, un ítem cuya β iguala
-   a θ da el 50 %, no el 80 %. Para acertar 8 de cada 10 hace falta que el ítem
-   esté unos 340 puntos POR DEBAJO de la competencia del niño.
-
-   Con esta banda y la regla de tasa objetivo de `actualizar`, el sistema es
-   coherente: theta estima la competencia real, los ítems se sirven ~340 puntos
-   por debajo, y el acierto observado se estabiliza en el 80 % que pide la zona
-   de desarrollo próximo. */
+/* Banda objetivo */
 CB.adaptativo.BANDA_INFERIOR = 420;
 CB.adaptativo.BANDA_SUPERIOR = 260;
 
@@ -193,9 +138,7 @@ CB.adaptativo.precision1er = function (d) {
   return (d.aciertosPrimerIntento || 0) / d.n;
 };
 
-/* ── Regla simple de respaldo (§13.2) ───────────────────────────────────────
-   3 aciertos seguidos → sube; 2 fallos → baja. Activable por el adulto para
-   depuración y para centros que prefieran un comportamiento predecible. */
+/* Regla simple de respaldo (§13.2) */
 CB.adaptativo.reglaSimple = function (nivelEstado) {
   var v = nivelEstado.ventanaSimple || [];
   var n = v.length, i, seguidos = 0;
@@ -207,27 +150,7 @@ CB.adaptativo.reglaSimple = function (nivelEstado) {
   return 0;
 };
 
-/* ── Dificultad interna D del nivel (§8.2) ─────────────────────────────────
-   Sube tras 3 aciertos consecutivos A PRIMER INTENTO; baja tras 2 fallos.
-   D es interno al nivel y NO cambia el rango declarado en el catálogo.
-
-   LOS CONTADORES NO PUEDEN EMPEZAR POR GUION BAJO. Se llamaban `_racha` y
-   `_fallos`, y CB.almacen.sanear() descarta por diseño toda clave que empiece
-   por `_` —«campos internos, no se guardan»—, así que se borraban en cada
-   guardado mientras que `D` sí se guardaba. El resultado era un trinquete en una
-   sola dirección:
-
-     · para SUBIR hacen falta 3 aciertos seguidos del MISMO nivel, y una partida
-       sirve como mucho 3 ítems del mismo nivel (CB.partida.MAX_REPETICIONES).
-       O sea: exigía un pleno de 3 sobre 3 dentro de una única sesión, porque al
-       día siguiente la racha volvía a cero.
-     · para BAJAR bastan 2 fallos, y además CB.partida.trasFallo pone D = 1 a la
-       segunda caída del concepto. Eso sí persiste, porque vive en `D`.
-
-   Es decir: la dificultad podía bajar para siempre y casi nunca subir. Un niño
-   que mejora se quedaba con los ítems fáciles de su peor día. Con nombres sin
-   guion bajo, los contadores sobreviven al guardado y la regla hace lo que dice.
-   No hace falta migración: ausentes valen 0, que es como empezaban. */
+/* Dificultad interna D del nivel (§8.2) */
 CB.adaptativo.actualizarD = function (nivelEstado, correcto, primerIntento) {
   nivelEstado.D = nivelEstado.D || 2;
   nivelEstado.rachaD = nivelEstado.rachaD || 0;

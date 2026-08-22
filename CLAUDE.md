@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Cubomática 1.23.2** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
+**Cubomática 1.23.3** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
 
 ## A build step, but the same target: double-click, no network
 
@@ -25,8 +25,9 @@ Until 1.6.0 there was no `package.json`, no bundler and no server. 1.7.0 adds Gu
 ```bash
 npm install                      # once
 npm run build                    # gulp build → dist/
-npm run dev                      # build + browser-sync on dist/ + watch
-npm run entregar                 # build && auditar — THE DELIVERY GATE
+npm run dev                      # build + local servers + live reload + watch
+npm run estilo                   # ESLint (JS) + stylelint (SCSS)
+npm run entregar                 # estilo && build && auditar — THE DELIVERY GATE
 npm run autoprueba               # meta-test: does the audit see what it says it sees?
 node pruebas/auditar.mjs         # the audit itself; .sh and .bat are 3-line wrappers
 node herramientas/cruzar-clases.mjs   # the CSS↔HTML↔JS class cross-check, standalone
@@ -48,7 +49,7 @@ Both need `npm run build` first; without it they say so instead of hanging on "P
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **850 checks, 0 failures** (deterministic).
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **854 checks, 0 failures** (deterministic).
 - **The page auto-runs on load.** Filtering `CB.pruebas.suites` while that run is in flight truncates the list *mid-race*: the runner stops early and prints a green summary for a subset — 248/0 instead of 489. Wait for the `· NNNN ms` suffix before touching the array.
 - **Serve the test pages with `Cache-Control: no-store`.** Chrome will happily reuse a cached `dist/js/cubomatica.js` or `casos-*.js` across a reload, so a green summary can be measuring code from three edits ago — and the check count won't necessarily change, which is what makes it invisible. Before trusting a run, assert something about the bundle you just built (`/paso <= 20/.test(String(CB.jefes.opciones))`, a function that should now exist) rather than assuming the reload did it.
 - **Run it in a foreground tab.** Chrome throttles `setTimeout` in a background tab, and the suites are chained with `setTimeout(…, 0)`: backgrounded, a 10 s run stretches past 80 s or stalls outright. A partial `resumen` is easy to mistake for a finished one — the `· NNNN ms` suffix is only appended when the last suite ends, so a summary without it is still running.

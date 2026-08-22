@@ -1,19 +1,4 @@
-/* ============================================================================
-   03-sprites.js — Sprites de mapa de píxeles. 24 entradas de caché
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado (§14.4).
-
-   UMBRAL DE RASTERIZACIÓN (PLAN §10.8): box-shadow SOLO para sprites ESTÁTICOS
-   de ≤ 64 píxeles encendidos. Todo sprite ANIMADO o de > 64 píxeles se rasteriza
-   a canvas y se usa como background-image con data: URI cacheado.
-
-   El umbral v1 («>400 sombras») permitía animar elementos con 400 box-shadow a
-   60 fps en un Chromebook de 2019: repintados de decenas de milisegundos y
-   tirones garantizados justo en el momento de la celebración.
-
-   RECUENTO DECLARADO: 24 entradas = 11 criaturas + 6 iconos de HUD + 5 bloques
-   + 2 mapas base de avatar (de los que salen los 16 por permutación de paleta).
-   ========================================================================== */
+/* 03-sprites.js — Sprites de mapa de píxeles. 24 entradas de caché */
 
 var CB = CB || {};
 CB.sprites = CB.sprites || {};
@@ -25,7 +10,7 @@ CB.sprites.cache = {};
    Formato compacto y legible: se puede corregir un sprite a ojo. */
 CB.sprites.MAPAS = {
 
-  /* ── 11 criaturas ─────────────────────────────────────────────────────── */
+  /* 11 criaturas */
   cubi: ['..000..',
          '.01110.',
          '.12221.',
@@ -116,7 +101,7 @@ CB.sprites.MAPAS = {
              '.2...2.',
              '.......'],
 
-  /* ── 6 iconos de HUD ──────────────────────────────────────────────────── */
+  /* 6 iconos de HUD */
   luzEncendida: ['..111..',
                  '.12211.',
                  '1122111',
@@ -165,14 +150,14 @@ CB.sprites.MAPAS = {
           '.11.11.',
           '.......'],
 
-  /* ── 5 bloques ────────────────────────────────────────────────────────── */
+  /* 5 bloques */
   bloquePiedra: ['1111111','1211121','1111111','1121211','1111111','1211121','1111111'],
   bloqueTierra: ['1111111','1121111','1111211','1111111','1211112','1111111','1112111'],
   bloqueHierba: ['2222222','2222222','1111111','1211121','1111111','1121211','1111111'],
   bloqueCristal:['1111111','1211121','1121211','1112111','1121211','1211121','1111111'],
   bloqueMusgo:  ['2121212','1212121','1111111','1211121','1111111','2121212','1212121'],
 
-  /* ── 2 mapas base de avatar (16 variantes por permutación de paleta) ──── */
+  /* 2 mapas base de avatar (16 variantes por permutación de paleta) */
   avatarBase1: ['..000..',
                 '.01110.',
                 '.12221.',
@@ -335,24 +320,4 @@ CB.sprites.precalentar = function () {
   return n;
 };
 
-/* ══ EL DINERO YA NO SE DIBUJA: SE FOTOGRAFÍA ════════════════════════════════
-
-   Aquí vivían `svgMoneda`, `svgBillete`, `estrellasSVG` y `generarDinero`: siete
-   piezas compuestas en SVG al arrancar y publicadas como data: URI en las
-   variables `--pieza-*`. Desde 1.20.0 las doce piezas son fotografías en
-   `dist/img/*.webp` y el CSS las declara él mismo, así que este bloque no tiene
-   nada que hacer y se ha ido entero —64 KB de imágenes a cambio de 90 líneas de
-   dibujo y de un arranque que ya no compone nada—.
-
-   El porqué del cambio está escrito donde ahora se decide, que es
-   `src/scss/abstracts/_variables.scss`. Se anota aquí porque el motivo que se dio en su
-   día para dibujarlas —«la auditoría no admite un solo binario»— sigue siendo
-   verdad y no era la razón que parecía: lo que prohíbe binarios es una lista del
-   bloque 4 de `auditar.mjs`, no `file://`. Una imagen es un subrecurso y se abre
-   con doble clic igual que la hoja de estilos.
-
-   LO QUE NO SE HA IDO es el resto del fichero: las ocho texturas del terreno
-   SIGUEN dibujándose en canvas. Ahí el argumento sí se sostiene, porque lo que
-   producen es ruido de 16×16 que como fichero pesaría más de lo que pesa el
-   código que lo genera.
-   ══════════════════════════════════════════════════════════════════════════ */
+/* EL DINERO YA NO SE DIBUJA: SE FOTOGRAFÍA */

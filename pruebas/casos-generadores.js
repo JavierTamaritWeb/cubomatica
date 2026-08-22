@@ -1,12 +1,10 @@
-/* casos-generadores.js — Los 12 invariantes de generación (PLAN §19.1)
-   Rápido: 1.000 ítems × 92 niveles.  Largo: 10.000 × 92. */
+/* casos-generadores.js — Los 12 invariantes de generación (PLAN §19.1) */
 
 CB.pruebas.suite('Generadores: los 12 invariantes', function () {
   var t = CB.pruebas;
   var porNivel = CB.pruebas.modoLargo ? 10000 : 1000;
   var ids = CB.catalogo.ids();
 
-  var perfil = CB.pruebas.perfilNuevo();
   var fallos = {
     inv1: 0, inv2: 0, inv3: 0, inv4: 0, inv5: 0, inv5bis: 0, inv5ter: 0,
     inv6: 0, inv11: 0, inv12: 0, nulos: 0
@@ -37,14 +35,7 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
       totalItems++;
       if (!unicos[item.expr]) { unicos[item.expr] = 1; nUnicos++; }
 
-      /* UNA PIEZA DE DINERO NO ES UN NÚMERO, y los invariantes 1 y 3 son sobre
-         números. «Toca la moneda de 20 céntimos» se contesta con 'c20', no con
-         20, porque el 20 a secas ya es el billete de 20 € — está razonado en la
-         cabecera de `15-gen-dinero.js`—. Meterla en el rango [0,999] daría rojo
-         contra código correcto, y redondearla, NaN.
-         La exención es ESTRECHA a propósito: solo la respuesta, solo si es una
-         cadena, y solo en un ítem que pide dibujar piezas. Cualquier otro
-         generador que devuelva una cadena sigue siendo un fallo. */
+      /* La exención es ESTRECHA a propósito: solo la respuesta, solo si es una cadena, y solo en un ítem que pide dibujar piezas. */
       var esPieza = (item.piezasDinero === true && typeof item.respuesta === 'string');
 
       /* INV 1 — operandos y respuesta en [0, 999] */
@@ -75,12 +66,7 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
       /* INV 5-bis — formato de la lista cerrada de 7 */
       if (FORMATOS.indexOf(item.formato) === -1) anota('inv5bis', id + ' ' + item.formato);
 
-      /* INV 5 / 5-ter / 6 — distractores.
-         LOS FIJOS NO PASAN POR EL MOTOR, igual que en `40-partida.js`: cuando el
-         generador ya ha elegido las tres, llamar al motor de distractores medía
-         una lista que la partida no llega a montar nunca. Con los euros solo
-         medía de más; con 'c20' revienta, porque el motor hace aritmética. Se
-         comprueban las fijas por lo que son. */
+      /* LOS FIJOS NO PASAN POR EL MOTOR, igual que en `40-partida.js`: cuando el generador ya ha elegido las tres, llamar al motor de distractores medía una lista que la partida no llega a montar nunca. */
       if (item.formato === 'opciones4' && item.distractoresFijos) {
         conOpciones++;
         var fijas = item.distractoresFijos.slice(0, 3);

@@ -1,11 +1,4 @@
-/* ============================================================================
-   44-casa.js — El álbum de cromos y el Diccionario de Bloques
-   ----------------------------------------------------------------------------
-   Colección NO MONETARIA (PLAN §21.4): no hay moneda comprable, no hay cofres
-   opacos —la lista de premios se ve antes de abrir— y no hay nada que se pierda
-   por no volver. Las gemas solo decoran; nunca compran ventaja ni desbloquean
-   contenido de aprendizaje.
-   ========================================================================== */
+/* 44-casa.js — El álbum de cromos y el Diccionario de Bloques */
 
 var CB = CB || {};
 CB.casa = CB.casa || {};
@@ -63,7 +56,7 @@ CB.casa.pintar = function () {
   });
 };
 
-/* ── Diccionario de Bloques ─────────────────────────────────────────────── */
+/* Diccionario de Bloques */
 CB.casa.pintarGlosario = function () {
   var perfil = CB.perfil;
   if (!perfil) return;

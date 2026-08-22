@@ -1,24 +1,4 @@
-/* ============================================================================
-   21-antiazar.js — Requisito 7: penalizar responder al azar
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   EL INVARIANTE «UN ACIERTO RÁPIDO NUNCA ES AZAR» ESTÁ GARANTIZADO POR
-   CONSTRUCCIÓN, NO POR CALIBRACIÓN: es la primera línea de evaluar(). El plan v1
-   fijaba el umbral en 0,15 × mediana personal (con mediana 9.100 ms → 1.365 ms) y
-   a la vez exigía premiar un acierto legítimo en 600 ms. La fórmula y el
-   invariante se contradecían.
-
-   Y CON DESTREZAS NUEVAS, rtMuestras vacío daba mediana 0 → umbral 0 → el
-   detector quedaba DESACTIVADO sin decirlo. Por eso medianaPersonal() cae en un
-   respaldo declarado (el tIdeal de la destreza), nunca en cero.
-
-   GLUGLÚ NO ES UN JUEZ, ES UN ACCIDENTE DEL ENTORNO. En ninguna parte de la
-   interfaz del niño aparece «adivinar», «al azar», «trampas» ni «concéntrate».
-   Atribuir intención a un niño de 7 años a partir de un umbral estadístico
-   confunde adivinar con impulsividad, que es la firma conductual normal a esa
-   edad. `azar:true` se registra SOLO en respuestas[], para el panel del adulto.
-   ========================================================================== */
+/* 21-antiazar.js — Requisito 7: penalizar responder al azar */
 
 var CB = CB || {};
 CB.antiazar = CB.antiazar || {};
@@ -96,7 +76,7 @@ CB.antiazar.respuestaPosible = function (item) {
   return v >= 0 && v <= 999;
 };
 
-/* ── Los efectos del azar. NUNCA apaga una luz (§12.1, regla 2) ─────────── */
+/* Los efectos del azar. NUNCA apaga una luz (§12.1, regla 2) */
 CB.antiazar.EFECTOS = {
   puntos: 0,
   gemas: 0,

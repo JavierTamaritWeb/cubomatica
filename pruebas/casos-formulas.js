@@ -1,5 +1,4 @@
-/* casos-formulas.js — Los 30 casos de PLAN §11.7 + las 6 aserciones A1-A6
-   SIN TOLERANCIA. Cada valor se compara con === contra la tabla cerrada. */
+/* casos-formulas.js — Los 30 casos de PLAN §11.7 + las 6 aserciones A1-A6 */
 
 CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
   var t = CB.pruebas;
@@ -67,7 +66,7 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
   t.ok(malos === 0, 'los 30 casos dan el valor exacto, sin tolerancia',
        malos + ' casos discrepan');
 
-  /* ── Las 6 aserciones ─────────────────────────────────────────────────── */
+  /* Las 6 aserciones */
   var it = { puntosBase: 100, tIdeal: 8000, tLimite: 24000 };
 
   /* A1 — tres fallos consecutivos NO bajan el marcador */
@@ -117,7 +116,7 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
        'factor ' + b6.factor + ', total ' + b6.total);
 
   /* Invariante global: ningún valor negativo en ninguna combinación */
-  var neg = 0, rt, modo, intento, corr, azar2;
+  var neg = 0, rt, intento;
   for (rt = 0; rt <= 60000; rt += 2500) {
     for (intento = 1; intento <= 2; intento++) {
       ['normal', 'conCalma', 'sinPrisa'].forEach(function (m2) {

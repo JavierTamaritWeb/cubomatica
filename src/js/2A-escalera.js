@@ -1,16 +1,4 @@
-/* ============================================================================
-   2A-escalera.js — La escalera anti-frustración de 5 escalones
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   EL ESCALÓN 5 EXISTE PORQUE EL PLAN v1 NO DECÍA QUÉ PASABA EN EL 4.º FALLO DEL
-   MISMO CONCEPTO, y ese niño —posible discalculia, o simplemente un mal día— es
-   justo el que más importa. Sin escalón 5, el juego le seguía sirviendo el mismo
-   concepto hasta agotarle las tres luces.
-
-   El concepto se retira del guion SIN DECIRLE NADA AL NIÑO. Anunciar «voy a
-   quitarte esto porque no te sale» convierte una ayuda en una etiqueta.
-   ========================================================================== */
+/* 2A-escalera.js — La escalera anti-frustración de 5 escalones */
 
 var CB = CB || {};
 CB.escalera = CB.escalera || {};

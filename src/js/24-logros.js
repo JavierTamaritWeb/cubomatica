@@ -1,26 +1,10 @@
-/* ============================================================================
-   24-logros.js — Requisito 10: vidas extra por logros bonus
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   LISTA de 24 entradas, cada una con `version: 1 | 2`. EXACTAMENTE 10 tienen
-   version:1 y son las únicas evaluadas en v1 (casos-motor.js lo comprueba).
-
-   TRES LOGROS CONCEDEN LUZ, y los tres son alcanzables DENTRO DE UNA MISMA
-   PARTIDA. En el plan v1 existía CB.vidas.conceder(), existía retoBonus,
-   existían «los 8 logros» y NINGÚN logro estaba declarado como concesor de vida:
-   el requisito 10 quedaba sobre el papel.
-
-   ANTIFARMEO: ningún logro se obtiene dos veces; los de racha exigen aciertos a
-   PRIMER intento; los de puntuación se evalúan contra el récord DEL MISMO MODO
-   de tiempo; en Cantera Tranquila solo se evalúan los de colección.
-   ========================================================================== */
+/* 24-logros.js — Requisito 10: vidas extra por logros bonus */
 
 var CB = CB || {};
 CB.logros = CB.logros || {};
 
 CB.logros.LISTA = [
-  /* ── Los 3 que conceden luz (requisito 10) ───────────────────────────── */
+  /* Los 3 que conceden luz (requisito 10) */
   { id: 'vuelta_al_pozo', version: 1, luz: true,
     nombre: 'Vuelta al pozo',
     desc: '3 aciertos seguidos a primer intento después de que se apagara una luz.',
@@ -36,7 +20,7 @@ CB.logros.LISTA = [
     desc: 'Has acertado el reto marcado del nivel.',
     evento: 'acierto' },
 
-  /* ── Los otros 7 de v1 ───────────────────────────────────────────────── */
+  /* Los otros 7 de v1 */
   { id: 'vena_de_cristal', version: 1, luz: false,
     nombre: 'Vena de cristal',
     desc: '10 aciertos seguidos a primer intento.',
@@ -72,7 +56,7 @@ CB.logros.LISTA = [
     desc: 'Has jugado 2 días distintos separados por al menos un día.',
     evento: 'finPartida' },
 
-  /* ── Los 14 de v2: reserva DECLARADA, no evaluada ────────────────────── */
+  /* Los 14 de v2: reserva DECLARADA, no evaluada */
   { id: 'mina_profunda',   version: 2, luz: false, nombre: 'Mina profunda',   desc: 'Reservado para la versión 2.' },
   { id: 'reloj_de_piedra', version: 2, luz: false, nombre: 'Reloj de piedra', desc: 'Reservado para la versión 2.' },
   { id: 'sin_una_grieta',  version: 2, luz: false, nombre: 'Sin una grieta',  desc: 'Reservado para la versión 2.' },

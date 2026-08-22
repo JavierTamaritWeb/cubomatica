@@ -1,13 +1,4 @@
-/* ============================================================================
-   objetos.js — 60 objetos contables para los enunciados
-   ----------------------------------------------------------------------------
-   Cada objeto lleva: singular, plural, artículo, género, sprite (carácter
-   Unicode, cero ficheros de imagen) y sus verbos de ganar y de perder.
-
-   Los verbos NO son intercambiables: «se come tres coches» es una frase que un
-   niño de 7 años detecta como rota al instante y le hace desconfiar del juego
-   entero. Por eso los verbos se derivan de la CATEGORÍA del objeto.
-   ========================================================================== */
+/* objetos.js — 60 objetos contables para los enunciados */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};

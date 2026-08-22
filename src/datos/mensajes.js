@@ -1,32 +1,11 @@
-/* ============================================================================
-   mensajes.js — 84 mensajes de acierto (4 × 21) y 48 de ánimo (2 × 24)
-   ----------------------------------------------------------------------------
-   REQUISITOS 4 y 5 DEL USUARIO. Cada categoría tiene su PROPIA BolsaBarajada
-   persistida en el perfil: ningún mensaje se repite hasta agotar su bolsa.
-
-   POR QUÉ HAY PLANTILLAS CON {proc} Y {pista}:
-   un elogio de procedimiento solo educa si nombra el procedimiento CORRECTO. Un
-   mensaje fijo como «¡has llevado bien la decena!» es falso detrás de un ítem de
-   vocabulario, y un niño de 7 años detecta esa incoherencia al instante. Las 21
-   plantillas de la categoría A y las 24 de la categoría P1 llevan una ranura que
-   se rellena con la frase de la destreza real del ítem: 21 marcos × 13 destrezas
-   × 3 frases = variedad enorme y siempre cierta.
-
-   LISTAS NEGRAS APLICADAS (casos-mensajes.js, M5 y M6):
-     · Elogio de persona: listo, lista, inteligente, genio, crack, campeón,
-       campeona, máquina, fenómeno, eres el mejor, qué listo, qué lista.
-       Motivo: el elogio de rasgo instala mentalidad fija; cada fallo posterior
-       contradice la etiqueta.
-     · Registro impropio: wow, cool, top, súper, campeoncito, mi niño, cielo,
-       cariño, chaval, voseo y diminutivos condescendientes.
-   ========================================================================== */
+/* mensajes.js — 84 mensajes de acierto (4 × 21) y 48 de ánimo (2 × 24) */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
 
 CB.datos.MENSAJES = {};
 
-/* ── Frases de procedimiento, por destreza (13 slugs × 3) ───────────────── */
+/* Frases de procedimiento, por destreza (13 slugs × 3) */
 CB.datos.MENSAJES.PROCEDIMIENTOS = {
   numeracion: [
     'Has leído el número entero, sin saltarte ninguna cifra.',
@@ -95,7 +74,7 @@ CB.datos.MENSAJES.PROCEDIMIENTOS = {
   ]
 };
 
-/* ── Pistas de procedimiento para el fallo (13 slugs × 2) ───────────────── */
+/* Pistas de procedimiento para el fallo (13 slugs × 2) */
 CB.datos.MENSAJES.PISTAS = {
   numeracion: [
     'Fíjate bien en cuántas cifras tiene el número.',
@@ -151,7 +130,7 @@ CB.datos.MENSAJES.PISTAS = {
   ]
 };
 
-/* ══ ACIERTO — 4 categorías × EXACTAMENTE 21 = 84 ═══════════════════════ */
+/* ACIERTO — 4 categorías × EXACTAMENTE 21 = 84 */
 
 /* A) PROCEDIMIENTO — nombran lo que ha hecho. Las 21 llevan {proc}. */
 CB.datos.MENSAJES.acierto_A = [
@@ -253,7 +232,7 @@ CB.datos.MENSAJES.acierto_D = [
   '¡Sigue esa veta, que da gemas!'
 ];
 
-/* ══ ÁNIMO — 2 categorías × EXACTAMENTE 24 = 48 ═════════════════════════ */
+/* ÁNIMO — 2 categorías × EXACTAMENTE 24 = 48 */
 
 /* P1) MIRA OTRA VEZ — señalan DÓNDE mirar. Las 24 llevan {pista}. */
 CB.datos.MENSAJES.animo_P1 = [
@@ -312,7 +291,7 @@ CB.datos.MENSAJES.animo_P2 = [
   'Este ha salido torcido. Enderezamos y seguimos.'
 ];
 
-/* ── Listas planas y su contrato de tamaño ──────────────────────────────── */
+/* Listas planas y su contrato de tamaño */
 CB.datos.MENSAJES.CATEGORIAS_ACIERTO = ['A', 'B', 'C', 'D'];
 CB.datos.MENSAJES.CATEGORIAS_ANIMO   = ['P1', 'P2'];
 
@@ -326,21 +305,7 @@ CB.datos.MENSAJES.animo = []
   .concat(CB.datos.MENSAJES.animo_P1)
   .concat(CB.datos.MENSAJES.animo_P2);
 
-/* ── GRITOS: lo que va escrito en la cinta ──────────────────────────────────
-   La cinta cruza la pantalla en menos de dos segundos, así que solo cabe —y
-   solo se lee— algo muy corto. El mensaje entero sigue apareciendo QUIETO en
-   #item-mensaje, que es donde vive la carga educativa: «Has pedido prestada una
-   decena y la has deshecho bien» no se puede leer de refilón, y esa frase es la
-   única parte del mensaje que de verdad enseña algo.
-
-   Por eso el grito es material NUEVO y no un trozo recortado del mensaje. Las
-   84 plantillas de acierto y las 48 de ánimo no se tocan.
-
-   SOLO HAY GRITOS DE ACIERTO. Los hubo de ánimo, y se retiran: detrás de un
-   fallo no se celebra, se acompaña, y el vehículo del ánimo pasó a ser Rocarr
-   asintiendo (js/30-ui.js). Sin cartel no hay dónde escribir un grito, y un dato
-   que no se pinta en ningún sitio acaba pareciendo que sí. Se les aplican las
-   mismas dos listas negras que a todo lo demás (casos-mensajes.js, M5 y M6). */
+/* GRITOS: lo que va escrito en la cinta */
 CB.datos.MENSAJES.GRITOS = {
   acierto: [
     '¡Toma!', '¡Eso es!', '¡Ahí está!', '¡Bloque!', '¡Clavado!', '¡Se abre!',

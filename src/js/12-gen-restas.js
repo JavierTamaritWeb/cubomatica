@@ -1,25 +1,4 @@
-/* ============================================================================
-   12-gen-restas.js — R1…R14
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   DOS REGLAS DURAS (PLAN §6.7 e invariantes 2 y 11):
-
-     · Toda resta se construye DESDE EL RESULTADO: a = r + b. Así el resultado es
-       SIEMPRE ≥ 0 por construcción, no por comprobación posterior.
-
-     · Con ampliacion:false, como máximo UNA llevada, y PROHIBIDO el 0 en
-       cualquier posición del minuendo cuando esa columna exija préstamo.
-       Motivo: 504 − 267 obliga a pedir prestado a través del cero, y eso es
-       contenido de 3.º en cualquier secuenciación española. Servirlo en el flujo
-       normal garantiza fallo, pérdida de luz y frustración, y además CONTAMINA
-       EL DIAGNÓSTICO: el niño no tiene el error E-R-INV, es que se le está
-       preguntando algo de otro curso.
-
-   Como a = r + b, los préstamos de a − b son exactamente las llevadas de r + b.
-   Por eso se reutiliza el constructor de 11-gen-sumas.js: mismo patrón, misma
-   garantía, un solo sitio donde equivocarse.
-   ========================================================================== */
+/* 12-gen-restas.js — R1…R14 */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
@@ -82,37 +61,37 @@ function itemResta(t) {
   };
 }
 
-/* ── R1  Restas hasta 10 ────────────────────────────────────────────────── */
+/* R1 Restas hasta 10 */
 CB.gen.restas.R1 = function (rng, D) {
   var a = CB.util.ent(rng, (D === 1) ? 2 : 5, 10);
   var b = CB.util.ent(rng, 0, a);
   return itemResta({ a: a, b: b, r: a - b });
 };
 
-/* ── R2  Restas hasta 20 sin llevar ─────────────────────────────────────── */
+/* R2 Restas hasta 20 sin llevar */
 CB.gen.restas.R2 = function (rng, D) {
   var a = CB.util.ent(rng, 10, 20);
   var b = CB.util.ent(rng, 0, a % 10);          // sin préstamo por construcción
   return itemResta({ a: a, b: b, r: a - b });
 };
 
-/* ── R3  Restar 10 ──────────────────────────────────────────────────────── */
+/* R3 Restar 10 */
 CB.gen.restas.R3 = function (rng, D) {
   var a = CB.util.ent(rng, 11, (D === 1) ? 49 : 99);
   return itemResta({ a: a, b: 10, r: a - 10 });
 };
 
-/* ── R4  DU − U sin llevar ──────────────────────────────────────────────── */
+/* R4 DU − U sin llevar */
 CB.gen.restas.R4 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [false, false], 2, 1, 99));
 };
 
-/* ── R5  DU − DU sin llevar ─────────────────────────────────────────────── */
+/* R5 DU − DU sin llevar */
 CB.gen.restas.R5 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [false, false], 2, 2, 99));
 };
 
-/* ── R6  Complementos a 10 y a 100 ──────────────────────────────────────── */
+/* R6 Complementos a 10 y a 100 */
 CB.gen.restas.R6 = function (rng, D) {
   var base = (D === 1 || rng() < 0.5) ? 10 : 100;
   var b = (base === 10) ? CB.util.ent(rng, 1, 9) : CB.util.ent(rng, 1, 9) * 10;
@@ -122,17 +101,17 @@ CB.gen.restas.R6 = function (rng, D) {
   return it;
 };
 
-/* ── R7  DU − U con UNA llevada ─────────────────────────────────────────── */
+/* R7 DU − U con UNA llevada */
 CB.gen.restas.R7 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [true, false], 2, 1, 99));
 };
 
-/* ── R8  DU − DU con UNA llevada ────────────────────────────────────────── */
+/* R8 DU − DU con UNA llevada */
 CB.gen.restas.R8 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [true, false], 2, 2, 99));
 };
 
-/* ── R9  Restar decenas completas ───────────────────────────────────────── */
+/* R9 Restar decenas completas */
 CB.gen.restas.R9 = function (rng, D) {
   var a = CB.util.ent(rng, 3, (D === 1) ? 20 : 59) * 10;
   var b = CB.util.ent(rng, 1, Math.min(9, a / 10)) * 10;
@@ -141,27 +120,27 @@ CB.gen.restas.R9 = function (rng, D) {
   return it;
 };
 
-/* ── R10 CDU − DU sin llevar ────────────────────────────────────────────── */
+/* R10 CDU − DU sin llevar */
 CB.gen.restas.R10 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [false, false, false], 3, 2, 599));
 };
 
-/* ── R11 CDU − DU con UNA llevada ───────────────────────────────────────── */
+/* R11 CDU − DU con UNA llevada */
 CB.gen.restas.R11 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [true, false, false], 3, 2, 599));
 };
 
-/* ── R12 CDU − CDU sin llevar ───────────────────────────────────────────── */
+/* R12 CDU − CDU sin llevar */
 CB.gen.restas.R12 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [false, false, false], 3, 3, 999));
 };
 
-/* ── R13 CDU − CDU con UNA llevada ──────────────────────────────────────── */
+/* R13 CDU − CDU con UNA llevada */
 CB.gen.restas.R13 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [true, false, false], 3, 3, 999));
 };
 
-/* ── R14 Restas con doble llevada — AMPLIACIÓN, apagada por defecto ─────── */
+/* R14 Restas con doble llevada — AMPLIACIÓN, apagada por defecto */
 CB.gen.restas.R14 = function (rng, D) {
   /* Único nivel del juego que puede tener dos préstamos y cero intermedio. Solo
      se sirve con ajustes.restasDobleLlevada activado por el adulto (§6.7). */

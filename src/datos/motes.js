@@ -1,18 +1,4 @@
-/* ============================================================================
-   motes.js — Lista CERRADA de 120 motes y las 16 paletas de avatar
-   ----------------------------------------------------------------------------
-   El mote es la IDENTIDAD PERMANENTE del niño en el juego, y por eso no puede
-   contener ningún adjetivo de capacidad (PLAN §14.8): si se llama «Gema Lista»,
-   cada fallo contradice su propio nombre, que es exactamente el mecanismo de la
-   mentalidad fija. Y «Topo Veloz» premiaría la rapidez como rasgo, reforzando la
-   presión temporal que todo el diseño trata de quitar.
-
-   Todos los motes son de MATERIAL, de OBJETO de la mina o de ACCIÓN de cavar.
-
-   La lista es cerrada también por seguridad: CB.almacen.importar sustituye por
-   uno de estos cualquier mote que venga en un fichero .json manipulado, de modo
-   que nunca puede inyectarse texto arbitrario en la interfaz (§15.8).
-   ========================================================================== */
+/* motes.js — Lista CERRADA de 120 motes y las 16 paletas de avatar */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
@@ -50,7 +36,7 @@ CB.datos.MOTES = [
   'Fragua Caliente',  'Fragua Antigua',    'Fragua Encendida',   'Fragua de Piedra'
 ];
 
-/* ── Los 16 avatares de Cubi: permutación de paleta sobre 2 mapas base ──── */
+/* Los 16 avatares de Cubi: permutación de paleta sobre 2 mapas base */
 CB.datos.AVATARES = [
   { casco: '#5AA02C', ropa: '#8B5E3C', piel: '#F2C99C' },
   { casco: '#E8B923', ropa: '#3C7BD4', piel: '#8D5A34' },

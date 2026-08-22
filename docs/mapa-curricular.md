@@ -2,7 +2,7 @@
 
 # Mapa curricular
 
-> Cubomática 1.23.2
+> Cubomática 1.23.3
 
 > **ADVERTENCIA NORMATIVA.** El **Real Decreto 157/2022, de 1 de marzo, por el que
 > se establecen la ordenación y las enseñanzas mínimas de la Educación Primaria

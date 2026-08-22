@@ -1,19 +1,4 @@
-/* ============================================================================
-   42-jefes.js — Los 4 jefes, cada uno con una mecánica PROPIA
-   ----------------------------------------------------------------------------
-   NINGÚN JEFE APAGA LUCES (PLAN §12.9). El plan v1 le daba al jefe «armadura de
-   10 bloques y daño 1-3», es decir, capacidad de quitar vidas en el momento de
-   máxima fatiga y máxima expectativa. Un niño que recorre un mundo entero y
-   pierde en el jefe se queda sin la recompensa de cierre: es el punto de
-   abandono clásico.
-
-   Aquí el fallo solo REPARA un bloque de la armadura: el combate se alarga,
-   nunca se pierde. Tope de 20 turnos, pasado el cual el jefe cede igualmente.
-   Vocabulario: «bloques que caen», NUNCA «daño». Sin vocabulario de combate.
-
-   Y cada jefe usa una MECÁNICA DISTINTA, no una lista de preguntas más difíciles
-   (criterio de HECHO de F6).
-   ========================================================================== */
+/* 42-jefes.js — Los 4 jefes, cada uno con una mecánica PROPIA */
 
 var CB = CB || {};
 CB.jefes = CB.jefes || {};
@@ -64,11 +49,7 @@ CB.jefes.iniciar = function (mundoId) {
   if (n) n.textContent = mundo.jefe;
   var c = document.getElementById('jefe-criatura');
   if (c) c.textContent = def.icono;
-  /* EL INTRO DEL JEFE, que llevaba escrito desde siempre y no lo leía nadie. Va
-     en #jefe-aviso y NO en #jefe-enunciado: turno() se llama en la línea de
-     abajo y empieza vaciando el enunciado, así que ahí el intro habría durado
-     cero milisegundos. Es la familia E41 con una vuelta de tuerca: la función se
-     llamaba, el dato existía, y lo borraba el paso siguiente. */
+
   var av = document.getElementById('jefe-aviso');
   if (av) {
     av.textContent = (def && def.intro ? def.intro + ' ' : '') +
@@ -94,9 +75,9 @@ CB.jefes.pintarArmadura = function () {
   cont.setAttribute('aria-label', 'Quedan ' + e.bloques + ' bloques por caer');
 };
 
-/* ── Un turno, con la mecánica propia de cada jefe ──────────────────────── */
+/* Un turno, con la mecánica propia de cada jefe */
 CB.jefes.turno = function () {
-  var e = CB.jefes.estado, perfil = CB.perfil;
+  var e = CB.jefes.estado;
   if (!e) return;
 
   if (e.bloques <= 0 || e.turno >= CB.jefes.TOPE_TURNOS) {
@@ -176,22 +157,7 @@ CB.jefes.prepararRamas = function (e, opc) {
   return objetivo;
 };
 
-/* EL RELLENO TIENE QUE AVANZAR SIEMPRE. La versión anterior calculaba el
-   candidato como `correcta + lista.length` DENTRO del bucle: si ese número ya
-   estaba en la lista no se añadía nada, la longitud no cambiaba, y la siguiente
-   vuelta calculaba exactamente el mismo candidato. Bucle infinito, pestaña
-   colgada, y el niño pierde la partida entera sin un solo error en consola.
-
-   No era teórico ni raro: pasa siempre que un distractor coincide con otro y la
-   lista se queda en tres. Barrido exhaustivo del espacio real de la mecánica
-   «reflejo» de Cristalina: 1,29 % de los turnos, es decir el 22,9 % de los
-   combates de veinte turnos. Y como el rng va sembrado con perfil+mundo+fecha,
-   al niño al que le toca le vuelve a tocar cada vez que lo reintenta ese día.
-
-   Ahora el candidato depende de un contador propio que sube en cada vuelta, con
-   tope explícito además: el desplazamiento es la garantía, el tope es el
-   cinturón. Si aun así no se llegara a cuatro, se sirven las que haya —tres
-   opciones son un turno raro; una pestaña colgada es una partida perdida. */
+/* Bucle infinito, pestaña colgada, y el niño pierde la partida entera sin un solo error en consola. */
 CB.jefes.opciones = function (cont, correcta, distractores) {
   var e = CB.jefes.estado;
   var lista = [{ v: correcta, ok: true }];
@@ -219,16 +185,7 @@ CB.jefes.opciones = function (cont, correcta, distractores) {
   });
 };
 
-/* UNA RESPUESTA POR TURNO, igual que en la partida (ver el cerrojo `respondido`
-   de CB.partida.responder y el porqué largo que lleva al lado). Aquí faltaba, y
-   el jefe es donde más se nota: los cuatro botones siguen en pantalla los 900 ms
-   que dura la animación de los bloques y NO se deshabilitan, así que ocho toques
-   rápidos en la opción correcta tiraban los ocho bloques de la armadura y el
-   combate se acababa antes del primer turno. Medido: 5 toques, 5 bloques.
-
-   Y no era solo el atajo. Cada toque encolaba otro setTimeout(turno, 900), de
-   modo que el enunciado se repintaba encima de sí mismo y el contador de turnos
-   avanzaba de cinco en cinco hacia el tope de veinte. */
+/* Y no era solo el atajo. */
 CB.jefes.responder = function (correcto) {
   var e = CB.jefes.estado;
   if (!e || e.respondido) return;
@@ -260,7 +217,9 @@ CB.jefes.responder = function (correcto) {
   /* La espera la manda la tabla del festejo, no un 900 copiado a mano: sin esto
      el cartel de la mitad seguiría en pantalla mientras aparece la pregunta
      nueva, porque el turno se repinta exactamente a los 900 ms. */
-  setTimeout(function () { CB.jefes.turno(); },
+  setTimeout(function () {
+    if (CB.jefes.estado === e) CB.jefes.turno();
+  },
              mitad ? CB.ui.festejo.espera('superacion', 900) : 900);
 };
 
@@ -288,14 +247,7 @@ CB.jefes.terminar = function (porBloques) {
   /* La cinta más larga del juego, y puede permitírselo: se ve cuatro veces en
      toda la vida de un perfil, una por mundo. Trae su propio sonido. */
   CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
-  /* LA ÚNICA MÚSICA DEL JUEGO QUE NO MANDA EL BUS, y está anotada como excepción
-     en la tabla de 07-musica.js y en docs/decisiones.md. terminar() NO cambia de
-     pantalla: pinta la victoria encima de p-jefe, así que sin esta línea la
-     música seguiría diciendo que hay peligro en el único instante que el juego se
-     reserva para pararlo todo — cuatro veces en la vida de un perfil.
-
-     Va DESPUÉS de la cinta, que dispara su propio sfx('cofre'). El siguiente
-     emit del bus —«Volver al mapa»— repone el tema solo. */
+  /* El siguiente emit del bus —«Volver al mapa»— repone el tema solo. */
   CB.musica.poner('victoria');
   CB.almacen.guardarPerfil(perfil);
 

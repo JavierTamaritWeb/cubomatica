@@ -1,22 +1,4 @@
-/* ============================================================================
-   curriculo-rd157.js — FUENTE ÚNICA DE VERDAD CURRICULAR
-   ----------------------------------------------------------------------------
-   Real Decreto 157/2022, de 1 de marzo, por el que se establecen la ordenación y
-   las enseñanzas mínimas de la Educación Primaria (BOE núm. 52, de 2 de marzo de
-   2022; referencia BOE-A-2022-3296). Anexo II, área de Matemáticas, PRIMER CICLO.
-
-   REGLA DE PROCESO (PLAN §6.4): toda cita de un criterio o de un saber en
-   cualquier documento del proyecto va entre comillas, con su código y su ciclo, y
-   PROVIENE DE AQUÍ. Si no está en este fichero, no se cita.
-
-   ADVERTENCIA NORMATIVA: el Real Decreto fija saberes básicos y criterios de
-   evaluación POR CICLO (1.er ciclo = 1.º y 2.º juntos), NO por curso ni por
-   trimestre. La distribución por curso y trimestre del catálogo es una
-   secuenciación PROPIA del proyecto, basada en la práctica de aula habitual; no
-   procede del Real Decreto ni de ningún decreto autonómico. Debe confirmarse con
-   la programación didáctica del centro. Por eso el campo del catálogo se llama
-   `trimestreSugerido` y nunca `trimestre`.
-   ========================================================================== */
+/* curriculo-rd157.js — FUENTE ÚNICA DE VERDAD CURRICULAR */
 
 var CB = CB || {};
 
@@ -26,7 +8,7 @@ CB.CURRICULO = {
   ciclo: 'Primer ciclo de Educación Primaria',
   area: 'Matemáticas',
 
-  /* ── Competencias específicas del área, texto literal ─────────────────── */
+  /* Competencias específicas del área, texto literal */
   competencias: {
     CE1: 'Interpretar situaciones de la vida cotidiana, proporcionando una representación matemática de las mismas mediante conceptos, herramientas y estrategias, para analizar la información más relevante.',
     CE2: 'Resolver situaciones problematizadas, aplicando diferentes técnicas, estrategias y formas de razonamiento, para explorar distintas maneras de proceder, obtener soluciones y asegurar su validez desde un punto de vista formal y en relación con el contexto planteado.',
@@ -38,7 +20,7 @@ CB.CURRICULO = {
     CE8: 'Desarrollar destrezas sociales, reconociendo y respetando las emociones, las experiencias de los demás y el valor de la diversidad y participando activamente en equipos de trabajo heterogéneos con roles asignados, para construir una identidad positiva como estudiante de matemáticas, fomentar el bienestar personal y crear relaciones saludables.'
   },
 
-  /* ── Criterios de evaluación del PRIMER CICLO, texto literal ──────────── */
+  /* Criterios de evaluación del PRIMER CICLO, texto literal */
   criterios: {
     '1.1': 'Comprender las preguntas planteadas a través de diferentes estrategias o herramientas, reconociendo la información contenida en problemas de la vida cotidiana.',
     '1.2': 'Proporcionar ejemplos de representaciones de situaciones problematizadas sencillas, con recursos manipulativos y gráficos que ayuden en la resolución de un problema de la vida cotidiana.',
@@ -59,7 +41,7 @@ CB.CURRICULO = {
     '8.2': 'Aceptar la tarea y rol asignado en el trabajo en equipo, cumpliendo con las responsabilidades individuales y contribuyendo a la consecución de los objetivos del grupo.'
   },
 
-  /* ── Saberes básicos del PRIMER CICLO. Bloques A y F. Texto literal ───── */
+  /* Saberes básicos del PRIMER CICLO. Bloques A y F. Texto literal */
   saberes: {
     'A.1':   'Conteo. Estrategias variadas de conteo y recuento sistemático en situaciones de la vida cotidiana en cantidades hasta el 999.',
     'A.2.a': 'Cantidad. Estimaciones razonadas de cantidades en contextos de resolución de problemas.',
@@ -77,14 +59,14 @@ CB.CURRICULO = {
     'F.2.c': 'Trabajo en equipo, inclusión, respeto y diversidad. Contribución de las matemáticas a los distintos ámbitos del conocimiento humano desde una perspectiva de género.'
   },
 
-  /* ── Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones ─ */
+  /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */
   segundoCicloReferencia: {
     'A.3.c-2c': 'Construcción de las tablas de multiplicar apoyándose en número de veces, suma repetida o disposición en cuadrículas.',
     'A.2.d-2c': 'Fracciones propias con denominador hasta 12 en contextos de la vida cotidiana.',
     'A.5-2c':   'Cálculo y estimación de cantidades y cambios (euros y céntimos de euro) en problemas de la vida cotidiana: ingresos, gastos y ahorro. Decisiones de compra responsable.'
   },
 
-  /* ── Bloques del área y qué cubre este juego ──────────────────────────── */
+  /* Bloques del área y qué cubre este juego */
   bloques: {
     A: { nombre: 'Sentido numérico',      cubierto: true  },
     B: { nombre: 'Sentido de la medida',  cubierto: false },
@@ -94,12 +76,10 @@ CB.CURRICULO = {
     F: { nombre: 'Sentido socioafectivo', cubierto: true, modo: 'transversal' }
   },
 
-  /* ── Techo numérico por trimestre. DECISIÓN PROPIA del proyecto ───────── */
+  /* Techo numérico por trimestre. DECISIÓN PROPIA del proyecto */
   techoTrimestre: { 1: 199, 2: 599, 3: 999 },
 
-  /* ── Calendario escolar por defecto, para deducir el trimestre sin
-        preguntarle nada al niño (PLAN §6.6). Ajustable por el adulto.
-        Devuelve 1, 2, 3 o 'verano'. ───────────────────────────────────── */
+  /* Calendario escolar por defecto, para deducir el trimestre sin */
   trimestrePorFecha: function (isoFecha) {
     var partes = String(isoFecha).split('-');
     var mes = parseInt(partes[1], 10), dia = parseInt(partes[2], 10);
@@ -113,21 +93,7 @@ CB.CURRICULO = {
   }
 };
 
-/* ============================================================================
-   nombres.js — 40 nombres propios para los enunciados (20 F + 20 M)
-   ----------------------------------------------------------------------------
-   Criterios (PLAN §9.7):
-     · 1 o 2 sílabas: un lector de 7 años no debe gastar su presupuesto de
-       decodificación en el nombre, sino en la estructura del problema.
-     · Diversidad real del aula de la escuela pública española.
-     · Sin tilde en la medida de lo posible, para no añadir carga ortográfica.
-     · El género se ALTERNA por construcción con BolsaBarajada, no se sortea:
-       el equilibrio 50/50 con muestreo aleatorio es matemáticamente inalcanzable
-       en 200 extracciones (σ ≈ 7).
-
-   LISTA NEGRA DE NOMBRES: quedan excluidos los que colisionan con la auditoría
-   de marca de §21.1 o con personajes de terceros.
-   ========================================================================== */
+/* nombres.js — 40 nombres propios para los enunciados (20 F + 20 M) */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
@@ -146,16 +112,7 @@ CB.datos.NOMBRES_M = [
    de terceros. `pruebas/casos-problemas.js` comprueba que ninguno aparece. */
 CB.datos.NOMBRES_PROHIBIDOS = ['Alex', 'Álex', 'Steve', 'Herobrine', 'Notch'];
 
-/* ============================================================================
-   objetos.js — 60 objetos contables para los enunciados
-   ----------------------------------------------------------------------------
-   Cada objeto lleva: singular, plural, artículo, género, sprite (carácter
-   Unicode, cero ficheros de imagen) y sus verbos de ganar y de perder.
-
-   Los verbos NO son intercambiables: «se come tres coches» es una frase que un
-   niño de 7 años detecta como rota al instante y le hace desconfiar del juego
-   entero. Por eso los verbos se derivan de la CATEGORÍA del objeto.
-   ========================================================================== */
+/* objetos.js — 60 objetos contables para los enunciados */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
@@ -265,32 +222,12 @@ CB.datos.OBJETOS = [
   }
 })();
 
-/* ============================================================================
-   vocabulario.js — Lista blanca de los enunciados y los 48 términos del
-                    Diccionario de Bloques
-   ----------------------------------------------------------------------------
-   SOBRE LOS 48 TÉRMINOS (PLAN §6.4, cita corregida): el criterio de evaluación
-   6.1 del primer ciclo dice literalmente «Reconocer lenguaje matemático sencillo
-   presente en la vida cotidiana, adquiriendo vocabulario específico básico». NO
-   enumera términos ni contiene lista alguna. Por tanto:
-
-     «Diccionario de Bloques: 48 términos de un glosario PROPIO del proyecto,
-      seleccionado para dar cobertura al criterio de evaluación 6.1 del
-      RD 157/2022 (1.er ciclo). La cifra 48 y la selección son decisiones de este
-      proyecto, no una enumeración oficial.»
-
-   SOBRE LA LISTA BLANCA (§8.3): se construye con los sustantivos concretos de
-   los 60 objetos contables, los 40 nombres propios, los verbos de ganar y de
-   perder, los 48 términos del Diccionario y los conectores del español básico.
-   Se declara literalmente como «lista blanca propia del proyecto, pendiente de
-   revisión por un maestro de primer ciclo», NUNCA como «validada por corpus»:
-   no se dispone de un corpus de frecuencia léxica infantil citable.
-   ========================================================================== */
+/* vocabulario.js — Lista blanca de los enunciados y los 48 términos del */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
 
-/* ── Los 48 términos del Diccionario de Bloques (6 por nivel × 8 niveles) ── */
+/* Los 48 términos del Diccionario de Bloques (6 por nivel × 8 niveles) */
 CB.datos.GLOSARIO = [
   /* V1 — Las palabras de la suma */
   { t: 'sumando',    n: 'V1', d: 'Cada uno de los números que se juntan en una suma.' },
@@ -357,7 +294,7 @@ CB.datos.GLOSARIO = [
   { t: 'cuántos',    n: 'V8', d: 'La palabra con la que se pregunta la cantidad.' }
 ];
 
-/* ── Conectores y palabras funcionales del español básico ────────────────── */
+/* Conectores y palabras funcionales del español básico */
 CB.datos.FUNCIONALES = [
   'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas',
   'de', 'del', 'a', 'al', 'en', 'con', 'sin', 'por', 'para', 'sobre', 'hasta',
@@ -377,7 +314,7 @@ CB.datos.FUNCIONALES = [
   'ninguno', 'ninguna', 'juntos', 'juntas', 'iguales', 'mismo'
 ];
 
-/* ── Construcción de la lista blanca ─────────────────────────────────────── */
+/* Construcción de la lista blanca */
 CB.datos.LISTA_BLANCA = (function () {
   var set = {}, i, j, o, partes;
 
@@ -439,35 +376,14 @@ CB.datos.ORIGEN_GLOSARIO =
   'RD 157/2022 (1.er ciclo). La cifra 48 y la selección son decisiones de este ' +
   'proyecto, no una enumeración oficial.';
 
-/* ============================================================================
-   mensajes.js — 84 mensajes de acierto (4 × 21) y 48 de ánimo (2 × 24)
-   ----------------------------------------------------------------------------
-   REQUISITOS 4 y 5 DEL USUARIO. Cada categoría tiene su PROPIA BolsaBarajada
-   persistida en el perfil: ningún mensaje se repite hasta agotar su bolsa.
-
-   POR QUÉ HAY PLANTILLAS CON {proc} Y {pista}:
-   un elogio de procedimiento solo educa si nombra el procedimiento CORRECTO. Un
-   mensaje fijo como «¡has llevado bien la decena!» es falso detrás de un ítem de
-   vocabulario, y un niño de 7 años detecta esa incoherencia al instante. Las 21
-   plantillas de la categoría A y las 24 de la categoría P1 llevan una ranura que
-   se rellena con la frase de la destreza real del ítem: 21 marcos × 13 destrezas
-   × 3 frases = variedad enorme y siempre cierta.
-
-   LISTAS NEGRAS APLICADAS (casos-mensajes.js, M5 y M6):
-     · Elogio de persona: listo, lista, inteligente, genio, crack, campeón,
-       campeona, máquina, fenómeno, eres el mejor, qué listo, qué lista.
-       Motivo: el elogio de rasgo instala mentalidad fija; cada fallo posterior
-       contradice la etiqueta.
-     · Registro impropio: wow, cool, top, súper, campeoncito, mi niño, cielo,
-       cariño, chaval, voseo y diminutivos condescendientes.
-   ========================================================================== */
+/* mensajes.js — 84 mensajes de acierto (4 × 21) y 48 de ánimo (2 × 24) */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
 
 CB.datos.MENSAJES = {};
 
-/* ── Frases de procedimiento, por destreza (13 slugs × 3) ───────────────── */
+/* Frases de procedimiento, por destreza (13 slugs × 3) */
 CB.datos.MENSAJES.PROCEDIMIENTOS = {
   numeracion: [
     'Has leído el número entero, sin saltarte ninguna cifra.',
@@ -536,7 +452,7 @@ CB.datos.MENSAJES.PROCEDIMIENTOS = {
   ]
 };
 
-/* ── Pistas de procedimiento para el fallo (13 slugs × 2) ───────────────── */
+/* Pistas de procedimiento para el fallo (13 slugs × 2) */
 CB.datos.MENSAJES.PISTAS = {
   numeracion: [
     'Fíjate bien en cuántas cifras tiene el número.',
@@ -592,7 +508,7 @@ CB.datos.MENSAJES.PISTAS = {
   ]
 };
 
-/* ══ ACIERTO — 4 categorías × EXACTAMENTE 21 = 84 ═══════════════════════ */
+/* ACIERTO — 4 categorías × EXACTAMENTE 21 = 84 */
 
 /* A) PROCEDIMIENTO — nombran lo que ha hecho. Las 21 llevan {proc}. */
 CB.datos.MENSAJES.acierto_A = [
@@ -694,7 +610,7 @@ CB.datos.MENSAJES.acierto_D = [
   '¡Sigue esa veta, que da gemas!'
 ];
 
-/* ══ ÁNIMO — 2 categorías × EXACTAMENTE 24 = 48 ═════════════════════════ */
+/* ÁNIMO — 2 categorías × EXACTAMENTE 24 = 48 */
 
 /* P1) MIRA OTRA VEZ — señalan DÓNDE mirar. Las 24 llevan {pista}. */
 CB.datos.MENSAJES.animo_P1 = [
@@ -753,7 +669,7 @@ CB.datos.MENSAJES.animo_P2 = [
   'Este ha salido torcido. Enderezamos y seguimos.'
 ];
 
-/* ── Listas planas y su contrato de tamaño ──────────────────────────────── */
+/* Listas planas y su contrato de tamaño */
 CB.datos.MENSAJES.CATEGORIAS_ACIERTO = ['A', 'B', 'C', 'D'];
 CB.datos.MENSAJES.CATEGORIAS_ANIMO   = ['P1', 'P2'];
 
@@ -767,21 +683,7 @@ CB.datos.MENSAJES.animo = []
   .concat(CB.datos.MENSAJES.animo_P1)
   .concat(CB.datos.MENSAJES.animo_P2);
 
-/* ── GRITOS: lo que va escrito en la cinta ──────────────────────────────────
-   La cinta cruza la pantalla en menos de dos segundos, así que solo cabe —y
-   solo se lee— algo muy corto. El mensaje entero sigue apareciendo QUIETO en
-   #item-mensaje, que es donde vive la carga educativa: «Has pedido prestada una
-   decena y la has deshecho bien» no se puede leer de refilón, y esa frase es la
-   única parte del mensaje que de verdad enseña algo.
-
-   Por eso el grito es material NUEVO y no un trozo recortado del mensaje. Las
-   84 plantillas de acierto y las 48 de ánimo no se tocan.
-
-   SOLO HAY GRITOS DE ACIERTO. Los hubo de ánimo, y se retiran: detrás de un
-   fallo no se celebra, se acompaña, y el vehículo del ánimo pasó a ser Rocarr
-   asintiendo (js/30-ui.js). Sin cartel no hay dónde escribir un grito, y un dato
-   que no se pinta en ningún sitio acaba pareciendo que sí. Se les aplican las
-   mismas dos listas negras que a todo lo demás (casos-mensajes.js, M5 y M6). */
+/* GRITOS: lo que va escrito en la cinta */
 CB.datos.MENSAJES.GRITOS = {
   acierto: [
     '¡Toma!', '¡Eso es!', '¡Ahí está!', '¡Bloque!', '¡Clavado!', '¡Se abre!',
@@ -805,21 +707,7 @@ CB.datos.MENSAJES.NEGRA_REGISTRO = [
   'chaval', 'sos ', 'tenes ', 'podes ', 'ahorita', 'platicar'
 ];
 
-/* ============================================================================
-   motes.js — Lista CERRADA de 120 motes y las 16 paletas de avatar
-   ----------------------------------------------------------------------------
-   El mote es la IDENTIDAD PERMANENTE del niño en el juego, y por eso no puede
-   contener ningún adjetivo de capacidad (PLAN §14.8): si se llama «Gema Lista»,
-   cada fallo contradice su propio nombre, que es exactamente el mecanismo de la
-   mentalidad fija. Y «Topo Veloz» premiaría la rapidez como rasgo, reforzando la
-   presión temporal que todo el diseño trata de quitar.
-
-   Todos los motes son de MATERIAL, de OBJETO de la mina o de ACCIÓN de cavar.
-
-   La lista es cerrada también por seguridad: CB.almacen.importar sustituye por
-   uno de estos cualquier mote que venga en un fichero .json manipulado, de modo
-   que nunca puede inyectarse texto arbitrario en la interfaz (§15.8).
-   ========================================================================== */
+/* motes.js — Lista CERRADA de 120 motes y las 16 paletas de avatar */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
@@ -857,7 +745,7 @@ CB.datos.MOTES = [
   'Fragua Caliente',  'Fragua Antigua',    'Fragua Encendida',   'Fragua de Piedra'
 ];
 
-/* ── Los 16 avatares de Cubi: permutación de paleta sobre 2 mapas base ──── */
+/* Los 16 avatares de Cubi: permutación de paleta sobre 2 mapas base */
 CB.datos.AVATARES = [
   { casco: '#5AA02C', ropa: '#8B5E3C', piel: '#F2C99C' },
   { casco: '#E8B923', ropa: '#3C7BD4', piel: '#8D5A34' },
@@ -884,26 +772,14 @@ CB.datos.COLORES_BLOQUE = [
   '#E8642A', '#4E7A3A', '#8C8C8C', '#A0763F', '#E0D08A'
 ];
 
-/* ============================================================================
-   recomendaciones.js — Los 24 códigos de error → frase llana → actividad de aula
-   ----------------------------------------------------------------------------
-   CU8 (PLAN §6.3) comprueba que este fichero y CB.ERRORES tienen EXACTAMENTE el
-   mismo conjunto de claves, y que ninguna entrada tiene la frase o la actividad
-   vacías. Si alguien añade un código en 18-distractores.js y se olvida de la
-   recomendación, la suite se pone en rojo.
-
-   La frase va dirigida a una persona adulta sin formación matemática. Nada de
-   «error de transferencia en el algoritmo aditivo»: «se olvida de llevar».
-   La actividad es SIEMPRE manipulativa y de 10 minutos, porque el remedio de un
-   error de procedimiento no está en más pantalla.
-   ========================================================================== */
+/* recomendaciones.js — Los 24 códigos de error → frase llana → actividad de aula */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
 
 CB.datos.RECOMENDACIONES = {
 
-  /* ── Sumas ───────────────────────────────────────────────────────────── */
+  /* Sumas */
   'E-S-LLEV-OLV': {
     frase: 'Suma bien las columnas pero se olvida de llevar la decena.',
     actividad: 'Con 20 palillos y gomas: que sume 8 + 5 juntando palillos y que ATE un ' +
@@ -928,7 +804,7 @@ CB.datos.RECOMENDACIONES = {
                'sumas en la cuadrícula SIN resolverlas: el objetivo del día es solo colocar.'
   },
 
-  /* ── Restas ──────────────────────────────────────────────────────────── */
+  /* Restas */
   'E-R-INV': {
     frase: 'Cuando el número de arriba es menor, resta al revés: quita el pequeño del ' +
            'grande dentro de la columna. Es el error de resta más común de 2.º.',
@@ -959,7 +835,7 @@ CB.datos.RECOMENDACIONES = {
                'resultado va a ser MAYOR o MENOR que el número de partida, antes de operar.'
   },
 
-  /* ── Numeración ──────────────────────────────────────────────────────── */
+  /* Numeración */
   'E-N-POS': {
     frase: 'Confunde el valor de las cifras según su lugar: lee 34 donde pone 43.',
     actividad: 'Tabla de valor posicional en una hoja, con dos columnas: D y U. Dictadle ' +
@@ -986,7 +862,7 @@ CB.datos.RECOMENDACIONES = {
                'a mayor y luego al revés, diciendo en alto en qué sentido va.'
   },
 
-  /* ── Multiplicación ──────────────────────────────────────────────────── */
+  /* Multiplicación */
   'E-M-SUMA': {
     frase: 'Suma los dos factores en vez de multiplicar: para 3 × 4 responde 7.',
     actividad: 'Hueveras o cajas de 4: que ponga 3 huevos en cada una de las 4 y cuente. ' +
@@ -1003,7 +879,7 @@ CB.datos.RECOMENDACIONES = {
                'cada uno, ¿cuántas galletas hay?». Que lo diga mirando los platos.'
   },
 
-  /* ── Problemas ───────────────────────────────────────────────────────── */
+  /* Problemas */
   'E-P-PALCLAVE': {
     frase: 'Se guía por la palabra suelta y no por lo que cuenta el problema: ve «más» y ' +
            'suma, aunque el problema pidiera restar.',
@@ -1023,7 +899,7 @@ CB.datos.RECOMENDACIONES = {
                'operación concreta que falla, sin enunciado, es lo que hace falta.'
   },
 
-  /* ── Dinero ──────────────────────────────────────────────────────────── */
+  /* Dinero */
   'E-E-VALOR': {
     frase: 'Cuenta las piezas en vez de su valor: tres monedas de 2 € le parecen 3 €.',
     actividad: 'Monedas de verdad sobre la mesa. Que haga montones por valor y cuente ' +
@@ -1036,7 +912,7 @@ CB.datos.RECOMENDACIONES = {
                'devuelva el cambio contando hacia arriba desde el precio.'
   },
 
-  /* ── Vocabulario ─────────────────────────────────────────────────────── */
+  /* Vocabulario */
   'E-V-TERMINO': {
     frase: 'Confunde dos términos del vocabulario matemático.',
     actividad: 'Tarjetas con la palabra por una cara y un dibujo por la otra. Cinco minutos ' +
@@ -1049,25 +925,12 @@ CB.datos.RECOMENDACIONES = {
   }
 };
 
-/* ============================================================================
-   00-nucleo.js — CB.util y CB.LEGAL
-   ----------------------------------------------------------------------------
-   REGLAS DE FRONTERA (PLAN §14.4), verificadas por pruebas/auditar.sh:
-     · Cero DOM: ni document., ni window., ni localStorage, ni navigator.
-     · Cero Math.random: todo aleatorio pasa por el rng inyectado.
-     · Cero toISOString.
-     · Cero literales de clave 'cubomatica.…' (solo en 01-almacen.js).
-
-   EXENCIÓN DECLARADA (docs/decisiones.md): CB.util.ahora() necesita el reloj
-   monotónico de la plataforma. Se implementa con `typeof performance` en lugar
-   de `window.performance` precisamente para no romper el grep de frontera.
-   ES2017 estricto: sin ?., sin ??, sin campos privados.
-   ========================================================================== */
+/* 00-nucleo.js — CB.util y CB.LEGAL */
 
 var CB = CB || {};
 CB.util = CB.util || {};
 
-/* ── Aleatoriedad reproducible ─────────────────────────────────────────── */
+/* Aleatoriedad reproducible */
 
 /* mulberry32: generador de 32 bits, rápido y con semilla. Devuelve [0,1). */
 CB.util.mulberry32 = function (semilla) {
@@ -1119,14 +982,7 @@ CB.util.rango = function (n) {
   return a;
 };
 
-/* ── BolsaBarajada ──────────────────────────────────────────────────────────
-   Reparte índices 0..n-1 sin repetir hasta agotar la bolsa. Es el mecanismo que
-   sostiene el requisito 4 del usuario (mensajes de enhorabuena nunca repetidos)
-   y el equilibrio de género por CONSTRUCCIÓN de §9.7.
-
-   Se persiste como array de índices restantes, exactamente como el esquema del
-   perfil (§15.3): "bolsaA": [12, 3].
-   ────────────────────────────────────────────────────────────────────────── */
+/* BolsaBarajada */
 CB.util.BolsaBarajada = function (n, rng, restantes) {
   this.n = n | 0;
   this.rng = rng || CB.util.mulberry32(0x9E3779B9);
@@ -1158,7 +1014,7 @@ CB.util.BolsaBarajada.prototype.estado = function () {
   return this.restantes.slice();
 };
 
-/* ── Matemáticas de apoyo ──────────────────────────────────────────────── */
+/* Matemáticas de apoyo */
 
 CB.util.clamp = function (v, a, b) {
   if (!isFinite(v)) return a;
@@ -1187,12 +1043,7 @@ CB.util.mediaIncremental = function (medio, n, valor) {
   return (medio * n + valor) / (n + 1);
 };
 
-/* ── Tiempo y fechas ────────────────────────────────────────────────────────
-   toISOString está PROHIBIDO en todo el proyecto: new Date().toISOString() da el
-   DÍA ANTERIOR para cualquier partida jugada después de las 22:00 en horario
-   peninsular de verano (UTC+2). La racha se rompería sola y el repaso vencería
-   dos veces (§15.5).
-   ────────────────────────────────────────────────────────────────────────── */
+/* Tiempo y fechas */
 
 CB.util.hoyISO = function (d) {
   d = d || new Date();
@@ -1233,7 +1084,7 @@ CB.util.rt = function (t0) {
   return CB.util.clamp(Math.round(CB.util.ahora() - t0), 0, 600000);
 };
 
-/* ── Texto ──────────────────────────────────────────────────────────────── */
+/* Texto */
 
 /* Minúsculas, sin tildes y sin signos. Base del test M3 de unicidad de mensajes. */
 CB.util.normalizar = function (t) {
@@ -1274,7 +1125,7 @@ CB.util.mayus1 = function (t) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 };
 
-/* ── EventoSimple: pub/sub mínimo, sin dependencias ─────────────────────── */
+/* EventoSimple: pub/sub mínimo, sin dependencias */
 CB.util.EventoSimple = function () { this.oyentes = {}; };
 CB.util.EventoSimple.prototype.escuchar = function (nombre, fn) {
   (this.oyentes[nombre] = this.oyentes[nombre] || []).push(fn);
@@ -1289,24 +1140,9 @@ CB.util.EventoSimple.prototype.emitir = function (nombre, dato) {
 
 CB.bus = new CB.util.EventoSimple();
 
-/* ── CB.LEGAL ───────────────────────────────────────────────────────────────
-   ÚNICA constante del proyecto donde vive el aviso de no afiliación. README.md
-   y la pantalla de Créditos lo INSERTAN desde aquí. Este fichero está excluido
-   del grep de marca precisamente por esto (§21.1).
-   ────────────────────────────────────────────────────────────────────────── */
-/* ── Versión ────────────────────────────────────────────────────────────────
-   FUENTE ÚNICA, y desde 1.7.0 tiene CINCO réplicas: README.md, CHANGELOG.md,
-   LEEME.txt, package.json y dist/sw.js. Las cuatro primeras las escribe una
-   persona y `pruebas/auditar.mjs` comprueba que no se separen; la quinta la
-   inyecta gulp leyendo esta misma línea, así que no puede desviarse.
-   Un número de versión repetido a mano en cinco sitios está mal en cuatro en
-   cuanto alguien se despista una vez.
-
-   Versionado semántico: la segunda cifra sube cuando entra algo nuevo —contenido
-   o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
-   el formato del perfil guardado, porque eso obliga a una migración en
-   `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.23.2';
+/* CB.LEGAL */
+/* Versión */
+CB.VERSION = '1.23.3';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -1344,23 +1180,7 @@ CB.LEGAL = {
               'cada trimestre.'
 };
 
-/* ============================================================================
-   01-almacen.js — Persistencia. ÚNICO fichero con literales 'cubomatica.…'
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado: puede tocar localStorage (§14.4).
-
-   LA VERSIÓN VA EN EL OBJETO, NUNCA EN LA CLAVE (PLAN §15.1). El plan v1 la
-   ponía en las dos: en cuanto migrar() dejase el objeto en version:2, o se
-   seguía escribiendo bajo `.v1.` (y la clave mentía) o se escribía en `.v2.` y
-   quedaban HUÉRFANOS el índice y ultimoPerfil → pérdida silenciosa de todo el
-   progreso en la primera migración. Justo el caso que el «test obligatorio»
-   decía cubrir y que el esquema hacía imposible aprobar.
-
-   REGLA AÑADIDA (§15.4): este fichero NO puede referenciar ningún CB.* salvo
-   CB.util. El plan v1 llamaba desde aquí a CB.plantillas.esqueletoVacio(), que
-   no existe, desde un script que carga 13 ficheros ANTES que el generador de
-   problemas → TypeError, y el perfil no cargaba NUNCA.
-   ========================================================================== */
+/* 01-almacen.js — Persistencia. ÚNICO fichero con literales 'cubomatica.…' */
 
 var CB = CB || {};
 CB.almacen = CB.almacen || {};
@@ -1382,7 +1202,7 @@ CB.almacen.TOPES = {
   aula:      { respuestas: 150, historial: 20, perfiles: 30 }
 };
 
-/* ── Acceso crudo, con respaldo en memoria ──────────────────────────────── */
+/* Acceso crudo, con respaldo en memoria */
 function ls() {
   try {
     if (typeof localStorage === 'undefined') return null;
@@ -1473,7 +1293,7 @@ CB.almacen.borrar = function (clave) {
   delete CB.almacen.memoria[clave];
 };
 
-/* ── Ajustes del APARATO (solo lo físico) ───────────────────────────────── */
+/* Ajustes del APARATO (solo lo físico) */
 CB.almacen.ajustesDispositivo = function () {
   var a = CB.almacen.leerCrudo(CB.almacen.CLAVE_AJUSTES);
   if (!a) {
@@ -1490,7 +1310,7 @@ CB.almacen.guardarAjustesDispositivo = function (a) {
   return CB.almacen.escribir(CB.almacen.CLAVE_AJUSTES, a);
 };
 
-/* ── Índice de perfiles ─────────────────────────────────────────────────── */
+/* Índice de perfiles */
 CB.almacen.indice = function () {
   var i = CB.almacen.leerCrudo(CB.almacen.CLAVE_INDICE);
   return (i && i.length != null) ? i : [];
@@ -1505,7 +1325,7 @@ CB.almacen.fijarUltimoPerfil = function (id) {
   return CB.almacen.escribir(CB.almacen.CLAVE_ULTIMO, id);
 };
 
-/* ── Esqueleto de problemas: array literal LOCAL, sin dependencias ──────── */
+/* Esqueleto de problemas: array literal LOCAL, sin dependencias */
 CB.almacen.ESQUELETO_PROBLEMAS = function () {
   var subtipos = ['CAMBIO_1', 'CAMBIO_2', 'CAMBIO_3', 'CAMBIO_4', 'CAMBIO_5', 'CAMBIO_6',
                   'COMBINACION_1', 'COMBINACION_2',
@@ -1520,7 +1340,7 @@ CB.almacen.ESQUELETO_PROBLEMAS = function () {
   return o;
 };
 
-/* ── Perfil nuevo ───────────────────────────────────────────────────────── */
+/* Perfil nuevo */
 CB.almacen.perfilNuevo = function (id, mote, avatar, hoyISO, ajustesPrevios) {
   return {
     version: CB.almacen.VERSION_ESQUEMA,
@@ -1579,7 +1399,7 @@ CB.almacen.perfilNuevoDesdeRestos = function (roto) {
   return p;
 };
 
-/* ── Migración: cada paso AÑADE campos. JAMÁS BORRA ─────────────────────── */
+/* Migración: cada paso AÑADE campos. JAMÁS BORRA */
 CB.almacen.migrar = function (perfil) {
   try {
     if (!perfil.version) perfil.version = 1;
@@ -1660,7 +1480,7 @@ CB.almacen.recortarFechasFuturas = function (perfil) {
   return perfil;
 };
 
-/* ── Leer y guardar perfil ──────────────────────────────────────────────── */
+/* Leer y guardar perfil */
 /* ¿Hay algo escrito en esa clave, aunque no se pueda leer? Distinguir «no hay
    perfil» de «hay un perfil y está roto» es lo único que separa un mensaje útil
    de un botón que no hace nada. */
@@ -1676,18 +1496,6 @@ CB.almacen.leerPerfil = function (id) {
   var clave = CB.almacen.claveDePerfil(id);
   var p = CB.almacen.leerCrudo(clave);
 
-  /* PERFIL ILEGIBLE. leerCrudo() se traga el fallo de JSON.parse y devuelve
-     null, igual que cuando el perfil no existe. Para el índice o los ajustes
-     eso está bien: se cae a los valores por defecto y no pasa nada. Para un
-     perfil es lo contrario de lo que hay que hacer, porque quien lo llama
-     —CB.perfiles.activar()— hace «if (!p) return;» y se va sin decir nada.
-
-     El resultado era que pulsar JUGAR sobre un perfil dañado no hacía NADA:
-     ni mensaje, ni error, ni pantalla nueva. Un niño toca el botón, no pasa
-     nada, lo toca otra vez, sigue sin pasar nada. Y el adulto no tiene forma
-     de enterarse de que hay progreso guardado que ya no se puede leer.
-
-     Con el centinela de error, activar() sí tiene algo que contar. */
   if (!p && CB.almacen.existeCrudo(clave)) {
     return { error: 'perfil-ilegible',
              mensaje: 'Los datos de este minero están dañados y no se pueden ' +
@@ -1732,7 +1540,7 @@ CB.almacen.borrarPerfil = function (id) {
   }
 };
 
-/* ── Poda ───────────────────────────────────────────────────────────────── */
+/* Poda */
 CB.almacen.podar = function (perfil, opciones) {
   opciones = opciones || {};
   var aula = CB.almacen.ajustesDispositivo().modoAula;
@@ -1778,11 +1586,7 @@ CB.almacen.podar = function (perfil, opciones) {
   return perfil;
 };
 
-/* ── Exportar e importar CON VALIDACIÓN ─────────────────────────────────────
-   Aceptar JSON arbitrario y volcarlo al DOM es la ÚNICA superficie de ataque
-   que existe en este proyecto, y en v1 estaba abierta: un fichero manipulado
-   podía traer `mote` con HTML, `colorBloque` con una cadena que se inyecta en un
-   style, arrays de 500.000 entradas o version:99. */
+/* Exportar e importar CON VALIDACIÓN */
 CB.almacen.CAMPOS_PERMITIDOS = [
   'version', 'id', 'mote', 'avatar', 'colorBloque', 'creadoISO', 'trimestreDeducido',
   'calibrado', 'grupo', 'ajustes', 'gemas', 'puntosTotales', 'mejorPuntuacion',
@@ -1813,7 +1617,7 @@ CB.almacen.validarImportado = function (crudo, motesValidos) {
   }
   if (!/^#[0-9A-Fa-f]{6}$/.test(String(limpio.colorBloque))) limpio.colorBloque = '#5AA02C';
   limpio.avatar = CB.util.clamp(parseInt(limpio.avatar, 10) || 0, 0, 15);
-  if (!limpio.id || !/^[A-Za-z0-9\-]{1,32}$/.test(String(limpio.id))) {
+  if (!limpio.id || !/^[A-Za-z0-9-]{1,32}$/.test(String(limpio.id))) {
     limpio.id = 'p-' + CB.util.hash32(String(limpio.mote) + limpio.avatar).toString(16);
   }
 
@@ -1843,21 +1647,7 @@ CB.almacen.bytesUsados = function () {
   return total * 2;                 // UTF-16
 };
 
-/* ============================================================================
-   02-texturas.js — 8 texturas de 16×16 generadas por canvas. CERO .png
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado (§14.4): necesita document.createElement.
-   La lista v1 de exentos se olvidaba de este fichero y de 03-sprites.js, con lo
-   que el test de frontera habría fallado el primer día contra código correcto.
-
-   Se ejecuta UNA SOLA VEZ al arrancar. El resultado se vuelca a las variables
-   CSS --tex-* como data: URI, de modo que el CSS las usa sin saber de dónde
-   vienen y sin una sola petición de red.
-
-   El ruido usa PRNG con SEMILLA PROPIA: la misma textura en todos los
-   dispositivos y en todas las sesiones. Sin semilla fija, cada arranque
-   repintaría un mundo distinto y el niño lo notaría.
-   ========================================================================== */
+/* 02-texturas.js — 8 texturas de 16×16 generadas por canvas. CERO .png */
 
 var CB = CB || {};
 CB.texturas = CB.texturas || {};
@@ -1878,7 +1668,7 @@ CB.texturas.RECETAS = [
 ];
 
 CB.texturas.pintar = function (receta) {
-  var nombre = receta[0], semilla = receta[1];
+  var semilla = receta[1];
   var base = receta[2], claro = receta[3], oscuro = receta[4], patron = receta[5];
   var L = CB.texturas.LADO;
 
@@ -1945,22 +1735,7 @@ CB.texturas.generarTodas = function () {
 
 CB.texturas.get = function (nombre) { return CB.texturas.cache[nombre] || null; };
 
-/* ============================================================================
-   03-sprites.js — Sprites de mapa de píxeles. 24 entradas de caché
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado (§14.4).
-
-   UMBRAL DE RASTERIZACIÓN (PLAN §10.8): box-shadow SOLO para sprites ESTÁTICOS
-   de ≤ 64 píxeles encendidos. Todo sprite ANIMADO o de > 64 píxeles se rasteriza
-   a canvas y se usa como background-image con data: URI cacheado.
-
-   El umbral v1 («>400 sombras») permitía animar elementos con 400 box-shadow a
-   60 fps en un Chromebook de 2019: repintados de decenas de milisegundos y
-   tirones garantizados justo en el momento de la celebración.
-
-   RECUENTO DECLARADO: 24 entradas = 11 criaturas + 6 iconos de HUD + 5 bloques
-   + 2 mapas base de avatar (de los que salen los 16 por permutación de paleta).
-   ========================================================================== */
+/* 03-sprites.js — Sprites de mapa de píxeles. 24 entradas de caché */
 
 var CB = CB || {};
 CB.sprites = CB.sprites || {};
@@ -1972,7 +1747,7 @@ CB.sprites.cache = {};
    Formato compacto y legible: se puede corregir un sprite a ojo. */
 CB.sprites.MAPAS = {
 
-  /* ── 11 criaturas ─────────────────────────────────────────────────────── */
+  /* 11 criaturas */
   cubi: ['..000..',
          '.01110.',
          '.12221.',
@@ -2063,7 +1838,7 @@ CB.sprites.MAPAS = {
              '.2...2.',
              '.......'],
 
-  /* ── 6 iconos de HUD ──────────────────────────────────────────────────── */
+  /* 6 iconos de HUD */
   luzEncendida: ['..111..',
                  '.12211.',
                  '1122111',
@@ -2112,14 +1887,14 @@ CB.sprites.MAPAS = {
           '.11.11.',
           '.......'],
 
-  /* ── 5 bloques ────────────────────────────────────────────────────────── */
+  /* 5 bloques */
   bloquePiedra: ['1111111','1211121','1111111','1121211','1111111','1211121','1111111'],
   bloqueTierra: ['1111111','1121111','1111211','1111111','1211112','1111111','1112111'],
   bloqueHierba: ['2222222','2222222','1111111','1211121','1111111','1121211','1111111'],
   bloqueCristal:['1111111','1211121','1121211','1112111','1121211','1211121','1111111'],
   bloqueMusgo:  ['2121212','1212121','1111111','1211121','1111111','2121212','1212121'],
 
-  /* ── 2 mapas base de avatar (16 variantes por permutación de paleta) ──── */
+  /* 2 mapas base de avatar (16 variantes por permutación de paleta) */
   avatarBase1: ['..000..',
                 '.01110.',
                 '.12221.',
@@ -2282,41 +2057,9 @@ CB.sprites.precalentar = function () {
   return n;
 };
 
-/* ══ EL DINERO YA NO SE DIBUJA: SE FOTOGRAFÍA ════════════════════════════════
+/* EL DINERO YA NO SE DIBUJA: SE FOTOGRAFÍA */
 
-   Aquí vivían `svgMoneda`, `svgBillete`, `estrellasSVG` y `generarDinero`: siete
-   piezas compuestas en SVG al arrancar y publicadas como data: URI en las
-   variables `--pieza-*`. Desde 1.20.0 las doce piezas son fotografías en
-   `dist/img/*.webp` y el CSS las declara él mismo, así que este bloque no tiene
-   nada que hacer y se ha ido entero —64 KB de imágenes a cambio de 90 líneas de
-   dibujo y de un arranque que ya no compone nada—.
-
-   El porqué del cambio está escrito donde ahora se decide, que es
-   `src/scss/abstracts/_variables.scss`. Se anota aquí porque el motivo que se dio en su
-   día para dibujarlas —«la auditoría no admite un solo binario»— sigue siendo
-   verdad y no era la razón que parecía: lo que prohíbe binarios es una lista del
-   bloque 4 de `auditar.mjs`, no `file://`. Una imagen es un subrecurso y se abre
-   con doble clic igual que la hoja de estilos.
-
-   LO QUE NO SE HA IDO es el resto del fichero: las ocho texturas del terreno
-   SIGUEN dibujándose en canvas. Ahí el argumento sí se sostiene, porque lo que
-   producen es ruido de 16×16 que como fichero pesaría más de lo que pesa el
-   código que lo genera.
-   ══════════════════════════════════════════════════════════════════════════ */
-
-/* ============================================================================
-   04-audio.js — 13 efectos sintetizados con Web Audio. CERO ficheros de sonido
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado (§14.4).
-
-   El contexto de audio NO se crea al cargar la página: los navegadores lo
-   suspenden hasta que hay un gesto del usuario, y un AudioContext suspendido que
-   nadie reanuda deja el juego mudo sin decir por qué. Se crea en el primer toque
-   real (iniciar() se llama desde el botón JUGAR).
-
-   REGLA DE §10.4: el sonido NUNCA es el único canal. Con el volumen a cero, toda
-   la información sigue llegando por color + forma + movimiento + texto.
-   ========================================================================== */
+/* 04-audio.js — 13 efectos sintetizados con Web Audio. CERO ficheros de sonido */
 
 var CB = CB || {};
 CB.audio = CB.audio || {};
@@ -2326,18 +2069,7 @@ CB.audio.maestro = null;
 CB.audio.silenciado = false;
 CB.audio.vol = 0.7;
 
-/* ── CUÁNTOS SONIDOS SE HAN PEDIDO ─────────────────────────────────────────
-   Es lo que hace posible la regla de UN GESTO, UN SONIDO (99-arranque.js). El
-   clic genérico de «pulsar» no puede saber si el botón o la tecla que acaban de
-   tocarse tienen voz propia —el «picar» del teclado numérico, el «gema» de la
-   moneda, el «toc» del borrado—, pero sí puede mirar si durante el gesto ha
-   sonado ALGO y callarse. Sin esto, la alternativa es una lista de excepciones
-   escrita a mano, y de esas ya se han caído varias en este proyecto.
-
-   Se cuenta la PETICIÓN, no el sonido, y ANTES de mirar el contexto de audio: si
-   se contara después, en la página de pruebas —donde no hay AudioContext— el
-   contador no se movería nunca, la regla se comprobaría en el vacío y saldría
-   verde diciendo nada. */
+/* CUÁNTOS SONIDOS SE HAN PEDIDO */
 CB.audio.emitidos = 0;
 
 CB.audio.NOTAS = {
@@ -2419,7 +2151,7 @@ CB.audio.ruido = function (cuando, duracion, frecFiltro, ganancia) {
   } catch (e) { }
 };
 
-/* ── Los 13 efectos ─────────────────────────────────────────────────────── */
+/* Los 13 efectos */
 CB.audio.EFECTOS = {
 
   acierto: function () {
@@ -2453,21 +2185,7 @@ CB.audio.EFECTOS = {
   /* «Toc» de madera del toque prematuro durante los 800 ms de construcción. */
   toc: function () { CB.audio.ruido(0, 0.05, 380, 0.22); },
 
-  /* ── EL CLIC DE PULSAR, y es el decimotercero ──────────────────────────────
-     Se pedía que todos los botones sonaran al pulsarse. Hasta ahora sonaba lo
-     que PASA —el acierto, el fallo, la gema, la luz— pero no el acto de tocar,
-     así que un botón de navegación, uno de ajustes o el de pausa se pulsaban en
-     silencio y no había forma de saber si el toque había entrado.
-
-     Este es el sonido más frecuente del juego con diferencia, y por eso es el
-     más corto y el más flojo de los trece: 35 ms y ganancia 0,12, contra los
-     0,22 del «toc». Un clic que se oye tanto como una celebración deja de ser
-     información y pasa a ser ruido — la misma regla que ordena las
-     celebraciones, aplicada al sonido.
-
-     Y suena DISTINTO del «toc»: el «toc» es ruido filtrado grave —«aún no»— y
-     esto es una nota corta y clara —«sí»—. Que se distingan importa: son las dos
-     respuestas posibles a la misma acción. */
+  /* EL CLIC DE PULSAR, y es el decimotercero */
   pulsar: function () {
     CB.audio.nota(CB.audio.NOTAS.do5, 0, 0.035, 'square', 0.12);
   },
@@ -2497,10 +2215,6 @@ CB.audio.EFECTOS = {
     CB.audio.nota(CB.audio.NOTAS.re5, 0.05, 0.09, 'sine', 0.16);
   },
 
-  /* «Hurry up!»: tres notas ascendentes rápidas. Deliberadamente NO es una
-     alarma. Una alarma a un niño de 7 años que está pensando le borra lo que
-     tenía en la cabeza; esto tiene que sonar a que empieza algo, no a que se
-     acaba algo. */
   prisa: function () {
     CB.audio.nota(CB.audio.NOTAS.sol4, 0,    0.07, 'square', 0.18);
     CB.audio.nota(CB.audio.NOTAS.si4,  0.07, 0.07, 'square', 0.18);
@@ -2537,19 +2251,7 @@ CB.audio.conectarVisibilidad = function () {
   });
 };
 
-/* ============================================================================
-   05-voz.js — Lectura en voz alta y lectura guiada
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado (§14.4).
-
-   SIN VOZ ES-* EL BOTÓN NO DESAPARECE, HACE LECTURA GUIADA (PLAN §16.4): en un
-   Chromebook escolar sin paquete de voz en español, un botón de altavoz que no
-   hace nada es peor que no tenerlo. La lectura guiada resalta palabra a palabra
-   a 1 s/palabra, que es exactamente el ritmo de un lector de 2.º, y funciona en
-   cualquier dispositivo porque no depende de nada externo.
-
-   El cronómetro de puntuación NO CORRE durante la lectura guiada (§11.4).
-   ========================================================================== */
+/* 05-voz.js — Lectura en voz alta y lectura guiada */
 
 var CB = CB || {};
 CB.voz = CB.voz || {};
@@ -2668,19 +2370,7 @@ CB.voz.precargar = function () {
   } catch (e) { }
 };
 
-/* ============================================================================
-   06-a11y.js — Accesibilidad: región viva, foco y mapa de teclado
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado (§14.4).
-
-   CRITERIO DE HECHO DE F8: se completa una partida entera SOLO CON TECLADO y con
-   el sonido silenciado, en cada uno de los 7 formatos de respuesta.
-
-   El manejador de teclado comprueba `CB.partida.bloqueado` COMO PRIMERA LÍNEA:
-   durante los 800 ms de construcción del ítem, el teclado tiene que estar tan
-   bloqueado como los botones, o el bloqueo anti-azar sería puramente decorativo
-   para quien juega con teclado (§3.5).
-   ========================================================================== */
+/* 06-a11y.js — Accesibilidad: región viva, foco y mapa de teclado */
 
 var CB = CB || {};
 CB.a11y = CB.a11y || {};
@@ -2697,16 +2387,7 @@ CB.a11y.anunciar = function (texto) {
   r.textContent = t;
 };
 
-/* ── La SEGUNDA región viva, y por qué hacen falta dos ──────────────────────
-   Había una sola, `polite`, y por ella pasaba todo: «has ganado 3 gemas», «muy
-   bien», «se ha apagado una luz» y «te quedan 5 segundos». Una región `polite`
-   se anuncia cuando el lector termina lo que estaba diciendo, y respetando el
-   orden de llegada. Con la cuenta atrás corriendo, eso significa que el aviso
-   urgente se lee DESPUÉS de la felicitación — es decir, tarde.
-
-   `role="alert"` interrumpe. Se usa solo para lo que caduca: el reloj y el aviso
-   de prisa. Todo lo demás sigue en la región educada, porque un lector que
-   interrumpe cada tres segundos es inutilizable. */
+/* La SEGUNDA región viva, y por qué hacen falta dos */
 CB.a11y.ultimaUrgencia = '';
 
 CB.a11y.urgente = function (texto) {
@@ -2730,15 +2411,7 @@ CB.a11y.primerEnfocable = function (contenedor) {
   );
 };
 
-/* ── Mapa de teclado (PLAN §16.5) ──────────────────────────────────────────
-   0-9      escribe cifra (tecladoBloques) / elige opción 1-4 (opciones4)
-   Enter    confirma
-   Retroceso borra la última cifra
-   Espacio  activa el elemento con foco
-   Flechas  mueven el foco por la rejilla
-   L        leer en voz alta        P  pista
-   Escape   pausa (en partida) o volver
-   ────────────────────────────────────────────────────────────────────────── */
+/* Mapa de teclado (PLAN §16.5) */
 CB.a11y.MAPA = {
   leer: ['l', 'L'],
   pista: ['p', 'P'],
@@ -2800,7 +2473,7 @@ CB.a11y.conectarFlechas = function (contenedor, columnas) {
   });
 };
 
-/* ── Ajustes de accesibilidad sobre la raíz del documento ───────────────── */
+/* Ajustes de accesibilidad sobre la raíz del documento */
 CB.a11y.aplicarAjustes = function (ajustes, ajustesAparato) {
   var raiz = document.documentElement;
   ajustes = ajustes || {};
@@ -2829,51 +2502,12 @@ CB.a11y.textoLuces = function (luces, tope) {
          ' de ' + tope + '.';
 };
 
-/* ============================================================================
-   07-musica.js — Las 9 pistas de música de fondo
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma (§14.4): toca el DOM y crea elementos <audio>. Está
-   por tanto FUERA de la regla de frontera, igual que 04-audio.js y 05-voz.js.
-
-   POR QUÉ <audio> Y NO WEB AUDIO. El resto del sonido del juego se sintetiza en
-   04-audio.js y sale por el nodo maestro de Web Audio. La música NO puede ir por
-   ahí: meter un fichero en un AudioContext exige decodeAudioData() sobre un
-   ArrayBuffer, es decir fetch() o XMLHttpRequest, y sobre file:// eso está
-   bloqueado por CORS. Un elemento <audio> con src relativo, en cambio, se carga
-   como subrecurso del documento igual que una hoja de estilo, y funciona con
-   doble clic. Ese es el criterio que manda: el juego se abre con doble clic.
-
-   La consecuencia es que la música NO pasa por CB.audio.maestro y tiene su
-   propio volumen. Se ha convertido en ventaja: la música lleva su nivel aparte
-   del de los efectos, que es lo que uno quiere de todas formas.
-
-   TRES COSAS QUE ESTE FICHERO ARREGLA Y QUE NO SON EVIDENTES:
-
-   1. Las nueve pistas tienen 8,2 dB de diferencia de volumen entre la más
-      fuerte y la más floja. Sin corregir, pasar del mapa a una partida en el
-      Río hunde la música y volver la dispara. Cada pista lleva su ganancia.
-
-   2. Cinco pistas acaban en silencio y dos empiezan con silencio. Con loop=true
-      a secas, el bucle mete hasta tres segundos de nada. Cada pista declara
-      dónde entra y dónde sale, y el bucle funde entre esos dos puntos.
-
-   3. Los navegadores prohíben reproducir sonido antes de un gesto del usuario.
-      Si play() se rechaza, no se pierde: queda pendiente y se reintenta en el
-      primer toque o la primera tecla.
-   ========================================================================== */
+/* 07-musica.js — Las 9 pistas de música de fondo */
 
 var CB = CB || {};
 CB.musica = CB.musica || {};
 
-/* ── Tabla CERRADA de pistas ────────────────────────────────────────────────
-   gan   ganancia de normalización = 10^((−16 − volumenMedio) / 20), medido con
-         ffmpeg -af volumedetect. Objetivo −16 dB.
-   entra segundo en el que empieza la música de verdad (tras el silencio inicial)
-   sale  segundo en el que empieza el silencio final, medido con silencedetect
-         a −45 dB. El bucle vuelve a `entra` al llegar aquí.
-   La equivalencia con el fichero original y el criterio de reparto están en
-   docs/musica.md; los créditos, en audio/CREDITOS.txt.
-   ────────────────────────────────────────────────────────────────────────── */
+/* Tabla CERRADA de pistas */
 CB.musica.PISTAS = {
   temaPrincipal: { fichero: 'tema-principal.mp3', gan: 0.851, entra: 0,    sale: 137.0 },
   cantera:       { fichero: 'cantera.mp3',        gan: 0.631, entra: 0,    sale: 72.8 },
@@ -2886,18 +2520,7 @@ CB.musica.PISTAS = {
   victoria:      { fichero: 'victoria.mp3',       gan: 0.624, entra: 0,    sale: 105.5 }
 };
 
-/* Qué suena en cada una de las 18 pantallas.
-   null  = silencio deliberado.
-   La ausencia de una pantalla en esta tabla NO ocurre: están las 18, para que
-   añadir una pantalla nueva y olvidarse de la música sea un fallo de prueba y
-   no un silencio que nadie note. 'p-partida' se resuelve por el mundo.
-
-   HAY UNA EXCEPCIÓN, Y SOLO UNA. CB.jefes.terminar() llama a poner('victoria')
-   por su cuenta, sin pasar por el bus, porque NO cambia de pantalla: pinta la
-   victoria encima de p-jefe, y sin esa línea la música seguiría diciendo que hay
-   peligro justo cuando el mundo se cierra. Se anota aquí para que quien lea esta
-   tabla no la crea completa: lo es para el bus, no para todo el juego. La
-   decisión está en docs/decisiones.md. */
+/* HAY UNA EXCEPCIÓN, Y SOLO UNA. */
 CB.musica.PANTALLAS = {
   'p-portada':     'temaPrincipal',
   'p-perfiles':    'temaPrincipal',
@@ -2919,10 +2542,6 @@ CB.musica.PANTALLAS = {
   'p-error':       null
 };
 
-/* Crédito de cada pista. La Pixabay Content License no exige atribución, pero
-   el crédito le corresponde a quien compuso la música igual. Esta lista es la
-   que pinta la pantalla de Créditos; audio/CREDITOS.txt dice lo mismo para
-   quien abra la carpeta sin abrir el juego. */
 CB.musica.CREDITOS = [
   { clave: 'temaPrincipal', autor: 'musicinmedia',        id: 381366, dura: '2:20' },
   { clave: 'victoria',      autor: 'musicinmedia',        id: 453214, dura: '1:49' },
@@ -2946,17 +2565,7 @@ CB.musica.POR_BIOMA = {
   mina:    'mundoMina'
 };
 
-/* Los cuatro niveles del ajuste. Son botones, no un deslizador: en esta
-   interfaz no hay ni un solo control continuo y no va a haberlo ahora (§10.2).
-
-   EL 0,62 DE «ALTA» NO ES UN GUSTO. El volumen que se le pide al elemento es
-   nivel × ganancia de la pista, y hay ganancias por encima de 1 (mundo-rio
-   venía 4 dB por debajo del resto y necesita 1,603). Si nivel × ganancia se
-   pasa de 1, el recorte cae justo sobre la pista que necesitaba el empujón:
-   la normalización se desactiva sola y vuelve el desnivel entre pistas que
-   venía a quitar. 0,62 × 1,603 = 0,994. Lo comprueba casos-musica.js, así que
-   una pista nueva más floja que mundo-rio suspende el test en vez de recortar
-   en silencio. */
+/* Son botones, no un deslizador: en esta interfaz no hay ni un solo control continuo y no va a haberlo ahora (§10.2). */
 CB.musica.NIVELES = [
   { etiqueta: 'No',    valor: 0 },
   { etiqueta: 'Baja',  valor: 0.20 },
@@ -2986,7 +2595,7 @@ CB.musica.canales = [
 CB.musica._activo = 0;
 CB.musica._reloj = null;
 
-/* ── Volumen ────────────────────────────────────────────────────────────── */
+/* Volumen */
 
 /* El silencio del aparato manda sobre todo: si un adulto apaga el sonido,
    apaga TODO el sonido, no solo los efectos. */
@@ -3022,28 +2631,7 @@ CB.musica.factorBucle = function (el, p) {
   return f;
 };
 
-/* ── iOS NO DEJA FIJAR EL VOLUMEN ───────────────────────────────────────────
-   En iPhone y iPad, `HTMLMediaElement.volume` es de solo lectura: asignarle un
-   valor no hace nada y leerlo devuelve siempre 1. Está documentado por Apple y
-   el motivo es que el volumen lo manda el botón físico del aparato.
-
-   Todo este módulo se apoyaba en `el.volume`, así que en un iPad —que es
-   objetivo declarado del proyecto, el de 6.ª generación— pasaba esto:
-
-     · silenciar el juego NO silenciaba la música. Justo el fallo que el
-       comentario de CB.audio.silenciar() llama «el más visible posible».
-     · «Baja», «Media» y «Alta» sonaban exactamente igual: a tope.
-     · la normalización por pista no hacía nada, y el desnivel de 8 dB entre
-       pistas volvía entero.
-     · el fundido cruzado no fundía: durante 900 ms sonaban DOS pistas a la vez
-       a todo volumen.
-     · el agachado durante la voz tampoco funcionaba, de modo que un niño que
-       aún no lee con fluidez tenía que separar la voz de la música a tope.
-
-   Sin volumen, solo hay dos estados: sonando o parado. Es peor que un fundido,
-   pero es infinitamente mejor que lo anterior, y el «No» del ajuste vuelve a
-   silenciar de verdad. Se detecta una vez, escribiendo y releyendo.
-   ────────────────────────────────────────────────────────────────────────── */
+/* iOS NO DEJA FIJAR EL VOLUMEN */
 CB.musica.volumenAjustable = null;          // null = todavía no se sabe
 
 CB.musica.detectarVolumen = function (el) {
@@ -3079,7 +2667,7 @@ CB.musica.aplicarVolumenes = function () {
   }
 };
 
-/* ── Motor ──────────────────────────────────────────────────────────────── */
+/* Motor */
 CB.musica.arrancarReloj = function () {
   if (CB.musica._reloj) return;
   CB.musica._reloj = setInterval(CB.musica.tick, CB.musica.MS_TICK);
@@ -3127,16 +2715,6 @@ CB.musica.tick = function () {
   if (!vivo) CB.musica.pararReloj();
 };
 
-/* DÓNDE SE QUEDÓ CADA PISTA. Es estado de SESIÓN, no del perfil: 07-musica.js es
-   adaptador de plataforma (capa 00-07) y puede tenerlo, pero el almacén no es
-   esto y aquí no se persiste nada.
-
-   Sin esto, cada reparación y cada descanso ponían 'calma' y al volver la pista
-   del mundo empezaba otra vez en su punto de entrada. Con un fallo de cada dos
-   llevando a reparación y un descanso cada 6-8 ítems, son cinco o seis idas y
-   venidas por partida: de nueve pistas normalizadas y con puntos de bucle
-   medidos, el niño oía siempre los mismos treinta primeros segundos. Monotonía
-   fabricada por el motor. */
 CB.musica.posiciones = {};
 
 CB.musica.soltar = function (c) {
@@ -3158,7 +2736,7 @@ CB.musica.soltar = function (c) {
   c.objetivo = 0;
 };
 
-/* ── Elementos ──────────────────────────────────────────────────────────── */
+/* Elementos */
 CB.musica.crearElemento = function (clave) {
   var p = CB.musica.PISTAS[clave];
   if (!p) return null;
@@ -3179,7 +2757,7 @@ CB.musica.crearElemento = function (clave) {
   return el;
 };
 
-/* ── API pública ────────────────────────────────────────────────────────── */
+/* API pública */
 
 /**
  * Pone una pista con fundido cruzado. Si ya suena esa misma, no hace nada:
@@ -3285,35 +2863,18 @@ CB.musica.parar = function () {
   CB.musica.pararReloj();
 };
 
-/* ── Resolución pantalla → pista ────────────────────────────────────────── */
+/* Resolución pantalla → pista */
 CB.musica.claveDePantalla = function (idPantalla) {
   var v = CB.musica.PANTALLAS[idPantalla];
   if (v !== '@mundo') return (v === undefined) ? null : v;
 
-  /* En partida, la música la fija el bioma del mundo: cambiar de mundo se oye
-     antes de leerse.
-
-     SE LEE `estado.mundo`, QUE ES LO QUE ESCRIBE CB.partida.iniciar(). Antes
-     leía `estado.mundoId`, que no existe en ninguna parte del proyecto: el
-     estado guarda el OBJETO de mundo, no su id. `mundoId` es el nombre del
-     parámetro de iniciar({mundoId:…}), y ahí se quedó.
-
-     La consecuencia era muda y completa: undefined → getMundo(null) → null →
-     el respaldo. Tres de las cuatro pistas de mundo —bosque, río y mina— no han
-     sonado jamás, y toda expedición sonaba a pradera. No hay error, no hay
-     silencio, no hay nada que mirar: suena música, solo que siempre la misma.
-
-     El test lo daba por bueno porque construía el estado a mano con la forma
-     equivocada, `{mundoId: m.id}`, copiada de esta misma línea. Un test escrito
-     contra la implementación en vez de contra la conducta se pone de acuerdo con
-     el fallo. El guardián E42 de casos-regresiones.js parte del estado que crea
-     iniciar() de verdad, que es lo único que no se puede inventar. */
+  /* No hay error, no hay silencio, no hay nada que mirar: suena música, solo que siempre la misma. */
   var mundo = (CB.partida && CB.partida.estado) ? CB.partida.estado.mundo : null;
   var clave = (mundo && mundo.bioma) ? CB.musica.POR_BIOMA[mundo.bioma] : null;
   return clave || 'mundoPradera';
 };
 
-/* ── Arranque ───────────────────────────────────────────────────────────── */
+/* Arranque */
 CB.musica.iniciar = function () {
   if (CB.musica.iniciada) return;
   CB.musica.iniciada = true;
@@ -3348,24 +2909,13 @@ CB.musica.iniciar = function () {
   });
 };
 
-/* ============================================================================
-   10-gen-numeracion.js — N1…N16
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA: cero DOM, cero Math.random. El rng SIEMPRE se inyecta, o la
-   «semilla reproducible» de la mejora 11 sería falsa y el botón «Reproducir esta
-   pregunta» del panel del adulto no reproduciría nada.
-
-   Formato `ordenar`: por el invariante 5, item.opciones es null y item.respuesta
-   es un entero de [0,999]. El array esperado va en item.orden, y el componente
-   valida la secuencia completa; item.respuesta es el último número de la
-   secuencia, que es el que el niño coloca al final.
-   ========================================================================== */
+/* 10-gen-numeracion.js — N1…N16 */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
 CB.gen.numeracion = {};
 
-/* ── Número → palabras, 0-999 en español ────────────────────────────────── */
+/* Número → palabras, 0-999 en español */
 CB.gen.numeracion.UNIDADES = ['cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco',
                               'seis', 'siete', 'ocho', 'nueve'];
 CB.gen.numeracion.DIEZ_A_QUINCE = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince'];
@@ -3409,7 +2959,7 @@ CB.gen.numeracion.ORDINALES = ['', 'primero', 'segundo', 'tercero', 'cuarto', 'q
   'decimotercero', 'decimocuarto', 'decimoquinto', 'decimosexto', 'decimoséptimo',
   'decimoctavo', 'decimonoveno', 'vigésimo'];
 
-/* ── Ayudas comunes ─────────────────────────────────────────────────────── */
+/* Ayudas comunes */
 
 /* Rango efectivo del nivel según D (§8.2): D no cambia el rango declarado, lo
    recorre. D=1 la parte baja, D=2 todo, D=3 la parte alta. */
@@ -3421,7 +2971,7 @@ function tramo(min, max, D, rng) {
 }
 CB.gen.numeracion._tramo = tramo;
 
-/* ── N1 Contar y recontar ───────────────────────────────────────────────── */
+/* N1 Contar y recontar */
 CB.gen.numeracion.N1 = function (rng, D) {
   var n = tramo(3, D === 1 ? 12 : 24, D, rng);
   return {
@@ -3434,7 +2984,7 @@ CB.gen.numeracion.N1 = function (rng, D) {
   };
 };
 
-/* ── N2 Leer y escribir hasta 99 ────────────────────────────────────────── */
+/* N2 Leer y escribir hasta 99 */
 CB.gen.numeracion.N2 = function (rng, D) {
   var n = tramo(10, 99, D, rng);
   return {
@@ -3446,7 +2996,7 @@ CB.gen.numeracion.N2 = function (rng, D) {
   };
 };
 
-/* ── N3 Decenas y unidades ──────────────────────────────────────────────── */
+/* N3 Decenas y unidades */
 CB.gen.numeracion.N3 = function (rng, D) {
   var n = tramo(11, 99, D, rng);
   var pideDecenas = rng() < 0.5;
@@ -3462,7 +3012,7 @@ CB.gen.numeracion.N3 = function (rng, D) {
   };
 };
 
-/* ── N4 Mayor, menor, igual (balanza) ───────────────────────────────────── */
+/* N4 Mayor, menor, igual (balanza) */
 function comparacion(rng, D, max) {
   var a = tramo(0, max, D, rng), b;
   var r = rng();
@@ -3486,7 +3036,7 @@ CB.gen.numeracion.N4  = function (rng, D) { return comparacion(rng, D, 99); };
 CB.gen.numeracion.N10 = function (rng, D) { return comparacion(rng, D, 599); };
 CB.gen.numeracion.N16 = function (rng, D) { return comparacion(rng, D, 999); };
 
-/* ── N5 / N11 Series (ordenar) ──────────────────────────────────────────── */
+/* N5 / N11 Series (ordenar) */
 function serie(rng, D, saltos, max) {
   var salto = CB.util.elegir(rng, saltos);
   var asc = rng() < 0.65;
@@ -3512,7 +3062,7 @@ function serie(rng, D, saltos, max) {
 CB.gen.numeracion.N5  = function (rng, D) { return serie(rng, D, [2, 10], 99); };
 CB.gen.numeracion.N11 = function (rng, D) { return serie(rng, D, [5, 100], 599); };
 
-/* ── N6 Pares e impares ─────────────────────────────────────────────────── */
+/* N6 Pares e impares */
 CB.gen.numeracion.N6 = function (rng, D) {
   var pidePar = rng() < 0.5;
   var base = tramo(1, 99, D, rng);
@@ -3540,9 +3090,9 @@ CB.gen.numeracion.N6 = function (rng, D) {
   };
 };
 
-/* ── N7 La recta numérica (ordenar) ─────────────────────────────────────── */
+/* N7 La recta numérica (ordenar) */
 CB.gen.numeracion.N7 = function (rng, D) {
-  var max = 199, cuantos = (D === 1) ? 3 : 4, orden = [], i, v, k = 0;
+  var max = 199, cuantos = (D === 1) ? 3 : 4, orden = [], v, k = 0;
   while (orden.length < cuantos && k < 80) {
     k++;
     v = tramo(0, max, D, rng);
@@ -3560,7 +3110,7 @@ CB.gen.numeracion.N7 = function (rng, D) {
   };
 };
 
-/* ── N8 / N15 Escribir números grandes ──────────────────────────────────── */
+/* N8 / N15 Escribir números grandes */
 CB.gen.numeracion.N8 = function (rng, D) {
   var n = tramo(100, 199, D, rng);
   return {
@@ -3578,7 +3128,7 @@ CB.gen.numeracion.N15 = function (rng, D) {
   };
 };
 
-/* ── N9 La centena: C, D y U ────────────────────────────────────────────── */
+/* N9 La centena: C, D y U */
 CB.gen.numeracion.N9 = function (rng, D) {
   var n = tramo(100, 599, D, rng);
   var cual = CB.util.ent(rng, 0, 2);
@@ -3594,7 +3144,7 @@ CB.gen.numeracion.N9 = function (rng, D) {
   };
 };
 
-/* ── N12 Descomponer C + D + U ──────────────────────────────────────────── */
+/* N12 Descomponer C + D + U */
 CB.gen.numeracion.N12 = function (rng, D) {
   var n = tramo(101, 599, D, rng);
   var c = Math.floor(n / 100) * 100, d = Math.floor(n / 10) % 10 * 10, u = n % 10;
@@ -3612,7 +3162,7 @@ CB.gen.numeracion.N12 = function (rng, D) {
   };
 };
 
-/* ── N13 Aproximar a la decena ──────────────────────────────────────────── */
+/* N13 Aproximar a la decena */
 CB.gen.numeracion.N13 = function (rng, D) {
   var n = tramo(11, 599, D, rng);
   if (n % 10 === 0) n += CB.util.ent(rng, 1, 9);
@@ -3632,7 +3182,7 @@ CB.gen.numeracion.N13 = function (rng, D) {
   };
 };
 
-/* ── N14 Ordinales hasta el 20.º ────────────────────────────────────────── */
+/* N14 Ordinales hasta el 20.º */
 CB.gen.numeracion.N14 = function (rng, D) {
   var total = (D === 1) ? CB.util.ent(rng, 5, 9) : CB.util.ent(rng, 10, 20);
   var pos = CB.util.ent(rng, 1, total);
@@ -3648,16 +3198,7 @@ CB.gen.numeracion.N14 = function (rng, D) {
   };
 };
 
-/* ============================================================================
-   11-gen-sumas.js — S1…S16
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   Las sumas se construyen DÍGITO A DÍGITO con un patrón de llevadas declarado,
-   no «a ver qué sale». Así el nivel «DU + DU con UNA llevada» sirve siempre
-   exactamente eso, y el invariante correspondiente se puede comprobar sobre los
-   92.000 ítems de la suite sin depender de la suerte del rng.
-   ========================================================================== */
+/* 11-gen-sumas.js — S1…S16 */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
@@ -3745,7 +3286,7 @@ function itemSuma(s, destreza) {
   };
 }
 
-/* ── S1  Sumas hasta 10, sin llevar ─────────────────────────────────────── */
+/* S1 Sumas hasta 10, sin llevar */
 CB.gen.sumas.S1 = function (rng, D) {
   var techo = (D === 1) ? 6 : 10;
   var a = CB.util.ent(rng, 0, techo);
@@ -3753,14 +3294,14 @@ CB.gen.sumas.S1 = function (rng, D) {
   return itemSuma({ a: a, b: b, r: a + b });
 };
 
-/* ── S2  Sumas hasta 20 sin llevar ──────────────────────────────────────── */
+/* S2 Sumas hasta 20 sin llevar */
 CB.gen.sumas.S2 = function (rng, D) {
   var a = CB.util.ent(rng, 10, (D === 1) ? 14 : 19);
   var b = CB.util.ent(rng, 0, 9 - (a % 10));
   return itemSuma({ a: a, b: b, r: a + b });
 };
 
-/* ── S3  Dobles hasta 10 + 10 ───────────────────────────────────────────── */
+/* S3 Dobles hasta 10 + 10 */
 CB.gen.sumas.S3 = function (rng, D) {
   var a = CB.util.ent(rng, 1, (D === 1) ? 5 : 10);
   var it = itemSuma({ a: a, b: a, r: a + a });
@@ -3769,38 +3310,38 @@ CB.gen.sumas.S3 = function (rng, D) {
   return it;
 };
 
-/* ── S4  Sumar 10 ───────────────────────────────────────────────────────── */
+/* S4 Sumar 10 */
 CB.gen.sumas.S4 = function (rng, D) {
   var a = CB.util.ent(rng, 1, (D === 1) ? 49 : 89);
   return itemSuma({ a: a, b: 10, r: a + 10 });
 };
 
-/* ── S5  DU + U sin llevar ──────────────────────────────────────────────── */
+/* S5 DU + U sin llevar */
 CB.gen.sumas.S5 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [false, false], 2, 1, 99));
 };
 
-/* ── S6  DU + DU sin llevar ─────────────────────────────────────────────── */
+/* S6 DU + DU sin llevar */
 CB.gen.sumas.S6 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [false, false], 2, 2, 99));
 };
 
-/* ── S7  DU + U con llevada ─────────────────────────────────────────────── */
+/* S7 DU + U con llevada */
 CB.gen.sumas.S7 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false], 2, 1, 199));
 };
 
-/* ── S8  DU + DU con UNA llevada ────────────────────────────────────────── */
+/* S8 DU + DU con UNA llevada */
 CB.gen.sumas.S8 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false], 2, 2, 99));
 };
 
-/* ── S9  DU + DU con llevada, hasta 199 ─────────────────────────────────── */
+/* S9 DU + DU con llevada, hasta 199 */
 CB.gen.sumas.S9 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false], 2, 2, 199));
 };
 
-/* ── S10 Tres sumandos de una cifra ─────────────────────────────────────── */
+/* S10 Tres sumandos de una cifra */
 CB.gen.sumas.S10 = function (rng, D) {
   var techo = (D === 1) ? 15 : 27;
   var a, b, c, k = 0;
@@ -3818,17 +3359,17 @@ CB.gen.sumas.S10 = function (rng, D) {
   };
 };
 
-/* ── S11 CDU + DU sin llevar ────────────────────────────────────────────── */
+/* S11 CDU + DU sin llevar */
 CB.gen.sumas.S11 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [false, false, false], 3, 2, 599));
 };
 
-/* ── S12 CDU + DU con UNA llevada ───────────────────────────────────────── */
+/* S12 CDU + DU con UNA llevada */
 CB.gen.sumas.S12 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false, false], 3, 2, 599));
 };
 
-/* ── S13 Sumar decenas completas ────────────────────────────────────────── */
+/* S13 Sumar decenas completas */
 CB.gen.sumas.S13 = function (rng, D) {
   var a = CB.util.ent(rng, 1, (D === 1) ? 20 : 49) * 10;
   var b = CB.util.ent(rng, 1, 9) * 10;
@@ -3838,17 +3379,17 @@ CB.gen.sumas.S13 = function (rng, D) {
   return it;
 };
 
-/* ── S14 CDU + CDU sin llevar ───────────────────────────────────────────── */
+/* S14 CDU + CDU sin llevar */
 CB.gen.sumas.S14 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [false, false, false], 3, 3, 999));
 };
 
-/* ── S15 CDU + CDU con UNA llevada ──────────────────────────────────────── */
+/* S15 CDU + CDU con UNA llevada */
 CB.gen.sumas.S15 = function (rng, D) {
   return itemSuma(CB.gen.sumas.intentar(rng, [true, false, false], 3, 3, 999));
 };
 
-/* ── S16 Tres sumandos con decenas ──────────────────────────────────────── */
+/* S16 Tres sumandos con decenas */
 CB.gen.sumas.S16 = function (rng, D) {
   var a = CB.util.ent(rng, 1, 9) * 10 + CB.util.ent(rng, 0, 9);
   var b = CB.util.ent(rng, 1, 9) * 10;
@@ -3865,28 +3406,7 @@ CB.gen.sumas.S16 = function (rng, D) {
   };
 };
 
-/* ============================================================================
-   12-gen-restas.js — R1…R14
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   DOS REGLAS DURAS (PLAN §6.7 e invariantes 2 y 11):
-
-     · Toda resta se construye DESDE EL RESULTADO: a = r + b. Así el resultado es
-       SIEMPRE ≥ 0 por construcción, no por comprobación posterior.
-
-     · Con ampliacion:false, como máximo UNA llevada, y PROHIBIDO el 0 en
-       cualquier posición del minuendo cuando esa columna exija préstamo.
-       Motivo: 504 − 267 obliga a pedir prestado a través del cero, y eso es
-       contenido de 3.º en cualquier secuenciación española. Servirlo en el flujo
-       normal garantiza fallo, pérdida de luz y frustración, y además CONTAMINA
-       EL DIAGNÓSTICO: el niño no tiene el error E-R-INV, es que se le está
-       preguntando algo de otro curso.
-
-   Como a = r + b, los préstamos de a − b son exactamente las llevadas de r + b.
-   Por eso se reutiliza el constructor de 11-gen-sumas.js: mismo patrón, misma
-   garantía, un solo sitio donde equivocarse.
-   ========================================================================== */
+/* 12-gen-restas.js — R1…R14 */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
@@ -3949,37 +3469,37 @@ function itemResta(t) {
   };
 }
 
-/* ── R1  Restas hasta 10 ────────────────────────────────────────────────── */
+/* R1 Restas hasta 10 */
 CB.gen.restas.R1 = function (rng, D) {
   var a = CB.util.ent(rng, (D === 1) ? 2 : 5, 10);
   var b = CB.util.ent(rng, 0, a);
   return itemResta({ a: a, b: b, r: a - b });
 };
 
-/* ── R2  Restas hasta 20 sin llevar ─────────────────────────────────────── */
+/* R2 Restas hasta 20 sin llevar */
 CB.gen.restas.R2 = function (rng, D) {
   var a = CB.util.ent(rng, 10, 20);
   var b = CB.util.ent(rng, 0, a % 10);          // sin préstamo por construcción
   return itemResta({ a: a, b: b, r: a - b });
 };
 
-/* ── R3  Restar 10 ──────────────────────────────────────────────────────── */
+/* R3 Restar 10 */
 CB.gen.restas.R3 = function (rng, D) {
   var a = CB.util.ent(rng, 11, (D === 1) ? 49 : 99);
   return itemResta({ a: a, b: 10, r: a - 10 });
 };
 
-/* ── R4  DU − U sin llevar ──────────────────────────────────────────────── */
+/* R4 DU − U sin llevar */
 CB.gen.restas.R4 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [false, false], 2, 1, 99));
 };
 
-/* ── R5  DU − DU sin llevar ─────────────────────────────────────────────── */
+/* R5 DU − DU sin llevar */
 CB.gen.restas.R5 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [false, false], 2, 2, 99));
 };
 
-/* ── R6  Complementos a 10 y a 100 ──────────────────────────────────────── */
+/* R6 Complementos a 10 y a 100 */
 CB.gen.restas.R6 = function (rng, D) {
   var base = (D === 1 || rng() < 0.5) ? 10 : 100;
   var b = (base === 10) ? CB.util.ent(rng, 1, 9) : CB.util.ent(rng, 1, 9) * 10;
@@ -3989,17 +3509,17 @@ CB.gen.restas.R6 = function (rng, D) {
   return it;
 };
 
-/* ── R7  DU − U con UNA llevada ─────────────────────────────────────────── */
+/* R7 DU − U con UNA llevada */
 CB.gen.restas.R7 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [true, false], 2, 1, 99));
 };
 
-/* ── R8  DU − DU con UNA llevada ────────────────────────────────────────── */
+/* R8 DU − DU con UNA llevada */
 CB.gen.restas.R8 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [true, false], 2, 2, 99));
 };
 
-/* ── R9  Restar decenas completas ───────────────────────────────────────── */
+/* R9 Restar decenas completas */
 CB.gen.restas.R9 = function (rng, D) {
   var a = CB.util.ent(rng, 3, (D === 1) ? 20 : 59) * 10;
   var b = CB.util.ent(rng, 1, Math.min(9, a / 10)) * 10;
@@ -4008,27 +3528,27 @@ CB.gen.restas.R9 = function (rng, D) {
   return it;
 };
 
-/* ── R10 CDU − DU sin llevar ────────────────────────────────────────────── */
+/* R10 CDU − DU sin llevar */
 CB.gen.restas.R10 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [false, false, false], 3, 2, 599));
 };
 
-/* ── R11 CDU − DU con UNA llevada ───────────────────────────────────────── */
+/* R11 CDU − DU con UNA llevada */
 CB.gen.restas.R11 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [true, false, false], 3, 2, 599));
 };
 
-/* ── R12 CDU − CDU sin llevar ───────────────────────────────────────────── */
+/* R12 CDU − CDU sin llevar */
 CB.gen.restas.R12 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [false, false, false], 3, 3, 999));
 };
 
-/* ── R13 CDU − CDU con UNA llevada ──────────────────────────────────────── */
+/* R13 CDU − CDU con UNA llevada */
 CB.gen.restas.R13 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [true, false, false], 3, 3, 999));
 };
 
-/* ── R14 Restas con doble llevada — AMPLIACIÓN, apagada por defecto ─────── */
+/* R14 Restas con doble llevada — AMPLIACIÓN, apagada por defecto */
 CB.gen.restas.R14 = function (rng, D) {
   /* Único nivel del juego que puede tener dos préstamos y cero intermedio. Solo
      se sirve con ajustes.restasDobleLlevada activado por el adulto (§6.7). */
@@ -4045,40 +3565,7 @@ CB.gen.restas.R14 = function (rng, D) {
   return itemResta({ a: 504, b: 267, r: 237 });
 };
 
-/* ============================================================================
-   13-gen-multiplicacion.js — M1…M10
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   INVARIANTE 4 — CORRECCIÓN DE UNA CONTRADICCIÓN DEL PLAN, documentada en
-   docs/decisiones.md:
-
-   El plan escribía dos cosas incompatibles. En §8.3, M4 declara «Tabla del 2,
-   factores 2 × 0-10»; el invariante 4 exigía que AMBOS factores estuvieran en
-   {0,1,2,3,4,5,10}. Bajo esa lectura, la tabla del 2 solo podría practicarse
-   para ×0,1,2,3,4,5 y ×10: faltarían ×6, ×7, ×8 y ×9, es decir, MÁS DE UN
-   TERCIO de la única tabla que el propio plan declara nuclear. El requisito 1
-   del usuario («repaso de las tablas de multiplicar») quedaría a medias.
-
-   Lo que el invariante quería impedir está dicho en su propio motivo: que
-   «4 × 8 pase dentro del nivel de la tabla del 4», porque 4 × 8 ES un hecho de
-   la tabla del 8. La regla que expresa esa intención sin mutilar la tabla del 2
-   es esta:
-
-     Con tablas69 === false:
-        al menos UNO de los dos factores está en {2, 5, 10}  (las tres tablas
-        nucleares de 2.º), O AMBOS son ≤ 5 (que es trabajo de concepto con
-        matrices y suma reiterada, no recuperación de tabla).
-     Con tablas69 === true:  ambos en {0..10}.
-     En ningún caso hay factores > 10.
-
-   Comprobación: 2 × 7 ✓ (tabla del 2 completa) · 5 × 9 ✓ · 10 × 8 ✓ ·
-   3 × 4 ✓ (matriz) · 4 × 8 ✗ · 3 × 8 ✗ · 6 × 7 ✗.
-
-   TODA multiplicación muestra MATRIZ DE FILAS Y COLUMNAS + SUMA REITERADA ANTES
-   QUE EL RESULTADO, sin excepción (criterio de HECHO de F7). Es lo que convierte
-   un contenido de 2.º ciclo en una iniciación honesta de 2.º curso.
-   ========================================================================== */
+/* 13-gen-multiplicacion.js — M1…M10 */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
@@ -4115,7 +3602,7 @@ function itemMult(a, b, formato) {
   };
 }
 
-/* ── M1 Veces: la suma reiterada ────────────────────────────────────────── */
+/* M1 Veces: la suma reiterada */
 CB.gen.multiplicacion.M1 = function (rng, D) {
   var a = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
   var b = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
@@ -4124,7 +3611,7 @@ CB.gen.multiplicacion.M1 = function (rng, D) {
   return it;
 };
 
-/* ── M2 Filas y columnas ────────────────────────────────────────────────── */
+/* M2 Filas y columnas */
 CB.gen.multiplicacion.M2 = function (rng, D) {
   var a = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
   var b = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
@@ -4133,7 +3620,7 @@ CB.gen.multiplicacion.M2 = function (rng, D) {
   return it;
 };
 
-/* ── M3 Del dibujo a «a × b» ────────────────────────────────────────────── */
+/* M3 Del dibujo a «a × b» */
 CB.gen.multiplicacion.M3 = function (rng, D) {
   var a = CB.util.ent(rng, 2, 5), b = CB.util.ent(rng, 2, 5);
   var it = itemMult(a, b, 'teclado');
@@ -4141,11 +3628,8 @@ CB.gen.multiplicacion.M3 = function (rng, D) {
   return it;
 };
 
-/* ── Tablas ─────────────────────────────────────────────────────────────── */
-/* Nivel de tabla: el factor FIJO es el del nivel y el multiplicador recorre la
-   tabla ENTERA, de 0 a 10. Las tablas del 3 y del 4 (M9, M10) son niveles de
-   ampliación y solo se sirven con el flag del adulto activado, de modo que con
-   el flag apagado el factor fijo siempre pertenece a {2, 5, 10}. */
+/* Tablas */
+/* Las tablas del 3 y del 4 (M9, M10) son niveles de ampliación y solo se sirven con el flag del adulto activado, de modo que con el flag apagado el factor fijo siempre pertenece a {2, 5, 10}. */
 function tabla(fijo) {
   return function (rng, D, ctx) {
     var pool = CB.gen.multiplicacion.MULTIPLICADORES.slice();
@@ -4161,14 +3645,14 @@ CB.gen.multiplicacion.M4 = tabla(2);
 CB.gen.multiplicacion.M5 = tabla(10);
 CB.gen.multiplicacion.M6 = tabla(5);
 
-/* ── M7 Mezcla del 2, del 5 y del 10 ────────────────────────────────────── */
+/* M7 Mezcla del 2, del 5 y del 10 */
 CB.gen.multiplicacion.M7 = function (rng, D) {
   var f = CB.util.elegir(rng, CB.gen.multiplicacion.TABLAS_NUCLEARES);
   var b = CB.util.elegir(rng, CB.gen.multiplicacion.MULTIPLICADORES);
   return itemMult(f, b == null ? 2 : b, 'teclado');
 };
 
-/* ── M8 Dobles y mitades ────────────────────────────────────────────────── */
+/* M8 Dobles y mitades */
 CB.gen.multiplicacion.M8 = function (rng, D) {
   var pideMitad = rng() < 0.5;
   var b = CB.util.ent(rng, 1, (D === 1) ? 5 : 10);
@@ -4189,7 +3673,7 @@ CB.gen.multiplicacion.M8 = function (rng, D) {
   return it2;
 };
 
-/* ── M9 y M10: AMPLIACIÓN (tablas del 3 y del 4) ────────────────────────── */
+/* M9 y M10: AMPLIACIÓN (tablas del 3 y del 4) */
 CB.gen.multiplicacion.M9  = tabla(3);
 CB.gen.multiplicacion.M10 = tabla(4);
 
@@ -4209,33 +3693,13 @@ CB.gen.multiplicacion.factoresValidos = function (item, tablas69) {
   return (N.indexOf(a) !== -1) || (N.indexOf(b) !== -1) || (a <= M && b <= M);
 };
 
-/* ============================================================================
-   14-gen-problemas.js — P1…P20, las 20 estructuras semánticas aditivas
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   POR QUÉ 20 Y NO «problemas de sumas y restas» a secas (PLAN §9.1): dos
-   problemas con los mismos números y la misma operación tienen tasas de acierto
-   radicalmente distintas según su estructura. Un problema de cambio con
-   incógnita en el resultado lo resuelve casi todo 2.º; uno de comparación con
-   referente desconocido lo resuelve menos de un tercio. Saber que un niño
-   «falla las restas» no sirve de nada; saber que resuelve CAMBIO_2 al 95 % y
-   COMPARACION_5 al 0 % es un dato accionable el lunes siguiente.
-
-   PONDERACIÓN 3/2/1 (§9.2): el reparto equitativo del plan v1 ponía la mitad de
-   los problemas por encima del curso del niño. Con 3 luces, eso es fin de
-   partida.
-
-   validar() NO LANZA EXCEPCIONES (§9.8): una excepción desde el generador dentro
-   de servirItem() deja al niño con la pantalla congelada a mitad de partida y
-   sin guardar. Devuelve {ok, motivos}.
-   ========================================================================== */
+/* 14-gen-problemas.js — P1…P20, las 20 estructuras semánticas aditivas */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
 CB.gen.problemas = {};
 
-/* ── Ponderación y disponibilidad ───────────────────────────────────────── */
+/* Ponderación y disponibilidad */
 CB.gen.problemas.NUCLEAR = ['CAMBIO_1', 'CAMBIO_2', 'COMBINACION_1', 'COMBINACION_2',
                             'COMPARACION_1', 'COMPARACION_2'];
 CB.gen.problemas.INTERMEDIO = ['CAMBIO_3', 'CAMBIO_4', 'COMPARACION_3', 'COMPARACION_4',
@@ -4272,12 +3736,7 @@ CB.gen.problemas.VERBOS_PROBLEMA = {
   bloque:    { ganar: ['pica', 'encuentra'],   perder: ['coloca', 'regala'] }
 };
 
-/* ── Bolsas persistidas: el género se ALTERNA por construcción (§9.7) ──────
-   El criterio «50/50 ±1 en 200 generaciones» es matemáticamente inalcanzable con
-   muestreo aleatorio (σ ≈ 7; la probabilidad de caer en 100±1 ronda el 12 %). El
-   test habría fallado casi siempre contra código correcto y se habría acabado
-   desactivando. Con bolsa, el equilibrio se garantiza además DENTRO de cada
-   partida, que es lo que ve el niño. */
+/* Bolsas persistidas: el género se ALTERNA por construcción (§9.7) */
 CB.gen.problemas.nuevoEstadoBolsas = function () {
   return { genero: [], nombreF: [], nombreM: [], rol: [], objeto: [] };
 };
@@ -4315,12 +3774,7 @@ CB.gen.problemas.elegirActores = function (rng, bolsas) {
   };
 };
 
-/* ── Las 20 plantillas ──────────────────────────────────────────────────────
-   Cada una devuelve tres frases. La TERCERA es siempre la pregunta, de ≤7
-   palabras. Comparación e igualación presentan el dato y la relación en frases
-   SEPARADAS: la subordinación es justo lo que peor comprende un lector de 7
-   años, y por eso está prohibida en el validador.
-   ────────────────────────────────────────────────────────────────────────── */
+/* Las 20 plantillas */
 
 function cuantos(obj) { return obj.g === 'f' ? 'Cuántas' : 'Cuántos'; }
 
@@ -4548,9 +4002,7 @@ CB.gen.problemas.PLANTILLAS = {
   }
 };
 
-/* ── resolver(): recálculo INDEPENDIENTE de la plantilla ────────────────────
-   casos-problemas.js compara esto con lo que devuelve la plantilla. Si ambos
-   salieran del mismo código, el test sería una tautología. */
+/* resolver(): recálculo INDEPENDIENTE de la plantilla */
 CB.gen.problemas.resolver = function (subtipo, d) {
   var x = d[0], y = d[1];
   switch (subtipo) {
@@ -4578,7 +4030,7 @@ CB.gen.problemas.resolver = function (subtipo, d) {
   }
 };
 
-/* ── Elección de números por subtipo, respetando el techo del trimestre ──── */
+/* Elección de números por subtipo, respetando el techo del trimestre */
 CB.gen.problemas.numeros = function (subtipo, rng, D, techo) {
   var max = Math.min(techo || 99, (D === 1) ? 20 : (D === 2 ? 60 : techo || 99));
   if (max < 6) max = 6;
@@ -4609,10 +4061,7 @@ CB.gen.problemas.numeros = function (subtipo, rng, D, techo) {
   }
 };
 
-/* ── Dato sobrante (§9.4) ───────────────────────────────────────────────────
-   INVARIANTE 10: el dato sobrante NUNCA puede combinarse con un dato necesario
-   para dar la respuesta correcta. Si a+c, a−c, b+c o b−c coincide con la
-   respuesta, se regenera. */
+/* Dato sobrante (§9.4) */
 CB.gen.problemas.datoSobrante = function (datos, respuesta, rng, techo) {
   var a = datos[0], b = datos[1], k = 0, c;
   while (k < 40) {
@@ -4628,7 +4077,7 @@ CB.gen.problemas.datoSobrante = function (datos, respuesta, rng, techo) {
   return null;
 };
 
-/* ── El validador de lectura fácil — INVARIANTE 7 ───────────────────────── */
+/* El validador de lectura fácil — INVARIANTE 7 */
 
 CB.gen.problemas.SUBORDINANTES = ['si', 'cuando', 'mientras', 'aunque', 'porque'];
 /* «que» solo se admite en las comparativas: más que / menos que. */
@@ -4642,11 +4091,54 @@ CB.gen.problemas.EXIGEN_TILDE = {
   'como': null, 'tenia': 'tenía'
 };
 
+CB.gen.problemas.validacion = {
+  excedePalabras: function (textos, limite) {
+    return textos.some(function (texto) {
+      return CB.util.palabras(texto).length > limite;
+    });
+  },
+
+  excedeAncho: function (lineas, limite) {
+    return lineas.some(function (linea) { return linea.length > limite; });
+  },
+
+  tieneSubordinacion: function (palabras) {
+    return palabras.some(function (palabra, indice) {
+      if (CB.gen.problemas.SUBORDINANTES.indexOf(palabra) !== -1) return true;
+      if (palabra !== 'que') return false;
+      var anterior = indice > 0 ? palabras[indice - 1] : '';
+      return CB.gen.problemas.ANTES_DE_QUE.indexOf(anterior) === -1;
+    });
+  },
+
+  faltaTilde: function (palabras) {
+    return palabras.some(function (palabra) {
+      return !!CB.gen.problemas.EXIGEN_TILDE[palabra];
+    });
+  },
+
+  repiteSujeto: function (frases) {
+    return frases.some(function (frase, indice) {
+      if (indice === 0) return false;
+      var anterior = CB.util.palabras(frases[indice - 1])[0];
+      var actual = CB.util.palabras(frase)[0];
+      return !!(anterior && actual && anterior === actual && /^[A-ZÁÉÍÓÚÑ]/.test(anterior));
+    });
+  },
+
+  fueraDeLista: function (palabras) {
+    var invalida = palabras.find(function (palabra) {
+      if (/^\d+$/.test(palabra)) return false;
+      return !CB.datos.enListaBlanca(palabra);
+    });
+    return invalida || null;
+  }
+};
+
 CB.gen.problemas.validar = function (item) {
   var motivos = [];
   var frases = item.frases || [];
   var texto = frases.join(' ');
-  var i, j, w, palabras;
 
   /* 1. Número de frases y forma de la pregunta */
   if (frases.length > 3) motivos.push('frases');
@@ -4659,16 +4151,12 @@ CB.gen.problemas.validar = function (item) {
   if (CB.util.palabras(ultima).length > 8) motivos.push('preguntaLarga');
 
   /* 2. Longitud */
-  for (i = 0; i < frases.length; i++) {
-    if (CB.util.palabras(frases[i]).length > 12) { motivos.push('fraseLarga'); break; }
-  }
+  if (CB.gen.problemas.validacion.excedePalabras(frases, 12)) motivos.push('fraseLarga');
   if (CB.util.palabras(texto).length > 25) motivos.push('total');
 
   /* 3. Ancho de línea, con el MISMO algoritmo que usa la interfaz */
   var lineas = CB.util.cortarLineas(texto, 34);
-  for (i = 0; i < lineas.length; i++) {
-    if (lineas[i].length > 34) { motivos.push('ancho'); break; }
-  }
+  if (CB.gen.problemas.validacion.excedeAncho(lineas, 34)) motivos.push('ancho');
   if (lineas.length > 5) motivos.push('demasiadasLineas');
 
   /* 4. Datos numéricos */
@@ -4677,51 +4165,21 @@ CB.gen.problemas.validar = function (item) {
   if (numeros.length > maxDatos) motivos.push('datos');
 
   /* 5. Subordinación prohibida */
-  palabras = CB.util.palabras(texto.toLowerCase().replace(/[¿?.,!¡]/g, ''));
-  for (i = 0; i < palabras.length; i++) {
-    w = palabras[i];
-    if (CB.gen.problemas.SUBORDINANTES.indexOf(w) !== -1) { motivos.push('subordinacion'); break; }
-    if (w === 'que') {
-      var previa = (i > 0) ? palabras[i - 1] : '';
-      if (CB.gen.problemas.ANTES_DE_QUE.indexOf(previa) === -1) {
-        motivos.push('subordinacion'); break;
-      }
-    }
-  }
+  var palabras = CB.util.palabras(texto.toLowerCase().replace(/[¿?.,!¡]/g, ''));
+  if (CB.gen.problemas.validacion.tieneSubordinacion(palabras)) motivos.push('subordinacion');
 
   /* 6. Tildes obligatorias */
-  for (i = 0; i < palabras.length; i++) {
-    var esperado = CB.gen.problemas.EXIGEN_TILDE[palabras[i]];
-    if (esperado) { motivos.push('tilde'); break; }
-  }
+  if (CB.gen.problemas.validacion.faltaTilde(palabras)) motivos.push('tilde');
   /* Toda exclamación abre con ¡ y cierra con !; toda interrogación con ¿ y ? */
   if (texto.indexOf('!') !== -1 && texto.indexOf('¡') === -1) motivos.push('signos');
   if (texto.indexOf('?') !== -1 && texto.indexOf('¿') === -1) motivos.push('signos');
 
   /* 7. Sujeto explícito repetido en frases consecutivas */
-  for (i = 1; i < frases.length; i++) {
-    var s1 = CB.util.palabras(frases[i - 1])[0];
-    var s2 = CB.util.palabras(frases[i])[0];
-    if (s1 && s2 && s1 === s2 && /^[A-ZÁÉÍÓÚÑ]/.test(s1)) {
-      motivos.push('sujetoRepetido'); break;
-    }
-  }
+  if (CB.gen.problemas.validacion.repiteSujeto(frases)) motivos.push('sujetoRepetido');
 
   /* 8. Lista blanca */
-  for (i = 0; i < palabras.length; i++) {
-    w = palabras[i];
-    if (/^\d+$/.test(w)) continue;
-    if (CB.datos.enListaBlanca(w)) continue;
-    /* Los nombres propios van con inicial mayúscula en el texto original */
-    var original = null;
-    var todas = CB.util.palabras(texto.replace(/[¿?.,!¡]/g, ''));
-    for (j = 0; j < todas.length; j++) {
-      if (todas[j].toLowerCase() === w) { original = todas[j]; break; }
-    }
-    if (original && CB.datos.enListaBlanca(original.toLowerCase())) continue;
-    motivos.push('listaBlanca:' + w);
-    break;
-  }
+  var fueraDeLista = CB.gen.problemas.validacion.fueraDeLista(palabras);
+  if (fueraDeLista) motivos.push('listaBlanca:' + fueraDeLista);
 
   /* 9. Rango de la respuesta */
   if (!(item.respuesta >= 0 && item.respuesta <= 999)) motivos.push('rango');
@@ -4729,9 +4187,7 @@ CB.gen.problemas.validar = function (item) {
   return { ok: motivos.length === 0, motivos: motivos };
 };
 
-/* ── PROBLEMAS_SEGUROS: 12 enunciados fijos validados a mano ──────────────
-   Si el generador no consigue un enunciado válido en 20 intentos, se sirve uno
-   de estos. Nunca se lanza una excepción en el camino caliente del bucle. */
+/* PROBLEMAS_SEGUROS: 12 enunciados fijos validados a mano */
 CB.gen.problemas.PROBLEMAS_SEGUROS = [
   { subtipo: 'CAMBIO_1', frases: ['Ana tiene 12 cromos.', 'Después gana 5 cromos.', '¿Cuántos cromos tiene ahora?'], datos: [12, 5], respuesta: 17, operacion: '+' },
   { subtipo: 'CAMBIO_2', frases: ['Leo tiene 15 canicas.', 'Después regala 6 canicas.', '¿Cuántas canicas le quedan?'], datos: [15, 6], respuesta: 9, operacion: '-' },
@@ -4747,7 +4203,7 @@ CB.gen.problemas.PROBLEMAS_SEGUROS = [
   { subtipo: 'COMPARACION_5', frases: ['Nora tiene 12 cromos.', 'Tiene 5 más que Mario.', '¿Cuántos cromos tiene Mario?'], datos: [12, 5], respuesta: 7, operacion: '-' }
 ];
 
-/* ── Generación ─────────────────────────────────────────────────────────── */
+/* Generación */
 CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
   ctx = ctx || {};
   var techo = ctx.techo || 99;
@@ -4832,7 +4288,7 @@ CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
   };
 };
 
-/* ── siguienteSubtipo(): deuda de cobertura PONDERADA (§9.2) ─────────────── */
+/* siguienteSubtipo(): deuda de cobertura PONDERADA (§9.2) */
 CB.gen.problemas.disponibles = function (perfil) {
   var trimestre = (perfil && perfil.trimestreDeducido) ? perfil.trimestreDeducido : 1;
   var out = CB.gen.problemas.NUCLEAR.slice(), i, p, nuclearOk = true;
@@ -4916,26 +4372,7 @@ CB.gen.problemas.SUBTIPO_DE_NIVEL = {
   }
 })();
 
-/* ============================================================================
-   15-gen-dinero.js — E1…E8
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   CONFORME AL TEXTO LITERAL del saber A.5 de PRIMER ciclo (PLAN §6.9):
-     «Sistema monetario europeo: monedas (1, 2 euros) y billetes de euro
-      (5, 10, 20, 50 y 100), valor y equivalencia.»
-
-   · MONEDAS y BILLETES son conjuntos SEPARADOS. No existe «billete de 1 €» ni
-     «moneda de 5 €», y el juego los distingue siempre visual y verbalmente.
-   · El billete de 100 € SE CONSERVA: está en el texto literal. Se le da poco
-     peso (aparece en reconocimiento y equivalencias, no en los niveles de pago).
-   · Los CÉNTIMOS son AMPLIACIÓN apagada por defecto: el saber de primer ciclo
-     cita solo monedas de 1 y 2 euros; los céntimos aparecen en el saber de
-     SEGUNDO ciclo. Se ofrecen porque la práctica de aula de 2.º sí los
-     introduce, pero la decisión es del adulto.
-   · Cuando se activan, se escriben SIEMPRE como entero + la palabra «céntimos»
-     («50 céntimos»), NUNCA como «0,50 €»: el invariante 3 prohíbe los decimales.
-   ========================================================================== */
+/* 15-gen-dinero.js — E1…E8 */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
@@ -4953,16 +4390,7 @@ CB.gen.dinero.CENTIMOS = [5, 10, 20, 50];          // AMPLIACIÓN, flagAdulto
    reconocerla sí tiene sentido; multiplicarla por cien, no. */
 CB.gen.dinero.PIEZAS_CENTIMO = [1, 5, 10, 20, 50];
 
-/* ── UNA PIEZA DE CÉNTIMO SE NOMBRA 'c20', NO 20 ─────────────────────────────
-   Y no es manía de notación: los valores CHOCAN. «5» es a la vez el billete de
-   5 € y la moneda de 5 céntimos, «10», «20» y «50» lo mismo. Con un solo número
-   por pieza, la pregunta «toca la moneda de 20 céntimos» habría aceptado el
-   billete de 20 € como respuesta correcta —y lo habría pintado con la foto del
-   billete, porque el CSS también selecciona por ese número—.
-
-   El precio de la decisión es que la respuesta de esas preguntas NO ES UN
-   NÚMERO, y por eso `40-partida.js` compara aparte y el invariante 1 de
-   `casos-generadores.js` exime a las piezas. Está anotado en los dos sitios. */
+/* UNA PIEZA DE CÉNTIMO SE NOMBRA 'c20', NO 20 */
 CB.gen.dinero.pieza      = function (c) { return 'c' + c; };
 CB.gen.dinero.esCentimo  = function (v) { return typeof v === 'string' && v.charAt(0) === 'c'; };
 CB.gen.dinero.valorCent  = function (v) { return parseInt(String(v).slice(1), 10); };
@@ -5008,23 +4436,14 @@ CB.gen.dinero.descomponer = function (importe, conBilletes) {
   return piezas;
 };
 
-/* ── E1 Reconocer monedas y billetes ────────────────────────────────────── */
+/* E1 Reconocer monedas y billetes */
 CB.gen.dinero.E1 = function (rng, D) {
   var todos = CB.gen.dinero.MONEDAS.concat(CB.gen.dinero.BILLETES);
   var v = CB.util.elegir(rng, todos);
   return {
     formato: 'opciones4',
     consigna: 'Toca ' + CB.gen.dinero.nombre(v) + '.',
-    /* LAS OPCIONES SE DIBUJAN COMO PIEZAS, NO COMO NÚMEROS. La cabecera de este
-       fichero dice que monedas y billetes son conjuntos separados y que «el juego
-       los distingue siempre visual y verbalmente», y en la única pregunta cuyo
-       objeto ES distinguirlos no se distinguían: las cuatro opciones salían como
-       cuatro botones de madera idénticos con un número dentro. Es decir, se
-       preguntaba «toca la moneda de 2 euros» y lo que había que reconocer era el
-       2, no la moneda — que se puede acertar sin saber lo que es una moneda.
 
-       La pieza dibujada ya existía y se usaba en pagar y en contar. Aquí faltaba,
-       que es justo donde hace falta. */
     piezasDinero: true,
     respuesta: v,
     expr: 'reconocer' + v,
@@ -5036,7 +4455,7 @@ CB.gen.dinero.E1 = function (rng, D) {
   };
 };
 
-/* ── E2 Contar con monedas de 1 y 2 € ───────────────────────────────────── */
+/* E2 Contar con monedas de 1 y 2 € */
 CB.gen.dinero.E2 = function (rng, D) {
   var n = CB.util.ent(rng, 3, (D === 1) ? 5 : 8), piezas = [], total = 0, i, v;
   for (i = 0; i < n; i++) {
@@ -5054,7 +4473,7 @@ CB.gen.dinero.E2 = function (rng, D) {
   };
 };
 
-/* ── E3 Contar con billetes ─────────────────────────────────────────────── */
+/* E3 Contar con billetes */
 CB.gen.dinero.E3 = function (rng, D) {
   var n = CB.util.ent(rng, 2, (D === 1) ? 3 : 4), piezas = [], total = 0, i, v;
   var pool = (D === 3) ? CB.gen.dinero.BILLETES : [5, 10, 20];
@@ -5075,7 +4494,7 @@ CB.gen.dinero.E3 = function (rng, D) {
   };
 };
 
-/* ── E4 Equivalencias entre billetes ────────────────────────────────────── */
+/* E4 Equivalencias entre billetes */
 CB.gen.dinero.E4 = function (rng, D) {
   var grande = CB.util.elegir(rng, [10, 20, 50, 100]);
   var pequeno = CB.util.elegir(rng, CB.gen.dinero.BILLETES.filter(function (v) {
@@ -5092,7 +4511,7 @@ CB.gen.dinero.E4 = function (rng, D) {
   };
 };
 
-/* ── E5 Pagar con importe exacto ────────────────────────────────────────── */
+/* E5 Pagar con importe exacto */
 CB.gen.dinero.E5 = function (rng, D) {
   var precio = CB.util.ent(rng, 3, (D === 1) ? 12 : 50);
   return {
@@ -5107,7 +4526,7 @@ CB.gen.dinero.E5 = function (rng, D) {
   };
 };
 
-/* ── E6 El cambio ───────────────────────────────────────────────────────── */
+/* E6 El cambio */
 CB.gen.dinero.E6 = function (rng, D) {
   var precio = CB.util.ent(rng, 2, (D === 1) ? 8 : 18);
   var pagaCon = CB.util.elegir(rng, CB.gen.dinero.BILLETES.filter(function (v) {
@@ -5125,7 +4544,7 @@ CB.gen.dinero.E6 = function (rng, D) {
   };
 };
 
-/* ── E7 La compra: gasto total ──────────────────────────────────────────── */
+/* E7 La compra: gasto total */
 CB.gen.dinero.E7 = function (rng, D) {
   var a = CB.util.ent(rng, 2, (D === 1) ? 15 : 45);
   var b = CB.util.ent(rng, 2, (D === 1) ? 15 : 45);
@@ -5141,22 +4560,7 @@ CB.gen.dinero.E7 = function (rng, D) {
   };
 };
 
-/* ── E8 Céntimos — AMPLIACIÓN, apagada por defecto ──────────────────────────
-   DOS PREGUNTAS, NO UNA, y el reparto no es decorativo.
-
-   La que había —cuántas monedas de X hacen un euro— es aritmética: se contesta
-   dividiendo, y se puede contestar sin haber visto una moneda de 20 céntimos en
-   la vida. Es la mitad del saber, y era la única que había.
-
-   La otra mitad es RECONOCERLA, que es exactamente lo que hace E1 con los euros
-   y lo que hasta 1.20.0 no se podía preguntar de los céntimos porque no había
-   con qué dibujarlos: cinco cuadrados de color idénticos con un número dentro no
-   preguntan «qué moneda es», preguntan «qué número pone». Con las cinco
-   fotografías sí se puede, y entra la de 1 céntimo, que es la única de las cinco
-   que no aparece en ninguna equivalencia.
-
-   En D=1 sale SIEMPRE la de reconocer: llegar al euro desde los céntimos exige
-   una división por 20 que en el primer nivel todavía no toca. */
+/* E8 Céntimos — AMPLIACIÓN, apagada por defecto */
 CB.gen.dinero.E8 = function (rng, D) {
   if (D === 1 || CB.util.ent(rng, 1, 2) === 1) return CB.gen.dinero.E8reconocer(rng, D);
   return CB.gen.dinero.E8equivalencia(rng, D);
@@ -5193,24 +4597,7 @@ CB.gen.dinero.E8equivalencia = function (rng, D) {
   };
 };
 
-/* ============================================================================
-   16-gen-vocabulario.js — V1…V8 (Diccionario de Bloques)
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   Da cobertura al criterio 6.1 del primer ciclo, literal: «Reconocer lenguaje
-   matemático sencillo presente en la vida cotidiana, adquiriendo vocabulario
-   específico básico». Es lo que casi ninguna aplicación de cálculo entrena, y es
-   la mitad de por qué un niño no entiende un enunciado.
-
-   NOTA SOBRE V2: «minuendo» y «sustraendo» son terminología que el RD no sitúa
-   explícitamente en primer ciclo. Se marcan en el Diccionario con el distintivo
-   «palabra de mayores» y NO cuentan para ningún requisito de progresión.
-
-   Estos niveles declaran diagnostico:false: simular un error numérico sobre una
-   palabra no tiene sentido, y el informe no emite hipótesis sobre ellos
-   (invariante 6-bis).
-   ========================================================================== */
+/* 16-gen-vocabulario.js — V1…V8 (Diccionario de Bloques) */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
@@ -5266,7 +4653,7 @@ CB.gen.vocabulario.V6 = function (rng, D) { return itemVocab('V6', rng, D); };
 CB.gen.vocabulario.V7 = function (rng, D) { return itemVocab('V7', rng, D); };
 CB.gen.vocabulario.V8 = function (rng, D) { return itemVocab('V8', rng, D); };
 
-/* ── V4 Comparar: se responde en la balanza, no eligiendo palabra ───────── */
+/* V4 Comparar: se responde en la balanza, no eligiendo palabra */
 CB.gen.vocabulario.V4 = function (rng, D) {
   var a = CB.util.ent(rng, 1, (D === 1) ? 20 : 99);
   var b = CB.util.ent(rng, 1, (D === 1) ? 20 : 99);
@@ -5286,7 +4673,7 @@ CB.gen.vocabulario.V4 = function (rng, D) {
   };
 };
 
-/* ── V5 Orden y posición: se responde ordenando ─────────────────────────── */
+/* V5 Orden y posición: se responde ordenando */
 CB.gen.vocabulario.V5 = function (rng, D) {
   var inicio = CB.util.ent(rng, 1, 14);
   var cuantos = (D === 1) ? 3 : 4;
@@ -5311,48 +4698,12 @@ CB.gen.vocabulario.terminoDe = function (item) {
   return item && item.termino ? item.termino : null;
 };
 
-/* ============================================================================
-   17-catalogo.js — Los 92 niveles y los 4 mundos. ESTE FICHERO ES UN CONTRATO.
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   El plan v1 escribía «N1…N12, S1…S15, R1…R13» como rótulos vacíos: no se podía
-   verificar ni un solo rango numérico, y el requisito 2 del usuario (basarse en
-   el currículo oficial) era NO AUDITABLE. Aquí cada nivel declara su rango, sus
-   llevadas, su trimestre SUGERIDO, su saber y sus criterios, y casos-curriculo.js
-   comprueba una a una las 8 condiciones CU1-CU8.
-
-   `trimestreSugerido` se llama así y no `trimestre` porque el RD 157/2022 fija
-   los saberes POR CICLO, no por curso ni por trimestre: la secuenciación es una
-   decisión propia del proyecto.
-
-   NOTA SOBRE EL REPARTO POR MUNDOS: el encabezado del plan decía «24+24+22+22»
-   pero sus propias listas suman 24+26+18+24. Manda la LISTA, que es el contenido
-   real; el total sigue siendo 92 y CU7 lo verifica.
-   ========================================================================== */
+/* 17-catalogo.js — Los 92 niveles y los 4 mundos. ESTE FICHERO ES UN CONTRATO. */
 
 var CB = CB || {};
 CB.catalogo = CB.catalogo || {};
 
-/* ── Valores base por familia ───────────────────────────────────────────────
-   `puntosBase`, `tIdeal` y `tLimite` son EXACTAMENTE los de PLAN §8.1: son el
-   contrato de los 30 casos de puntuación y no se tocan.
-
-   Las `beta`, en cambio, están RECALIBRADAS. Las del plan (880-1420) no cubren
-   el rango de competencia que el motor puede estimar (400-1800): con una β
-   mínima de 880, el nivel MÁS FÁCIL del catálogo —contar ocho bloques— quedaba
-   fuera del alcance de un niño flojo, y el niño sintético se quedaba en el 44 %
-   en lugar del 75-92 % exigido. Dicho de otro modo: el juego no tenía nada
-   suficientemente fácil que ofrecer al niño que más lo necesita.
-
-   La escala nueva va de 320 a 1280 y se lee así: β es la competencia a la que
-   ese nivel se acierta el 50 % de las veces. «Contar 8 bloques» tiene β 320
-   porque casi cualquier niño de 2.º lo hace; «CDU − CDU con llevada» tiene β
-   1160 porque es el techo del curso.
-
-   Estas cifras son una CALIBRACIÓN INICIAL RAZONADA, no una medida. F10 las
-   recalcula con 10-15 niños reales mediante pruebas/calibrar-beta.js, que es
-   justo para lo que el plan reserva esa fase. */
+/* Valores base por familia */
 CB.catalogo.FAMILIAS = {
   N: { puntosBase: 80,  tIdeal: 6000,  tLimite: 18000, beta: [320, 1000] },
   S: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [340, 1120] },
@@ -5363,17 +4714,8 @@ CB.catalogo.FAMILIAS = {
   V: { puntosBase: 70,  tIdeal: 7000,  tLimite: 20000, beta: [320, 920] }
 };
 
-/* Tabla compacta. Orden de columnas:
-   [id, nombre, destreza, minRango, maxRango, llevadas, trimestreSugerido,
-    formato, saber, criterios, prerrequisitos, cardinalidad, ampliacion,
-    flagAdulto, saberSecundario?]
-
-   `saberSecundario` es opcional y existe porque la propia tabla del plan asigna
-   DOS saberes a algunos niveles (N16 = A.4.b + A.2.a; E6 = A.5 + A.4.c;
-   E7 = A.5 + A.3.b). Sin él, el saber A.2.c —«representación de una misma
-   cantidad de distintas formas»— se quedaba sin ningún nivel y CU4 fallaba. */
 CB.catalogo.TABLA = [
-  /* ── Numeración: 16 ───────────────────────────────────────────────────── */
+  /* Numeración: 16 */
   ['N1','Contar y recontar','numeracion',0,99,0,1,'opciones4','A.1',['1.1','5.1'],[],22,false,null,'A.2.c'],
   ['N2','Leer y escribir hasta 99','numeracion',0,99,0,1,'teclado','A.2.b',['6.1'],['N1'],90,false,null],
   ['N3','Decenas y unidades','valor_posicional',0,99,0,1,'opciones4','A.4.a',['1.2','6.1'],['N1'],178,false,null],
@@ -5391,7 +4733,7 @@ CB.catalogo.TABLA = [
   ['N15','Números hasta 999','numeracion',0,999,0,3,'teclado','A.2.b',['6.1'],['N12'],800,false,null],
   ['N16','Comparar y aproximar hasta 999','numeracion',0,999,0,3,'balanza','A.4.b',['2.1','5.1'],['N10','N13'],900,false,null,'A.2.a'],
 
-  /* ── Sumas: 16 ────────────────────────────────────────────────────────── */
+  /* Sumas: 16 */
   ['S1','Sumas hasta 10','suma_sin_llevar',0,10,0,1,'teclado','A.3.b',['2.1'],[],66,false,null],
   ['S2','Sumas hasta 20 sin llevar','suma_sin_llevar',0,20,0,1,'teclado','A.3.b',['2.1'],['S1'],55,false,null],
   ['S3','Dobles hasta 10 + 10','suma_sin_llevar',0,20,0,1,'opciones4','A.3.a',['3.1'],['S1'],10,false,null],
@@ -5409,7 +4751,7 @@ CB.catalogo.TABLA = [
   ['S15','CDU + CDU con una llevada','suma_llevada',0,999,1,3,'teclado','A.3.b',['2.1','6.2'],['S14','S12'],2000,false,null],
   ['S16','Tres sumandos con decenas','suma_llevada',0,999,1,3,'teclado','A.3.b',['2.1'],['S10','S13'],1800,false,null],
 
-  /* ── Restas: 14 ───────────────────────────────────────────────────────── */
+  /* Restas: 14 */
   ['R1','Restas hasta 10','resta_sin_llevar',0,10,0,1,'teclado','A.3.b',['2.1'],[],66,false,null],
   ['R2','Restas hasta 20 sin llevar','resta_sin_llevar',0,20,0,1,'teclado','A.3.b',['2.1'],['R1'],66,false,null],
   ['R3','Restar 10','resta_sin_llevar',0,99,0,1,'teclado','A.3.a',['3.1'],['R1'],89,false,null],
@@ -5425,7 +4767,7 @@ CB.catalogo.TABLA = [
   ['R13','CDU − CDU con una llevada','resta_llevada',0,999,1,3,'teclado','A.3.b',['2.1','6.2'],['R12','R11'],2000,false,null],
   ['R14','Restas con doble llevada','resta_llevada',0,999,2,3,'teclado','A.3.b',['2.1'],['R13'],1500,true,'restasDobleLlevada'],
 
-  /* ── Multiplicación: 10 (M1-M8 iniciación nuclear de T3; M9-M10 ampliación) */
+  /* Multiplicación: 10 (M1-M8 iniciación nuclear de T3; M9-M10 ampliación) */
   ['M1','Veces: la suma reiterada','multiplicacion',2,5,0,3,'opciones4','A.3.b',['1.2','5.1'],['S1'],16,false,null],
   ['M2','Filas y columnas','multiplicacion',2,5,0,3,'opciones4','A.3.b',['1.2','6.1'],['M1'],16,false,null],
   ['M3','Del dibujo a «a × b»','multiplicacion',2,5,0,3,'teclado','A.3.b',['6.2'],['M2'],16,false,null],
@@ -5437,7 +4779,7 @@ CB.catalogo.TABLA = [
   ['M9','Tabla del 3','multiplicacion',0,30,0,3,'teclado','A.3.a',['3.1'],['M7'],11,true,'tablas69'],
   ['M10','Tabla del 4','multiplicacion',0,40,0,3,'teclado','A.3.a',['3.1'],['M7'],11,true,'tablas69'],
 
-  /* ── Problemas de enunciado: 20 ───────────────────────────────────────── */
+  /* Problemas de enunciado: 20 */
   ['P1','Cambio: cuántos hay ahora','problemas_cambio',0,99,0,1,'teclado','A.3.b',['1.1','2.1','2.2'],['S1'],600,false,null],
   ['P2','Cambio: cuántos quedan','problemas_cambio',0,99,0,1,'teclado','A.3.b',['1.1','2.1','2.2'],['R1'],600,false,null],
   ['P3','Combinación: el total','problemas_combinacion',0,99,0,1,'teclado','A.3.b',['1.1','2.1','2.2'],['S2'],600,false,null],
@@ -5459,7 +4801,7 @@ CB.catalogo.TABLA = [
   ['P19','Igualación: referente con añadir','problemas_igualacion',0,99,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,true,null],
   ['P20','Igualación: referente con quitar','problemas_igualacion',0,99,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,true,null],
 
-  /* ── Dinero: 8 ────────────────────────────────────────────────────────── */
+  /* Dinero: 8 */
   ['E1','Monedas y billetes: reconocerlos','dinero',0,100,0,1,'opciones4','A.5',['5.2','6.1'],[],7,false,null],
   ['E2','Contar con monedas de 1 y 2 €','dinero',0,20,0,1,'monedas','A.5',['2.1','5.2'],['E1','S1'],250,false,null],
   ['E3','Contar con billetes','dinero',0,100,0,2,'monedas','A.5',['2.1','5.2'],['E1'],120,false,null],
@@ -5469,7 +4811,7 @@ CB.catalogo.TABLA = [
   ['E7','La compra: gasto total','dinero',0,99,0,3,'teclado','A.5',['2.1','2.2'],['E5','S6'],400,false,null,'A.3.b'],
   ['E8','Céntimos y equivalencias','dinero',5,100,0,3,'opciones4','A.5',['5.2'],['E4'],4,true,'centimos'],
 
-  /* ── Vocabulario: 8 ───────────────────────────────────────────────────── */
+  /* Vocabulario: 8 */
   ['V1','Las palabras de la suma','vocabulario',0,0,0,2,'opciones4','A.3.b',['6.1'],['S1'],6,false,null],
   ['V2','Las palabras de la resta','vocabulario',0,0,0,2,'opciones4','A.3.b',['6.1'],['R1'],6,false,null],
   ['V3','Unidades, decenas, centenas','vocabulario',0,0,0,3,'opciones4','A.4.a',['6.1'],['N3'],6,false,null],
@@ -5492,7 +4834,7 @@ CB.catalogo.CATEGORIA_MULT = {
   M9: 'AMPLIACION', M10: 'AMPLIACION'
 };
 
-/* ── Construcción de los objetos Nivel ──────────────────────────────────── */
+/* Construcción de los objetos Nivel */
 CB.catalogo._porId = {};
 CB.catalogo._ids = [];
 
@@ -5573,7 +4915,7 @@ CB.catalogo._ids = [];
   });
 })();
 
-/* ── API ────────────────────────────────────────────────────────────────── */
+/* API */
 CB.catalogo.get  = function (id) { return CB.catalogo._porId[id] || null; };
 CB.catalogo.ids  = function () { return CB.catalogo._ids.slice(); };
 CB.catalogo.todos = function () {
@@ -5597,12 +4939,7 @@ CB.catalogo.desbloqueados = function (perfil) {
   return CB.grafo.desbloqueados(perfil).map(function (id) { return CB.catalogo.get(id); });
 };
 
-/**
- * candidatos() NUNCA devuelve []. El plan v1 no definía qué pasaba cuando no
- * había ningún nivel desbloqueado en la banda β —caso frecuente al principio,
- * con θ=1000 y casi todo el grafo bloqueado—. Si devolvía [], construirGuion
- * generaba un guion vacío y LA PARTIDA TERMINABA EN EL ÍTEM 0.
- */
+/* candidatos() NUNCA devuelve []. */
 CB.catalogo.candidatos = function (slug, banda, perfil) {
   var abiertos = CB.catalogo.porDestreza(slug).filter(function (n) {
     if (CB.grafo.estado(n.id, perfil) !== 'abierta') return false;
@@ -5644,7 +4981,7 @@ CB.catalogo.candidatos = function (slug, banda, perfil) {
   return [CB.catalogo.get('S1')];
 };
 
-/* ── Los 4 mundos (§5.2). Tabla CERRADA ─────────────────────────────────── */
+/* Los 4 mundos (§5.2). Tabla CERRADA */
 CB.MUNDOS = [
   { id: 'M1', nombre: 'La Pradera de los Números', bioma: 'pradera', jefe: 'Tronquete',
     jefeIcono: '🌳',
@@ -5710,20 +5047,7 @@ CB.catalogo.progresoMundo = function (mundoId, perfil) {
            fraccion: nucleares.length ? hechos / nucleares.length : 0 };
 };
 
-/* ── INVARIANTE 12 (variedad) — reformulado ─────────────────────────────────
-   El plan lo escribía así: «en 200 generaciones con semillas distintas, los
-   ítems únicos son ≥ min(200, 0,8 × cardinalidad)». Con cardinalidad ≥ 250 eso
-   exige 200 únicos en 200 tiradas, es decir CERO COLISIONES, que es imposible
-   por el problema del cumpleaños: extrayendo 200 veces de un espacio de 250, el
-   número esperado de valores distintos es 250·(1−(1−1/250)^200) ≈ 138, no 200.
-   El test habría fallado siempre contra generadores correctos.
-
-   Reformulación que sí mide lo que se quería medir —que el generador no se
-   colapse y recorra su espacio—: se compara con la esperanza bajo muestreo
-   uniforme y se exige el 75 % de ella. Un generador que devolviese siempre el
-   mismo ítem, o que solo recorriese una esquina de su rango, falla en rojo.
-
-   Documentado en docs/decisiones.md. */
+/* INVARIANTE 12 (variedad) — reformulado */
 CB.catalogo.unicosEsperados = function (cardinalidad, tiradas) {
   var C = Math.max(1, cardinalidad);
   return C * (1 - Math.pow(1 - 1 / C, tiradas));
@@ -5743,32 +5067,11 @@ CB.catalogo.mundoDesbloqueado = function (mundoId, perfil) {
   return CB.catalogo.progresoMundo(CB.MUNDOS[idx - 1].id, perfil).fraccion >= 0.6;
 };
 
-/* ============================================================================
-   18-distractores.js — Los 24 códigos de error, los distractores y el
-                        diagnóstico
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   EL PROBLEMA QUE RESUELVE EL ALGORITMO (PLAN §13.8): construir distractores
-   simulando errores es lo correcto pedagógicamente, pero muchas simulaciones
-   COLISIONAN con la respuesta correcta. E-S-LLEV-OLV sobre 20+30 devuelve 50,
-   que es correcto; E-R-INV sobre 68−24 devuelve 44, que es correcto; E-M-SUMA
-   sobre 2×2 devuelve 4, que es correcto. El plan v1 no decía qué pasaba
-   entonces: el niño podía ver DOS opciones correctas, o el bucle de relleno
-   podía no terminar nunca.
-
-   Aquí: se descartan las colisiones, se rellena con un plan B acotado, y si aun
-   así no hay 4 opciones únicas, ESE ÍTEM pasa a formato teclado. Ningún bucle
-   sin cota.
-
-   18 códigos tienen simular(); 6 tienen diagnostico:false porque simular un
-   error numérico sobre vocabulario, estimación, ordenación o un fallo de puro
-   cálculo no produce ninguna hipótesis discriminante (invariante 6-bis).
-   ========================================================================== */
+/* 18-distractores.js — Los 24 códigos de error, los distractores y el */
 
 var CB = CB || {};
 
-/* ── Ayudas de dígitos ──────────────────────────────────────────────────── */
+/* Ayudas de dígitos */
 function digitos(n) {
   var d = [], x = Math.abs(Math.round(n));
   if (x === 0) return [0];
@@ -5783,7 +5086,7 @@ function desdeDigitos(d) {
 
 CB.ERRORES = {
 
-  /* ══ SUMAS ═════════════════════════════════════════════════════════════ */
+  /* SUMAS */
   'E-S-LLEV-OLV': {
     familia: 'S', diagnostico: true,
     pista: 'Mira si al sumar las unidades pasas de diez.',
@@ -5841,7 +5144,7 @@ CB.ERRORES = {
     }
   },
 
-  /* ══ RESTAS ════════════════════════════════════════════════════════════ */
+  /* RESTAS */
   'E-R-INV': {
     familia: 'R', diagnostico: true,
     pista: 'Si el de arriba es más pequeño, pide una decena prestada.',
@@ -5904,7 +5207,7 @@ CB.ERRORES = {
     }
   },
 
-  /* ══ NUMERACIÓN ════════════════════════════════════════════════════════ */
+  /* NUMERACIÓN */
   'E-N-POS': {
     familia: 'N', diagnostico: true,
     pista: 'Mira qué lugar ocupa cada cifra.',
@@ -5937,7 +5240,7 @@ CB.ERRORES = {
   'E-N-ORDEN': { familia: 'N', diagnostico: false, simular: null,
     pista: 'Empieza por el más pequeño.', reparacion: 'rectaNumerica' },
 
-  /* ══ MULTIPLICACIÓN ════════════════════════════════════════════════════ */
+  /* MULTIPLICACIÓN */
   'E-M-SUMA': {
     familia: 'M', diagnostico: true,
     pista: 'Multiplicar es repetir el mismo número varias veces.',
@@ -5971,7 +5274,7 @@ CB.ERRORES = {
     }
   },
 
-  /* ══ PROBLEMAS ═════════════════════════════════════════════════════════ */
+  /* PROBLEMAS */
   'E-P-PALCLAVE': {
     familia: 'P', diagnostico: true,
     pista: 'No te fíes solo de la palabra: mira lo que cuenta el problema.',
@@ -5997,7 +5300,7 @@ CB.ERRORES = {
     pista: 'El planteamiento está bien. Repasa solo la cuenta.',
     reparacion: 'columnasCDU' },
 
-  /* ══ DINERO ════════════════════════════════════════════════════════════ */
+  /* DINERO */
   'E-E-VALOR': {
     familia: 'E', diagnostico: true,
     pista: 'No cuentes las monedas: cuenta lo que vale cada una.',
@@ -6018,7 +5321,7 @@ CB.ERRORES = {
     }
   },
 
-  /* ══ VOCABULARIO ═══════════════════════════════════════════════════════ */
+  /* VOCABULARIO */
   'E-V-TERMINO': { familia: 'V', diagnostico: false, simular: null,
     pista: 'Piensa en qué operación te pide esa palabra.', reparacion: 'rectaNumerica' },
   'E-V-SINONIMO': { familia: 'V', diagnostico: false, simular: null,
@@ -6027,7 +5330,7 @@ CB.ERRORES = {
 
 CB.ERRORES_IDS = Object.keys(CB.ERRORES);
 
-/* ── Los distractores ───────────────────────────────────────────────────── */
+/* Los distractores */
 CB.distractores = CB.distractores || {};
 
 CB.distractores.LIMITE_NORMAL = 999;
@@ -6053,7 +5356,7 @@ CB.distractores.codigosAplicables = function (item) {
  */
 CB.distractores.para = function (item, rng) {
   var correcta = item.respuesta;
-  var vistos = {}, opciones = [], i, k, v, cod;
+  var vistos = {}, opciones = [], i, v, cod;
 
   vistos[correcta] = true;
 
@@ -6117,10 +5420,7 @@ CB.distractores.para = function (item, rng) {
   return { opciones: mezcladas.slice(0, 4), formato: 'opciones4', posicionCorrecta: pos };
 };
 
-/* ── Diagnóstico ────────────────────────────────────────────────────────────
-   discriminante === true SOLO si un único código de error es compatible con la
-   respuesta dada. El informe solo acumula evidencia de ítems discriminantes: si
-   dos códigos empatan, se cuentan ambos pero NO SE AFIRMA NINGUNO. */
+/* Diagnóstico */
 CB.diagnosticar = function (item, valorDado) {
   var hipotesis = [], codigos, i, v;
   if (valorDado == null || !isFinite(valorDado)) {
@@ -6160,18 +5460,7 @@ CB.distractores.registrar = function (perfil, item, valorDado) {
   return d;
 };
 
-/* ============================================================================
-   20-puntuacion.js — Requisitos 6 y 7 del usuario
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA: cero DOM, cero Math.random, cero fechas.
-   Los 30 casos de PLAN §11.7 se verifican SIN TOLERANCIA en casos-formulas.js.
-
-   DOS INVARIANTES QUE NO SE NEGOCIAN:
-     · Ningún valor de `puntos` ni de `gemas` es nunca < 0. Un niño de 7 años no
-       ha visto un entero negativo en su vida (están en 2.º/3.er ciclo) y verlo
-       justo en el instante del castigo convierte el marcador en una deuda.
-     · El marcador NUNCA baja. Un error cuesta la recompensa de ESE ítem, nada más.
-   ========================================================================== */
+/* 20-puntuacion.js — Requisitos 6 y 7 del usuario */
 
 var CB = CB || {};
 CB.puntuacion = CB.puntuacion || {};
@@ -6209,10 +5498,7 @@ CB.puntuacion.calcular = function (item, rtMs, estado) {
   if (estado.modoTiempo === 'sinPrisa') {
     mT = CB.puntuacion.M_SIN_PRISA;
   } else {
-    /* mT se calcula SIEMPRE con la d base del nivel, sea cual sea el modo. El
-       modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta
-       regla, «Con calma» con la d duplicada regalaba multiplicadores altos por
-       respuestas lentas y era el modo que más puntuaba. */
+    /* El modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta regla, «Con calma» con la d duplicada regalaba multiplicadores altos por respuestas lentas y era el modo que más puntuaba. */
     mT = CB.util.clamp(
       CB.puntuacion.M_MAX - 0.8 * (rtMs - tI) / (tL - tI),
       CB.puntuacion.M_MIN, CB.puntuacion.M_MAX
@@ -6297,27 +5583,7 @@ CB.puntuacion.ETIQUETA_EXTRA = {
   maraton:     'Expedición larga'
 };
 
-/* ============================================================================
-   21-antiazar.js — Requisito 7: penalizar responder al azar
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   EL INVARIANTE «UN ACIERTO RÁPIDO NUNCA ES AZAR» ESTÁ GARANTIZADO POR
-   CONSTRUCCIÓN, NO POR CALIBRACIÓN: es la primera línea de evaluar(). El plan v1
-   fijaba el umbral en 0,15 × mediana personal (con mediana 9.100 ms → 1.365 ms) y
-   a la vez exigía premiar un acierto legítimo en 600 ms. La fórmula y el
-   invariante se contradecían.
-
-   Y CON DESTREZAS NUEVAS, rtMuestras vacío daba mediana 0 → umbral 0 → el
-   detector quedaba DESACTIVADO sin decirlo. Por eso medianaPersonal() cae en un
-   respaldo declarado (el tIdeal de la destreza), nunca en cero.
-
-   GLUGLÚ NO ES UN JUEZ, ES UN ACCIDENTE DEL ENTORNO. En ninguna parte de la
-   interfaz del niño aparece «adivinar», «al azar», «trampas» ni «concéntrate».
-   Atribuir intención a un niño de 7 años a partir de un umbral estadístico
-   confunde adivinar con impulsividad, que es la firma conductual normal a esa
-   edad. `azar:true` se registra SOLO en respuestas[], para el panel del adulto.
-   ========================================================================== */
+/* 21-antiazar.js — Requisito 7: penalizar responder al azar */
 
 var CB = CB || {};
 CB.antiazar = CB.antiazar || {};
@@ -6395,7 +5661,7 @@ CB.antiazar.respuestaPosible = function (item) {
   return v >= 0 && v <= 999;
 };
 
-/* ── Los efectos del azar. NUNCA apaga una luz (§12.1, regla 2) ─────────── */
+/* Los efectos del azar. NUNCA apaga una luz (§12.1, regla 2) */
 CB.antiazar.EFECTOS = {
   puntos: 0,
   gemas: 0,
@@ -6434,34 +5700,7 @@ CB.antiazar.consumir = function (est) {
   return { confirmacionDoble: true, bloqueoMs: CB.antiazar.EFECTOS.bloqueoMs };
 };
 
-/* ============================================================================
-   22-vidas.js — Requisitos 9 y 10: las 3 luces del casco y las luces extra
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA (opera sobre un objeto de estado que se le pasa).
-
-   LA REGLA, EN UNA SOLA REDACCIÓN (PLAN §12.1, copiada a docs/decisiones.md):
-
-     1. El tiempo agotado NUNCA apaga una luz, en ninguna circunstancia.
-        Ni el primero, ni ninguno. (WCAG 2.2.1 Timing Adjustable, nivel A.)
-     2. La detección de azar NUNCA apaga una luz.
-     3. Se apaga una luz ÚNICAMENTE al fallar el SEGUNDO intento de un ítem,
-        después de haber visto la tarjeta de reparación.
-     4. SALVAGUARDA ANTI-BLOQUEO: 3 tiempos agotados consecutivos → modo «Sin
-        prisa»; 6 en la partida → fin amable con motivoFin 'pausa'.
-        Sin esta salvaguarda, un niño que dejase correr el tiempo en todos los
-        ítems NO PERDÍA NUNCA UNA LUZ y la partida no terminaba jamás: el sistema
-        de 3 vidas quedaba anulado por una estrategia trivial.
-     5. Tope 5. Iniciales 3.
-     6. El exceso va a perfil.vidasReserva (máx. 2). NO se convierte en gemas:
-        prometer una vida y entregar otra cosa erosiona la confianza en el
-        sistema de logros, que es justo lo que sostiene el requisito 10.
-     7. Al apagarse la 3.ª: fin conservando el 100 % de gemas y TODO el progreso.
-
-   Se llama CB.vidas y no CB.luces porque «vidas» es el vocabulario del requisito
-   del usuario. Lo que cambia es la METÁFORA VISUAL: luces de cristal que se
-   apagan y se encienden, no corazones que estallan. Un corazón roto es
-   irreversible en el imaginario infantil, y eso hace ilegible la vida extra.
-   ========================================================================== */
+/* 22-vidas.js — Requisitos 9 y 10: las 3 luces del casco y las luces extra */
 
 var CB = CB || {};
 CB.vidas = CB.vidas || {};
@@ -6514,20 +5753,14 @@ CB.vidas.fallo = function (est, intento, modo) {
              abrePista: false, abreReparacion: true, apagada: false };
   }
 
-  /* Durante el combate de jefe, el fallo NO apaga luces: solo repara un bloque
-     de la armadura y alarga el combate. Un niño que recorre un mundo entero y
-     «muere» en el jefe pierde la recompensa de cierre: es el punto de abandono
-     clásico (§12.9). */
+  /* Durante el combate de jefe, el fallo NO apaga luces: solo repara un bloque de la armadura y alarga el combate. */
   if (modo === 'jefe') {
     return { luces: est.luces, intento: intento,
              abrePista: false, abreReparacion: false, apagada: false };
   }
 
   if (intento === 1) {
-    /* Primer fallo: PISTA de Rocarr. NO apaga luz. NO rompe racha.
-       El campo se llama `abrePista` y no `abreReparacion`: la tarjeta de
-       reparación es cosa del SEGUNDO fallo, y confundir los dos nombres es
-       confundir los dos escalones de la escalera anti-frustración. */
+
     return { luces: est.luces, intento: 1,
              abrePista: true, abreReparacion: false, apagada: false };
   }
@@ -6633,23 +5866,7 @@ CB.vidas.PRECEDENCIA_FIN = {
   pausa: 5
 };
 
-/* ============================================================================
-   23-adaptativo.js — Elo por DESTREZA (no por nivel)
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   POR QUÉ EL ELO VIVE EN LA DESTREZA Y NO EN EL NIVEL (PLAN §13.1): con 92
-   niveles y partidas de 15 ítems, la mayoría de los niveles tendrían n < 5. Un
-   Elo con 5 observaciones y K = 32 es RUIDO PURO, y elegirBeta seleccionaría
-   niveles al azar durante las primeras 10 sesiones. Con 13 slugs, cada uno
-   acumula muchas observaciones y converge deprisa.
-
-     perfil.destrezas  → indexado por los 13 SLUGS  → theta, n, rtMediana, …
-     perfil.niveles    → indexado por los 92 IDS    → n, aciertos, caja, D, …
-
-   El Mapa de Destrezas se pinta desde perfil.niveles: eso es INFORMACIÓN.
-   La elección de dificultad sale de perfil.destrezas: eso es MEDIDA.
-   ========================================================================== */
+/* 23-adaptativo.js — Elo por DESTREZA (no por nivel) */
 
 var CB = CB || {};
 CB.adaptativo = CB.adaptativo || {};
@@ -6708,27 +5925,7 @@ CB.adaptativo.esperado = function (theta, beta) {
   return 1 / (1 + Math.pow(10, (beta - theta) / 400));
 };
 
-/* ── POR QUÉ NO SE USA EL ELO CLÁSICO ────────────────────────────────────────
-   El plan pedía dos cosas incompatibles: la actualización de Elo estándar
-   `theta += K·(acierto − esperado)` y una banda objetivo con «probabilidad de
-   acierto esperada ≈ 0,80-0,88». El Elo clásico converge al punto en que el
-   acierto observado iguala a la expectativa logística; con adivinanza c y
-   desliz s, ese punto fijo está en L = c/(c+s), que para el teclado (c = 0,02,
-   s = 0,10) da un 16,7 % de aciertos. El niño sintético lo confirmó: 43,9 % y
-   64,2 %, cayendo, en lugar del 75-92 % exigido.
-
-   La regla que sí produce lo que el plan quiere es la de Robbins-Monro (la
-   escalera clásica de la psicofísica): mover theta contra un OBJETIVO DE TASA.
-
-        theta' = theta + K · (acierto − 0,80)
-
-   Converge exactamente al punto en que el niño acierta el 80 % de las veces,
-   sea cual sea su adivinanza o su desliz. Y da a `theta` un significado
-   directo y explicable: «la dificultad a la que este niño acierta 8 de cada
-   10». Con eso, la banda [theta−60, theta+120] de elegirBeta vuelve a ser
-   coherente con la zona de desarrollo próximo que el plan describe.
-
-   Documentado en docs/decisiones.md. Se recalibra en F10 con niños reales. */
+/* POR QUÉ NO SE USA EL ELO CLÁSICO */
 CB.adaptativo.OBJETIVO_ACIERTO = 0.80;
 
 /**
@@ -6739,16 +5936,7 @@ CB.adaptativo.OBJETIVO_ACIERTO = 0.80;
 CB.adaptativo.actualizar = function (destreza, acierto, beta, perfil) {
   if (!perfil.destrezas) perfil.destrezas = {};
 
-  /* `destreza` es el SLUG, no el objeto de destreza. Pasarle el objeto no daba
-     ningún error: JavaScript lo convertía a la cadena "[object Object]" y se
-     creaba una destreza con ese nombre, que se guardaba en el perfil del niño y
-     salía en el informe del adulto. Mientras tanto, la destreza de verdad no se
-     actualizaba nunca y su competencia estimada se quedaba clavada.
-
-     No es hipotético: es el fallo que cometí auditando este mismo motor, y
-     tardé tres intentos en verlo porque nada se quejaba. Trece slugs, lista
-     cerrada: cualquier otra cosa es un error de programación y tiene que
-     notarse. */
+  /* Mientras tanto, la destreza de verdad no se actualizaba nunca y su competencia estimada se quedaba clavada. */
   if (CB.adaptativo.SLUGS.indexOf(destreza) === -1) {
     throw new Error('CB.adaptativo.actualizar: destreza desconocida «' + destreza +
                     '». Se espera uno de los 13 slugs, no el objeto de destreza.');
@@ -6766,17 +5954,7 @@ CB.adaptativo.actualizar = function (destreza, acierto, beta, perfil) {
   return d.theta;
 };
 
-/* ── Banda objetivo ─────────────────────────────────────────────────────────
-   La banda va POR DEBAJO de theta, no por encima. El plan escribía
-   [theta−60, theta+120] y a la vez «probabilidad de acierto esperada ≈
-   0,80-0,88»; son incompatibles: con la logística de Elo, un ítem cuya β iguala
-   a θ da el 50 %, no el 80 %. Para acertar 8 de cada 10 hace falta que el ítem
-   esté unos 340 puntos POR DEBAJO de la competencia del niño.
-
-   Con esta banda y la regla de tasa objetivo de `actualizar`, el sistema es
-   coherente: theta estima la competencia real, los ítems se sirven ~340 puntos
-   por debajo, y el acierto observado se estabiliza en el 80 % que pide la zona
-   de desarrollo próximo. */
+/* Banda objetivo */
 CB.adaptativo.BANDA_INFERIOR = 420;
 CB.adaptativo.BANDA_SUPERIOR = 260;
 
@@ -6828,9 +6006,7 @@ CB.adaptativo.precision1er = function (d) {
   return (d.aciertosPrimerIntento || 0) / d.n;
 };
 
-/* ── Regla simple de respaldo (§13.2) ───────────────────────────────────────
-   3 aciertos seguidos → sube; 2 fallos → baja. Activable por el adulto para
-   depuración y para centros que prefieran un comportamiento predecible. */
+/* Regla simple de respaldo (§13.2) */
 CB.adaptativo.reglaSimple = function (nivelEstado) {
   var v = nivelEstado.ventanaSimple || [];
   var n = v.length, i, seguidos = 0;
@@ -6842,27 +6018,7 @@ CB.adaptativo.reglaSimple = function (nivelEstado) {
   return 0;
 };
 
-/* ── Dificultad interna D del nivel (§8.2) ─────────────────────────────────
-   Sube tras 3 aciertos consecutivos A PRIMER INTENTO; baja tras 2 fallos.
-   D es interno al nivel y NO cambia el rango declarado en el catálogo.
-
-   LOS CONTADORES NO PUEDEN EMPEZAR POR GUION BAJO. Se llamaban `_racha` y
-   `_fallos`, y CB.almacen.sanear() descarta por diseño toda clave que empiece
-   por `_` —«campos internos, no se guardan»—, así que se borraban en cada
-   guardado mientras que `D` sí se guardaba. El resultado era un trinquete en una
-   sola dirección:
-
-     · para SUBIR hacen falta 3 aciertos seguidos del MISMO nivel, y una partida
-       sirve como mucho 3 ítems del mismo nivel (CB.partida.MAX_REPETICIONES).
-       O sea: exigía un pleno de 3 sobre 3 dentro de una única sesión, porque al
-       día siguiente la racha volvía a cero.
-     · para BAJAR bastan 2 fallos, y además CB.partida.trasFallo pone D = 1 a la
-       segunda caída del concepto. Eso sí persiste, porque vive en `D`.
-
-   Es decir: la dificultad podía bajar para siempre y casi nunca subir. Un niño
-   que mejora se quedaba con los ítems fáciles de su peor día. Con nombres sin
-   guion bajo, los contadores sobreviven al guardado y la regla hace lo que dice.
-   No hace falta migración: ausentes valen 0, que es como empezaban. */
+/* Dificultad interna D del nivel (§8.2) */
 CB.adaptativo.actualizarD = function (nivelEstado, correcto, primerIntento) {
   nivelEstado.D = nivelEstado.D || 2;
   nivelEstado.rachaD = nivelEstado.rachaD || 0;
@@ -6888,29 +6044,13 @@ CB.adaptativo.actualizarD = function (nivelEstado, correcto, primerIntento) {
   return nivelEstado.D;
 };
 
-/* ============================================================================
-   24-logros.js — Requisito 10: vidas extra por logros bonus
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   LISTA de 24 entradas, cada una con `version: 1 | 2`. EXACTAMENTE 10 tienen
-   version:1 y son las únicas evaluadas en v1 (casos-motor.js lo comprueba).
-
-   TRES LOGROS CONCEDEN LUZ, y los tres son alcanzables DENTRO DE UNA MISMA
-   PARTIDA. En el plan v1 existía CB.vidas.conceder(), existía retoBonus,
-   existían «los 8 logros» y NINGÚN logro estaba declarado como concesor de vida:
-   el requisito 10 quedaba sobre el papel.
-
-   ANTIFARMEO: ningún logro se obtiene dos veces; los de racha exigen aciertos a
-   PRIMER intento; los de puntuación se evalúan contra el récord DEL MISMO MODO
-   de tiempo; en Cantera Tranquila solo se evalúan los de colección.
-   ========================================================================== */
+/* 24-logros.js — Requisito 10: vidas extra por logros bonus */
 
 var CB = CB || {};
 CB.logros = CB.logros || {};
 
 CB.logros.LISTA = [
-  /* ── Los 3 que conceden luz (requisito 10) ───────────────────────────── */
+  /* Los 3 que conceden luz (requisito 10) */
   { id: 'vuelta_al_pozo', version: 1, luz: true,
     nombre: 'Vuelta al pozo',
     desc: '3 aciertos seguidos a primer intento después de que se apagara una luz.',
@@ -6926,7 +6066,7 @@ CB.logros.LISTA = [
     desc: 'Has acertado el reto marcado del nivel.',
     evento: 'acierto' },
 
-  /* ── Los otros 7 de v1 ───────────────────────────────────────────────── */
+  /* Los otros 7 de v1 */
   { id: 'vena_de_cristal', version: 1, luz: false,
     nombre: 'Vena de cristal',
     desc: '10 aciertos seguidos a primer intento.',
@@ -6962,7 +6102,7 @@ CB.logros.LISTA = [
     desc: 'Has jugado 2 días distintos separados por al menos un día.',
     evento: 'finPartida' },
 
-  /* ── Los 14 de v2: reserva DECLARADA, no evaluada ────────────────────── */
+  /* Los 14 de v2: reserva DECLARADA, no evaluada */
   { id: 'mina_profunda',   version: 2, luz: false, nombre: 'Mina profunda',   desc: 'Reservado para la versión 2.' },
   { id: 'reloj_de_piedra', version: 2, luz: false, nombre: 'Reloj de piedra', desc: 'Reservado para la versión 2.' },
   { id: 'sin_una_grieta',  version: 2, luz: false, nombre: 'Sin una grieta',  desc: 'Reservado para la versión 2.' },
@@ -7072,22 +6212,7 @@ CB.logros.filtrarConLuz = function (lista) {
   return (lista || []).filter(function (l) { return l && l.luz; });
 };
 
-/* ============================================================================
-   25-mensajes.js — Requisitos 4 y 5: enhorabuena variada y ánimo al fallar
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA (opera sobre el objeto perfil que se le pasa).
-
-   POR QUÉ CADA CATEGORÍA TIENE SU PROPIA BOLSA (PLAN §14.7): el plan v1 tenía 84
-   mensajes en 4 categorías elegidos por contexto. La bolsa EFECTIVA era la de la
-   categoría —15-20 mensajes— y un niño con racha veía repetido el mismo elogio
-   de racha en 15 aciertos seguidos. Muy por debajo de los «40 minutos sin
-   repetir» que el propio plan prometía.
-
-   Ahora: 4 categorías × EXACTAMENTE 21, cada una con su BolsaBarajada persistida
-   en el perfil. Ningún mensaje se repite hasta agotar la bolsa de SU categoría.
-   Además, nunca se repite uno de los `ultimos12` globales: si la bolsa solo
-   ofrece uno ya reciente, se toma el siguiente de la bolsa.
-   ========================================================================== */
+/* 25-mensajes.js — Requisitos 4 y 5: enhorabuena variada y ánimo al fallar */
 
 var CB = CB || {};
 CB.mensajes = CB.mensajes || {};
@@ -7113,11 +6238,7 @@ CB.mensajes.nuevoEstado = function () {
   return {
     acierto: { bolsaA: [], bolsaB: [], bolsaC: [], bolsaD: [], ultimos12: [] },
     animo:   { bolsa1: [], bolsa2: [], ultimos10: [] },
-    /* SIN GUION BAJO DELANTE, y no es estilo. CB.almacen.sanear() borra todas
-       las claves que empiezan por «_», así que una bolsa llamada `_gritos` se
-       reiniciaría en cada guardado y el grito volvería a repetirse cada dos por
-       tres sin que nada fallara. Es exactamente lo que le pasó a la dificultad D
-       (E45), que era un trinquete de una sola dirección por este mismo motivo. */
+
     gritos:  { bolsaAcierto: [] },
     /* Los cinco micro-descansos también van en bolsa. Sin guion bajo, por lo
        mismo: sanear() borra esas claves y la bolsa se reiniciaría en cada
@@ -7242,11 +6363,7 @@ CB.mensajes.acierto = function (ctx) {
   return CB.mensajes.rellenar(lista[idx], ctx, rng);
 };
 
-/**
- * Mensaje motivador al fallar. Requisito 5.
- * Nunca contiene elogio de persona ni acusación: el criterio 7.2 del RD pide
- * literalmente «valorando el error como una oportunidad de aprendizaje».
- */
+/* Nunca contiene elogio de persona ni acusación: el criterio 7.2 del RD pide literalmente «valorando el error como una oportunidad de aprendizaje». */
 CB.mensajes.animo = function (ctx) {
   ctx = ctx || {};
   var perfil = ctx.perfil || {};
@@ -7309,24 +6426,7 @@ CB.mensajes.contrato = function () {
   };
 };
 
-/* ============================================================================
-   26-reparacion.js — La tarjeta de reparación y los 6 explicadores
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA: devuelve una descripción de la tarjeta; quien la pinta es
-   30-ui.js. Cero DOM aquí.
-
-   POR QUÉ EL BOTÓN «¡LO PILLO!» ES UNA PUERTA DE INTERACCIÓN Y NO UN
-   TEMPORIZADOR (PLAN §12.6): el plan v1 lo habilitaba a los 2,0 s. Dos segundos
-   no bastan ni para leer el título —un niño de 2.º lee ≈1 palabra por segundo y
-   una explicación de columnas C-D-U tiene 15-25 palabras—. El propio protocolo
-   de observación de v1 listaba «pulsa a los 2,0 s exactos sin mirar» como señal
-   de alarma y mantenía el valor. La única intervención reparadora del juego era
-   saltable de un toque, y se habría saltado siempre.
-
-   Ahora el botón se habilita cuando el niño ha TOCADO LOS 3 PASOS EN ORDEN.
-   Con salvavidas: si a los 25 s no ha tocado nada, la tarjeta se autocompleta
-   con voz y el botón se habilita. NUNCA se deja al niño atrapado.
-   ========================================================================== */
+/* 26-reparacion.js — La tarjeta de reparación y los 6 explicadores */
 
 var CB = CB || {};
 CB.reparacion = CB.reparacion || {};
@@ -7334,14 +6434,7 @@ CB.reparacion = CB.reparacion || {};
 CB.reparacion.SUELO_MS_MIN = 4000;
 CB.reparacion.MS_POR_PALABRA = 900;
 
-/* El salvavidas NO es un valor fijo (corrección de un defecto del plan):
-   con 25 palabras el suelo temporal sale a 22,5 s y el salvavidas fijo de 25 s
-   quedaba a solo 2,5 s de distancia. Esperar dos segundos y medio daba el mismo
-   resultado que tocar los tres pasos, con lo que la PUERTA DE INTERACCIÓN
-   —razón de ser de §12.6— volvía a ser un temporizador disfrazado.
-
-   Ahora el salvavidas va siempre 8 s por detrás del suelo, y nunca antes de los
-   25 s. Tocar los tres pasos sigue siendo el camino corto y real. */
+/* El salvavidas NO es un valor fijo (corrección de un defecto del plan): con 25 palabras el suelo temporal sale a 22,5 s y el salvavidas fijo de 25 s quedaba a solo 2,5 s de distancia. */
 CB.reparacion.SALVAVIDAS_MIN_MS = 25000;
 CB.reparacion.SALVAVIDAS_MARGEN_MS = 8000;
 
@@ -7372,7 +6465,7 @@ CB.reparacion.explicadorDe = function (destreza) {
   }
 };
 
-/* ── Los 6 explicadores. Cada uno devuelve EXACTAMENTE 3 pasos ─────────── */
+/* Los 6 explicadores. Cada uno devuelve EXACTAMENTE 3 pasos */
 
 CB.reparacion.columnasCDU = function (item) {
   var a = item.operandos ? item.operandos[0] : 63;
@@ -7510,7 +6603,7 @@ CB.reparacion.tarjeta = function (item, hipotesis) {
   };
 };
 
-/* ── La puerta de interacción ───────────────────────────────────────────── */
+/* La puerta de interacción */
 
 CB.reparacion.nuevaPuerta = function (sueloMs) {
   return { tocados: [], sueloMs: sueloMs || CB.reparacion.SUELO_MS_MIN,
@@ -7542,15 +6635,7 @@ CB.reparacion.completada = function (puerta) {
   return puerta.tocados.length >= 3 && !puerta.autocompletada;
 };
 
-/* ============================================================================
-   27-repaso.js — CB.leitner: 3 cajas y reinserción intra-partida
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   REINSERCIÓN: un ítem fallado vuelve a aparecer entre 3 y 5 ítems después, con
-   OTROS NÚMEROS del mismo tipo. Nunca el mismo ítem literal: eso sería
-   memorizar la respuesta, no aprender el procedimiento (PLAN §13.5).
-   ========================================================================== */
+/* 27-repaso.js — CB.leitner: 3 cajas y reinserción intra-partida */
 
 var CB = CB || {};
 CB.leitner = CB.leitner || {};
@@ -7583,7 +6668,7 @@ CB.leitner.venceHoy = function (estado, hoyISO) {
   return CB.util.diasEntre(estado.proximoRepaso, hoyISO) >= 0;
 };
 
-/* ── Reinserción intra-partida ──────────────────────────────────────────── */
+/* Reinserción intra-partida */
 
 CB.leitner.nuevaCola = function () { return []; };
 
@@ -7610,17 +6695,7 @@ CB.leitner.tocaReinsertar = function (cola, indice) {
   return null;
 };
 
-/* ============================================================================
-   28-memoria.js — Curva de olvido y los 6 estados de una veta
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   LA RAZÓN PARA VOLVER MAÑANA ES HONESTA (PLAN §13.4): una veta se ha cubierto
-   de musgo y repasarla cuesta dos minutos. Eso SUSTITUYE a la racha que se
-   pierde, que es un patrón oscuro prohibido por el código de diseño apropiado a
-   la edad. La diferencia no es cosmética: el musgo informa de un hecho real
-   sobre la memoria del niño; la racha perdida solo fabrica miedo a no volver.
-   ========================================================================== */
+/* 28-memoria.js — Curva de olvido y los 6 estados de una veta */
 
 var CB = CB || {};
 CB.memoria = CB.memoria || {};
@@ -7674,10 +6749,6 @@ CB.memoria.clasificar = function (estado, hoyISO, bloqueado) {
   /* Oxidada: era sólida y se ha olvidado. Es el único estado que MIRA ATRÁS. */
   if (eraSolida && R < 0.6) return 'oxidada';
 
-  /* Dominada, criterio endurecido (§17.2 métrica 5): no basta con acertar
-     mucho; hace falta volumen, precisión a primer intento y persistencia en el
-     tiempo. Sin las tres condiciones, «dominada» es una palabra vacía que el
-     informe le enseña a una familia. */
   if (estado.n >= 12 && p1 >= 0.90 && (estado.estabilidadDias || 1) >= 6 && R >= 0.8) {
     return 'dominada';
   }
@@ -7765,15 +6836,7 @@ CB.memoria.hanPasado48h = function (estado, hoyISO) {
   return CB.util.diasEntre(estado.ultimoRepasoISO, hoyISO) >= 2;
 };
 
-/* ============================================================================
-   29-grafo.js — DAG de prerrequisitos de los 92 niveles
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA. Lee CB.catalogo, no lo modifica.
-
-   casos-motor.js verifica: el grafo es ACÍCLICO, TODO nodo es alcanzable desde
-   el conjunto de niveles con prerrequisitos:[], y NINGUNA destreza con
-   ampliacion:true es prerrequisito de una nuclear (CU5).
-   ========================================================================== */
+/* 29-grafo.js — DAG de prerrequisitos de los 92 niveles */
 
 var CB = CB || {};
 CB.grafo = CB.grafo || {};
@@ -7851,7 +6914,7 @@ CB.grafo.prerrequisitoDominado = function (nivelId, perfil) {
   return null;
 };
 
-/* ── Verificaciones estructurales, usadas por casos-motor.js ────────────── */
+/* Verificaciones estructurales, usadas por casos-motor.js */
 
 CB.grafo.esAciclico = function () {
   var ids = CB.catalogo.ids();
@@ -7910,19 +6973,7 @@ CB.grafo.ampliacionesComoPrerrequisito = function () {
   return out;
 };
 
-/* ============================================================================
-   2A-escalera.js — La escalera anti-frustración de 5 escalones
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   EL ESCALÓN 5 EXISTE PORQUE EL PLAN v1 NO DECÍA QUÉ PASABA EN EL 4.º FALLO DEL
-   MISMO CONCEPTO, y ese niño —posible discalculia, o simplemente un mal día— es
-   justo el que más importa. Sin escalón 5, el juego le seguía sirviendo el mismo
-   concepto hasta agotarle las tres luces.
-
-   El concepto se retira del guion SIN DECIRLE NADA AL NIÑO. Anunciar «voy a
-   quitarte esto porque no te sale» convierte una ayuda en una etiqueta.
-   ========================================================================== */
+/* 2A-escalera.js — La escalera anti-frustración de 5 escalones */
 
 var CB = CB || {};
 CB.escalera = CB.escalera || {};
@@ -8000,17 +7051,7 @@ CB.escalera.fallosDe = function (contador, destreza) {
   return contador[destreza] || 0;
 };
 
-/* ============================================================================
-   30-ui.js — Pintado. Toca el DOM (serie 30-, fuera de la regla de frontera)
-   ----------------------------------------------------------------------------
-   REGLA DE SEGURIDAD (PLAN §15.8): todo texto que venga del perfil o de un
-   fichero importado se pinta con textContent, NUNCA con innerHTML. En este
-   fichero no hay ni una asignación a innerHTML con variables.
-
-   POOL DE 24 PARTÍCULAS: se crean una vez y se reciclan. Crear y destruir nodos
-   en cada acierto produce tirones en un Chromebook de 2019, que es justo el
-   dispositivo objetivo.
-   ========================================================================== */
+/* 30-ui.js — Pintado. Toca el DOM (serie 30-, fuera de la regla de frontera) */
 
 var CB = CB || {};
 CB.ui = CB.ui || {};
@@ -8019,7 +7060,7 @@ CB.ui.POOL_PARTICULAS = 24;
 CB.ui._particulas = [];
 CB.ui._sigParticula = 0;
 
-/* ── Utilidades de creación ─────────────────────────────────────────────── */
+/* Utilidades de creación */
 CB.ui.crear = function (etiqueta, clase, texto) {
   var el = document.createElement(etiqueta);
   if (clase) el.className = clase;
@@ -8045,15 +7086,13 @@ CB.ui.boton = function (texto, clase, alPulsar, datos) {
   return b;
 };
 
-/* ── medirLineas: el MISMO algoritmo que usa el validador (§9.3) ────────────
-   Si la interfaz cortase por píxeles y el validador por caracteres, el
-   invariante 7 mediría una cosa y la pantalla mostraría otra. */
+/* medirLineas: el MISMO algoritmo que usa el validador (§9.3) */
 CB.ui.ANCHO_LINEA = 34;
 CB.ui.medirLineas = function (texto) {
   return CB.util.cortarLineas(texto, CB.ui.ANCHO_LINEA);
 };
 
-/* ── HUD ────────────────────────────────────────────────────────────────── */
+/* HUD */
 CB.ui.pintarHUD = function (estado) {
   var cont = document.getElementById('hud-luces');
   if (cont) {
@@ -8071,19 +7110,7 @@ CB.ui.pintarHUD = function (estado) {
   /* El contador de gemas SOLO SUBE. Nunca baja, nunca es negativo (§3.4). */
   if (g) CB.ui.contarHasta(g, Math.max(0, estado.gemas || 0));
 
-  /* ── CUÁNTO QUEDA ─────────────────────────────────────────────────────────
-     Lo único que codificaba el avance era el cielo, y el cielo es aria-hidden.
-     El guion tiene entre 8 y 20 ítems y su longitud cambia de partida en partida,
-     así que un niño de siete años no tenía forma de saber si va por la mitad o
-     por el final. La lección ya estaba aprendida en este código para cuatro
-     preguntas —la calibración escribe «Pregunta 3 de 4»— y en la expedición de
-     siete minutos no se había aplicado.
-
-     LOS BLOQUES CAEN, NO QUEDAN: se pinta lo hecho. Un contador que baja se lee
-     como cuenta atrás, y aquí no hay ninguna.
-
-     Solo se repinta si viene `total`. Sin esa guarda, una llamada parcial
-     —cualquiera que pase solo luces y gemas— borraría la fila entera. */
+  /* CUÁNTO QUEDA */
   var gal = document.getElementById('hud-galeria');
   if (gal && estado.total) {
     CB.ui.vaciar(gal);
@@ -8101,16 +7128,7 @@ CB.ui.pintarHUD = function (estado) {
   }
 };
 
-/* ── EN QUÉ VETA SE ESTÁ ────────────────────────────────────────────────────
-   El HUD sabía decir cuánto queda y no sabía decir en qué se está. Una
-   expedición encadena hasta veinte ítems de siete vetas distintas, barajadas
-   —el barajado es deliberado: la práctica intercalada retiene mejor que la
-   agrupada— y el nombre de la veta solo se veía en la Cantera, dos pantallas
-   atrás. Con esto, cambiar de veta deja de ser un cambio de pregunta sin causa.
-
-   SIN ARIA. Es texto de verdad y se lee solo; el nombre del mundo se aparta
-   visualmente por debajo de 480 px pero sigue en el árbol de accesibilidad. Un
-   aria-label sobre un <p> además está prohibido por ARIA y axe lo marca. */
+/* EN QUÉ VETA SE ESTÁ */
 CB.ui.pintarVeta = function (nivel, mundo) {
   var nombre = document.getElementById('hud-veta-nombre');
   var mun = document.getElementById('hud-veta-mundo');
@@ -8118,27 +7136,8 @@ CB.ui.pintarVeta = function (nivel, mundo) {
   if (mun) mun.textContent = mundo ? mundo.nombre : '';
 };
 
-/* ── UNA PIEZA DE DINERO ────────────────────────────────────────────────────
-   Estaba escrita tres veces —en las opciones, en el modo pagar y en el modo
-   contar— y las tres iban a divergir en cuanto la pieza dejara de ser un
-   rectángulo de un solo color, que es exactamente lo que pasa aquí.
-
-   `data-valor` es lo que permite que el CSS dibuje CADA denominación como la que
-   es: el aro bimetálico invertido de las monedas de 1 y 2 €, y el color y el
-   tamaño reales de cada billete. No hay ni una imagen en el proyecto —la
-   auditoría no admite un solo fichero binario— así que la pieza se dibuja, igual
-   que el reloj de arena, las gemas y el terreno. */
-/* ── UNA PIEZA DE DINERO ────────────────────────────────────────────────────
-   LA CIFRA VA EN SU PROPIO NODO desde 1.20.0, y no suelta dentro de la pieza.
-   Mientras la pieza era un cuadrado de color, un nodo de texto centrado se leía
-   perfectamente; encima de una fotografía de una moneda no se lee nada. El
-   `<span>` es lo que permite al CSS darle una cinta opaca debajo de la imagen en
-   vez de encima de ella. `textContent` de la pieza sigue devolviendo «2 €», así
-   que nada de lo que ya la leía se entera.
-
-   LOS CÉNTIMOS VAN POR data-centimos, no por data-valor, porque los valores
-   chocan —«5» es el billete de 5 € y la moneda de 5 céntimos—. Lo explica entero
-   la cabecera de `15-gen-dinero.js`. */
+/* UNA PIEZA DE DINERO */
+/* UNA PIEZA DE DINERO */
 CB.ui.pieza = function (etiqueta, v) {
   var esCent = CB.gen.dinero.esCentimo(v);
   var el = CB.ui.crear(etiqueta,
@@ -8155,30 +7154,7 @@ CB.ui.pieza = function (etiqueta, v) {
   return el;
 };
 
-/* ── LA CIFRA QUE SUBE ──────────────────────────────────────────────────────
-   El marcador cambiaba de golpe: donde ponía 12 ponía 15 en el fotograma
-   siguiente. Toda la ganancia se contaba fuera de él —la insignia «+1» que brota
-   al lado, la hilera de «+2 por rapidez»— y el número, que es el sitio donde de
-   verdad vive la puntuación, no se enteraba. Un cambio instantáneo entre dos
-   números de dos cifras no se ve: se descubre después, y entonces ya no se sabe
-   de dónde ha salido.
-
-   Sube DE UNO EN UNO, con tope de pasos. Contar 3 gemas de una en una es lo que
-   hace que se noten las tres; contar 40 así al final de la partida serían cuatro
-   segundos de espera, y por eso el salto se agranda cuando la diferencia es
-   grande. El último paso escribe el destino EXACTO, nunca el acumulado de las
-   divisiones: una cifra de puntuación que se quede en 39 porque el reparto no
-   era entero es peor que no animar nada.
-
-   NUNCA BAJA. Empezar una partida repinta el HUD con 0 gemas y el nodo aún
-   guarda las de la anterior; contar hacia atrás contradice de frente la regla de
-   que el marcador solo sube (§3.4). Si el destino es menor, se escribe y ya.
-
-   Y CON EL MOVIMIENTO APAGADO SE ESCRIBE EL NÚMERO FINAL, no se pierde nada: la
-   información es la cifra, el movimiento solo es la gracia. La clase
-   `sin-movimiento` de la raíz es la fuente única de ese ajuste —la pone
-   CB.a11y.aplicarAjustes juntando el ajuste del juego y el del sistema— así que
-   aquí se lee de ahí y no se vuelve a preguntar a matchMedia. */
+/* LA CIFRA QUE SUBE */
 CB.ui.MS_PASO_CIFRA = 90;
 CB.ui.PASOS_CIFRA = 8;
 CB.ui._cuentas = {};
@@ -8244,18 +7220,14 @@ CB.ui.encenderLuz = function (indice) {
   }
 };
 
-/* ── Enunciado del ítem ─────────────────────────────────────────────────── */
+/* Enunciado del ítem */
 CB.ui.pintarItem = function (item) {
   var cont = document.getElementById('item-enunciado');
   if (!cont) return;
   CB.ui.vaciar(cont);
   cont.className = 'panel-bloque';
 
-  /* EL DISTINTIVO DE RETO, y va aquí arriba a propósito: la rama de los problemas
-     de enunciado hace `return` unas líneas más abajo, así que ponerlo al final no
-     se vería nunca en los problemas — que es justo donde D === 3 es más probable.
-     El reto se calculaba, se guardaba y concedía una luz extra sin que el niño
-     supiera por qué. Es texto, no color: «nunca solo color» también aquí. */
+  /* EL DISTINTIVO DE RETO, y va aquí arriba a propósito: la rama de los problemas de enunciado hace `return` unas líneas más abajo, así que ponerlo al final no se vería nunca en los problemas — que es justo donde D === 3 es más probable. */
   if (item.esRetoBonus) {
     cont.appendChild(CB.ui.crear('span', 'distintivo', 'reto'));
   }
@@ -8270,10 +7242,7 @@ CB.ui.pintarItem = function (item) {
       caja.appendChild(p);
     }
     cont.appendChild(caja);
-    /* El altavoz va DENTRO del enunciado, donde está lo que hay que oír, y no
-       en la barra: P3 retiró el de la barra a petición expresa y esto no lo
-       devuelve. Llama a accionLeerSuave, que no levanta el bloqueo antiazar.
-       Solo en problemas: en «6 − 3» no hay nada que leer. */
+    /* Solo en problemas: en «6 − 3» no hay nada que leer. */
     var altavoz = CB.ui.boton('🔊 Leer', 'btn-bloque--icono enunciado__altavoz', function () {
       if (CB.partida && CB.partida.accionLeerSuave) CB.partida.accionLeerSuave();
     });
@@ -8378,12 +7347,8 @@ CB.ui.filaVagonetas = function (total, marcada) {
   return caja;
 };
 
-/* ── Mensajes ───────────────────────────────────────────────────────────── */
-/* El nodo de mensaje de la pantalla que está a la vista. #item-mensaje vive
-   DENTRO de <section id="p-partida">, así que mientras se calibra está oculto:
-   escribir ahí el «¡Muy bien!» de cada una de las cuatro preguntas equivalía a
-   no dar ninguna respuesta. Mismo patrón que usa 32-componentes.js para elegir
-   entre cal-respuesta e item-respuesta. */
+/* Mensajes */
+
 CB.ui.nodoMensaje = function () {
   var id = (CB.pantallas && CB.pantallas.actual === 'p-calibracion')
     ? 'cal-mensaje' : 'item-mensaje';
@@ -8408,7 +7373,7 @@ CB.ui.ocultarMensaje = function () {
   });
 };
 
-/* ── Bono retrospectivo: GANANCIA, nunca pérdida en directo (§3.4) ──────── */
+/* Bono retrospectivo: GANANCIA, nunca pérdida en directo (§3.4) */
 CB.ui.hileraBono = function (n) {
   var h = document.getElementById('item-bono');
   if (!h) return;
@@ -8420,7 +7385,7 @@ CB.ui.hileraBono = function (n) {
   h.appendChild(CB.ui.crear('span', null, '+' + n + ' por rapidez'));
 };
 
-/* ── Partículas ─────────────────────────────────────────────────────────── */
+/* Partículas */
 CB.ui.iniciarParticulas = function () {
   if (CB.ui._particulas.length) return;
   var i, p;
@@ -8458,7 +7423,7 @@ CB.ui.particulasDe = function (el, color) {
   CB.ui.particulas(r.left + r.width / 2, r.top + r.height / 2, color, 10);
 };
 
-/* ── Criaturas ──────────────────────────────────────────────────────────── */
+/* Criaturas */
 CB.ui.CRIATURAS = {
   cubi: '🧍', rocarr: '🪨', gluglu: '💧', chispa: '✨', blopi: '🟩',
   tronquete: '🌳', ranacubo: '🐸', cristalina: '💠', brasita: '🔥',
@@ -8471,11 +7436,7 @@ CB.ui.personaje = function (quien, estado) {
   var el = document.getElementById('cri-' + quien);
   if (!el) return;
   el.hidden = false;
-  /* OJO al renombrar: estas dos listas NO las ve un codemod de clases, porque
-     aqui los nombres no estan en posicion de clase —estan en un array y en una
-     tabla de consulta, y classList.remove/add reciben una VARIABLE. Quien lo
-     atrapa si se olvidan es la direccion 1 del cruce (herramientas/
-     cruzar-clases.mjs): la clase se quedaria en el CSS sin que nadie la nombre. */
+
   ['criatura--flota', 'criatura--saltito', 'criatura--asiente',
    'criatura--gotea', 'criatura--gira'].forEach(function (c) {
     el.classList.remove(c);
@@ -8492,7 +7453,7 @@ CB.ui.ocultarPersonaje = function (quien) {
   if (el) el.hidden = true;
 };
 
-/* ── Lectura guiada: resalta la palabra que se está leyendo ─────────────── */
+/* Lectura guiada: resalta la palabra que se está leyendo */
 CB.ui.resaltarLinea = function (indice) {
   var lineas = document.querySelectorAll('#item-enunciado .enunciado__frase');
   var i;
@@ -8516,7 +7477,7 @@ CB.ui.resaltarPalabra = function (indice, texto) {
   }
 };
 
-/* ── Bioma y cielo ──────────────────────────────────────────────────────── */
+/* Bioma y cielo */
 CB.ui.pintarBioma = function (bioma, avance) {
   var z = document.getElementById('zona-juego');
   if (z) {
@@ -8530,20 +7491,9 @@ CB.ui.pintarBioma = function (bioma, avance) {
   cielo.style.setProperty('--avance', String(CB.util.clamp(avance || 0, 0, 1)));
 };
 
-/* ── Tarjeta de reparación: PUERTA DE INTERACCIÓN, no temporizador ──────────
-   El botón «¡Lo pillo!» aparece deshabilitado y solo se habilita cuando el niño
-   ha tocado los 3 pasos EN ORDEN, con un suelo temporal de max(4 s, palabras ×
-   900 ms). Salvavidas a los 25 s: la tarjeta se autocompleta con voz y el botón
-   se habilita. NUNCA se deja al niño atrapado (§12.6). */
+/* Tarjeta de reparación: PUERTA DE INTERACCIÓN, no temporizador */
 CB.ui._timersReparacion = null;
 
-/* Limpia los temporizadores de una tarjeta anterior. SIN ESTO la puerta de
-   interacción quedaba anulada en cuanto había una segunda reparación en la
-   sesión: el setInterval de la tarjeta vieja seguía vivo, apuntaba al MISMO
-   nodo #btn-lo-pillo y lo habilitaba usando el estado de SU puerta (ya
-   completada). Es decir, a partir del segundo fallo grave del día el botón
-   «¡Lo pillo!» volvía a ser saltable de un toque, que es exactamente el defecto
-   que §12.6 existe para impedir. */
 CB.ui.limpiarReparacion = function () {
   if (!CB.ui._timersReparacion) return;
   clearTimeout(CB.ui._timersReparacion.salvavidas);
@@ -8720,7 +7670,7 @@ CB.ui.resaltarPasoDibujo = function (foco) {
   }
 };
 
-/* ── Barra de progreso genérica ─────────────────────────────────────────── */
+/* Barra de progreso genérica */
 CB.ui.barra = function (fraccion) {
   var b = CB.ui.crear('div', 'tarjeta-mundo__barra');
   var i = CB.ui.crear('i', 'tarjeta-mundo__relleno');
@@ -8729,45 +7679,10 @@ CB.ui.barra = function (fraccion) {
   return b;
 };
 
-/* ── Reloj de arena de la cuenta atrás ──────────────────────────────────────
-   30 segundos por ítem, visibles. El plan original decía expresamente lo
-   contrario («la rapidez suma, nunca resta; jamás una cuenta atrás que corre
-   mientras el niño piensa») y esto lo cambia por petición explícita. Las dos
-   salvaguardas que SÍ se conservan, porque no son de gusto:
-
-   1. El modo «Sin prisa» apaga la cuenta atrás entera. Un límite de tiempo que
-      no se puede desactivar incumple la WCAG 2.2.1, y esto es material escolar
-      sujeto a la EN 301 549.
-   2. Quedarse sin tiempo NO apaga una luz. Eso ya era así y sigue siéndolo:
-      lo comprueba CB.vidas.timeout().
-
-   La cifra es texto de verdad y el dibujo es aria-hidden. Un lector de pantalla
-   lee «18», no «reloj de arena a dos tercios».
-   ────────────────────────────────────────────────────────────────────────── */
-/* ── LA CINTA ───────────────────────────────────────────────────────────────
-   Un solo cartel para los nueve momentos que merecen uno, y UN SOLO NODO por
-   pantalla. Lo segundo importa más de lo que parece: dos cintas superpuestas
-   son ilegibles, y mientras hubiera un nodo por cada tipo de aviso, evitar que
-   coincidieran era disciplina. Con un nodo es imposible que coincidan.
-
-   EL REPARTO DE NÚMEROS, que es lo que hace que esto no se pudra:
-     · el CSS es dueño de la FORMA — los fotogramas y el número de pasos
-     · el JS es dueño del TIEMPO — la tabla de aquí abajo
-   Ningún número vive en los dos sitios. Antes MS_CARTEL valía 1900 «porque es
-   lo que dura prisa-cruza», copiado a mano, con un comentario avisando de lo
-   frágil que era. Con nueve coreografías habrían sido nueve copias.
-   ────────────────────────────────────────────────────────────────────────── */
+/* Reloj de arena de la cuenta atrás */
+/* LA CINTA */
 CB.ui.cinta = { nodo: null, _salida: null, _clave: null };
 
-/* LA CINTA ES UN VEHÍCULO, NO EL SISTEMA DE CELEBRACIÓN. Quedan tres
-   coreografías, y las tres son de cosas que casi no pasan: el aviso de tiempo,
-   la superación y el jefe. Quién usa la cinta lo decide CB.ui.festejo.
-
-   Eran nueve. La primera versión de 1.8.0 daba a cada momento su propio
-   recorrido —entrar por abajo, caer, estallar— pero TODAS eran la misma banda,
-   del mismo ancho, en el mismo sitio y con la misma letra. Visto en pantalla,
-   veinte veces por sesión, eso no es variedad: es el mismo rectángulo moviéndose
-   distinto. Lo que tiene que cambiar es el VEHÍCULO, no la trayectoria. */
 CB.ui.cinta.COREOGRAFIAS = {
   'prisa':   { ms: 1900, sfx: 'prisa'      },
   'junta':   { ms: 1300, sfx: 'subirNivel' },
@@ -8824,26 +7739,7 @@ CB.ui.cinta.ocultar = function () {
   n.hidden = true;
 };
 
-/* ── EL FESTEJO ─────────────────────────────────────────────────────────────
-   SEIS VEHÍCULOS, no seis recorridos. Esta es la corrección de la primera
-   versión de 1.8.0, y conviene que quede escrito por qué: allí cada momento
-   tenía su propia coreografía, pero todas eran la misma banda oscura, del mismo
-   ancho, en el mismo sitio y con la misma tipografía. Un niño no ve nueve
-   celebraciones distintas; ve el mismo rectángulo entrando de nueve maneras. A
-   la tercera vez ya no celebra nada.
-
-   Peor: al unificarlo todo en un nodo se escribió un guardián (E47) que PROHIBÍA
-   a cada modificador tocar la posición. Es decir, la monotonía estaba blindada
-   por una prueba. Ese guardián se reescribe: lo que hay que prohibir no es que
-   el cartel se mueva, es que invada la zona de respuesta.
-
-   La regla que ordena la tabla no cambia, y ahora sí se cumple de verdad: EL
-   ESPECTÁCULO ES INVERSAMENTE PROPORCIONAL A LA FRECUENCIA. Lo que sale en el
-   60 % de los aciertos es lo más pequeño que hay —un «+1» que brota junto al
-   contador de gemas— y ni siquiera usa la banda. La banda se reserva para lo
-   que casi no pasa.
-
-   Ni un efecto de sonido nuevo: los doce de 04-audio.js son contrato. */
+/* EL FESTEJO */
 CB.ui.festejo = { _salida: null, _clave: null };
 
 CB.ui.festejo.CELEBRACIONES = {
@@ -8859,19 +7755,13 @@ CB.ui.festejo.CELEBRACIONES = {
                 quien: 'chispa', gesto: 'racha', particulas: true },
   /* Logro o luz extra: un cartel centrado con bisel, no una franja. */
   logro:      { vehiculo: 'cartel',   ms: 1600, sfx: 'luzExtra' },
-  /* Se acaba una veta y empieza otra. Es lo único de esta tabla que NO celebra
-     un acierto: sitúa. Por eso la cinta sube en peldaños y no rebota, y por eso
-     va sola —la fiesta del acierto que la cerró ya ha pasado hace un segundo y
-     medio, y dos fiestas seguidas no son el doble de fiesta. */
+
   vetaSuperada: { vehiculo: 'cinta',  ms: 1400, sfx: 'subirNivel', coreo: 'sube' },
   /* El jefe cede. Cuatro veces en la vida de un perfil. */
   jefe:       { vehiculo: 'cinta',    ms: 1800, sfx: 'cofre', coreo: 'bandera' },
   /* Bloque raro, 1 de cada 20: tiembla la cantera entera. */
   raro:       { vehiculo: 'sacudida', ms: 1200, sfx: 'cofre', particulas: true },
-  /* Detrás de un fallo NO se celebra: se acompaña. Rocarr asiente despacio, que
-     es un gesto que ya existía y que un niño lee sin que nadie se lo explique.
-     Ni cartel ni banda ni grito: un rótulo de fiesta encima de un fallo se lee
-     como burla, y lo que importa está escrito debajo, quieto y legible. */
+
   animo:      { vehiculo: 'criatura', ms: 1100, sfx: null,
                 quien: 'rocarr', gesto: 'pista' }
 };
@@ -8883,11 +7773,7 @@ CB.ui.festejo.POR_CATEGORIA = {
   A: 'normal', B: 'esfuerzo', C: 'superacion', D: 'hallazgo'
 };
 
-/**
- * Cuánto espera el juego antes de servir el ítem siguiente.
- * NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es
- * justo lo contrario de lo que se busca.
- */
+/* NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es justo lo contrario de lo que se busca. */
 CB.ui.festejo.MS_POR_PALABRA = 350;
 CB.ui.festejo.TOPE_LECTURA = 3200;
 
@@ -9097,10 +7983,7 @@ CB.ui.reloj.pintar = function (restaMs) {
    aviso que oye un lector de pantalla va en español y se dice UNA vez. */
 CB.ui.reloj.gritar = function () {
   CB.ui.cinta.mostrar('prisa', 'Hurry up!');
-  /* URGENTE, no educado. Este aviso caduca: dentro de diez segundos ya no sirve
-     de nada. En la region polite se leia detras de la cola —«¡Muy bien!», «has
-     ganado 3 gemas»— y podia llegar con la pregunta ya cerrada. Es el unico
-     mensaje del juego que tiene fecha de caducidad, junto con el de la luz. */
+
   CB.a11y.urgente('Quedan diez segundos.');
 };
 
@@ -9108,12 +7991,7 @@ CB.ui.reloj.ocultarCartel = function () {
   CB.ui.cinta.ocultar();
 };
 
-/* ============================================================================
-   31-pantallas.js — Navegación entre las 18 <section hidden> (PLAN §14.3)
-   ----------------------------------------------------------------------------
-   Toca el DOM: pertenece a la serie 30- y está por tanto FUERA de la regla de
-   frontera de §14.4.
-   ========================================================================== */
+/* 31-pantallas.js — Navegación entre las 18 <section hidden> (PLAN §14.3) */
 
 var CB = CB || {};
 CB.pantallas = CB.pantallas || {};
@@ -9158,15 +8036,6 @@ CB.pantallas.ir = function (id, props) {
   }
   CB.pantallas.actual = id;
 
-  /* CERROJO DE REENTRADA. Un handler de alEntrar que navegue a su propia
-     pantalla se llama a sí mismo sin fin: ir() invoca al handler, el handler
-     invoca a ir(), y así hasta desbordar la pila. Pasó de verdad con
-     CB.adulto.abrir(), y el síntoma no fue un error en consola sino la pantalla
-     de «algo ha ido mal», porque el catch de aquí abajo se traga la recursión y
-     la convierte en un fallo genérico.
-
-     El contrato es que un handler PINTA, no navega. Esto lo hace cumplir: la
-     segunda entrada a la misma pantalla, dentro de la primera, no se ejecuta. */
   if (CB.pantallas.alEntrar[id] && CB.pantallas._entrando !== id) {
     var previo = CB.pantallas._entrando;
     CB.pantallas._entrando = id;
@@ -9188,15 +8057,7 @@ CB.pantallas.ir = function (id, props) {
     if (h) {
       h.setAttribute('tabindex', '-1');
 
-      /* UNA <section> SIN NOMBRE ACCESIBLE NO ES UNA REGIÓN.
-         Las dieciocho lo eran solo de nombre: un lector de pantalla no las
-         lista, porque la especificación exige que una section tenga nombre para
-         contar como landmark. Se lo damos apuntando a su propio <h1>, que ya
-         existe y ya está garantizado —casos-carga.js exige exactamente uno por
-         pantalla— así que no hay ningún texto nuevo que traducir ni mantener.
-
-         Y `role="main"` va SOLO en la visible. Dieciocho «main» a la vez no es
-         que sea incorrecto: es que deja de significar nada, que es peor. */
+      /* Las dieciocho lo eran solo de nombre: un lector de pantalla no las lista, porque la especificación exige que una section tenga nombre para contar como landmark. */
       if (!h.id) h.id = id + '-titulo';
       seccion.setAttribute('aria-labelledby', h.id);
 
@@ -9215,28 +8076,11 @@ CB.pantallas.ir = function (id, props) {
   return id;
 };
 
-/* Pantallas de flujo: se sale de ellas hacia DELANTE y no se vuelve nunca.
-   p-fin entra en la lista por lo mismo que las demás: es el final de una
-   expedición terminada, y volver a él desde el mapa muestra el resumen de una
-   partida que ya no existe. */
+/* Pantallas de flujo: se sale de ellas hacia DELANTE y no se vuelve nunca. */
 CB.pantallas.SIN_VUELTA = ['p-partida', 'p-reparacion', 'p-descanso', 'p-jefe',
                            'p-error', 'p-fin'];
 
-/* Vuelve a la pantalla anterior; si no hay ninguna utilizable, al mapa (o a la
-   portada, si ya estamos en el mapa o aún no hay perfil). Nunca deja al niño en
-   un callejón sin salida.
-
-   EL «SALIR» DEL MAPA QUE NO HACÍA NADA. Antes se sacaba UNA sola entrada de la
-   pila y, si resultaba ser una pantalla de flujo, se caía al mapa — estando ya
-   en el mapa. Es decir: destino === actual, se repintaba la misma pantalla y el
-   botón parecía muerto. Y no era un caso raro sino EL camino normal: portada →
-   mapa → partida → fin → SALIR deja la pila en [portada, mapa] con el mapa
-   delante, así que el siguiente Salir se sacaba «p-mapa» a sí mismo. Lo mismo
-   pasaba al salir del jefe o de una partida abandonada.
-
-   Ahora se descartan TODAS las entradas que no sirven —las de flujo y la propia
-   pantalla actual, que la pila puede contener porque atras() no apila— y solo
-   cuando la pila se agota se recurre al destino de reserva. */
+/* Nunca deja al niño en un callejón sin salida. */
 CB.pantallas.atras = function () {
   var destino = null;
   while (CB.pantallas.pila.length) {
@@ -9250,14 +8094,6 @@ CB.pantallas.atras = function () {
     destino = (!CB.perfil || CB.pantallas.actual === 'p-mapa') ? 'p-portada' : 'p-mapa';
   }
 
-  /* SE DELEGA EN ir(), que es lo que debió hacerse desde el principio. Aquí
-     estaban copiados a mano el manejador de salida (E59, y llegó dos versiones
-     tarde), el barrido de `hidden` y el aviso al bus; y NO estaban el foco en el
-     <h1>, el aria-labelledby, el role="main" ni el cerrojo de reentrada. O sea
-     que salir con «Salir» dejaba el foco en un botón ya oculto y la pantalla
-     nueva sin landmark, mientras entrar con ir() hacía las dos cosas bien.
-     _volviendo es lo único que atras() necesita de propio: impide que ir() apile
-     la pantalla que estamos abandonando, que convertiría atrás en adelante. */
   CB.pantallas._volviendo = true;
   try {
     return CB.pantallas.ir(destino);
@@ -9290,7 +8126,7 @@ CB.pantallas.fallo = function (e) {
   CB.bus.emitir('pantalla', 'p-error');
 };
 
-/* ── Delegación de eventos común a todas las pantallas ─────────────────── */
+/* Delegación de eventos común a todas las pantallas */
 CB.pantallas.conectar = function () {
   document.addEventListener('click', function (ev) {
     var t = ev.target;
@@ -9320,11 +8156,7 @@ CB.pantallas.conectar = function () {
   document.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Escape') return;
     if (CB.pantallas.SIN_SALIR.indexOf(CB.pantallas.actual) !== -1) return;
-    /* La reparación se comporta como la partida: PAUSA, no retroceso. Escape ahí
-       llevaba al mapa —atras() remapea p-reparacion a p-mapa— dejando
-       CB.partida.estado vivo detrás, es decir, con una expedición a medias y
-       ninguna forma evidente de volver a ella. Pausar es lo que ya existe para
-       ese caso y no obliga a inventar una pantalla nueva. */
+
     if (CB.pantallas.actual === 'p-partida' || CB.pantallas.actual === 'p-reparacion') {
       if (CB.partida && CB.partida.pausar) CB.partida.pausar();
       return;
@@ -9333,21 +8165,7 @@ CB.pantallas.conectar = function () {
   });
 };
 
-/* ============================================================================
-   32-componentes.js — Los 7 formatos de respuesta
-   ----------------------------------------------------------------------------
-   tecladoBloques · opciones4 · selectorSigno · balanza · ordenarFila · monedas
-   · selectorDatos
-
-   TODOS son manejables SOLO CON TECLADO (criterio de HECHO de F8) y todos
-   respetan los 800 ms de construcción visible: los botones se montan bloque a
-   bloque, quedan grises con el bisel hundido, y un toque prematuro produce un
-   «toc» de madera y un desplazamiento de 2 px. NUNCA en silencio: un botón
-   inerte y mudo hace que el niño crea que el juego está roto (§3.5).
-
-   ARRASTRAR Y SOLTAR NO ES NUNCA LA VÍA ÚNICA (§16.1): «ordenar» se resuelve
-   tocando en secuencia.
-   ========================================================================== */
+/* 32-componentes.js — Los 7 formatos de respuesta */
 
 var CB = CB || {};
 CB.componentes = CB.componentes || {};
@@ -9359,6 +8177,7 @@ CB.componentes.actual = null;      // {tipo, valor(), reset(), item}
 CB.componentes._valor = '';
 CB.componentes._seleccion = [];
 CB.componentes._confirmacionPendiente = false;
+CB.componentes._montaje = 0;
 
 CB.componentes.contenedor = function () {
   return document.getElementById(
@@ -9366,10 +8185,11 @@ CB.componentes.contenedor = function () {
   );
 };
 
-/* ── Construcción visible + bloqueo ─────────────────────────────────────── */
+/* Construcción visible + bloqueo */
 CB.componentes.montar = function (contenedor, bloqueoMs, alDesbloquear) {
   var ms = (bloqueoMs == null) ? CB.componentes.MS_CONSTRUCCION : bloqueoMs;
   var botones = [].slice.call(contenedor.querySelectorAll('button'));
+  var montaje = ++CB.componentes._montaje;
   var i;
 
   for (i = 0; i < botones.length; i++) {
@@ -9379,6 +8199,10 @@ CB.componentes.montar = function (contenedor, bloqueoMs, alDesbloquear) {
   if (CB.partida) CB.partida.bloqueado = true;
 
   setTimeout(function () {
+    /* Un montaje anterior puede vencer después de que el siguiente ya haya
+       bloqueado sus botones. Solo el montaje más reciente puede abrir el
+       cerrojo global, mover el foco o ejecutar su callback. */
+    if (montaje !== CB.componentes._montaje) return;
     for (i = 0; i < botones.length; i++) {
       botones[i].disabled = false;
       botones[i].classList.remove('btn-bloque--monta');
@@ -9396,20 +8220,7 @@ CB.componentes.montar = function (contenedor, bloqueoMs, alDesbloquear) {
   }, ms);
 };
 
-/* Toque prematuro: «toc» de madera y desplazamiento de 2 px.
-
-   SE REGISTRA UNA SOLA VEZ POR CONTENEDOR. Esto no es una precaución teórica:
-   `contenedor()` devuelve #item-respuesta, que es un nodo PERMANENTE del
-   index.html —se vacía y se rellena en cada ítem, pero no se sustituye—, y
-   conectarToc() se llama desde los siete componentes de respuesta, es decir una
-   vez por ítem. Sin este cerrojo, en el ítem 12 había once oyentes sobre el
-   mismo elemento y un solo toque prematuro reproducía el «toc» ONCE VECES
-   simultáneas: un chasquido cada vez más fuerte que además empeoraba cuanto más
-   jugaba el niño. Medido en navegador, no deducido.
-
-   Se marca con un atributo y no con una propiedad JS porque el atributo se ve
-   en el inspector, y el día que alguien dude de si esto sigue vivo lo comprueba
-   mirando, sin leer este comentario. */
+/* Sin este cerrojo, en el ítem 12 había once oyentes sobre el mismo elemento y un solo toque prematuro reproducía el «toc» ONCE VECES simultáneas: un chasquido cada vez más fuerte que además empeoraba cuanto más jugaba el niño. */
 CB.componentes.conectarToc = function (contenedor) {
   if (!contenedor || contenedor.getAttribute('data-toc') === 'si') return;
   contenedor.setAttribute('data-toc', 'si');
@@ -9430,19 +8241,7 @@ CB.componentes.conectarToc = function (contenedor) {
   });
 };
 
-/* ── El primer toque real de un problema de enunciado ───────────────────────
-   En los PROBLEMA_* el cronómetro de puntuación no arranca al mostrar el
-   enunciado: arrancar ahí puntúa la velocidad lectora y no la competencia
-   matemática (§11.4). Arranca en el primer toque, y ESTE es el sitio donde ese
-   toque se puede ver una sola vez para los siete formatos.
-
-   Va sobre el contenedor de respuesta y no sobre el documento a propósito: así
-   el altavoz, la pista y la pausa —que están en la barra, fuera— no cuentan como
-   empezar a pensar. Pedir que te lo lean otra vez sigue siendo leer.
-
-   Mismo cerrojo por atributo que conectarToc(), y por el mismo motivo: el
-   contenedor es un nodo PERMANENTE del index.html que se vacía y se rellena en
-   cada ítem, así que sin marca acumularía un oyente por ítem servido. */
+/* El primer toque real de un problema de enunciado */
 CB.componentes.conectarLectura = function (contenedor) {
   if (!contenedor || contenedor.getAttribute('data-lectura') === 'si') return;
   contenedor.setAttribute('data-lectura', 'si');
@@ -9454,7 +8253,7 @@ CB.componentes.conectarLectura = function (contenedor) {
   contenedor.addEventListener('keydown', arranca);
 };
 
-/* ── Confirmación de doble toque, tras detectar azar (§12.3) ────────────── */
+/* Confirmación de doble toque, tras detectar azar (§12.3) */
 CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
   if (!CB.componentes._confirmacionPendiente) { alConfirmar(); return; }
   if (boton.getAttribute('data-confirmando') === 'si') {
@@ -9468,20 +8267,11 @@ CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
   boton.setAttribute('data-confirmando', 'si');
   boton.classList.add('btn-bloque--hundido');
   setTimeout(function () { boton.classList.remove('btn-bloque--hundido'); }, 300);
-  /* SE VE, no solo se oye. Esto era un CB.a11y.anunciar, que escribe en
-     #region-viva —`clip: rect(0 0 0 0)`, invisible por definición—: justo después
-     de decidir que el niño va al tuntún, el juego le cambiaba la regla de entrada
-     y se lo contaba SOLO a un lector de pantalla. El hundido de 300 ms no vale
-     como aviso: es indistinguible del :active de cualquier botón.
-
-     Se SUSTITUYE el anuncio, no se añade: CB.ui.mensaje ya llama por dentro a
-     CB.a11y.anunciar, así que dejar los dos haría que el lector lo dijera dos
-     veces. Y no se usa la cinta: podría pisarse con la del fallo, que es
-     exactamente el defecto que cerró E51. */
+  /* SE VE, no solo se oye. */
   CB.ui.mensaje('Toca otra vez para confirmar.', 'animo');
 };
 
-/* ══ 1. TECLADO DE BLOQUES ═════════════════════════════════════════════════ */
+/* 1. TECLADO DE BLOQUES */
 /**
  * El teclado numérico. Desde 1.11.0 lo montan DOS sitios: la respuesta normal y
  * la tercera fase de selectorDatos, que antes tenía su propia copia.
@@ -9533,10 +8323,7 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   var botonOK = null;
   for (i = 0; i < teclas.length; i++) {
     (function (t) {
-      /* La tecla lleva ADEMAS la clase de elemento del teclado. Antes el
-         tamano de las teclas salia de `.teclado-bloques .btn-bloque`, o sea del
-         contenedor estilando a un bloque ajeno: el boton cambiaba de tamano
-         segun donde estuviera, que es lo que un bloque no puede hacer. */
+
       var b = CB.ui.boton(t, 'teclado-bloques__tecla' +
         (t === 'OK' ? ' btn-bloque--primario' : ''), function () {
         pulsa(t, b);
@@ -9557,13 +8344,7 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     tecla: function (k) {
       if (/^[0-9]$/.test(k)) { pulsa(k, null); return true; }
       if (k === 'Backspace' || k === 'Delete') { pulsa('⌫', null); return true; }
-      /* Enter PASA POR pulsa('OK'), no por alResponder directo. Iba por su
-         cuenta y se saltaba pedirConfirmacion(), así que la confirmación de dos
-         toques que impone el antiazar tras una detección solo se le aplicaba a
-         quien juega tocando: con teclado, Enter contestaba a la primera. Un
-         antiazar que se desactiva cambiando de dispositivo de entrada no es un
-         antiazar, y F8 pide una partida entera solo con teclado —lo que no pide
-         es que el teclado tenga reglas distintas. */
+      /* Iba por su cuenta y se saltaba pedirConfirmacion(), así que la confirmación de dos toques que impone el antiazar tras una detección solo se le aplicaba a quien juega tocando: con teclado, Enter contestaba a la primera. */
       if (k === 'Enter') { pulsa('OK', botonOK); return true; }
       return false;
     }
@@ -9571,7 +8352,7 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   return CB.componentes.actual;
 };
 
-/* ══ 2. OPCIONES 4 ═════════════════════════════════════════════════════════ */
+/* 2. OPCIONES 4 */
 CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -9594,16 +8375,6 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
         });
       }
 
-      /* PIEZAS DE DINERO: la opción se dibuja como la moneda o el billete que es,
-         con la misma forma que ya tienen en pagar y en contar —el cuadrado de oro
-         y el rectángulo verde—, no como un botón de madera con un número.
-
-         Las dos formas cumplen el suelo de 44 px de WCAG 2.5.8 por sí solas (72
-         y 128×64), así que no hace falta envolverlas en un botón: la pieza ES el
-         botón, igual que en el modo pagar. Y el nombre accesible es el de la
-         pieza entera —«la moneda de 2 euros»— y no el «2 €» que lleva escrito,
-         que es lo que hace que quien juega con lector de pantalla oiga la misma
-         pregunta que ve quien mira. */
       if (item.piezasDinero) {
         b = CB.ui.pieza('button', op.valor);
         b.type = 'button';
@@ -9638,7 +8409,7 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
   return CB.componentes.actual;
 };
 
-/* ══ 3. SELECTOR DE SIGNO ══════════════════════════════════════════════════ */
+/* 3. SELECTOR DE SIGNO */
 CB.componentes.selectorSigno = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -9666,7 +8437,7 @@ CB.componentes.selectorSigno = function (item, alResponder, opciones) {
   return CB.componentes.actual;
 };
 
-/* ══ 4. BALANZA ════════════════════════════════════════════════════════════ */
+/* 4. BALANZA */
 CB.componentes.balanza = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -9706,7 +8477,7 @@ CB.componentes.balanza = function (item, alResponder, opciones) {
   return CB.componentes.actual;
 };
 
-/* ══ 5. ORDENAR FILA (por toque, nunca solo por arrastre) ══════════════════ */
+/* 5. ORDENAR FILA (por toque, nunca solo por arrastre) */
 CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -9724,10 +8495,7 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   cont.appendChild(huecos);
 
   var piezas = CB.ui.crear('div', 'fila-ordenar');
-  /* Los botones en el orden en que se han tocado, para poder deshacer. Se lleva
-     aparte de _seleccion —que guarda VALORES— porque buscar la pieza por su
-     número obliga a suponer que no hay valores repetidos, y eso es una suposición
-     sobre el generador que este componente no tiene por qué hacer. */
+
   var usados = [];
 
   function cerrarSiEstaLlena() {
@@ -9752,10 +8520,6 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
       b.classList.add('btn-bloque--hundido');
       CB.audio.sfx('picar');
 
-      /* La confirmación de dos toques cuelga del gesto QUE CIERRA la respuesta,
-         que aquí es colocar la última pieza: no hay OK del que colgarla. Y por
-         eso esta parte necesita el ⌫ de abajo — sin poder deshacer, un «toca otra
-         vez» sobre la última pieza no tendría segunda oportunidad posible. */
       if (CB.componentes._seleccion.length === item.orden.length) {
         CB.componentes.pedirConfirmacion(b, cerrarSiEstaLlena);
       }
@@ -9765,14 +8529,6 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   });
   cont.appendChild(piezas);
 
-  /* DESHACER SIN PEAJE. Antes, tocar el 5 cuando se quería el 3 obligaba a
-     terminar mal a propósito: la fila se contestaba sola al llenarse y no había
-     forma de retirar una pieza. Peor que perder el ítem: el registro guardaba
-     «falló ordenar», que le atribuye al niño un problema que no tiene.
-
-     NO se añade un OK. Exigirlo metería un toque obligatorio en cada ítem de este
-     formato, que es lo contrario de lo que se busca; se sigue contestando al
-     colocar la última pieza, así que el caso bueno no cuesta ni un toque más. */
   var deshacer = CB.ui.boton('⌫ Quitar', '', function () {
     if (CB.partida && CB.partida.bloqueado) return;
     if (!CB.componentes._seleccion.length) return;
@@ -9797,7 +8553,7 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   return CB.componentes.actual;
 };
 
-/* ══ 6. MONEDAS ════════════════════════════════════════════════════════════ */
+/* 6. MONEDAS */
 CB.componentes.monedas = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -9836,14 +8592,7 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
         total += v;
         marcador.textContent = String(total);
         cogidas.push(v);
-        /* CONTAR, NO MARCAR. `disponibles` es una pieza por valor, sin repetir, y
-           el manejador no tiene cerrojo: pagar 6 € es tocar tres veces la de 2 €.
-           Un aria-pressed convertiría un contador en un interruptor —le diría
-           «pulsado» al lector de pantalla de un botón que hay que seguir
-           pulsando—, que es mal uso de ARIA (WCAG 4.1.2). Por eso se cuenta.
-
-           Y va ANTES de comprobar el objetivo: si fuera después, la pieza que
-           cierra el pago no llegaría a verse marcada nunca. */
+        /* Y va ANTES de comprobar el objetivo: si fuera después, la pieza que cierra el pago no llegaría a verse marcada nunca. */
         var veces = (parseInt(b.getAttribute('data-veces'), 10) || 0) + 1;
         b.setAttribute('data-veces', String(veces));
         pintarCogidas();
@@ -9892,7 +8641,7 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
   return CB.componentes.tecladoBloques(item, alResponder, opciones);
 };
 
-/* ══ 7. SELECTOR DE DATOS (3 toques que hacen visible el razonamiento) ═════ */
+/* 7. SELECTOR DE DATOS (3 toques que hacen visible el razonamiento) */
 CB.componentes.selectorDatos = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -9930,11 +8679,7 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
       numeros.forEach(function (n, idx) {
         var b = CB.ui.boton(String(n), 'rejilla-respuestas__opcion', function () {
           if (CB.partida && CB.partida.bloqueado) return;
-          /* DESTOCAR. Antes este `if` salía sin hacer nada: el número elegido por
-             error se quedaba elegido y el niño tenía que terminar mal el ítem a
-             propósito. Y el registro guardaba faseFallada = 'datos', que es
-             decir que no ha entendido el enunciado cuando lo que ha pasado es
-             que se le ha ido el dedo. */
+
           if (b.getAttribute('aria-pressed') === 'true') {
             b.setAttribute('aria-pressed', 'false');
             b.classList.remove('btn-bloque--hundido');
@@ -9988,18 +8733,6 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     volverDatos.setAttribute('aria-label', 'Volver a elegir los números del problema');
     zona.appendChild(volverDatos);
 
-    /* ESTE TECLADO ERA UNA COPIA, y llevaba desincronizada desde que se escribió.
-       Se usa en TODOS los problemas de enunciado desde el segundo trimestre, así
-       que no era un rincón: sus diferencias con el original eran el ⌫ mudo, el
-       dígito mudo, un visor sin `role="status"` ni `aria-live` —o sea, invisible
-       para un lector de pantalla—, ningún respeto por CB.partida.bloqueado, y un
-       data-tecla="OK" en MAYÚSCULAS que hacía que `[data-tecla="ok"]` no lo
-       alcanzara: ni siquiera recibía el verde del botón primario.
-
-       Ahora delega. El envoltorio conserva intactos el origen 'datos' y los
-       cuatro campos de diagnóstico: los lee CB.partida.registrarRespuesta y de
-       ahí sale el informe del adulto. Unificar teclados es fácil; perder el
-       informe por el camino es el fallo de verdad, y no se ve en pantalla. */
     montado = CB.componentes.tecladoBloques(item, function (valor) {
       /* Cada fase se registra por separado: un niño que elige bien los datos y la
          operación pero se equivoca al calcular NO tiene un problema de comprensión
@@ -10015,11 +8748,6 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     CB.componentes.actual.tipo = 'selectorDatos';
   }
 
-  /* ANTES de pintar, no después. Estaba al final y por tanto pisaba el bloqueo que
-     pone montar(): selectorDatos era el ÚNICO de los siete formatos sin la
-     protección de los 800 ms contra el toque heredado del ítem anterior, y encima
-     ignoraba su propio opciones.bloqueoMs. Se arregla aquí porque la fase 3 ya lo
-     recibe al delegar, y dejar la línea abajo lo habría anulado igual. */
   if (CB.partida) CB.partida.bloqueado = false;
   pintarFase();
   CB.componentes.conectarToc(cont);
@@ -10054,7 +8782,7 @@ CB.componentes.tecla = function (k, ev) {
   return false;
 };
 
-/* ── Presentación de cada componente la PRIMERA vez (§7.3) ──────────────── */
+/* Presentación de cada componente la PRIMERA vez (§7.3) */
 CB.componentes.PRESENTACION = {
   tecladoBloques: 'Escribe el 7',
   opciones4: 'Toca el 5',
@@ -10075,19 +8803,7 @@ CB.componentes.marcarVisto = function (perfil, tipo) {
   if (perfil.componentesVistos.indexOf(tipo) === -1) perfil.componentesVistos.push(tipo);
 };
 
-/* ============================================================================
-   40-partida.js — El bucle de juego
-   ----------------------------------------------------------------------------
-   PRESUPUESTO DE TIEMPO, NO DE ÍTEMS (PLAN §3.6): el plan v1 fijaba 15 ítems y a
-   la vez un objetivo de 6-9 minutos, y sus propios datos daban 21-58 s por
-   problema de enunciado. Una partida con 6 problemas y 9 operaciones supera los
-   12 minutos. Eran incompatibles.
-
-   CUOTA OBLIGATORIA: toda partida de ≥10 ítems sirve ≥2 problemas de enunciado y
-   ≥1 ítem de cada bloque desbloqueado. Sin ella, un motor adaptativo puro podía
-   dejar a un niño 10 sesiones sin ver un solo problema con texto, que es
-   exactamente lo que el usuario pidió que hubiera.
-   ========================================================================== */
+/* 40-partida.js — El bucle de juego */
 
 var CB = CB || {};
 CB.partida = CB.partida || {};
@@ -10103,7 +8819,7 @@ CB.partida.PROB_BLOQUE_RARO = 0.05;   // ~1 de cada 20
 CB.partida.estado = null;
 CB.partida.bloqueado = false;
 
-/* ── Construcción del guion ─────────────────────────────────────────────── */
+/* Construcción del guion */
 CB.partida.estimaSegundos = function (nivel) {
   if (nivel.letra === 'P') return CB.partida.EST_S.problema;
   if (nivel.letra === 'V') return CB.partida.EST_S.vocabulario;
@@ -10116,11 +8832,7 @@ CB.partida.rtMedianaDe = function (nivel, perfil) {
   return CB.partida.estimaSegundos(nivel);
 };
 
-/* Tope de repeticiones del MISMO nivel dentro de una partida.
-   Sin él, en la primera partida de la vida del niño solo hay cuatro niveles
-   abiertos (los que no tienen prerrequisitos) y el relleno por presupuesto de
-   tiempo produce un guion de 20 ítems con 12 del mismo nivel: monótono y, de
-   hecho, la mejor manera de que abandone en la sesión 1. */
+/* Sin él, en la primera partida de la vida del niño solo hay cuatro niveles abiertos (los que no tienen prerrequisitos) y el relleno por presupuesto de tiempo produce un guion de 20 ítems con 12 del mismo nivel: monótono y, de hecho, la… */
 CB.partida.MAX_REPETICIONES = 3;
 
 CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
@@ -10215,7 +8927,7 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   return CB.util.barajar(guion, rng).slice(0, CB.partida.MAX_ITEMS);
 };
 
-/* ── Iniciar ────────────────────────────────────────────────────────────── */
+/* Iniciar */
 CB.partida.iniciar = function (opciones) {
   opciones = opciones || {};
   var perfil = CB.perfil;
@@ -10255,10 +8967,7 @@ CB.partida.iniciar = function (opciones) {
     prerrequisitoPendiente: null,
     /* La veta del ítem ANTERIOR, para saber cuándo se cambia de veta. */
     vetaPrevia: null,
-    /* Las vetas que se quedaron a medias sin dejar deuda en la cola de repaso.
-       Hoy solo hay una manera de que eso pase —que se agote el tiempo, que no
-       reinserta nada— y sin este mapa el juego cantaría «Nivel superado» de una
-       veta cuyo único ítem se quedó sin contestar. */
+    /* Hoy solo hay una manera de que eso pase —que se agote el tiempo, que no reinserta nada— y sin este mapa el juego cantaría «Nivel superado» de una veta cuyo único ítem se quedó sin contestar. */
     vetasSinCerrar: {},
     colaRepaso: CB.leitner.nuevaCola(),
     itemsServidos: [],
@@ -10294,16 +9003,7 @@ CB.partida.iniciar = function (opciones) {
   return CB.partida.estado;
 };
 
-/**
- * Cuántos ítems de esta veta le quedan a la expedición: los del guion que aún no
- * se han servido, más los que esperan en la cola de repaso por haberse fallado.
- *
- * CUENTA DE MÁS A PROPÓSITO. Una reinserción consume el hueco de un ítem del
- * guion, así que este número es un techo, no una cifra exacta. Equivocarse por
- * arriba significa callarse una vez; equivocarse por abajo significa cantar
- * «Nivel superado» y volver a servir esa misma veta tres ítems después, que es
- * mentirle a quien juega. De los dos errores posibles solo uno es aceptable.
- */
+/* De los dos errores posibles solo uno es aceptable. */
 CB.partida.quedanDeLaVeta = function (e, nivelId) {
   if (!e || !nivelId) return 0;
   var n = 0, i;
@@ -10316,25 +9016,6 @@ CB.partida.quedanDeLaVeta = function (e, nivelId) {
   return n;
 };
 
-/**
- * ¿Se acaba de terminar una veta? Devuelve el nivel que queda atrás, o null.
- *
- * SUPERADA SIGNIFICA SUPERADA, y por eso hay tres condiciones y no una:
- *   1. que la veta del ítem que llega sea otra distinta;
- *   2. que a la anterior no le quede ni un ítem por delante —ni en el guion ni
- *      en la cola de repaso, donde cae todo lo que se falla dos veces—;
- *   3. que no se haya quedado a medias por tiempo agotado.
- *
- * La segunda es la que hace honesta a la frase: un ítem fallado vuelve, así que
- * mientras se deba un repaso de esa veta no se ha superado nada. La tercera
- * tapa el único agujero que deja la segunda, porque el tiempo agotado no
- * reinserta.
- *
- * Se pregunta al SERVIR el ítem siguiente y no al acertar el anterior, y eso
- * tampoco es casual: en el momento del acierto todavía no se sabe qué veta viene
- * —una reinserción puede colarse por delante del guion—, así que anunciarla
- * entonces sería adivinar. Aquí ya está decidida.
- */
 CB.partida.vetaSuperada = function (nivelId) {
   var e = CB.partida.estado;
   if (!e || !e.vetaPrevia || e.vetaPrevia === nivelId) return null;
@@ -10343,7 +9024,7 @@ CB.partida.vetaSuperada = function (nivelId) {
   return CB.catalogo.get(e.vetaPrevia);
 };
 
-/* ── Servir un ítem ─────────────────────────────────────────────────────── */
+/* Servir un ítem */
 CB.partida.servirItem = function () {
   var e = CB.partida.estado, perfil = CB.perfil;
   if (!e) return;
@@ -10414,17 +9095,11 @@ CB.partida.servirItem = function () {
   e.intento = 1;
   e.lecturaHecha = false;
 
-  /* LA GALERÍA SE PINTA AQUÍ, y no solo en trasAcierto: en ese momento e.indice
-     todavía es el del ítem que se acaba de responder, así que la fila iría un
-     bloque por detrás toda la partida. Aquí `indice` es exactamente el número de
-     ítems ya servidos, que es lo que la fila tiene que decir. */
+  /* LA GALERÍA SE PINTA AQUÍ, y no solo en trasAcierto: en ese momento e.indice todavía es el del ítem que se acaba de responder, así que la fila iría un bloque por detrás toda la partida. */
   CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
                     indice: e.indice, total: e.guion.length });
 
-  /* ── EN QUÉ VETA ESTAMOS ─────────────────────────────────────────────────
-     Se resuelve ANTES de mover e.vetaPrevia, que es lo que la pregunta compara.
-     El rótulo se repinta siempre; la cinta solo cuando de verdad se ha cerrado
-     una veta, que son tres o cuatro veces por expedición y no veinte. */
+  /* EN QUÉ VETA ESTAMOS */
   var superada = CB.partida.vetaSuperada(nivelId);
   e.vetaPrevia = nivelId;
   CB.ui.pintarVeta(nivel, e.mundo);
@@ -10433,30 +9108,10 @@ CB.partida.servirItem = function () {
   CB.ui.pintarBioma(e.mundo.bioma, e.indice / Math.max(1, e.guion.length));
   CB.partida.pintarRespuesta(item);
 
-  /* ── «NIVEL SUPERADO» ────────────────────────────────────────────────────
-     La cinta lleva el grito corto y el mensaje quieto lleva las dos frases que
-     hay que poder leer: cuál se ha cerrado y cuál empieza. Es el mismo reparto
-     que el resto del juego —la cinta cruza en un segundo y medio y ahí no cabe
-     nada que haya que leer— y es lo que hace que decir a la vez «superado» y «a
-     dónde vamos» no obligue a elegir entre las dos.
-
-     Va ANTES del anuncio de la consigna a propósito: CB.ui.mensaje escribe en la
-     región viva, y en el mismo turno gana la última escritura. La última tiene
-     que ser la que dice qué hay que hacer ahora.
-
-     Y NO CUANDO ADEMÁS SE BAJA AL PRERREQUISITO: los dos escriben en el mismo
-     nodo y el último ganaría, así que el aviso del escalón 4 —que es el que hace
-     falta entender— se comería a este. No pueden coincidir, porque el escalón 4
-     llega detrás de cuatro fallos seguidos y una veta que debe un repaso nunca
-     está superada; pero eso es un razonamiento sobre el estado de otro fichero,
-     y de esos ya se ha caído alguno en este proyecto. */
+  /* «NIVEL SUPERADO» */
   var dicho = '';
   if (superada && !delPrerrequisito) {
-    /* PRIMERO A DÓNDE VAMOS, y no es indiferente: la caja del mensaje garantiza
-       tres líneas y la veta con el nombre más largo del catálogo ocupa dos. Si
-       la frase de destino fuera la segunda, con dos nombres largos se quedaría
-       fuera justo la mitad que se ha pedido enseñar. La que puede recortarse es
-       la de despedida, que además ya la ha dicho la cinta. */
+
     dicho = 'Ahora vas a: ' + nivel.nombre + '. Ya has terminado ' +
             superada.nombre + '. ';
     CB.ui.mensaje('Ahora vas a: ' + nivel.nombre + '. Ya has terminado ' +
@@ -10470,27 +9125,7 @@ CB.partida.servirItem = function () {
   CB.a11y.anunciar(dicho + (item.esRetoBonus ? 'Reto. ' : '') +
                    (item.consigna || item.enunciado || ''));
 
-  /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la
-     primera versión sin que ocurriera: aquí solo había una llamada a la región
-     viva, que es texto para un lector de pantalla, no voz. Un niño de 7 años que
-     apenas lee se quedaba con el enunciado delante y nada que lo dijera, salvo
-     que supiera pulsar la tecla L.
-
-     TRES CONDICIONES, y las tres importan:
-
-     · Solo los problemas de enunciado (item.subtipo). Leer «6 − 3» en voz alta
-       no ayuda a nadie y alarga cada ítem sin motivo.
-     · Solo con el ajuste encendido. CB.voz.leer lo comprueba, pero se comprueba
-       también AQUÍ porque la alternativa —CB.voz.leerOGuiar— cae en
-       lecturaGuiada, que NO mira CB.voz.activa: sería audio que arranca solo y
-       no se puede apagar, es decir, WCAG 2.2 1.4.2 incumplido.
-     · Solo con voz de verdad disponible. En un Chromebook sin voz española la
-       lectura guiada va a 1000 ms por palabra: veinticinco segundos de resaltado
-       con el cronómetro corriendo, y todos los problemas se agotarían por tiempo.
-
-     El cronómetro se para mientras lee y se reanuda al terminar. Si la voz no
-     llega a salir, CB.voz.leer llama igualmente a alTerminar, así que el reloj
-     vuelve a arrancar en el peor caso. */
+  /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la primera versión sin que ocurriera: aquí solo había una llamada a la región viva, que es texto para un lector de pantalla, no voz. */
   if (item.subtipo && CB.voz.activa && CB.voz.disponible()) {
     CB.partida.pararCronometro();
     CB.voz.leer(item.enunciado || item.consigna || '', function () {
@@ -10498,11 +9133,6 @@ CB.partida.servirItem = function () {
     });
   }
 
-  /* Se dice DESPUÉS de pintar, porque servirItem empieza ocultando el mensaje:
-     ponerlo antes equivalía a no ponerlo. Y se dice, en vez de cambiar el nivel
-     en silencio, porque un niño que ve aparecer de golpe algo mucho más fácil
-     sin explicación concluye que el juego se ha estropeado o que le está dando
-     lástima. Se cuenta que es a propósito y que se vuelve. */
   if (delPrerrequisito) {
     CB.ui.mensaje('Vamos a por uno más fácil de este mismo tema. Luego volvemos.', 'animo');
   }
@@ -10511,6 +9141,8 @@ CB.partida.servirItem = function () {
 /* Elige y monta el componente de respuesta */
 CB.partida.pintarRespuesta = function (item) {
   var e = CB.partida.estado, perfil = CB.perfil;
+
+  if (!e || !item || e.itemActual !== item) return false;
 
   /* Se abre el cerrojo de «una respuesta por intento». Pasa por aquí tanto el
      ítem nuevo (desde servirItem) como el segundo intento tras un fallo. */
@@ -10526,24 +9158,7 @@ CB.partida.pintarRespuesta = function (item) {
 
   function responder(valor, origen, extra) { CB.partida.responder(valor, origen, extra); }
 
-  /* LA PRESENTACIÓN DE CADA COMPONENTE, LA PRIMERA VEZ QUE SE VE (§7.3).
-     Las siete frases llevaban escritas desde la primera versión, con sus dos
-     funciones de apoyo, y NO LAS LLAMABA NADIE: `componentesVistos` se declaraba
-     en el esqueleto del perfil, se reparaba en la migración y estaba en los
-     campos permitidos, pero no lo escribía nunca nadie. Un niño veía la balanza
-     por primera vez sin una sola frase que le dijera qué hacer, teniéndola
-     escrita. Es la familia de E41.
-
-     Se marca DONDE SE MONTA cada componente, no adivinando desde item.formato:
-     los nombres no coinciden —el formato dice 'ordenar' y el componente se llama
-     'ordenarFila'— y además el componente real depende de condiciones de
-     ejecución (un problema monta selectorDatos o tecladoBloques según el
-     trimestre). Resolverlo por el formato habría dado `undefined` en casi todos
-     los casos, sin fallar: la familia de E42.
-
-     Solo en el PRIMER intento: en el segundo ya hay un mensaje en pantalla
-     —«Esta no suma gemas. Te queda otro intento»— y taparlo con una instrucción
-     sería peor que no presentar nada. */
+  /* Las siete frases llevaban escritas desde la primera versión, con sus dos funciones de apoyo, y NO LAS LLAMABA NADIE: `componentesVistos` se declaraba en el esqueleto del perfil, se reparaba en la migración y estaba en los campos… */
   function presentar(tipo) {
     if (e.intento !== 1) return;
     var frase = CB.componentes.PRESENTACION[tipo];
@@ -10567,7 +9182,7 @@ CB.partida.pintarRespuesta = function (item) {
       CB.componentes.tecladoBloques(item, responder, { bloqueoMs: bloqueo });
     }
     CB.partida.iniciarCronometro(true);
-    return;
+    return true;
   }
 
   if (formato === 'opciones4') {
@@ -10580,11 +9195,7 @@ CB.partida.pintarRespuesta = function (item) {
       opciones.push({ valor: item.respuesta, texto: item.termino, codigoError: null });
       opciones = CB.util.barajar(opciones, e.rng);
     } else if (item.distractoresFijos) {
-      /* EL GENERADOR YA HA ELEGIDO LAS TRES, y antes se llamaba igualmente a
-         CB.distractores.para() para tirar el resultado dos líneas después. Con
-         los euros solo sobraba trabajo; con los céntimos rompe, porque la
-         respuesta es 'c20' y el motor de distractores hace aritmética con ella.
-         Un `else if` en vez de un `if` dentro. */
+      /* Con los euros solo sobraba trabajo; con los céntimos rompe, porque la respuesta es 'c20' y el motor de distractores hace aritmética con ella. */
       opciones = item.distractoresFijos.slice(0, 3)
         .map(function (v) { return { valor: v, codigoError: null }; })
         .concat([{ valor: item.respuesta, codigoError: null }]);
@@ -10595,7 +9206,7 @@ CB.partida.pintarRespuesta = function (item) {
         presentar('tecladoBloques');
         CB.componentes.tecladoBloques(item, responder, { bloqueoMs: bloqueo });
         CB.partida.iniciarCronometro(false);
-        return;
+        return true;
       }
       opciones = d.opciones;
     }
@@ -10619,29 +9230,11 @@ CB.partida.pintarRespuesta = function (item) {
   }
 
   CB.partida.iniciarCronometro(false);
+  return true;
 };
 
-/* ── Cronómetro ─────────────────────────────────────────────────────────────
-   En los PROBLEMA_* el cronómetro NO arranca al mostrar el enunciado: arrancar
-   ahí puntúa la VELOCIDAD LECTORA, no la competencia matemática. Un niño con
-   dislexia o con lectura silabeante obtendría M_tiempo bajo aunque razonara
-   perfectamente (§11.4). */
-/* SEGUNDOS POR ÍTEM. Un solo número para todo el juego: 30, que es lo pedido.
-
-   Antes cada familia tenía su propio tLimite (18 s la numeración, 50 s los
-   problemas) y «Con calma» lo doblaba, pero nada de eso se veía: era un
-   temporizador invisible. Ahora la cuenta atrás está en pantalla, y un reloj
-   que dura distinto en cada pregunta sin decir por qué desconcierta más que
-   ayuda. tIdeal y tLimite SIGUEN existiendo y siguen gobernando el bono por
-   rapidez (§11.7): lo que cambia es solo cuándo se agota el tiempo.
-
-   «Sin prisa» = 0 = sin cuenta atrás, y no es un detalle de gusto: la WCAG
-   2.2.1 exige que un límite de tiempo se pueda desactivar, y esto es material
-   escolar sujeto a la EN 301 549.
-
-   Los problemas de enunciado son el punto flojo de tener 30 s para todo: hay
-   que leer tres frases antes de poder empezar a pensar. Si el pilotaje con
-   niños dice que se quedan cortos, se sube AQUÍ y en ningún otro sitio. */
+/* Cronómetro */
+/* Un solo número para todo el juego: 30, que es lo pedido. */
 CB.partida.SEGUNDOS_ITEM = { normal: 30, conCalma: 30, sinPrisa: 0 };
 
 CB.partida.msDeItem = function (modoTiempo) {
@@ -10672,7 +9265,7 @@ CB.partida.iniciarCronometro = function (esProblema) {
   }, CB.componentes.MS_CONSTRUCCION);
 
   e.temporizador = setTimeout(function () {
-    CB.partida.tiempoAgotado();
+    if (CB.partida.estado === e) CB.partida.tiempoAgotado();
   }, limite + CB.componentes.MS_CONSTRUCCION);
 };
 
@@ -10683,30 +9276,7 @@ CB.partida.pararCronometro = function () {
   CB.ui.reloj.parar();
 };
 
-/* El primer toque de un problema arranca el cronómetro de puntuación.
-   ────────────────────────────────────────────────────────────────────────────
-   ESTA FUNCIÓN EXISTÍA Y NO LA LLAMABA NADIE. El único sitio que la invocaba era
-   `responder()`, o sea el instante EXACTO en que el niño contesta: `t0` se ponía
-   a `ahora()` y el rt que se medía a renglón seguido era 0 ms. Medido en
-   navegador: 3.743 ms reales de lectura y razonamiento → rt registrado 0.
-
-   Lo que eso rompía, y ninguna de las 405 comprobaciones lo veía:
-
-     · el multiplicador de tiempo salía siempre 1,4 —el tope— y con él las 3
-       gemas de bono por rapidez, en TODOS los problemas de enunciado, tardara
-       lo que tardara. La familia que más cuesta era la que más premiaba.
-     · el informe del adulto daba 0 ms de tiempo medio en los 20 subtipos.
-     · y lo peor: en el antiazar, rt = 0 dispara S1 (< 700 ms) siempre. Tres
-       problemas fallados seguidos disparan además S3 (tres fallos de menos de
-       2 s), y dos señales son azar. Es decir, el niño que lee despacio y falla
-       tres problemas seguidos —justo el que más ayuda necesita— quedaba marcado
-       como que responde al tuntún. Con el rt de verdad: cero señales.
-
-   Ahora la llama `CB.componentes.conectarLectura()` desde el contenedor de
-   respuesta, que es donde ocurre el primer toque REAL. Se comprueba `subtipo`
-   aquí dentro y no en quien llama, para que ningún sitio nuevo pueda pisar el
-   `t0` de una operación corriente: en esas el cronómetro arranca al mostrarlas y
-   mover `t0` al primer dígito regalaría el tiempo de pensarlo. */
+/* El primer toque de un problema arranca el cronómetro de puntuación. */
 CB.partida.marcarLectura = function () {
   var e = CB.partida.estado;
   if (!e || e.lecturaHecha) return;
@@ -10723,11 +9293,6 @@ CB.partida.tiempoAgotado = function () {
   /* El tiempo agotado NUNCA apaga una luz. Ni el primero, ni ninguno. */
   var r = CB.vidas.timeout(e.luces);
 
-  /* PERO SÍ DEJA LA VETA A MEDIAS. Un fallo reinserta el ítem —vuelve tres o
-     cinco ítems después— y por eso la deuda se ve en la cola de repaso; quedarse
-     sin tiempo no reinserta nada, así que la veta parecería cerrada sin que
-     nadie la haya contestado. Sin esta línea el juego cantaría «Nivel superado»
-     de una veta cuyo único ítem se quedó en blanco. */
   if (e.itemActual) e.vetasSinCerrar[e.itemActual.nivelId] = true;
 
   if (r.cambiaModo && e.modoTiempo !== 'sinPrisa') {
@@ -10735,44 +9300,24 @@ CB.partida.tiempoAgotado = function () {
     CB.ui.mensaje('Vamos con más calma.', 'animo');
     CB.a11y.anunciar('Vamos con más calma.');
   }
-  /* INALCANZABLE EN LA PRÁCTICA, y está bien que lo sea. A los 3 tiempos
-     agotados seguidos, r.cambiaModo pone la partida en «Sin prisa», y ese modo
-     apaga el cronómetro del todo: a partir de ahí no puede volver a agotarse el
-     tiempo, así que timeoutsPartida se queda clavado en 3 y nunca llega a los 6
-     que pide TIMEOUTS_FIN.
-
-     No se quita porque CB.vidas.timeout() es una función pura y su contrato es
-     suyo; pero conviene saber que la protección REAL contra un niño que se
-     queda sin tiempo una y otra vez es el cambio de modo de arriba, no esto.
-     Quitarle el reloj es mejor intervención que terminarle la sesión. */
+  /* A los 3 tiempos agotados seguidos, r.cambiaModo pone la partida en «Sin prisa», y ese modo apaga el cronómetro del todo: a partir de ahí no puede volver a agotarse el tiempo, así que timeoutsPartida se queda clavado en 3 y nunca llega a… */
   if (r.finAmable) { CB.partida.finalizar('pausa'); return; }
 
   CB.ui.mensaje(CB.mensajes.animo({
     perfil: CB.perfil, destreza: e.itemActual.destreza, rng: e.rng
   }), 'animo');
   CB.ui.festejo.mostrar('animo');
-  setTimeout(function () { CB.partida.siguiente(); }, 2200);
+  setTimeout(function () {
+    if (CB.partida.estado === e) CB.partida.siguiente();
+  }, 2200);
 };
 
-/* ── Responder ──────────────────────────────────────────────────────────── */
+/* Responder */
 CB.partida.responder = function (valor, origen, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
   if (!e || !e.itemActual || CB.partida.bloqueado) return;
 
-  /* UNA RESPUESTA POR INTENTO. Los botones NO se deshabilitan al responder
-     —siguen en pantalla mientras se ve el mensaje—, así que seis toques en OK
-     registraban SEIS respuestas. Medido: 6 pulsaciones, 18 gemas en vez de 3.
-
-     Y lo grave no eran las gemas. Cada toque metía una observación más en el
-     motor adaptativo, así que la competencia estimada de esa destreza se movía
-     seis veces por un solo ítem; y el informe del adulto contaba seis intentos
-     donde hubo uno. Es decir: machacar el botón, que es exactamente lo que hace
-     un niño de 7 años cuando la respuesta le sale sola, falseaba en silencio lo
-     único que este juego promete medir.
-
-     El cerrojo se abre en pintarRespuesta(), que es el único sitio donde se
-     construye la zona de respuesta, y por el que pasan tanto el ítem nuevo como
-     el segundo intento tras un fallo. */
+  /* Cada toque metía una observación más en el motor adaptativo, así que la competencia estimada de esa destreza se movía seis veces por un solo ítem; y el informe del adulto contaba seis intentos donde hubo uno. */
   if (e.respondido) return;
   e.respondido = true;
 
@@ -10782,10 +9327,7 @@ CB.partida.responder = function (valor, origen, extra) {
   var item = e.itemActual;
   var nivel = CB.catalogo.get(item.nivelId);
 
-  /* Red de seguridad: si nadie tocó nada antes de contestar —un formato que no
-     pase por el contenedor de respuesta, o una vía de teclado futura— se mide
-     desde que se MOSTRÓ el enunciado. Mide de más, porque incluye la lectura,
-     pero medir de más es un error que se ve; medir cero es el que no se ve. */
+  /* Red de seguridad: si nadie tocó nada antes de contestar —un formato que no pase por el contenedor de respuesta, o una vía de teclado futura— se mide desde que se MOSTRÓ el enunciado. */
   if (item.subtipo && !e.lecturaHecha) {
     e.lecturaHecha = true;
     e.t0 = e.tLectura0 || CB.util.ahora();
@@ -10796,12 +9338,7 @@ CB.partida.responder = function (valor, origen, extra) {
   var correcto;
   if (item.respuestaSigno) correcto = (valor === item.respuestaSigno);
   else if (origen === 'ordenar') correcto = (valor === item.respuesta);
-  /* LA RESPUESTA DE «TOCA LA MONEDA DE 20 CÉNTIMOS» NO ES UN NÚMERO: es 'c20',
-     porque el 20 a secas ya lo tiene el billete de 20 €. Sin esta rama,
-     Number('c20') es NaN, NaN === NaN es false y la pregunta se contestaría mal
-     siempre —tocando la moneda correcta—. Es exactamente la forma de fallo que
-     no rompe nada y que solo se ve jugando. Ver la cabecera de
-     `15-gen-dinero.js`. */
+  /* Es exactamente la forma de fallo que no rompe nada y que solo se ve jugando. */
   else if (typeof item.respuesta === 'string') correcto = (String(valor) === item.respuesta);
   else correcto = (Number(valor) === Number(item.respuesta));
 
@@ -10826,7 +9363,7 @@ CB.partida.responder = function (valor, origen, extra) {
   CB.partida.trasFallo(item, nivel, extra);
 };
 
-/* ── Acierto ────────────────────────────────────────────────────────────── */
+/* Acierto */
 CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
 
@@ -10868,16 +9405,8 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   CB.ui.personaje('cubi', 'acierto');
   if (e.rachaPrimerIntento >= 3) CB.ui.personaje('chispa', 'racha');
 
-  /* Y la celebración. Lo que cambia entre una y otra es el VEHÍCULO —una
-     insignia, una criatura, una cinta, un cartel, un temblor—, no el recorrido
-     de un mismo cartel: la forma es lo que se reconoce sin leer. Las cuatro
-     categorías ya las calculaba CB.mensajes.categoriaAcierto() desde el primer
-     día; aquí solo se les pone cuerpo. Encima va el bloque raro, que es 1 de
-     cada 20 y se lleva lo que casi nunca se ve. */
-  /* EL CROMO SE RESUELVE ANTES DE GRITAR, para poder decir cuál es. Efecto
-     colateral declarado: mover CB.util.elegir por delante de sacarDeBolsa cambia
-     el orden de consumo del RNG sembrado. La partida sigue siendo reproducible
-     desde su semilla, pero deja de dar la misma secuencia que daba antes. */
+  /* Las cuatro categorías ya las calculaba CB.mensajes.categoriaAcierto() desde el primer día; aquí solo se les pone cuerpo. */
+
   var cromo = item.esBloqueRaro ? CB.partida.darCromo() : null;
   /* Si coinciden, manda el más raro: el bloque raro es 1 de cada 20 y el reto
      necesita además D === 3. */
@@ -10914,28 +9443,18 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
 
   /* NUNCA menos de los 1600 ms de siempre: la espera se estira si la coreografía
      es larga, pero no se encoge nunca. Acortarla recortaría tiempo de lectura. */
-  setTimeout(function () { CB.partida.siguiente(); },
+  setTimeout(function () {
+    if (CB.partida.estado === e) CB.partida.siguiente();
+  },
              CB.ui.festejo.espera(festejo, 1600, msg));
 };
 
-/**
- * Cuánto se queda en pantalla el mensaje del primer fallo. Era un 2600 escrito a
- * pelo, el último número del bucle fuera de la fuente única —las otras dos
- * esperas ya pasaban por ella—. Se expone como función para poder comprobarla:
- * un literal dentro de un setTimeout no se puede probar sin leer el código.
- *
- * NO se recorta el suelo. Se estudió quitar los 800 ms de construcción en el
- * segundo intento y es exactamente el patrón de E40: iniciarCronometro tiene
- * MS_CONSTRUCCION cableado en tres sitios, y habilitar los botones antes deja el
- * t0 en el futuro. Eso da rt NEGATIVO: multiplicador de tiempo al tope, bono
- * máximo por rapidez, y esa muestra envenenada entra en el detector de azar.
- */
 CB.partida.esperaSegundoIntento = function (pista) {
   return CB.ui.festejo.espera('animo', 2600,
     'Esta no suma gemas. Te queda otro intento. ' + (pista || ''));
 };
 
-/* ── Fallo ──────────────────────────────────────────────────────────────── */
+/* Fallo */
 CB.partida.trasFallo = function (item, nivel, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
 
@@ -10951,19 +9470,14 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     e.intento = 2;
     var pistas = CB.datos.MENSAJES.PISTAS[item.destreza];
     var pista = pistas ? pistas[0] : 'Vuelve a mirarlo con calma.';
-    /* «Te queda otro intento» es la frase que faltaba. Sin ella, un fallo no
-       tiene ninguna consecuencia visible —no cae la gema y ya está— y quien
-       juega concluye que el juego no se entera de los errores. La regla es que
-       la luz se apaga SOLO al fallar el segundo intento (docs/decisiones.md,
-       Documento 5), y esa regla hay que contarla en el momento en que importa,
-       no dejarla escrita en un documento que el niño no lee. */
+    /* La regla es que la luz se apaga SOLO al fallar el segundo intento (docs/decisiones.md, Documento 5), y esa regla hay que contarla en el momento en que importa, no dejarla escrita en un documento que el niño no lee. */
     CB.ui.mensaje('Esta no suma gemas. Te queda otro intento. ' + pista, 'animo');
     CB.ui.festejo.mostrar('animo');
     CB.audio.sfx('rocarr');
     setTimeout(function () {
+      if (CB.partida.estado !== e || e.itemActual !== item) return;
       CB.ui.ocultarMensaje();
-      CB.partida.pintarRespuesta(item);
-      CB.partida.iniciarCronometro(!!item.subtipo);
+      if (CB.partida.pintarRespuesta(item)) CB.partida.iniciarCronometro(!!item.subtipo);
     }, CB.partida.esperaSegundoIntento(pista));
     return;
   }
@@ -10978,6 +9492,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
 
   var diag = CB.diagnosticar(item, Number(item.valorDado));
   CB.ui.mostrarReparacion(item, diag.hipotesis, function () {
+    if (CB.partida.estado !== e || e.itemActual !== item) return;
     var r = CB.vidas.fallo(e.luces, 2, e.modo);
     if (r.apagada) {
       e.lucesApagadas++;
@@ -10986,22 +9501,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
                    indice: e.indice, total: e.guion.length });
 
-    /* Escalones 3, 4 y 5 según los fallos acumulados de ESE concepto.
-       LA DECISIÓN LA TOMA CB.escalera, no este fichero. Antes se llamaba a
-       siguienteEscalon() al entrar en trasFallo, se guardaba en una variable
-       `esc` que no leía nadie, y aquí abajo se volvían a escribir los umbrales a
-       mano. Dos implementaciones de la misma escalera, y solo una probada: la
-       que no se usaba. Se pedía además ANTES de registrar el fallo, con lo que
-       el escalón que devolvía iba siempre uno por detrás.
-
-       EL ESCALÓN 4 YA ESTÁ. Estuvo declarado y sin implementación desde la
-       primera versión: la escalera decía «al cuarto fallo seguido de un
-       concepto, volvemos un paso atrás al prerrequisito», CB.grafo tenía escrita
-       y documentada la función que lo resuelve —prerrequisitoDominado(), con un
-       comentario que dice literalmente «para el escalón 4»— y no la llamaba
-       nadie. Un agujero de los que no fallan: el juego seguía preguntando lo
-       mismo que el niño no entendía, cuatro veces, cinco, y de ahí saltaba a
-       retirarle el concepto. Reconstruir desde abajo es §12.5 del plan. */
+    /* Dos implementaciones de la misma escalera, y solo una probada: la que no se usaba. */
     CB.partida.aplicarEscalon(
       CB.escalera.siguienteEscalon(
         CB.escalera.fallosDe(e.escalera, item.destreza), 2),
@@ -11010,11 +9510,6 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     CB.pantallas.ir('p-partida');
     if (CB.vidas.agotadas(e.luces)) { CB.partida.finalizar('luces'); return; }
 
-    /* Y decir que se ha apagado. El HUD lo pinta —la luz se pone gris— pero eso
-       pasa arriba del todo mientras se mira la tarjeta de reparación, así que
-       nadie lo ve ocurrir. Sin esta línea, la luz desaparece sin causa aparente
-       varias pantallas después del fallo que la costó. Se dice lo que pasó y
-       cuántas quedan, sin regañar y sin números negativos (§3.4). */
     if (r.apagada) {
       var quedan = e.luces.luces;
       var aviso = 'Se ha apagado una luz. Te ' +
@@ -11025,6 +9520,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
          cuenta a un nino que ya esta en otra pregunta. */
       CB.a11y.urgente(aviso);
       setTimeout(function () {
+        if (CB.partida.estado !== e) return;
         CB.ui.ocultarMensaje();
         CB.partida.siguiente();
       }, 2200);
@@ -11034,15 +9530,6 @@ CB.partida.trasFallo = function (item, nivel, extra) {
   });
 };
 
-/**
- * Lo que la escalera manda hacer, aplicado. Devuelve la acción realmente
- * ejecutada, o null si no se hizo nada.
- *
- * ESTÁ EXTRAÍDO A PROPÓSITO. Mientras vivía dentro del callback de la tarjeta de
- * reparación, la única forma de comprobar que el escalón 4 funciona era leer el
- * código, y leer el código es exactamente como el escalón 4 pasó varias
- * versiones declarado y sin implementar sin que nada se pusiera rojo.
- */
 CB.partida.aplicarEscalon = function (esc, item, perfil, e) {
   if (!esc || !item || !perfil || !e) return null;
 
@@ -11053,12 +9540,7 @@ CB.partida.aplicarEscalon = function (esc, item, perfil, e) {
   }
 
   if (esc.accion === 'prerrequisito') {
-    /* Escalón 4. Si no hay ningún prerrequisito dominado —pasa en los niveles
-       que abren un bloque, que por definición no tienen ninguno— no se hace nada
-       y el fallo siguiente cae en el escalón 5, que es lo que ocurría antes de
-       implementar esto. Degradar así es lo correcto: nunca inventarse un nivel
-       que el niño no haya superado ya, porque entonces «volvemos un paso atrás»
-       sería mentira y le pondría delante algo aún más difícil. */
+    /* Degradar así es lo correcto: nunca inventarse un nivel que el niño no haya superado ya, porque entonces «volvemos un paso atrás» sería mentira y le pondría delante algo aún más difícil. */
     var previo = CB.grafo.prerrequisitoDominado(item.nivelId, perfil);
     if (!previo) return null;
     e.prerrequisitoPendiente = previo;
@@ -11073,7 +9555,7 @@ CB.partida.aplicarEscalon = function (esc, item, perfil, e) {
   return null;
 };
 
-/* ── Azar ───────────────────────────────────────────────────────────────── */
+/* Azar */
 CB.partida.trasAzar = function (item, punt) {
   var e = CB.partida.estado;
   e.azares++;
@@ -11090,16 +9572,16 @@ CB.partida.trasAzar = function (item, punt) {
   CB.ui.parpadeoGris();
 
   setTimeout(function () {
+    if (CB.partida.estado !== e || e.itemActual !== item) return;
     if (ef.fuerzaDescanso) { CB.partida.microDescanso(); return; }
     CB.ui.ocultarMensaje();
     CB.ui.ocultarPersonaje('gluglu');
     e.intento = 1;
-    CB.partida.pintarRespuesta(item);
-    CB.partida.iniciarCronometro(!!item.subtipo);
+    if (CB.partida.pintarRespuesta(item)) CB.partida.iniciarCronometro(!!item.subtipo);
   }, 2600);
 };
 
-/* ── Registro en el perfil ──────────────────────────────────────────────── */
+/* Registro en el perfil */
 CB.partida.registrarRespuesta = function (item, rt, correcto, az, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
 
@@ -11176,7 +9658,7 @@ CB.partida.actualizarDestreza = function (item, nivel, correcto) {
   return false;
 };
 
-/* ── Logros y luces extra ───────────────────────────────────────────────── */
+/* Logros y luces extra */
 CB.partida.comprobarLogros = function (item) {
   var e = CB.partida.estado;
   var nuevos = CB.logros.comprobar('acierto', {
@@ -11187,15 +9669,18 @@ CB.partida.comprobarLogros = function (item) {
   CB.partida.aplicarLogros(nuevos);
 };
 
-/**
- * Celebra un logro ENCOLADO. Si caen dos en el mismo ítem, el bucle llamaba dos
- * veces a mostrar() y la segunda cancelaba a la primera —mostrar() empieza por
- * ocultar()—, así que el segundo logro no se veía. Es la lección de E51 llegando
- * por una ruta que E51 no vigila.
- */
 CB.partida.festejarLogro = function (grito, indice) {
   if (!indice) { CB.ui.festejo.mostrar('logro', grito); return; }
-  setTimeout(function () { CB.ui.festejo.mostrar('logro', grito); },
+  var e = CB.partida.estado;
+  setTimeout(function () {
+    /* finalizar() pone estado a null después de pintar p-fin; allí la cola sí
+       pertenece a la partida que acaba. En cualquier otra pantalla o partida,
+       el logro diferido ya es caduco. */
+    if (CB.partida.estado === e ||
+        (CB.partida.estado === null && CB.pantallas.actual === 'p-fin')) {
+      CB.ui.festejo.mostrar('logro', grito);
+    }
+  },
              CB.ui.festejo.espera('logro', 0) * indice);
 };
 
@@ -11205,10 +9690,7 @@ CB.partida.aplicarLogros = function (nuevos) {
     l = nuevos[i];
     if (!l.luz) {
       CB.a11y.anunciar('Logro: ' + l.nombre);
-      /* EL NOMBRE SE VE, y no cabe en la cinta: «Reto bonus superado» son 19
-         caracteres y el tope del texto de cinta es 16. La cinta lleva el grito
-         corto y fijo; el nombre va al mensaje quieto, que es donde se lee. Sin
-         esta línea el nombre del logro solo lo oía un lector de pantalla. */
+      /* Sin esta línea el nombre del logro solo lo oía un lector de pantalla. */
       CB.ui.mensaje('Logro: ' + l.nombre, 'acierto');
       CB.partida.festejarLogro('¡Logro!', i);
       continue;
@@ -11229,19 +9711,7 @@ CB.partida.aplicarLogros = function (nuevos) {
   }
 };
 
-/**
- * Entrega un cromo del bloque raro. DEVUELVE su id, o null si ya están los once.
- *
- * Antes no devolvía nada y su única salida era un anuncio con el ID CRUDO
- * —«el cromo de gluglu»—, que solo oía un lector de pantalla. El premio más raro
- * del juego, uno de cada veinte ítems, se entregaba sin decir qué era.
- *
- * Y NO comprueba logros aquí: lo hace quien la llama, DESPUÉS de pintar la cinta.
- * Estaba dentro, y aplicarLogros pinta su propia cinta 'estalla', que empieza por
- * ocultar la anterior: en el ítem donde cae el quinto cromo y salta
- * «Coleccionista», la cinta del cromo se cancelaba a sí misma. Es E51 otra vez,
- * llegando por una ruta que E51 no vigila.
- */
+/* Antes no devolvía nada y su única salida era un anuncio con el ID CRUDO —«el cromo de gluglu»—, que solo oía un lector de pantalla. */
 CB.partida.darCromo = function () {
   var perfil = CB.perfil, e = CB.partida.estado;
   var posibles = Object.keys(CB.ui.CRIATURAS).filter(function (c) {
@@ -11264,7 +9734,7 @@ CB.partida.logrosDeCromo = function () {
   }));
 };
 
-/* ── Avanzar ────────────────────────────────────────────────────────────── */
+/* Avanzar */
 CB.partida.siguiente = function () {
   var e = CB.partida.estado;
   if (!e) return;
@@ -11293,30 +9763,19 @@ CB.partida.comprobarLimiteSesion = function () {
   if (transcurrido >= limite) e.finTrasEsteItem = true;
 };
 
-/* ── Micro-descansos: 5 distintos, en bolsa para que no se repitan ──────── */
+/* Micro-descansos: 5 distintos, en bolsa para que no se repitan */
 CB.partida.DESCANSOS = [
   { id: 'romper', titulo: '¡Descanso! Rompe los bloques' },
   { id: 'blopi', titulo: '¡Descanso! Dale de comer a Blopi' },
   { id: 'casa', titulo: '¡Descanso! Coloca bloques en tu casa' },
-  /* NO PROMETE GEMAS, y el título lo decía. El manejador de microDescanso solo
-     marca el cofre como roto, tira partículas y suena: no suma ni una gema a
-     e.gemas ni a perfil.gemas, y los tres cofres siguen pulsables, así que
-     «Elige uno» tampoco era verdad. Se corrige el TEXTO, no la economía: regalar
-     gemas aquí rompería el invariante de la moneda visible, haría del cofre el
-     único de los cinco descansos que paga, y ni siquiera se vería —servirItem no
-     llama a pintarHUD, así que el premio no aparecería hasta el acierto
-     siguiente—. Si algún día se quiere la mecánica entera, es una decisión de
-     economía y va a docs/decisiones.md, no un arreglo de texto. */
+  /* El manejador de microDescanso solo marca el cofre como roto, tira partículas y suena: no suma ni una gema a e.gemas ni a perfil.gemas, y los tres cofres siguen pulsables, así que «Elige uno» tampoco era verdad. */
   { id: 'cofre', titulo: '¡Descanso! Rompe los cofres de piedra' },
   { id: 'vagoneta', titulo: '¡Descanso! Monta en la vagoneta' }
 ];
 
 CB.partida.microDescanso = function () {
   var e = CB.partida.estado;
-  /* EN BOLSA, ahora sí. El comentario decía «en bolsa para que no se repitan» y
-     la línea sorteaba CON REEMPLAZO: con tres descansos por sesión, un 52 % de
-     probabilidad de ver dos veces el mismo. Se reutiliza la bolsa barajada de
-     los mensajes, que ya existe y ya está probada. */
+
   var m = CB.mensajes.asegurar(CB.perfil);
   var idx = CB.mensajes.sacarDeBolsa(m, 'bolsaDescansos',
     CB.partida.DESCANSOS.length, [], [], 0, e.rng);
@@ -11361,7 +9820,7 @@ CB.partida.microDescanso = function () {
   /* Ninguno se puede fallar, ninguno puntúa, todos se pueden saltar. */
 };
 
-/* ── Pausa y partida guardada ───────────────────────────────────────────── */
+/* Pausa y partida guardada */
 CB.partida.pausar = function () {
   var e = CB.partida.estado;
   if (!e || e.pausada) return;
@@ -11420,7 +9879,7 @@ CB.partida.reanudarGuardada = function (perfil) {
   return e;
 };
 
-/* ── Fin de la expedición ───────────────────────────────────────────────── */
+/* Fin de la expedición */
 CB.partida.finalizar = function (motivo) {
   var e = CB.partida.estado, perfil = CB.perfil;
   if (!e) return;
@@ -11472,10 +9931,6 @@ CB.partida.finalizar = function (motivo) {
   });
   CB.partida.aplicarLogros(logrosFin);
 
-  /* QUÉ MUNDOS ESTABAN ABIERTOS, ANTES de abrir ninguno. Capturarlo después
-     daría siempre «ninguno nuevo», que es la forma silenciosa de que esto no
-     funcione. Abrir el Bosque, el Río o la Mina son los tres hitos más grandes
-     de la vida de un perfil y ocurrían sin una sola línea de interfaz. */
   var abiertosAntes = {};
   CB.MUNDOS.forEach(function (m) {
     abiertosAntes[m.id] = !!(perfil.mundos[m.id] && perfil.mundos[m.id].desbloqueado);
@@ -11546,10 +10001,6 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
       'Hoy has practicado. Mañana se notará en el mapa.'));
   }
 
-  /* 1.º bis · HOY ADEMÁS: los tres hitos que el juego calculaba y no enseñaba.
-     Panel nuevo, declarado en docs/decisiones.md porque el orden de lectura de
-     §3.7 es contrato cerrado. Va entre lo dominado y las gemas: son hitos, y los
-     hitos van antes que el recuento. */
   hitos = hitos || {};
   var caja = document.getElementById('fin-hitos');
   var lista = document.getElementById('fin-hitos-lista');
@@ -11580,18 +10031,11 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
 
   /* 2.º Gemas y desglose del bono. */
   var g = document.getElementById('fin-gemas');
-  /* Desde cero, y contando. Es el único sitio donde el número de la partida
-     entera aparece de golpe, así que es donde más se nota que aparezca subiendo.
-     Se pone el 0 a mano porque el nodo conserva el total de la partida anterior:
-     sin eso, contarHasta compararía contra esa cifra vieja y una partida peor que
-     la anterior escribiría el número sin más. */
+
   if (g) { g.textContent = '0'; CB.ui.contarHasta(g, Math.max(0, e.gemas)); }
   var bl = document.getElementById('fin-bono');
   if (bl) {
-    /* EN GEMAS, no en puntos. Decía «+340 de bono» justo debajo del recuento de
-       gemas, en puntos, y parecía que eran gemas. Las gemas del bono ya están
-       dentro de #fin-gemas —se suman en finalizar—, así que esta cifra es
-       literalmente verdad y además es la moneda que el niño conoce. */
+
     var gemasBono = Math.max(0, Math.round(bono.total / 50));
     bl.textContent = gemasBono > 0
       ? ('+' + gemasBono + ' gemas de bono: ' + bono.extras.map(function (x) {
@@ -11614,7 +10058,9 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
   if (cajaAnimo) {
     cajaAnimo.hidden = true;
     if (duro) {
-      setTimeout(function () { cajaAnimo.hidden = false; }, 1500);
+      setTimeout(function () {
+        if (CB.pantallas.actual === 'p-fin') cajaAnimo.hidden = false;
+      }, 1500);
     }
   }
 
@@ -11642,16 +10088,8 @@ CB.partida.nombreDestreza = function (slug) {
   return CB.partida.NOMBRES_DESTREZA[slug] || slug;
 };
 
-/* ── Acciones de la barra de herramientas ───────────────────────────────── */
-/**
- * Como accionLeer, pero SIN levantar el bloqueo de construcción.
- * Es la que usa el altavoz que va dentro del enunciado, y la diferencia no es
- * cosmética: accionLeer pone CB.partida.bloqueado = false a propósito —quien
- * pulsa el altavoz de la barra ya ha invertido tiempo en el ítem—, pero un
- * altavoz que está justo encima de la pregunta se roza sin querer, y ese roce
- * anularía de un toque el bloqueo antiazar de 1200 ms. El niño se quedaría sin
- * la única protección que hay contra responder al tuntún, sin enterarse.
- */
+/* Acciones de la barra de herramientas */
+
 CB.partida.accionLeerSuave = function () {
   var e = CB.partida.estado;
   if (!e || !e.itemActual) return;
@@ -11666,12 +10104,7 @@ CB.partida.accionLeerSuave = function () {
 CB.partida.accionLeer = function () {
   var e = CB.partida.estado;
 
-  /* La calibración NO crea estado de partida (no tiene cronómetro, ni luces, ni
-     puntuación: no debe parecer un test). Sin esta rama, el altavoz de esa
-     pantalla salía por el `return` de abajo y no hacía absolutamente nada —
-     justo en la primera pantalla de la vida del niño, donde más falta hace
-     poder volver a oír la pregunta. Aquí no se toca el cronómetro porque en la
-     calibración no hay ninguno que parar ni que reanudar. */
+  /* La calibración NO crea estado de partida (no tiene cronómetro, ni luces, ni puntuación: no debe parecer un test). */
   if (!e || !e.itemActual) {
     if (CB.pantallas.actual === 'p-calibracion' &&
         CB.calibracion && CB.calibracion.consignaActual) {
@@ -11703,13 +10136,7 @@ CB.partida.accionPista = function () {
   CB.audio.sfx('rocarr');
 };
 
-/* ── El botón de silencio dice la verdad, y lo dicen los DOS ────────────────
-   Hay un botón de sonido por pantalla con barra (calibración y partida) y el
-   silencio es uno solo, del aparato. Actualizando únicamente el botón pulsado
-   pasaban tres cosas: el otro se quedaba mintiendo, el ajuste guardado se
-   restauraba al arrancar sin que el icono se enterara (silencio real con icono
-   de altavoz encendido), y `aria-pressed` no existía hasta el primer clic, de
-   modo que un lector de pantalla no podía decir si estaba pulsado. */
+/* El botón de silencio dice la verdad, y lo dicen los DOS */
 CB.partida.sincronizarSonido = function () {
   var s = !!CB.audio.silenciado;
   var bs = document.querySelectorAll('[data-accion="sonido"]');
@@ -11723,20 +10150,6 @@ CB.partida.sincronizarSonido = function () {
   }
 };
 
-/* SUBE POR EL ÁRBOL, COMO CB.pantallas.conectar. Los cuatro botones de la barra
-   llevan dos <span> dentro —el icono y el rótulo, que existen porque E15/E16
-   exigen palabra visible en todo botón de barra—, así que el ev.target de un
-   toque sobre el emoji o sobre la palabra es el span, no el botón, y el span no
-   tiene data-accion. Leerlo directamente de ev.target dejaba Pista, Pausa,
-   Sonido y Salir sin responder salvo que se acertara en el reborde de padding.
-
-   Es un fallo que se prueba y no se ve: en el navegador el botón se hunde igual
-   —eso es CSS, :active— y no hay ningún error. Lo mismo que 31-pantallas.js ya
-   había resuelto para data-ir con este mismo bucle, y con este mismo comentario.
-
-   La resolución vive en su propia función y no dentro del oyente a propósito:
-   así se puede comprobar sin instalar un oyente de documento en la suite, que
-   además se quedaría puesto y contaría doble en la segunda ejecución. */
 CB.partida.accionDe = function (nodo) {
   var n = 0, a = null;
   while (nodo && nodo !== document.body && n < 4) {
@@ -11749,29 +10162,13 @@ CB.partida.accionDe = function (nodo) {
 
 CB.partida.MS_CONFIRMAR_SALIDA = 3000;
 
-/**
- * Salir pide dos toques. NO se usa CB.componentes.pedirConfirmacion: esa función
- * empieza con `if (!_confirmacionPendiente) { alConfirmar(); return; }`, y esa
- * bandera solo se pone a true cuando el antiazar ha detectado azar. En una
- * partida normal vale false, así que pasar por ahí habría sido un no-operativo
- * — un cerrojo que no cierra, verde en las pruebas y roto en el juego.
- *
- * El botón está abajo a la derecha, a 16 px del de sonido y del mismo tamaño:
- * la zona del pulgar que sujeta la tableta. Un roce y se acababa la expedición.
- *
- * Y el aviso CAMBIA EL TEXTO del botón, no su color: «nunca solo color» es
- * obligación legal, y aquí además el color no se vería —el dedo está encima.
- */
+/* NO se usa CB.componentes.pedirConfirmacion: esa función empieza con `if (!_confirmacionPendiente) { alConfirmar(); return; }`, y esa bandera solo se pone a true cuando el antiazar ha detectado azar. */
 CB.partida.pedirSalida = function (nodo) {
   var boton = nodo && nodo.closest ? nodo.closest('[data-accion="salir-partida"]') : null;
   if (!boton) { CB.partida.finalizar('salida'); return false; }
 
   if (boton.getAttribute('data-confirmando') === 'si') {
-    /* SE SUELTA EL CERROJO ANTES DE SALIR, y no es limpieza cosmética: sin esto
-       el botón se queda armado para siempre. Al volver a una partida, el primer
-       roce en Salir la terminaría sin aviso ninguno — es decir, el fallo que este
-       cerrojo venía a impedir, reaparecido por la puerta de atrás. Lo cazó E66,
-       en su tercera aserción, que es justo la que parecía la menos importante. */
+    /* Lo cazó E66, en su tercera aserción, que es justo la que parecía la menos importante. */
     CB.partida.soltarSalida(boton);
     CB.partida.finalizar('salida');
     return true;
@@ -11826,20 +10223,7 @@ CB.partida.conectarBarra = function () {
   });
 };
 
-/* ============================================================================
-   41-panel-adulto.js — Panel para familias y maestros
-   ----------------------------------------------------------------------------
-   LA PUERTA PARENTAL ES DE LECTURA, NO DE CÁLCULO. Poner una multiplicación
-   difícil como cerradura en un juego de matemáticas enseña exactamente lo
-   contrario de lo que el juego defiende: que las matemáticas son un muro. Se
-   pide localizar una palabra concreta en una frase, que un adulto resuelve en
-   dos segundos y un lector de 2.º no.
-
-   HONESTIDAD DEL INFORME (PLAN §17.3): se distingue siempre entre lo que el
-   juego MIDE y lo que NO mide, y solo se emiten hipótesis de error a partir de
-   evidencia DISCRIMINANTE. Si dos códigos empatan, se cuentan ambos y no se
-   afirma ninguno.
-   ========================================================================== */
+/* 41-panel-adulto.js — Panel para familias y maestros */
 
 var CB = CB || {};
 CB.adulto = CB.adulto || {};
@@ -11852,20 +10236,7 @@ CB.adulto.FRASES_PUERTA = [
   { frase: 'Una vagoneta cruza el túnel cargada', n: 2 }
 ];
 
-/* PINTA el panel; NO navega hasta él.
-
-   Esta función es el handler de CB.pantallas.alEntrar['p-adulto'], y llamaba
-   como primera línea a CB.pantallas.ir('p-adulto'). Es decir: ir() invocaba al
-   handler, y el handler volvía a llamar a ir(). Recursión infinita, desbordamiento
-   de pila, y el catch de ir() mandaba al usuario a la pantalla de error.
-
-   Efecto real: pulsar la llave de la portada NUNCA abría el panel del adulto.
-   Se iba a «algo ha ido mal». Con ello quedaban fuera de alcance los ajustes,
-   el informe imprimible, la exportación del progreso y los interruptores de las
-   tablas del 6 al 9 y de los céntimos.
-
-   Los otros siete handlers de alEntrar solo pintan, que es el contrato. Este era
-   el único que navegaba. */
+/* Efecto real: pulsar la llave de la portada NUNCA abría el panel del adulto. */
 CB.adulto.abrir = function () {
   var puerta = document.getElementById('adulto-puerta');
   var contenido = document.getElementById('adulto-contenido');
@@ -11905,7 +10276,7 @@ CB.adulto.abrir = function () {
   };
 };
 
-/* ── Las 10 métricas ────────────────────────────────────────────────────── */
+/* Las 10 métricas */
 CB.adulto.metricas = function (perfil) {
   var hoy = CB.util.hoyISO();
   var h = perfil.historial || [];
@@ -11989,7 +10360,219 @@ CB.adulto.semaforo = function (perfil) {
   return out;
 };
 
-/* ── Pintado del panel ──────────────────────────────────────────────────── */
+/* Pintado del panel */
+CB.adulto.crearResumen = function (metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'De un vistazo'));
+  CB.adulto.metrica(caja, 'Tiempo de pantalla hoy',
+    Math.round(metricas.m1_tiempoHoy / 60) + ' min');
+  CB.adulto.metrica(caja, 'Expediciones completadas', String(metricas.m2_partidas));
+  CB.adulto.metrica(caja, 'Duración media de la partida',
+    Math.round(metricas.m2_duracionMedia / 60) + ' min ' + (metricas.m2_duracionMedia % 60) + ' s');
+  CB.adulto.metrica(caja, 'Aciertos (últimas 10 partidas)',
+    metricas.m3_precisionTotal == null ? 'sin datos' : Math.round(metricas.m3_precisionTotal * 100) + ' %');
+  CB.adulto.metrica(caja, 'Aciertos a la primera',
+    metricas.m3_precision1er == null ? 'sin datos' : Math.round(metricas.m3_precision1er * 100) + ' %');
+  caja.appendChild(CB.ui.crear('p', null,
+    'Lo esperable en 2.º es entre el 80 % y el 90 % de aciertos. Por debajo, el ' +
+    'juego bajará solo la dificultad; por encima, la subirá.'));
+  return caja;
+};
+
+CB.adulto.crearTablaBloques = function (metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Por bloques de contenido'));
+  var tabla = CB.ui.crear('table', 'adulto__tabla');
+  var cabecera = CB.ui.crear('tr');
+  ['Bloque', 'Situación', 'Preguntas'].forEach(function (texto) {
+    cabecera.appendChild(CB.ui.crear('th', null, texto));
+  });
+  var thead = CB.ui.crear('thead');
+  thead.appendChild(cabecera);
+  tabla.appendChild(thead);
+  var tbody = CB.ui.crear('tbody');
+  metricas.m4_semaforo.forEach(function (situacion) {
+    var fila = CB.ui.crear('tr');
+    fila.appendChild(CB.ui.crear('td', null, situacion.bloque));
+    var celdaSituacion = CB.ui.crear('td');
+    var indicador = CB.ui.crear('span', 'semaforo',
+      situacion.precision == null ? '' : situacion.precision + ' %');
+    indicador.setAttribute('data-nivel', situacion.nivel);
+    celdaSituacion.appendChild(indicador);
+    fila.appendChild(celdaSituacion);
+    fila.appendChild(CB.ui.crear('td', null, String(situacion.n)));
+    tbody.appendChild(fila);
+  });
+  tabla.appendChild(tbody);
+  caja.appendChild(tabla);
+  return caja;
+};
+
+CB.adulto.crearMatrizProblemas = function (metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Problemas de enunciado, por tipo'));
+  caja.appendChild(CB.ui.crear('p', null,
+    'Dos problemas con los mismos números y la misma operación tienen ' +
+    'dificultades muy distintas según cómo estén contados. Esta tabla es la ' +
+    'información más accionable del panel.'));
+  var tabla = CB.ui.crear('table', 'adulto__tabla matriz-subtipos');
+  var cabecera = CB.ui.crear('tr');
+  ['Tipo de problema', 'Intentos', 'Aciertos', 'Tiempo medio'].forEach(function (texto) {
+    cabecera.appendChild(CB.ui.crear('th', null, texto));
+  });
+  tabla.appendChild(cabecera);
+  CB.gen.problemas.SUBTIPOS.forEach(function (subtipo) {
+    var dato = metricas.m6_subtipos[subtipo];
+    if (!dato || !dato.intentos) return;
+    var fila = CB.ui.crear('tr');
+    fila.appendChild(CB.ui.crear('td', null, CB.adulto.NOMBRE_SUBTIPO[subtipo] || subtipo));
+    fila.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato', String(dato.intentos)));
+    fila.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato',
+      dato.aciertos + ' (' + Math.round(dato.aciertos / dato.intentos * 100) + ' %)'));
+    fila.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato',
+      Math.round(dato.rtMedioMs / 1000) + ' s'));
+    tabla.appendChild(fila);
+  });
+  caja.appendChild(tabla);
+  return caja;
+};
+
+CB.adulto.crearRecomendaciones = function (perfil, metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Qué conviene trabajar'));
+  var codigos = Object.keys(metricas.m7_errores).filter(function (codigo) {
+    return metricas.m7_errores[codigo].vecesDiscriminante >= 2;
+  }).sort(function (a, b) {
+    return metricas.m7_errores[b].vecesDiscriminante - metricas.m7_errores[a].vecesDiscriminante;
+  }).slice(0, 3);
+
+  if (!codigos.length) {
+    caja.appendChild(CB.ui.crear('p', null,
+      'Todavía no hay evidencia suficiente para señalar un error concreto. ' +
+      'Hacen falta al menos dos respuestas que apunten sin ambigüedad al mismo ' +
+      'procedimiento.'));
+    return caja;
+  }
+
+  codigos.forEach(function (codigo) {
+    var recomendacion = CB.datos.RECOMENDACIONES[codigo];
+    if (!recomendacion) return;
+    caja.appendChild(CB.ui.crear('h3', null, recomendacion.frase));
+    caja.appendChild(CB.ui.crear('p', null, '10 minutos: ' + recomendacion.actividad));
+    var ejemplos = (metricas.m7_errores[codigo].ejemplos || []).join(' · ');
+    if (ejemplos) caja.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Ejemplos: ' + ejemplos));
+    caja.appendChild(CB.ui.boton('Imprimir ficha de refuerzo', 'btn-adulto', function () {
+      CB.adulto.fichaRefuerzo(perfil, codigo);
+    }));
+  });
+  return caja;
+};
+
+CB.adulto.crearResumenJuego = function (metricas) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Cómo está jugando'));
+  CB.adulto.metrica(caja, 'Respuestas muy rápidas sin acertar', String(metricas.m8_azares));
+  caja.appendChild(CB.ui.crear('p', 'texto texto--menor',
+    'El juego no se lo reprocha nunca: solo deja de puntuar esa pregunta y da ' +
+    'un momento de pausa. Si el número es alto, suele indicar cansancio o que ' +
+    'la dificultad está por encima, no mala intención.'));
+  CB.adulto.metrica(caja, 'Explicaciones seguidas hasta el final',
+    metricas.m9_reparaciones == null ? 'sin datos'
+      : Math.round(metricas.m9_reparaciones * 100) + ' % de ' + metricas.m9_reparacionesTotal);
+  CB.adulto.metrica(caja, 'Luces apagadas (últimas 10 partidas)', String(metricas.lucesApagadas));
+  if (metricas.m10_animo.length) {
+    var caras = ['me ha costado', 'normal', 'contento'];
+    CB.adulto.metrica(caja, 'Cómo dice que se ha sentido',
+      metricas.m10_animo.map(function (animo) { return caras[animo.cara] || '?'; }).join(', '));
+  }
+  return caja;
+};
+
+CB.adulto.crearSeccionOffline = function () {
+  if (!CB.offline || !CB.offline.DISPONIBLE) return null;
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Sin conexión'));
+  caja.appendChild(CB.ui.crear('p', null,
+    'El juego ya funciona sin internet: no pide nada a la red. Lo único que ' +
+    'no se guarda por su cuenta es la música, porque son 42 MB.'));
+
+  var estado = CB.ui.crear('p', 'texto texto--menor', 'Comprobando…');
+  caja.appendChild(estado);
+  CB.offline.musicaGuardada(function (cantidad) {
+    estado.textContent = cantidad === 0
+      ? 'Ahora mismo no hay ninguna pista guardada.'
+      : 'Guardadas ' + cantidad + ' de 9 pistas.';
+  });
+
+  var fila = CB.ui.crear('div', 'fila');
+  var descargar = CB.ui.boton('Descargar la música (42 MB)', 'btn-adulto', function () {
+    descargar.disabled = true;
+    estado.textContent = 'Descargando… 0 de 9';
+    CB.offline.descargarMusica(
+      function (intentadas, total) {
+        estado.textContent = 'Descargando… ' + intentadas + ' de ' + total;
+      },
+      function (resultado) {
+        descargar.disabled = false;
+        var hechas = resultado.hechas || 0;
+        if (resultado.ok) {
+          estado.textContent = 'Listo: las ' + hechas + ' pistas están guardadas.';
+        } else if (resultado.fallos) {
+          estado.textContent = 'Guardadas ' + hechas + ' de 9. ' + resultado.fallos +
+            (resultado.fallos === 1
+              ? ' pista no se ha podido descargar'
+              : ' pistas no se han podido descargar') +
+            '. Comprueba la conexión y vuelve a intentarlo.';
+        } else if (resultado.motivo === 'cancelado') {
+          estado.textContent = 'Descarga cancelada. Guardadas ' + hechas + ' de 9.';
+        } else {
+          estado.textContent = 'No se ha podido guardar ninguna pista. Puedes volver a intentarlo.';
+        }
+        CB.a11y.anunciar(estado.textContent);
+      });
+  });
+  fila.appendChild(descargar);
+  fila.appendChild(CB.ui.boton('Borrar lo guardado y recargar',
+    'btn-adulto btn-adulto--peligro', function () {
+      CB.offline.olvidarTodo(function () { location.reload(); });
+    }));
+  caja.appendChild(fila);
+  return caja;
+};
+
+CB.adulto.crearSeccionDatos = function (perfil) {
+  var caja = CB.ui.crear('div', 'adulto__caja');
+  caja.appendChild(CB.ui.crear('h2', null, 'Datos'));
+  caja.appendChild(CB.ui.crear('p', null, CB.LEGAL.PRIVACIDAD));
+  caja.appendChild(CB.ui.crear('p', null, CB.LEGAL.LIMITACION));
+
+  var fila = CB.ui.crear('div', 'fila');
+  fila.appendChild(CB.ui.boton('Ver informe imprimible', 'btn-adulto', function () {
+    CB.adulto.imprimirInforme(perfil.id);
+  }));
+  fila.appendChild(CB.ui.boton('Descargar CSV', 'btn-adulto', function () {
+    CB.adulto.descargarCSV(perfil);
+  }));
+  fila.appendChild(CB.ui.boton('Exportar copia (.json)', 'btn-adulto', function () {
+    CB.adulto.descargar(CB.almacen.exportar(perfil),
+      'cubomatica-' + perfil.mote.replace(/\s+/g, '-') + '.json', 'application/json');
+  }));
+  fila.appendChild(CB.ui.boton('Restaurar copia (.json)', 'btn-adulto', function () {
+    CB.adulto.restaurar(caja);
+  }));
+  caja.appendChild(fila);
+
+  var aviso = CB.ui.crear('p', 'texto texto--menor');
+  aviso.id = 'adulto-aviso-datos';
+  aviso.setAttribute('role', 'status');
+  caja.appendChild(aviso);
+  caja.appendChild(CB.ui.boton('Borrar este perfil',
+    'btn-adulto btn-adulto--peligro', function () {
+      CB.adulto.confirmarBorrado(perfil, caja);
+    }));
+  return caja;
+};
+
 CB.adulto.pintar = function () {
   var perfil = CB.perfil;
   var cont = document.getElementById('adulto-contenido');
@@ -12023,236 +10606,30 @@ CB.adulto.pintar = function () {
     cont.appendChild(alerta);
   }
 
-  /* ── Métricas 1-3 ──────────────────────────────────────────────────── */
-  var caja1 = CB.ui.crear('div', 'adulto__caja');
-  caja1.appendChild(CB.ui.crear('h2', null, 'De un vistazo'));
-  CB.adulto.metrica(caja1, 'Tiempo de pantalla hoy',
-    Math.round(m.m1_tiempoHoy / 60) + ' min');
-  CB.adulto.metrica(caja1, 'Expediciones completadas', String(m.m2_partidas));
-  CB.adulto.metrica(caja1, 'Duración media de la partida',
-    Math.round(m.m2_duracionMedia / 60) + ' min ' + (m.m2_duracionMedia % 60) + ' s');
-  CB.adulto.metrica(caja1, 'Aciertos (últimas 10 partidas)',
-    m.m3_precisionTotal == null ? 'sin datos' : Math.round(m.m3_precisionTotal * 100) + ' %');
-  CB.adulto.metrica(caja1, 'Aciertos a la primera',
-    m.m3_precision1er == null ? 'sin datos' : Math.round(m.m3_precision1er * 100) + ' %');
-  caja1.appendChild(CB.ui.crear('p', null,
-    'Lo esperable en 2.º es entre el 80 % y el 90 % de aciertos. Por debajo, el ' +
-    'juego bajará solo la dificultad; por encima, la subirá.'));
-  cont.appendChild(caja1);
+  /* Métricas 1-3 */
+  cont.appendChild(CB.adulto.crearResumen(m));
 
-  /* ── Métrica 4: semáforo ───────────────────────────────────────────── */
-  var caja2 = CB.ui.crear('div', 'adulto__caja');
-  caja2.appendChild(CB.ui.crear('h2', null, 'Por bloques de contenido'));
-  var tabla = CB.ui.crear('table', 'adulto__tabla');
-  var thead = CB.ui.crear('thead');
-  var trh = CB.ui.crear('tr');
-  ['Bloque', 'Situación', 'Preguntas'].forEach(function (t) {
-    trh.appendChild(CB.ui.crear('th', null, t));
-  });
-  thead.appendChild(trh); tabla.appendChild(thead);
-  var tbody = CB.ui.crear('tbody');
-  m.m4_semaforo.forEach(function (s) {
-    var tr = CB.ui.crear('tr');
-    tr.appendChild(CB.ui.crear('td', null, s.bloque));
-    var td = CB.ui.crear('td');
-    var sp = CB.ui.crear('span', 'semaforo',
-      s.precision == null ? '' : (s.precision + ' %'));
-    sp.setAttribute('data-nivel', s.nivel);
-    td.appendChild(sp);
-    tr.appendChild(td);
-    tr.appendChild(CB.ui.crear('td', null, String(s.n)));
-    tbody.appendChild(tr);
-  });
-  tabla.appendChild(tbody);
-  caja2.appendChild(tabla);
-  cont.appendChild(caja2);
+  /* Métrica 4: semáforo */
+  cont.appendChild(CB.adulto.crearTablaBloques(m));
 
-  /* ── Métrica 6: la matriz de los 20 subtipos ───────────────────────── */
-  var caja3 = CB.ui.crear('div', 'adulto__caja');
-  caja3.appendChild(CB.ui.crear('h2', null, 'Problemas de enunciado, por tipo'));
-  caja3.appendChild(CB.ui.crear('p', null,
-    'Dos problemas con los mismos números y la misma operación tienen ' +
-    'dificultades muy distintas según cómo estén contados. Esta tabla es la ' +
-    'información más accionable del panel.'));
-  var t2 = CB.ui.crear('table', 'adulto__tabla matriz-subtipos');
-  var th2 = CB.ui.crear('tr');
-  ['Tipo de problema', 'Intentos', 'Aciertos', 'Tiempo medio'].forEach(function (t) {
-    th2.appendChild(CB.ui.crear('th', null, t));
-  });
-  t2.appendChild(th2);
-  CB.gen.problemas.SUBTIPOS.forEach(function (s) {
-    var p = m.m6_subtipos[s];
-    if (!p || !p.intentos) return;
-    var tr = CB.ui.crear('tr');
-    tr.appendChild(CB.ui.crear('td', null, CB.adulto.NOMBRE_SUBTIPO[s] || s));
-    var td1 = CB.ui.crear('td', 'matriz-subtipos__dato', String(p.intentos)); tr.appendChild(td1);
-    var td2 = CB.ui.crear('td', 'matriz-subtipos__dato',
-      p.aciertos + ' (' + Math.round(p.aciertos / p.intentos * 100) + ' %)');
-    tr.appendChild(td2);
-    tr.appendChild(CB.ui.crear('td', 'matriz-subtipos__dato', Math.round(p.rtMedioMs / 1000) + ' s'));
-    t2.appendChild(tr);
-  });
-  caja3.appendChild(t2);
-  cont.appendChild(caja3);
+  /* Métrica 6: la matriz de los 20 subtipos */
+  cont.appendChild(CB.adulto.crearMatrizProblemas(m));
 
-  /* ── Métrica 7: errores frecuentes con su actividad de 10 minutos ──── */
-  var caja4 = CB.ui.crear('div', 'adulto__caja');
-  caja4.appendChild(CB.ui.crear('h2', null, 'Qué conviene trabajar'));
-  var codigos = Object.keys(m.m7_errores).filter(function (c) {
-    return m.m7_errores[c].vecesDiscriminante >= 2;
-  }).sort(function (a, b) {
-    return m.m7_errores[b].vecesDiscriminante - m.m7_errores[a].vecesDiscriminante;
-  }).slice(0, 3);
+  /* Métrica 7: errores frecuentes con su actividad de 10 minutos */
+  cont.appendChild(CB.adulto.crearRecomendaciones(perfil, m));
 
-  if (!codigos.length) {
-    caja4.appendChild(CB.ui.crear('p', null,
-      'Todavía no hay evidencia suficiente para señalar un error concreto. ' +
-      'Hacen falta al menos dos respuestas que apunten sin ambigüedad al mismo ' +
-      'procedimiento.'));
-  } else {
-    codigos.forEach(function (c) {
-      var rec = CB.datos.RECOMENDACIONES[c];
-      if (!rec) return;
-      caja4.appendChild(CB.ui.crear('h3', null, rec.frase));
-      caja4.appendChild(CB.ui.crear('p', null, '10 minutos: ' + rec.actividad));
-      var ejemplos = (m.m7_errores[c].ejemplos || []).join(' · ');
-      if (ejemplos) caja4.appendChild(CB.ui.crear('p', 'texto texto--menor', 'Ejemplos: ' + ejemplos));
-      caja4.appendChild(CB.ui.boton('Imprimir ficha de refuerzo', 'btn-adulto', function () {
-        CB.adulto.fichaRefuerzo(perfil, c);
-      }));
-    });
-  }
-  cont.appendChild(caja4);
+  /* Métricas 8-10 */
+  cont.appendChild(CB.adulto.crearResumenJuego(m));
 
-  /* ── Métricas 8-10 ─────────────────────────────────────────────────── */
-  var caja5 = CB.ui.crear('div', 'adulto__caja');
-  caja5.appendChild(CB.ui.crear('h2', null, 'Cómo está jugando'));
-  CB.adulto.metrica(caja5, 'Respuestas muy rápidas sin acertar', String(m.m8_azares));
-  caja5.appendChild(CB.ui.crear('p', 'texto texto--menor',
-    'El juego no se lo reprocha nunca: solo deja de puntuar esa pregunta y da ' +
-    'un momento de pausa. Si el número es alto, suele indicar cansancio o que ' +
-    'la dificultad está por encima, no mala intención.'));
-  CB.adulto.metrica(caja5, 'Explicaciones seguidas hasta el final',
-    m.m9_reparaciones == null ? 'sin datos'
-      : Math.round(m.m9_reparaciones * 100) + ' % de ' + m.m9_reparacionesTotal);
-  CB.adulto.metrica(caja5, 'Luces apagadas (últimas 10 partidas)', String(m.lucesApagadas));
-  if (m.m10_animo.length) {
-    var caras = ['me ha costado', 'normal', 'contento'];
-    CB.adulto.metrica(caja5, 'Cómo dice que se ha sentido',
-      m.m10_animo.map(function (a) { return caras[a.cara] || '?'; }).join(', '));
-  }
-  cont.appendChild(caja5);
-
-  /* ── Ajustes ───────────────────────────────────────────────────────── */
+  /* Ajustes */
   cont.appendChild(CB.adulto.cajaAjustes(perfil));
 
-  /* ── Sin conexión ──────────────────────────────────────────────────────
-     SOLO aparece si de verdad se puede: con doble clic desde file:// no hay
-     service worker y la sección no existe. Nada de «esta función no está
-     disponible»: un aviso sobre algo que el usuario no ha pedido es ruido.
+  /* Sin conexión */
+  var seccionOffline = CB.adulto.crearSeccionOffline();
+  if (seccionOffline) cont.appendChild(seccionOffline);
 
-     Y va AQUÍ, en el panel del adulto, detrás de la puerta parental, porque
-     descargar 42 MB en el disco de un aparato escolar es una decisión informada
-     de una persona adulta, no un efecto colateral de darle a jugar. */
-  if (CB.offline && CB.offline.DISPONIBLE) {
-    var cajaSC = CB.ui.crear('div', 'adulto__caja');
-    cajaSC.appendChild(CB.ui.crear('h2', null, 'Sin conexión'));
-    cajaSC.appendChild(CB.ui.crear('p', null,
-      'El juego ya funciona sin internet: no pide nada a la red. Lo único que ' +
-      'no se guarda por su cuenta es la música, porque son 42 MB.'));
-
-    var estadoSC = CB.ui.crear('p', 'texto texto--menor', 'Comprobando…');
-    cajaSC.appendChild(estadoSC);
-    CB.offline.musicaGuardada(function (n) {
-      estadoSC.textContent = n === 0
-        ? 'Ahora mismo no hay ninguna pista guardada.'
-        : 'Guardadas ' + n + ' de 9 pistas.';
-    });
-
-    var filaSC = CB.ui.crear('div', 'fila');
-    var btnBajar = CB.ui.boton('Descargar la música (42 MB)', 'btn-adulto', function () {
-      btnBajar.disabled = true;
-      estadoSC.textContent = 'Descargando… 0 de 9';
-      CB.offline.descargarMusica(
-        function (intentadas, total) {
-          estadoSC.textContent = 'Descargando… ' + intentadas + ' de ' + total;
-        },
-        /* El mensaje distingue los tres finales, porque antes los tres decían
-           «Listo»: terminar sin fallos, terminar con pistas caídas, y no haber
-           podido empezar. Decir «guardadas» cuando no lo están es lo que hace
-           que alguien se lleve la tableta a un sitio sin wifi. */
-        function (r) {
-          btnBajar.disabled = false;
-          var n = r.hechas || 0;
-          if (r.ok) {
-            estadoSC.textContent = 'Listo: las ' + n + ' pistas están guardadas.';
-          } else if (r.fallos) {
-            estadoSC.textContent = 'Guardadas ' + n + ' de 9. ' + r.fallos +
-              (r.fallos === 1 ? ' pista no se ha podido descargar' : ' pistas no se han podido descargar') +
-              '. Comprueba la conexión y vuelve a intentarlo.';
-          } else if (r.motivo === 'cancelado') {
-            estadoSC.textContent = 'Descarga cancelada. Guardadas ' + n + ' de 9.';
-          } else {
-            estadoSC.textContent = 'No se ha podido guardar ninguna pista. Puedes volver a intentarlo.';
-          }
-          CB.a11y.anunciar(estadoSC.textContent);
-        });
-    });
-    filaSC.appendChild(btnBajar);
-
-    /* El botón que un maestro puede pulsar sin saber qué es un service worker
-       cuando algo se queda pegado. Es el remedio contra el peor fallo posible de
-       esta parte: una versión vieja servida desde la caché para siempre. */
-    filaSC.appendChild(CB.ui.boton('Borrar lo guardado y recargar', 'btn-adulto btn-adulto--peligro',
-      function () {
-        CB.offline.olvidarTodo(function () { location.reload(); });
-      }));
-    cajaSC.appendChild(filaSC);
-    cont.appendChild(cajaSC);
-  }
-
-  /* ── Datos ─────────────────────────────────────────────────────────── */
-  var caja7 = CB.ui.crear('div', 'adulto__caja');
-  caja7.appendChild(CB.ui.crear('h2', null, 'Datos'));
-  caja7.appendChild(CB.ui.crear('p', null, CB.LEGAL.PRIVACIDAD));
-  caja7.appendChild(CB.ui.crear('p', null, CB.LEGAL.LIMITACION));
-
-  var fila = CB.ui.crear('div', 'fila');
-  fila.appendChild(CB.ui.boton('Ver informe imprimible', 'btn-adulto', function () {
-    CB.adulto.imprimirInforme(perfil.id);
-  }));
-  fila.appendChild(CB.ui.boton('Descargar CSV', 'btn-adulto', function () {
-    CB.adulto.descargarCSV(perfil);
-  }));
-  fila.appendChild(CB.ui.boton('Exportar copia (.json)', 'btn-adulto', function () {
-    CB.adulto.descargar(CB.almacen.exportar(perfil),
-      'cubomatica-' + perfil.mote.replace(/\s+/g, '-') + '.json', 'application/json');
-  }));
-
-  /* RESTAURAR. Faltaba, y su ausencia dejaba sin efecto la única respuesta que
-     el proyecto da a su propia limitación estructural: el README dice «haz una
-     copia con Exportar al terminar cada trimestre», y esa copia no se podía
-     volver a meter. Exportar sin importar es un botón que promete algo que no
-     cumple. CB.almacen.validarImportado() ya existía, estaba probado y no lo
-     llamaba nadie.
-
-     El fichero lo elige la persona adulta en su propio disco: no hay red, no
-     hay servidor y no se lee nada que no se haya señalado a mano. */
-  fila.appendChild(CB.ui.boton('Restaurar copia (.json)', 'btn-adulto', function () {
-    CB.adulto.restaurar(caja7);
-  }));
-  caja7.appendChild(fila);
-
-  var aviso = CB.ui.crear('p', 'texto texto--menor');
-  aviso.id = 'adulto-aviso-datos';
-  aviso.setAttribute('role', 'status');
-  caja7.appendChild(aviso);
-
-  var borrar = CB.ui.boton('Borrar este perfil', 'btn-adulto btn-adulto--peligro', function () {
-    CB.adulto.confirmarBorrado(perfil, caja7);
-  });
-  caja7.appendChild(borrar);
-  cont.appendChild(caja7);
+  /* Datos */
+  cont.appendChild(CB.adulto.crearSeccionDatos(perfil));
 
   cont.appendChild(CB.ui.boton('◀ Salir', 'btn-bloque', function () {
     /* Sin ternario: las dos ramas decían 'p-portada'. Al panel se entra por la
@@ -12291,7 +10668,7 @@ CB.adulto.NOMBRE_SUBTIPO = {
   IGUALACION_6: 'Igualar · referente, quitar'
 };
 
-/* ── Ajustes pedagógicos (viven en perfil.ajustes, §15.2) ───────────────── */
+/* Ajustes pedagógicos (viven en perfil.ajustes, §15.2) */
 CB.adulto.AJUSTES = [
   { k: 'modoTiempo', t: 'Reloj', tipo: 'opciones',
     ops: [['conCalma', 'Con calma (recomendado)'], ['normal', 'Normal'], ['sinPrisa', 'Sin prisa']] },
@@ -12374,7 +10751,7 @@ CB.adulto.cajaAjustes = function (perfil) {
   return caja;
 };
 
-/* ── Informe imprimible ─────────────────────────────────────────────────── */
+/* Informe imprimible */
 CB.adulto.imprimirInforme = function (perfilId) {
   var perfil = CB.perfil;
   var m = CB.adulto.metricas(perfil);
@@ -12436,7 +10813,7 @@ CB.adulto.imprimirInforme = function (perfilId) {
   if (b) b.onclick = function () { window.print(); };
 };
 
-/* ── Ficha de refuerzo en papel: 10 ítems del tipo exacto que falla ─────── */
+/* Ficha de refuerzo en papel: 10 ítems del tipo exacto que falla */
 CB.adulto.fichaRefuerzo = function (perfil, codigoError) {
   var rec = CB.datos.RECOMENDACIONES[codigoError];
   var err = CB.ERRORES[codigoError];
@@ -12476,7 +10853,7 @@ CB.adulto.fichaRefuerzo = function (perfil, codigoError) {
   if (b) b.onclick = function () { window.print(); };
 };
 
-/* ── CSV ────────────────────────────────────────────────────────────────── */
+/* CSV */
 CB.adulto.descargarCSV = function (perfil) {
   var lineas = ['fecha;itemId;nivel;destreza;beta;D;rt_ms;correcta;valor_dado;flags'];
   (perfil.respuestas || []).forEach(function (r) {
@@ -12508,12 +10885,7 @@ CB.adulto.descargar = function (texto, nombre, tipo) {
 };
 
 /* Borrar exige escribir la palabra BORRAR (§15.8). */
-/* Restaurar un perfil desde un .json exportado.
 
-   Todo lo que entra pasa por CB.almacen.validarImportado(), que es la ÚNICA
-   superficie de ataque del proyecto: recorta a los campos permitidos, obliga a
-   que el mote salga de la lista cerrada de 120, valida el color contra un
-   patrón y acota el tamaño de los arrays. Aquí no se salta ni un paso. */
 CB.adulto.restaurar = function (cont) {
   var aviso = document.getElementById('adulto-aviso-datos');
   function decir(t) {
@@ -12591,22 +10963,7 @@ CB.adulto.confirmarBorrado = function (perfil, cont) {
   cont.appendChild(caja);
 };
 
-/* ============================================================================
-   42-jefes.js — Los 4 jefes, cada uno con una mecánica PROPIA
-   ----------------------------------------------------------------------------
-   NINGÚN JEFE APAGA LUCES (PLAN §12.9). El plan v1 le daba al jefe «armadura de
-   10 bloques y daño 1-3», es decir, capacidad de quitar vidas en el momento de
-   máxima fatiga y máxima expectativa. Un niño que recorre un mundo entero y
-   pierde en el jefe se queda sin la recompensa de cierre: es el punto de
-   abandono clásico.
-
-   Aquí el fallo solo REPARA un bloque de la armadura: el combate se alarga,
-   nunca se pierde. Tope de 20 turnos, pasado el cual el jefe cede igualmente.
-   Vocabulario: «bloques que caen», NUNCA «daño». Sin vocabulario de combate.
-
-   Y cada jefe usa una MECÁNICA DISTINTA, no una lista de preguntas más difíciles
-   (criterio de HECHO de F6).
-   ========================================================================== */
+/* 42-jefes.js — Los 4 jefes, cada uno con una mecánica PROPIA */
 
 var CB = CB || {};
 CB.jefes = CB.jefes || {};
@@ -12657,11 +11014,7 @@ CB.jefes.iniciar = function (mundoId) {
   if (n) n.textContent = mundo.jefe;
   var c = document.getElementById('jefe-criatura');
   if (c) c.textContent = def.icono;
-  /* EL INTRO DEL JEFE, que llevaba escrito desde siempre y no lo leía nadie. Va
-     en #jefe-aviso y NO en #jefe-enunciado: turno() se llama en la línea de
-     abajo y empieza vaciando el enunciado, así que ahí el intro habría durado
-     cero milisegundos. Es la familia E41 con una vuelta de tuerca: la función se
-     llamaba, el dato existía, y lo borraba el paso siguiente. */
+
   var av = document.getElementById('jefe-aviso');
   if (av) {
     av.textContent = (def && def.intro ? def.intro + ' ' : '') +
@@ -12687,9 +11040,9 @@ CB.jefes.pintarArmadura = function () {
   cont.setAttribute('aria-label', 'Quedan ' + e.bloques + ' bloques por caer');
 };
 
-/* ── Un turno, con la mecánica propia de cada jefe ──────────────────────── */
+/* Un turno, con la mecánica propia de cada jefe */
 CB.jefes.turno = function () {
-  var e = CB.jefes.estado, perfil = CB.perfil;
+  var e = CB.jefes.estado;
   if (!e) return;
 
   if (e.bloques <= 0 || e.turno >= CB.jefes.TOPE_TURNOS) {
@@ -12769,22 +11122,7 @@ CB.jefes.prepararRamas = function (e, opc) {
   return objetivo;
 };
 
-/* EL RELLENO TIENE QUE AVANZAR SIEMPRE. La versión anterior calculaba el
-   candidato como `correcta + lista.length` DENTRO del bucle: si ese número ya
-   estaba en la lista no se añadía nada, la longitud no cambiaba, y la siguiente
-   vuelta calculaba exactamente el mismo candidato. Bucle infinito, pestaña
-   colgada, y el niño pierde la partida entera sin un solo error en consola.
-
-   No era teórico ni raro: pasa siempre que un distractor coincide con otro y la
-   lista se queda en tres. Barrido exhaustivo del espacio real de la mecánica
-   «reflejo» de Cristalina: 1,29 % de los turnos, es decir el 22,9 % de los
-   combates de veinte turnos. Y como el rng va sembrado con perfil+mundo+fecha,
-   al niño al que le toca le vuelve a tocar cada vez que lo reintenta ese día.
-
-   Ahora el candidato depende de un contador propio que sube en cada vuelta, con
-   tope explícito además: el desplazamiento es la garantía, el tope es el
-   cinturón. Si aun así no se llegara a cuatro, se sirven las que haya —tres
-   opciones son un turno raro; una pestaña colgada es una partida perdida. */
+/* Bucle infinito, pestaña colgada, y el niño pierde la partida entera sin un solo error en consola. */
 CB.jefes.opciones = function (cont, correcta, distractores) {
   var e = CB.jefes.estado;
   var lista = [{ v: correcta, ok: true }];
@@ -12812,16 +11150,7 @@ CB.jefes.opciones = function (cont, correcta, distractores) {
   });
 };
 
-/* UNA RESPUESTA POR TURNO, igual que en la partida (ver el cerrojo `respondido`
-   de CB.partida.responder y el porqué largo que lleva al lado). Aquí faltaba, y
-   el jefe es donde más se nota: los cuatro botones siguen en pantalla los 900 ms
-   que dura la animación de los bloques y NO se deshabilitan, así que ocho toques
-   rápidos en la opción correcta tiraban los ocho bloques de la armadura y el
-   combate se acababa antes del primer turno. Medido: 5 toques, 5 bloques.
-
-   Y no era solo el atajo. Cada toque encolaba otro setTimeout(turno, 900), de
-   modo que el enunciado se repintaba encima de sí mismo y el contador de turnos
-   avanzaba de cinco en cinco hacia el tope de veinte. */
+/* Y no era solo el atajo. */
 CB.jefes.responder = function (correcto) {
   var e = CB.jefes.estado;
   if (!e || e.respondido) return;
@@ -12853,7 +11182,9 @@ CB.jefes.responder = function (correcto) {
   /* La espera la manda la tabla del festejo, no un 900 copiado a mano: sin esto
      el cartel de la mitad seguiría en pantalla mientras aparece la pregunta
      nueva, porque el turno se repinta exactamente a los 900 ms. */
-  setTimeout(function () { CB.jefes.turno(); },
+  setTimeout(function () {
+    if (CB.jefes.estado === e) CB.jefes.turno();
+  },
              mitad ? CB.ui.festejo.espera('superacion', 900) : 900);
 };
 
@@ -12881,14 +11212,7 @@ CB.jefes.terminar = function (porBloques) {
   /* La cinta más larga del juego, y puede permitírselo: se ve cuatro veces en
      toda la vida de un perfil, una por mundo. Trae su propio sonido. */
   CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
-  /* LA ÚNICA MÚSICA DEL JUEGO QUE NO MANDA EL BUS, y está anotada como excepción
-     en la tabla de 07-musica.js y en docs/decisiones.md. terminar() NO cambia de
-     pantalla: pinta la victoria encima de p-jefe, así que sin esta línea la
-     música seguiría diciendo que hay peligro en el único instante que el juego se
-     reserva para pararlo todo — cuatro veces en la vida de un perfil.
-
-     Va DESPUÉS de la cinta, que dispara su propio sfx('cofre'). El siguiente
-     emit del bus —«Volver al mapa»— repone el tema solo. */
+  /* El siguiente emit del bus —«Volver al mapa»— repone el tema solo. */
   CB.musica.poner('victoria');
   CB.almacen.guardarPerfil(perfil);
 
@@ -12904,18 +11228,7 @@ CB.jefes.terminar = function (porBloques) {
   CB.jefes.estado = null;
 };
 
-/* ============================================================================
-   43-mapa-destrezas.js — La Cantera: el mapa de vetas del niño
-   ----------------------------------------------------------------------------
-   POR DEFECTO SOLO EL MUNDO ACTUAL (PLAN §20, mejora 1). Presentar 92 vetas de
-   golpe a un niño de 7 años produce parálisis, no competencia percibida: la
-   misma pantalla que pretende sostener su motivación acabaría documentando su
-   incompetencia. «Ver toda la cantera» es una vista secundaria.
-
-   Es una recompensa INFORMATIVA en lugar de numérica: el niño ve crecer su
-   conocimiento, no su marcador. Es el antídoto contra el efecto de
-   sobrejustificación.
-   ========================================================================== */
+/* 43-mapa-destrezas.js — La Cantera: el mapa de vetas del niño */
 
 var CB = CB || {};
 CB.mapaDestrezas = CB.mapaDestrezas || {};
@@ -13008,7 +11321,7 @@ CB.mapaDestrezas.pintar = function () {
   }
 };
 
-/* ── El mapa de mundos ──────────────────────────────────────────────────── */
+/* El mapa de mundos */
 CB.mapaDestrezas.pintarMundos = function () {
   var perfil = CB.perfil;
   if (!perfil) return;
@@ -13018,10 +11331,7 @@ CB.mapaDestrezas.pintarMundos = function () {
 
   var saludo = document.getElementById('mapa-saludo');
   if (saludo) {
-    /* conMusgo, NO vencidosHoy: el mismo predicado que pinta el 🌿 de la Cantera.
-       Con vencidosHoy el saludo prometía vetas con musgo que no existían en
-       ningún sitio. CB.partida sigue usando vencidosHoy para elegir qué servir:
-       son dos preguntas distintas y solo una se le enseña al niño. */
+    /* CB.partida sigue usando vencidosHoy para elegir qué servir: son dos preguntas distintas y solo una se le enseña al niño. */
     var conMusgo = CB.memoria.conMusgo(perfil, CB.util.hoyISO());
     saludo.textContent = conMusgo.length
       ? ('Hay ' + conMusgo.length + (conMusgo.length === 1 ? ' veta' : ' vetas') +
@@ -13076,11 +11386,7 @@ CB.mapaDestrezas.pintarMundos = function () {
           function () { CB.jefes.iniciar(m.id); }));
       }
 
-      /* jefeSinFallos SE ESCRIBÍA Y NO LO LEÍA NADIE en todo el proyecto. Se lee
-         aquí, y solo aquí: es un RECUERDO retrospectivo, no una apuesta. Durante
-         el combate no se enseña, porque un distintivo que se puede perder es la
-         racha que se pierde, patrón oscuro que este proyecto declara prohibido —y
-         que además contradice la regla del jefe: aquí no se puede perder nada. */
+      /* Se lee aquí, y solo aquí: es un RECUERDO retrospectivo, no una apuesta. */
       if (estado.jefeSinFallos) {
         tarjeta.appendChild(CB.ui.crear('span', 'distintivo', 'cerrado sin un fallo'));
       }
@@ -13092,14 +11398,7 @@ CB.mapaDestrezas.pintarMundos = function () {
   });
 };
 
-/* ============================================================================
-   44-casa.js — El álbum de cromos y el Diccionario de Bloques
-   ----------------------------------------------------------------------------
-   Colección NO MONETARIA (PLAN §21.4): no hay moneda comprable, no hay cofres
-   opacos —la lista de premios se ve antes de abrir— y no hay nada que se pierda
-   por no volver. Las gemas solo decoran; nunca compran ventaja ni desbloquean
-   contenido de aprendizaje.
-   ========================================================================== */
+/* 44-casa.js — El álbum de cromos y el Diccionario de Bloques */
 
 var CB = CB || {};
 CB.casa = CB.casa || {};
@@ -13157,7 +11456,7 @@ CB.casa.pintar = function () {
   });
 };
 
-/* ── Diccionario de Bloques ─────────────────────────────────────────────── */
+/* Diccionario de Bloques */
 CB.casa.pintarGlosario = function () {
   var perfil = CB.perfil;
   if (!perfil) return;
@@ -13195,34 +11494,7 @@ CB.casa.pintarGlosario = function () {
   });
 };
 
-/* ============================================================================
-   45-offline.js — el service worker, y la guarda que impide que estorbe
-   ----------------------------------------------------------------------------
-   LO PRIMERO, PORQUE ES LO QUE MÁS SE MALENTIENDE: este juego YA funciona sin
-   internet. Cero fetch, cero CDN, cero fuentes remotas; las tipografías se piden
-   con local() y si no están, cae en la pila del sistema. Abrir dist/index.html
-   con doble clic y jugar una expedición entera no toca la red ni una vez.
-
-   Entonces, ¿para qué un service worker? Para tres cosas concretas, y ninguna es
-   «que funcione sin conexión»:
-
-     1. Que siga funcionando cuando el SERVIDOR se apaga. El caso real es un
-        colegio que sirve el juego desde un portátil que se apaga a las 14:00.
-     2. Arrancar sin idas y venidas de revalidación.
-     3. La música sin conexión, bajo control explícito de un adulto: 42 MB que
-        nadie debe descargar por accidente.
-
-   UN SERVICE WORKER NO SE REGISTRA EN file://. Exige contexto seguro, y el modo
-   de uso principal de este proyecto es el doble clic. Así que aquí lo importante
-   no es registrarlo: es que NO ESTORBE cuando no se puede.
-
-   Y puede fallar de DOS maneras distintas según el motor: unos lanzan un
-   SecurityError síncrono y otros devuelven una promesa rechazada. Hacen falta
-   las dos protecciones. Una promesa rechazada sin manejador imprime «Uncaught
-   (in promise)» en la consola: no rompe nada, pero ensucia una consola que hoy
-   está limpia — y una consola sucia es lo primero que un maestro lee como «está
-   roto».
-   ========================================================================== */
+/* 45-offline.js — el service worker, y la guarda que impide que estorbe */
 
 var CB = CB || {};
 CB.offline = CB.offline || {};
@@ -13246,22 +11518,8 @@ CB.offline.registrar = function () {
   return true;
 };
 
-/* ── La música, bajo control de un adulto ──────────────────────────────────
-   NUNCA cache.addAll(). Es atómico: una sola pista que falle —un corte de wifi,
-   un 404— tira las nueve. Y si estuviera dentro del install del worker, ese
-   fallo impediría instalar también el armazón de 300 KB: se perdería todo por
-   querer ganar de más.
-
-   Se piden de una en una, con progreso y con cancelación, porque son 42 MB en
-   el disco de un aparato escolar y quien decide eso es una persona adulta. */
-/* LAS RUTAS NO SE ESCRIBEN AQUÍ. Salen de CB.musica, que es su dueño único:
-   `PISTAS[x].fichero` y `RAIZ`. Escribirlas otra vez sería una cuarta copia de
-   la misma lista —ya hay tres: dist/audio/, la tabla de 07-musica.js y
-   CREDITOS.txt— y la cuarta es la peligrosa, porque es la única que nadie mira
-   al renombrar un fichero: la música seguiría sonando con normalidad y solo
-   fallaría la descarga sin conexión, meses después y en otro sitio.
-   Se leen en el momento de llamar, no al definir, para no atarse al orden de
-   carga: 45 va después de 07, pero depender de eso no aporta nada. */
+/* La música, bajo control de un adulto */
+/* Escribirlas otra vez sería una cuarta copia de la misma lista —ya hay tres: dist/audio/, la tabla de 07-musica.js y CREDITOS.txt— y la cuarta es la peligrosa, porque es la única que nadie mira al renombrar un fichero: la música seguiría… */
 CB.offline.urlesPistas = function () {
   var m = CB.musica;
   if (!m || !m.PISTAS) return [];
@@ -13276,13 +11534,7 @@ CB.offline.urlesPistas = function () {
 CB.offline.CACHE_MUSICA = 'cubomatica-musica';
 CB.offline._cancelar = false;
 
-/* CONTAR LO QUE FALLA, NO SOLO LO QUE TERMINA. Antes esta función avanzaba el
-   contador igual en el camino de éxito y en el de error y acababa informando
-   siempre `ok: true`: con las nueve pistas caídas —un 404 tras renombrar un
-   fichero, o el servidor apagado a media descarga— el panel decía «Listo: las 9
-   pistas están guardadas» y no había ninguna. Es el peor reparto posible del
-   error, porque el adulto se lleva la tableta al sitio sin wifi creyendo que la
-   música va dentro. Ahora `ok` significa lo que dice: las nueve, guardadas. */
+/* CONTAR LO QUE FALLA, NO SOLO LO QUE TERMINA. */
 CB.offline.descargarMusica = function (alAvanzar, alTerminar) {
   var urles = CB.offline.urlesPistas();
   if (!CB.offline.DISPONIBLE || typeof caches === 'undefined' || !urles.length) {
@@ -13361,25 +11613,12 @@ CB.offline.musicaGuardada = function (alSaber) {
   }, function () { alSaber(0); });
 };
 
-/* ============================================================================
-   99-arranque.js — ÚNICO DOMContentLoaded del proyecto
-   ----------------------------------------------------------------------------
-   Orden: texturas → sprites → ajustes del aparato → perfil → poda → pantalla.
-
-   NO HAY PANTALLA DE «¿POR DÓNDE VAS EN CLASE?» (PLAN §7.1). La primera pantalla
-   que veía un niño de 7 años le pedía declarar su trimestre. Un niño de 2.º no
-   sabe qué es un trimestre, no sabe en cuál está y no puede leer la pregunta con
-   fluidez el día 1. Era el punto exacto en el que el juego dejaba de ser
-   autónomo y exigía un adulto al lado, contradiciendo el criterio de «se abre
-   con doble clic».
-
-   El trimestre se DEDUCE de cuatro ítems jugables y del calendario escolar.
-   ========================================================================== */
+/* 99-arranque.js — ÚNICO DOMContentLoaded del proyecto */
 
 var CB = CB || {};
 CB.perfil = null;
 
-/* ── Manejadores globales de error ──────────────────────────────────────── */
+/* Manejadores globales de error */
 window.onerror = function (mensaje, fuente, linea, col, error) {
   try { CB.pantallas.fallo(error || { message: mensaje }); } catch (e) { }
   return false;
@@ -13388,7 +11627,7 @@ window.addEventListener('unhandledrejection', function (ev) {
   try { CB.pantallas.fallo(ev.reason || { message: 'promesa rechazada' }); } catch (e) { }
 });
 
-/* ── Calibración jugable: 4 ítems, sin cronómetro, sin luces, sin nota ──── */
+/* Calibración jugable: 4 ítems, sin cronómetro, sin luces, sin nota */
 CB.calibracion = {
   ITEMS: [
     { consigna: 'Toca el número más grande.', opciones: [34, 43], respuesta: 43,
@@ -13436,16 +11675,6 @@ CB.calibracion.servir = function () {
   CB.voz.leer(it.consigna);
   CB.a11y.anunciar(it.consigna);
 
-  /* UNA RESPUESTA POR PREGUNTA. Es el mismo cerrojo que CB.partida.responder, y
-     faltaba justo donde más caro sale: los botones siguen vivos los 1.300 ms que
-     dura el mensaje, así que machacar el botón —que es exactamente lo que hace
-     un niño de 7 años cuando la respuesta le sale sola— contaba un acierto por
-     toque. Medido: cinco toques en la primera pregunta dan CINCO aciertos sobre
-     cuatro ítems.
-
-     Y esos cuatro aciertos son lo único que decide `trimestreDeducido`, es decir
-     el techo de números de todo el juego a partir de ahí. Un niño que empieza en
-     el primer trimestre acababa colocado en el tercero por pulsar dos veces. */
   var contestada = false;
 
   function responder(valor) {
@@ -13457,7 +11686,10 @@ CB.calibracion.servir = function () {
     CB.ui.mensaje(ok ? '¡Muy bien!' : 'Vamos con la siguiente.', ok ? 'acierto' : 'animo');
     CB.audio.sfx(ok ? 'acierto' : 'picar');
     CB.calibracion.indice++;
+    var indiceEsperado = CB.calibracion.indice;
     setTimeout(function () {
+      if (CB.pantallas.actual !== 'p-calibracion' ||
+          CB.calibracion.indice !== indiceEsperado) return;
       CB.ui.ocultarMensaje();
       CB.calibracion.servir();
     }, 1300);
@@ -13495,12 +11727,6 @@ CB.calibracion.terminar = function () {
 
   CB.almacen.guardarPerfil(perfil);
 
-  /* Y decir que se ha acabado. Antes las cuatro preguntas terminaban en
-     silencio: contestabas la última y aparecías en un mapa, sin que nadie te
-     dijera que aquello era la preparación ni que el juego empieza ahora. Quien
-     lo probó lo dijo así: «empiezas con una demo y no avisa que es una demo».
-     Una prueba que no anuncia que termina no se distingue de una partida que se
-     ha roto. */
   var cierre = '¡Ya está! Ya sabemos por dónde empezar. Ahora sí empieza el ' +
                'juego: con reloj, con luces y con gemas. Puedes parar cuando ' +
                'quieras con Pausa.';
@@ -13510,30 +11736,15 @@ CB.calibracion.terminar = function () {
   CB.a11y.anunciar(cierre);
   CB.voz.leer(cierre);
 
-  /* Y SE EMPIEZA A JUGAR, que es lo que la frase acaba de prometer. Antes esto
-     llevaba a p-mapa: la frase decía literalmente «ahora sí empieza el juego» y
-     aparecía un menú con tres tarjetas bloqueadas y una jugable. Es el mismo
-     fallo que E21 un escalón más adelante, y con una asimetría que lo remata:
-     JUGAR costaba dos toques hasta el primer ítem y CANTERA TRANQUILA, uno.
-
-     Incondicional y sin riesgo: terminar() corre UNA vez por perfil —lo protege
-     perfil.calibrado— y en ese instante M1 es el único mundo abierto, así que no
-     se le quita ninguna decisión a nadie.
-
-     Y VA DESPUÉS del guardarPerfil de arriba, no antes: iniciar() acaba llamando
-     a servirItem(), que lee perfil.trimestreDeducido, y esa deducción se escribe
-     unas líneas más arriba. Adelantarlo serviría el primer ítem con el trimestre
-     por defecto en vez del recién calibrado — un fallo silencioso: la partida
-     arranca igual, solo que con la dificultad equivocada.
-
-     iniciar() navega solo; no hace falta ir() delante. */
+  /* Adelantarlo serviría el primer ítem con el trimestre por defecto en vez del recién calibrado — un fallo silencioso: la partida arranca igual, solo que con la dificultad equivocada. */
   setTimeout(function () {
+    if (CB.pantallas.actual !== 'p-calibracion' || CB.perfil !== perfil) return;
     CB.ui.ocultarMensaje();
     CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   }, 3400);
 };
 
-/* ── Perfiles ───────────────────────────────────────────────────────────── */
+/* Perfiles */
 CB.perfiles = {};
 
 CB.perfiles.pintar = function () {
@@ -13598,10 +11809,7 @@ CB.perfiles.activar = function (id) {
   var p = CB.almacen.leerPerfil(id);
   if (!p) return;
   if (p.error) {
-    /* Se queda EN LA LISTA DE PERFILES, no se va a la pantalla de error. Aquí
-       hay algo que hacer —elegir otro minero o crear uno nuevo— y allí no hay
-       nada: «algo ha ido mal» con un botón de volver al mapa es un callejón.
-       El aviso va en la propia lista, encima de las tarjetas. */
+
     CB.a11y.anunciar(p.mensaje);
     CB.pantallas.ir('p-perfiles');
     var lista = document.getElementById('lista-perfiles');
@@ -13625,17 +11833,13 @@ CB.perfiles.activar = function (id) {
   CB.pantallas.ir('p-portada');
 };
 
-/* ── Ajustes visibles para el niño ──────────────────────────────────────── */
+/* Ajustes visibles para el niño */
 CB.ajustesNino = function (props) {
   var cont = document.getElementById('lista-ajustes');
   if (!cont) return;
   CB.ui.vaciar(cont);
   var perfil = CB.perfil;
 
-  /* Pulsar «Pausa» lleva aquí, y aquí ponía «Ajustes» en grande con la salida
-     al final de la lista. Un niño que pausa no ha venido a configurar nada:
-     ha venido a parar un momento, y necesita ver antes que nada cómo volver.
-     `desdePausa` ya se pasaba desde CB.partida.pausar() y no lo usaba nadie. */
   var enPausa = !!(props && props.desdePausa) ||
                 !!(CB.partida.estado && CB.partida.estado.pausada);
   var titulo = document.getElementById('ajustes-titulo');
@@ -13658,11 +11862,7 @@ CB.ajustesNino = function (props) {
     b.textContent = s ? 'No' : 'Sí';
   });
 
-  /* La música tiene su propio nivel, aparte del de los efectos, y llega hasta
-     el silencio total en un solo toque. No es un capricho: hay evidencia en
-     las dos direcciones sobre si la música de fondo ayuda o estorba cuando la
-     carga cognitiva es alta, y resolver problemas de enunciado con 7 años lo
-     es. Quien no la quiera tiene que poder quitarla sin buscarla. */
+  /* La música tiene su propio nivel, aparte del de los efectos, y llega hasta el silencio total en un solo toque. */
   fila('Música', CB.musica.NIVELES[CB.musica.nivelActual()].etiqueta, function (b) {
     var i = (CB.musica.nivelActual() + 1) % CB.musica.NIVELES.length;
     CB.musica.fijarNivel(i);
@@ -13705,7 +11905,7 @@ CB.ajustesNino = function (props) {
   }
 };
 
-/* ── Créditos ───────────────────────────────────────────────────────────── */
+/* Créditos */
 /* Dónde suena cada pista, dicho como lo diría un niño. */
 CB.DONDE_SUENA = {
   temaPrincipal: 'el tema del juego',
@@ -13751,13 +11951,10 @@ CB.creditos = function () {
   }
 };
 
-/* ── Enganches de pantalla ──────────────────────────────────────────────── */
+/* Enganches de pantalla */
 CB.pantallas.alEntrar['p-mapa'] = function () {
   CB.mapaDestrezas.pintarMundos();
-  /* Con un solo mundo abierto, el foco va al único botón que hace algo. Quien
-     navega con teclado recorría tres tarjetas bloqueadas antes de llegar a él.
-     ENFOCAR NO ES NAVEGAR: el contrato de que un alEntrar pinta y no navega
-     (E1) sigue intacto. */
+  /* Con un solo mundo abierto, el foco va al único botón que hace algo. */
   var abiertos = CB.MUNDOS.filter(function (m) {
     return CB.perfil && CB.perfil.mundos[m.id] && CB.perfil.mundos[m.id].desbloqueado;
   });
@@ -13779,22 +11976,15 @@ CB.pantallas.alEntrar['p-creditos'] = function () { CB.creditos(); };
    partida, cambio de pantalla) hay que matar sus temporizadores. */
 CB.pantallas.alSalir['p-reparacion'] = function () { CB.ui.limpiarReparacion(); };
 
-/* Y al abandonar la partida por cualquier vía hay que matar la cuenta atrás.
-   Sin esto, el intervalo del reloj sigue vivo en la tarjeta de reparación, en
-   el descanso y en el mapa: invisible, porque el HUD está oculto, pero
-   gastando y —peor— soltando «Hurry up!» encima de otra pantalla. */
 CB.pantallas.alSalir['p-partida'] = function () { CB.ui.reloj.parar(); };
 
-/* ── Arranque ───────────────────────────────────────────────────────────── */
+/* Arranque */
 CB.arranque = function () {
   var t0 = CB.util.ahora();
 
   CB.texturas.generarTodas();
   CB.sprites.precalentar();
-  /* Aquí se llamaba a CB.sprites.generarDinero(), que componía las siete piezas
-     en SVG y las publicaba como --pieza-*. Desde 1.20.0 las doce piezas son
-     fotografías declaradas en el propio CSS, así que el arranque no compone
-     nada: llegan como llega la hoja de estilos. */
+
   CB.ui.iniciarParticulas();
 
   var ap = CB.almacen.ajustesDispositivo();
@@ -13901,19 +12091,7 @@ CB.arranque = function () {
     }
   });
 
-  /* ── Volver de una recarga sin perder la partida ──────────────────────────
-     `pagehide` guarda la partida en curso, también cuando la recarga la provoca
-     otro (Live Server al guardar un fichero, un F5 sin querer, iOS reciclando
-     la pestaña). Lo que faltaba era la vuelta: se aterrizaba en la portada y
-     había que pulsar JUGAR, con lo que una recarga a media pregunta parecía que
-     el juego se había reiniciado solo.
-
-     La ventana es corta A PROPÓSITO. Con un minuto, lo único que cabe es una
-     recarga: nadie cierra el juego y vuelve a abrirlo en menos de eso. Pasado
-     ese minuto se aterriza en la portada como siempre y JUGAR sigue ofreciendo
-     reanudar durante 24 h, que es la conducta de toda la vida. Sin el límite,
-     un niño que abre el juego por la mañana se encontraría metido de golpe en
-     la expedición de ayer sin haber tocado nada. */
+  /* Volver de una recarga sin perder la partida */
   if (!CB.perfil) CB.pantallas.ir('p-perfiles');
   else if (CB.arranque.esRecarga(CB.perfil, Date.now()) &&
            CB.partida.hayPartidaGuardada(CB.perfil)) {
@@ -13926,22 +12104,9 @@ CB.arranque = function () {
   return CB.arranqueMs;
 };
 
-/* Ventana corta A PROPÓSITO: en un minuto lo único que cabe es una recarga.
-   Pasado ese minuto se aterriza en la portada y JUGAR sigue ofreciendo reanudar
-   durante 24 h, que es la conducta de siempre. Sin el límite, un niño que abre
-   el juego por la mañana se encontraría metido de golpe en la expedición de
-   ayer sin haber tocado nada. */
 CB.arranque.MS_RECARGA = 60000;
 
-/* ── El botón de la portada dice lo que va a pasar ──────────────────────────
-   «JUGAR» prometía una partida y llevaba a cuatro preguntas de colocación sin
-   reloj, sin luces y sin puntos. La colocación es necesaria y no debe parecer
-   un examen —por eso no tiene cronómetro— pero eso no justifica anunciarla como
-   una partida: quien lo probó lo describió como «muy muy muy confuso», y la
-   confusión no estaba en el flujo sino en el rótulo.
-
-   Devuelve TEXTO, no navega: quien decide a dónde se va sigue siendo el
-   manejador del clic. */
+/* El botón de la portada dice lo que va a pasar */
 CB.arranque.rotuloJugar = function (perfil) {
   if (!perfil || !perfil.calibrado) return 'EMPEZAR';
   if (CB.partida.hayPartidaGuardada(perfil)) return 'SEGUIR JUGANDO';
@@ -13972,37 +12137,7 @@ CB.arranque.esRecarga = function (perfil, ahoraMs) {
   return (ahoraMs - g.guardadaTs) < CB.arranque.MS_RECARGA;
 };
 
-/* ── UN GESTO, UN SONIDO ──────────────────────────────────────────────────────
-   El clic de «pulsar» se pide AL FINAL del gesto y solo si el gesto ha sido
-   mudo. La regla estaba escrita desde el primer día —«un clic que se añade
-   encima de un sonido que ya dice algo no informa, tapa»— pero se aplicaba con
-   una lista de tres excepciones escrita a mano, y la lista se quedó corta el
-   mismo día que se escribió: la tecla del teclado numérico ya trae su «picar» y
-   el ⌫ su «toc», así que cada cifra escrita sonaba DOS veces. Es otra vez el
-   fallo de familia de este proyecto: una regla buena aplicada en tres sitios de
-   cinco.
-
-   Así que no se enumeran los que callan: se mira si ha sonado algo. CB.audio
-   cuenta las peticiones, aquí se apunta el contador antes del gesto y se
-   compara después. Cualquier componente que gane voz propia mañana queda
-   cubierto sin tocar esta lista, porque ya no hay lista.
-
-   EL «DESPUÉS» ES UN setTimeout(0), y no hay forma de evitarlo: en captura
-   todavía no ha sonado nada, y en burbuja bastaría un stopPropagation() de
-   cualquier manejador para dejar mudo ese botón concreto sin que nada fallara.
-   El temporizador conserva la captura —que es lo que da inmunidad— y aun así
-   decide al final. El precio es un retraso de un fotograma como mucho, que en un
-   sonido de 35 ms no se oye; a cambio, el orden queda bien: primero lo que
-   significa algo, y el clic solo si no había nada que significar.
-
-   Queda UNA excepción, la única que el contador no puede ver, porque su sonido
-   llega en OTRO evento: el botón deshabilitado. Durante los 800 ms de
-   construcción el toque prematuro ya tiene su «toc» de madera en `pointerdown`,
-   que además dice lo contrario —«aún no»—, y taparlo con el «sí» sería
-   exactamente perder la distinción que los dos sonidos existen para hacer.
-
-   No hace falta comprobar el ajuste de silencio: CB.audio.sfx ya lo mira, y
-   repetirlo aquí sería la segunda copia de una regla que tiene dueño. */
+/* UN GESTO, UN SONIDO */
 CB.arranque.clicDiferido = function (antes) {
   setTimeout(function () {
     if (CB.audio.emitidos !== antes) return;      // el gesto ya ha hablado
@@ -14010,45 +12145,14 @@ CB.arranque.clicDiferido = function (antes) {
   }, 0);
 };
 
-/* CUALQUIER GESTO ABRE EL AUDIO, no solo JUGAR. El contexto de Web Audio nace
-   suspendido y solo un gesto del usuario lo despierta, y hasta ahora los dos
-   únicos sitios que lo despertaban eran los botones JUGAR y «partida tranquila».
-   Es decir: quien empezaba tocando «Ajustes», «Perfiles» o el panel del adulto
-   —o quien navegaba con el teclado— no oía NADA hasta llegar a la portada, con
-   lo que la promesa de que todo botón suena era falsa justo en los primeros
-   toques de la sesión, que son los que enseñan que el juego responde.
-
-   Va aquí, dentro del manejador, y no en clicDiferido: el temporizador ya está
-   fuera del gesto y para el navegador dejaría de contar como activación. Y se
-   llama siempre, no solo la primera vez, porque iniciar() también reanuda un
-   contexto que el navegador haya suspendido por su cuenta. Es lo mismo que hace
-   CB.musica.iniciar() con reintentar(), por el mismo motivo y desde 1.7.0.
-
-   UN EVENTO SINTÉTICO NO DESPIERTA NADA. El navegador solo abre el audio con un
-   gesto de verdad, así que llamar a iniciar() desde un dispatchEvent no puede
-   funcionar: deja un contexto suspendido que nadie va a reanudar. Y de paso
-   mantiene muda la página de pruebas, que dispara veintitantos clics de mentira
-   y no tiene por qué ponerse a pitar. */
+/* CUALQUIER GESTO ABRE EL AUDIO, no solo JUGAR. */
 CB.arranque.despertarAudio = function (ev) {
   if (ev && ev.isTrusted === false) return false;
   try { CB.audio.iniciar(); } catch (e) { }
   return true;
 };
 
-/* UN SOLO OYENTE, en el documento y en fase de captura. Hay botones en las
-   diecisiete pantallas y la mitad los crea el JS en tiempo de ejecución —el
-   teclado, las opciones, las monedas, los cromos, los ajustes—, así que
-   engancharlos uno a uno sería una lista que hay que acordarse de mantener.
-   Delegar cubre también los que todavía no existen.
-
-   ESTÁ FUERA DEL DOMContentLoaded, y eso es lo que la hace comprobable: el
-   arranque devuelve pronto cuando no hay #btn-jugar —así es como las páginas de
-   prueba evitan echar a andar un juego—, de modo que un oyente registrado ahí
-   dentro no existiría nunca en la suite. Con la función aparte, el guardián
-   ejecuta EL MISMO código de registro que el juego, y no una imitación.
-
-   Mismo cerrojo por atributo que CB.componentes.conectarToc(), y por el mismo
-   motivo: llamarla dos veces dejaría dos oyentes y el clic sonaría doble. */
+/* UN SOLO OYENTE, en el documento y en fase de captura. */
 CB.arranque.conectarSonidoBotones = function (raiz) {
   if (!raiz) return false;
   var marca = raiz.documentElement || raiz;
@@ -14066,32 +12170,7 @@ CB.arranque.conectarSonidoBotones = function (raiz) {
   return true;
 };
 
-/* ── Y LAS TECLAS TAMBIÉN ─────────────────────────────────────────────────────
-   Se puede jugar una partida entera solo con el teclado —es criterio de HECHO de
-   F8, no una comodidad—, y esa partida se jugaba en un silencio que la del dedo
-   ya no tiene. Con el mapa de PLAN §16.5 delante: las cifras del teclado
-   numérico sí sonaban («picar»), porque el sonido lo pone el componente; pero
-   Enter, Escape, las flechas que mueven el foco por la rejilla, el Tab, la L de
-   leer y la P de pista no sonaban nunca, y fuera de las tres pantallas de juego
-   NINGUNA tecla sonaba, porque el manejador de 06-a11y.js devuelve pronto.
-
-   La regla es la misma de arriba —toda tecla suena una vez— y por eso comparte
-   el contador. Lo que cambia son los cuatro casos que NO son un gesto sobre el
-   juego:
-
-   · la autorepetición. Un dedo apoyado en el 7 dispara treinta teclas por
-     segundo: eso no es pulsar treinta veces, y sonaría a ametralladora.
-   · los modificadores solos y los atajos del navegador. Shift no hace nada por
-     su cuenta —y sonaría dos veces en cada mayúscula— y Ctrl+R es del navegador,
-     no del juego.
-   · escribir en un campo. El único que hay es el de la puerta parental, y ahí la
-     confirmación de que la tecla ha entrado es el propio carácter, que se ve. Un
-     clic por letra es ruido, no información.
-   · Enter y Espacio sobre algo activable. El navegador convierte esa tecla en un
-     clic de verdad, así que el oyente de arriba ya se encarga; sin esta salida
-     sonaría dos veces. Con Espacio no vale fiarse del contador: el clic no llega
-     hasta que se SUELTA la tecla, mucho después de que el temporizador haya
-     decidido. */
+/* Y LAS TECLAS TAMBIÉN */
 CB.arranque.TECLAS_MUDAS = ['Shift', 'Control', 'Alt', 'AltGraph', 'Meta',
   'CapsLock', 'NumLock', 'ScrollLock', 'ContextMenu', 'Dead', 'Unidentified'];
 
@@ -14134,12 +12213,6 @@ document.addEventListener('DOMContentLoaded', function () {
      partida: monta su propio banco de pruebas sobre los mismos módulos. */
   if (!document.getElementById('btn-jugar')) return;
 
-  /* El service worker se registra AQUI, detras de la guarda de arriba, y no es
-     un detalle de colocacion: si pruebas.html registrara uno, cachearia la
-     propia suite y el siguiente cambio de codigo se serviria desde cache. El
-     sintoma seria «las pruebas no son deterministas», que ejecutor.js ya
-     identifica como la conclusion mas cara posible.
-     En file:// no hace nada y no dice nada: CB.offline.DISPONIBLE es false. */
   try { CB.offline.registrar(); } catch (eSW) { }
 
   try {

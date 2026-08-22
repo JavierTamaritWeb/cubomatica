@@ -1,29 +1,9 @@
-/* ============================================================================
-   vocabulario.js — Lista blanca de los enunciados y los 48 términos del
-                    Diccionario de Bloques
-   ----------------------------------------------------------------------------
-   SOBRE LOS 48 TÉRMINOS (PLAN §6.4, cita corregida): el criterio de evaluación
-   6.1 del primer ciclo dice literalmente «Reconocer lenguaje matemático sencillo
-   presente en la vida cotidiana, adquiriendo vocabulario específico básico». NO
-   enumera términos ni contiene lista alguna. Por tanto:
-
-     «Diccionario de Bloques: 48 términos de un glosario PROPIO del proyecto,
-      seleccionado para dar cobertura al criterio de evaluación 6.1 del
-      RD 157/2022 (1.er ciclo). La cifra 48 y la selección son decisiones de este
-      proyecto, no una enumeración oficial.»
-
-   SOBRE LA LISTA BLANCA (§8.3): se construye con los sustantivos concretos de
-   los 60 objetos contables, los 40 nombres propios, los verbos de ganar y de
-   perder, los 48 términos del Diccionario y los conectores del español básico.
-   Se declara literalmente como «lista blanca propia del proyecto, pendiente de
-   revisión por un maestro de primer ciclo», NUNCA como «validada por corpus»:
-   no se dispone de un corpus de frecuencia léxica infantil citable.
-   ========================================================================== */
+/* vocabulario.js — Lista blanca de los enunciados y los 48 términos del */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};
 
-/* ── Los 48 términos del Diccionario de Bloques (6 por nivel × 8 niveles) ── */
+/* Los 48 términos del Diccionario de Bloques (6 por nivel × 8 niveles) */
 CB.datos.GLOSARIO = [
   /* V1 — Las palabras de la suma */
   { t: 'sumando',    n: 'V1', d: 'Cada uno de los números que se juntan en una suma.' },
@@ -90,7 +70,7 @@ CB.datos.GLOSARIO = [
   { t: 'cuántos',    n: 'V8', d: 'La palabra con la que se pregunta la cantidad.' }
 ];
 
-/* ── Conectores y palabras funcionales del español básico ────────────────── */
+/* Conectores y palabras funcionales del español básico */
 CB.datos.FUNCIONALES = [
   'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas',
   'de', 'del', 'a', 'al', 'en', 'con', 'sin', 'por', 'para', 'sobre', 'hasta',
@@ -110,7 +90,7 @@ CB.datos.FUNCIONALES = [
   'ninguno', 'ninguna', 'juntos', 'juntas', 'iguales', 'mismo'
 ];
 
-/* ── Construcción de la lista blanca ─────────────────────────────────────── */
+/* Construcción de la lista blanca */
 CB.datos.LISTA_BLANCA = (function () {
   var set = {}, i, j, o, partes;
 

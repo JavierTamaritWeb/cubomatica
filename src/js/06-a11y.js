@@ -1,16 +1,4 @@
-/* ============================================================================
-   06-a11y.js — Accesibilidad: región viva, foco y mapa de teclado
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado (§14.4).
-
-   CRITERIO DE HECHO DE F8: se completa una partida entera SOLO CON TECLADO y con
-   el sonido silenciado, en cada uno de los 7 formatos de respuesta.
-
-   El manejador de teclado comprueba `CB.partida.bloqueado` COMO PRIMERA LÍNEA:
-   durante los 800 ms de construcción del ítem, el teclado tiene que estar tan
-   bloqueado como los botones, o el bloqueo anti-azar sería puramente decorativo
-   para quien juega con teclado (§3.5).
-   ========================================================================== */
+/* 06-a11y.js — Accesibilidad: región viva, foco y mapa de teclado */
 
 var CB = CB || {};
 CB.a11y = CB.a11y || {};
@@ -27,16 +15,7 @@ CB.a11y.anunciar = function (texto) {
   r.textContent = t;
 };
 
-/* ── La SEGUNDA región viva, y por qué hacen falta dos ──────────────────────
-   Había una sola, `polite`, y por ella pasaba todo: «has ganado 3 gemas», «muy
-   bien», «se ha apagado una luz» y «te quedan 5 segundos». Una región `polite`
-   se anuncia cuando el lector termina lo que estaba diciendo, y respetando el
-   orden de llegada. Con la cuenta atrás corriendo, eso significa que el aviso
-   urgente se lee DESPUÉS de la felicitación — es decir, tarde.
-
-   `role="alert"` interrumpe. Se usa solo para lo que caduca: el reloj y el aviso
-   de prisa. Todo lo demás sigue en la región educada, porque un lector que
-   interrumpe cada tres segundos es inutilizable. */
+/* La SEGUNDA región viva, y por qué hacen falta dos */
 CB.a11y.ultimaUrgencia = '';
 
 CB.a11y.urgente = function (texto) {
@@ -60,15 +39,7 @@ CB.a11y.primerEnfocable = function (contenedor) {
   );
 };
 
-/* ── Mapa de teclado (PLAN §16.5) ──────────────────────────────────────────
-   0-9      escribe cifra (tecladoBloques) / elige opción 1-4 (opciones4)
-   Enter    confirma
-   Retroceso borra la última cifra
-   Espacio  activa el elemento con foco
-   Flechas  mueven el foco por la rejilla
-   L        leer en voz alta        P  pista
-   Escape   pausa (en partida) o volver
-   ────────────────────────────────────────────────────────────────────────── */
+/* Mapa de teclado (PLAN §16.5) */
 CB.a11y.MAPA = {
   leer: ['l', 'L'],
   pista: ['p', 'P'],
@@ -130,7 +101,7 @@ CB.a11y.conectarFlechas = function (contenedor, columnas) {
   });
 };
 
-/* ── Ajustes de accesibilidad sobre la raíz del documento ───────────────── */
+/* Ajustes de accesibilidad sobre la raíz del documento */
 CB.a11y.aplicarAjustes = function (ajustes, ajustesAparato) {
   var raiz = document.documentElement;
   ajustes = ajustes || {};

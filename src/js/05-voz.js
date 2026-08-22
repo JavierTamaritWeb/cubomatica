@@ -1,16 +1,4 @@
-/* ============================================================================
-   05-voz.js — Lectura en voz alta y lectura guiada
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado (§14.4).
-
-   SIN VOZ ES-* EL BOTÓN NO DESAPARECE, HACE LECTURA GUIADA (PLAN §16.4): en un
-   Chromebook escolar sin paquete de voz en español, un botón de altavoz que no
-   hace nada es peor que no tenerlo. La lectura guiada resalta palabra a palabra
-   a 1 s/palabra, que es exactamente el ritmo de un lector de 2.º, y funciona en
-   cualquier dispositivo porque no depende de nada externo.
-
-   El cronómetro de puntuación NO CORRE durante la lectura guiada (§11.4).
-   ========================================================================== */
+/* 05-voz.js — Lectura en voz alta y lectura guiada */
 
 var CB = CB || {};
 CB.voz = CB.voz || {};

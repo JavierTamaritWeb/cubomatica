@@ -1,5 +1,4 @@
-/* casos-mensajes.js — Las 10 comprobaciones M1-M10 de PLAN §14.7
-   Requisitos 4 y 5 del usuario: enhorabuena variada y ánimo al fallar. */
+/* casos-mensajes.js — Las 10 comprobaciones M1-M10 de PLAN §14.7 */
 
 CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
   var t = CB.pruebas;
@@ -51,11 +50,6 @@ CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
   t.ok(conPista.length >= 20,
     'M4-bis · ' + conPista.length + ' de los 48 mensajes de ánimo señalan el procedimiento');
 
-  /* E53 · LOS GRITOS PASAN POR EL MISMO FILTRO. Son texto que el niño lee, igual
-     que los 132 mensajes, y el hecho de que sean cortos y vivan en otra lista no
-     los exime de nada. Un criterio aplicado en un sitio de dos es exactamente la
-     tercera familia de fallo de este proyecto (E44: el cerrojo de una respuesta
-     por intento estaba en la partida y faltaba en el jefe y en la calibración). */
   var G = M.GRITOS;
   t.ok(G && G.acierto.length >= 20,
     'E53 · hay gritos suficientes para que no se repitan en una sesión',
@@ -120,11 +114,6 @@ CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
     'M7 · en 120 aciertos, ningún mensaje se repite dentro de su categoría antes del 21.º',
     detalle);
 
-  /* M8 — 40 minutos de juego sin ver dos veces el mismo mensaje.
-     Se mide POR CATEGORÍA, que es donde vive la bolsa: exigir que no se repita
-     dentro de una ventana GLOBAL de 21 sería un criterio distinto del diseñado
-     y fallaría contra código correcto. A un ítem cada 15 s, 40 minutos son 160
-     ítems. */
   var perfil2 = CB.pruebas.perfilNuevo();
   var rng2 = CB.util.mulberry32(31415);
   var vistosPorCat = { A: [], B: [], C: [], D: [] };
@@ -134,12 +123,12 @@ CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
     var cat2 = CB.mensajes.categoriaAcierto(ctx2);
     vistosPorCat[cat2].push(CB.mensajes.acierto(ctx2).split('!')[0]);
   }
-  var repEnCiclo = 0, detalle2 = '';
+  var repEnCiclo = 0;
   Object.keys(vistosPorCat).forEach(function (c) {
     var lista = vistosPorCat[c], ciclo = {}, j;
     for (j = 0; j < lista.length; j++) {
       if (j % 21 === 0) ciclo = {};                 // arranca una bolsa nueva
-      if (ciclo[lista[j]]) { repEnCiclo++; detalle2 = c + ': ' + lista[j]; }
+      if (ciclo[lista[j]]) repEnCiclo++;
       ciclo[lista[j]] = 1;
     }
   });

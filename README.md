@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 1.23.2**
+**Versión 1.23.3**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.
@@ -143,7 +143,7 @@ moneda de 2 € es literalmente lo que pide el currículo y un cuadrado de color
 un 2 dentro no enseña eso.
 
 **Peso: unos 43 MB**, de los cuales 42 MB son música. Lo que el navegador
-descarga al arrancar son **368 KB**. Cabe de sobra en cualquier memoria USB, pero
+descarga al arrancar son **349 KB**. Cabe de sobra en cualquier memoria USB, pero
 **no cabe en un correo**: para repartirlo en un centro, usa un USB o una carpeta
 compartida.
 
@@ -159,13 +159,14 @@ internet y no se envía ningún dato a ninguna parte.
 
 ## Para desarrollar
 
-Hace falta [Node 20 o superior](https://nodejs.org).
+Hace falta [Node 20.19 o superior](https://nodejs.org).
 
 ```bash
 npm install          # una vez
 npm run build        # compila src/ → dist/
 npm run dev          # build + servidores + vigilancia y recarga
-npm run entregar     # build + auditoría: LA PUERTA DE ENTREGA
+npm run estilo       # ESLint para JS + stylelint para SCSS
+npm run entregar     # estilo + build + auditoría: LA PUERTA DE ENTREGA
 npm run autoprueba   # ¿ve la auditoría lo que dice que ve?
 ```
 
@@ -184,6 +185,10 @@ Los parciales ya no llevan números en el nombre: el orden de la cascada lo
 declara únicamente `manifiesto.json`. Las variables se consumen mediante el
 namespace `v` y los mixins mediante `m`, desde `abstracts/_variables.scss` y
 `abstracts/_mixins.scss` respectivamente.
+
+En JavaScript se documentan contratos, invariantes y decisiones no evidentes.
+El historial de errores y las explicaciones extensas pertenecen a
+`CHANGELOG.md` y `docs/decisiones.md`, no a los ficheros ejecutables.
 
 Desde 1.7.0 el proyecto tiene compilación. Hasta 1.6.0 no la tenía, y la razón de
 que ahora sí es concreta: SCSS con BEM, minificado, responsive y caché sin
@@ -207,7 +212,7 @@ La suite son **dos páginas**, y hay que mirar las dos:
   ponen rojas.
 
 Las dos necesitan `npm run build` antes; sin él lo dicen en vez de quedarse en
-blanco. Base actual: **837 comprobaciones, 0 fallos**.
+blanco. Base actual: **854 comprobaciones, 0 fallos**.
 
 Sírvelas con la caché desactivada. Una recarga normal de Chrome reutiliza tanto
 el bundle como los `casos-*.js`, y entonces el verde que sale mide el código de

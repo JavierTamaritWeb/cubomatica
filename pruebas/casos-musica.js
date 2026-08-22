@@ -1,26 +1,14 @@
-/* casos-musica.js — Las tablas de música y la aritmética del volumen
-   ----------------------------------------------------------------------------
-   Aquí NO se reproduce nada. Un test que llama a play() en una página abierta
-   por un script de pruebas no comprueba que la música suene: comprueba que el
-   navegador rechaza el autoarranque, que es otra cosa. Lo que sí se puede
-   comprobar sin sonido es todo lo que se rompe en silencio: una pantalla sin
-   pista asignada, una pista sin crédito, una ganancia que se sale de rango.
-
-   Que las nueve pistas se oyen de verdad está verificado a mano en el
-   navegador; lo que no se puede automatizar se declara, no se maquilla. */
+/* casos-musica.js — Las tablas de música y la aritmética del volumen */
 
 CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   var t = CB.pruebas;
   var claves = Object.keys(CB.musica.PISTAS);
 
-  /* ── La suite no puede hacer ruido ──────────────────────────────────────
-     pruebas.html carga los mismos 44 scripts que el juego. Si algún día
-     alguien mueve CB.musica.iniciar() fuera de CB.arranque(), esta página
-     empezaría a sonar sola en mitad de los tests. */
+  /* La suite no puede hacer ruido */
   t.ok(CB.musica.iniciada === false,
     'la suite de pruebas NO arranca la música');
 
-  /* ── Las 9 pistas ───────────────────────────────────────────────────── */
+  /* Las 9 pistas */
   t.igual(claves.length, 9, 'hay 9 pistas declaradas');
 
   var ficheros = claves.map(function (k) { return CB.musica.PISTAS[k].fichero; });
@@ -32,7 +20,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     'todo nombre de fichero es neutro: minúsculas, guiones y .mp3',
     malFichero.join(', '));
 
-  /* ── Rangos de cada pista ───────────────────────────────────────────── */
+  /* Rangos de cada pista */
   var malRango = claves.filter(function (k) {
     var p = CB.musica.PISTAS[k];
     return !(p.gan > 0) || !(p.entra >= 0) || !(p.sale > p.entra + 10);
@@ -41,13 +29,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     'toda pista tiene ganancia > 0 y al menos 10 s entre entra y sale',
     malRango.join(', '));
 
-  /* ── LA invariante del volumen ──────────────────────────────────────────
-     Las pistas están normalizadas con una ganancia por pista, y algunas de
-     esas ganancias pasan de 1 (mundo-rio venía 4 dB por debajo del resto).
-     Si el nivel más alto del ajuste multiplicado por la ganancia mayor se
-     pasa de 1, el clamp recorta justo la pista que necesitaba el empujón: la
-     normalización se cae en silencio y vuelve el desnivel que venía a quitar.
-     Esto es lo que fija el 0,62 del nivel «Alta», y no un gusto. */
+  /* LA invariante del volumen */
   var ganMax = 0, cualMax = null;
   claves.forEach(function (k) {
     if (CB.musica.PISTAS[k].gan > ganMax) { ganMax = CB.musica.PISTAS[k].gan; cualMax = k; }
@@ -57,7 +39,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     'el nivel más alto por la ganancia mayor no se pasa de 1: la normalización sobrevive',
     cualMax + ': ' + nivelMax + ' × ' + ganMax + ' = ' + (nivelMax * ganMax).toFixed(3));
 
-  /* ── Los cuatro niveles ─────────────────────────────────────────────── */
+  /* Los cuatro niveles */
   t.igual(CB.musica.NIVELES.length, 4, 'el ajuste tiene 4 niveles');
   t.igual(CB.musica.NIVELES[0].valor, 0, 'el primer nivel es silencio total');
   var creciente = true, i;
@@ -75,10 +57,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   CB.musica.base = antes;
   t.ok(idaVuelta, 'fijarNivel() y nivelActual() son inversas para los 4 niveles');
 
-  /* ── Las 17 pantallas ───────────────────────────────────────────────────
-     Toda pantalla tiene que estar en la tabla, aunque sea con null. Sin esto,
-     añadir una pantalla y olvidar la música no da error: deja sonando la
-     música de la pantalla anterior, que es un fallo que nadie reporta. */
+  /* Las 17 pantallas */
   var sinEntrada = CB.pantallas.IDS.filter(function (id) {
     return !(id in CB.musica.PANTALLAS);
   });
@@ -105,7 +84,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.igual(CB.musica.PANTALLAS['p-error'], null,
     'la pantalla de error va en silencio');
 
-  /* ── Un mundo, una música ───────────────────────────────────────────── */
+  /* Un mundo, una música */
   var sinBioma = CB.MUNDOS.filter(function (m) {
     var clave = CB.musica.POR_BIOMA[m.bioma];
     return !clave || !CB.musica.PISTAS[clave];
@@ -120,16 +99,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     'dos mundos nunca comparten música: cambiar de mundo se oye',
     repesMundo.join(', '));
 
-  /* claveDePantalla resuelve el mundo en curso.
-
-     EL ESTADO SE MONTA CON LA FORMA QUE ESCRIBE iniciar(), no con la que le
-     venga bien al test. Esta comprobación llevaba desde 1.0.0 construyendo
-     `{mundoId: m.id}`, que es una forma que CB.partida.iniciar() no produce
-     jamás —el estado guarda `mundo`, el objeto— y que estaba copiada de la
-     línea de 07-musica.js que tenía el fallo. Test e implementación se daban la
-     razón el uno al otro mientras tres de las cuatro pistas de mundo no sonaban
-     nunca. El guardián E42 de casos-regresiones.js ata la forma al iniciar()
-     de verdad; aquí basta con no volver a inventársela. */
+  /* Test e implementación se daban la razón el uno al otro mientras tres de las cuatro pistas de mundo no sonaban nunca. */
   var estadoPrevio = CB.partida.estado;
   var bien = CB.MUNDOS.every(function (m) {
     CB.partida.estado = { mundo: CB.catalogo.getMundo(m.id) };
@@ -143,9 +113,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.ok(!!CB.musica.PISTAS[sinPartida],
     'claveDePantalla() sin partida en curso devuelve una pista válida, no null');
 
-  /* ── Créditos ───────────────────────────────────────────────────────────
-     Música de otras personas sin crédito no se puede entregar. auditar.sh lo
-     comprueba en el fichero de texto; esto lo comprueba en lo que VE el niño. */
+  /* Créditos */
   t.igual(CB.musica.CREDITOS.length, 9, 'hay 9 créditos, uno por pista');
 
   var clavesCred = CB.musica.CREDITOS.map(function (c) { return c.clave; }).sort();
@@ -167,10 +135,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.ok(CB.musica.LICENCIA.indexOf('Pixabay Content License') !== -1,
     'la licencia se cita por su nombre');
 
-  /* ── El fundido del bucle ───────────────────────────────────────────────
-     Pura aritmética: se le pasa un elemento falso. Cinco de las nueve pistas
-     acaban en silencio, así que el bucle NO puede ir hasta el final del
-     fichero: tiene que fundir y volver antes. */
+  /* El fundido del bucle */
   var p = { entra: 0, sale: 100 };
   function f(seg) { return CB.musica.factorBucle({ duration: 120, currentTime: seg }, p); }
 
@@ -192,9 +157,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.ok(CB.musica.factorBucle({ duration: 40, currentTime: 40 }, p) <= 0.001,
     'si el fichero dura menos de lo declarado, manda la duración real');
 
-  /* ── El silencio del aparato manda sobre la música ─────────────────────
-     Silenciar el juego y seguir oyendo la música sería el fallo más visible
-     que puede tener esto. */
+  /* El silencio del aparato manda sobre la música */
   var silPrevio = CB.audio.silenciado;
   var basePrevia = CB.musica.base;
   CB.musica.base = 0.4;
@@ -205,11 +168,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   CB.audio.silenciado = silPrevio;
   CB.musica.base = basePrevia;
 
-  /* ── Aparatos que NO dejan fijar el volumen (iPhone y iPad) ─────────────
-     En iOS, HTMLMediaElement.volume es de solo lectura. Todo el módulo se
-     apoyaba en él, así que en un iPad —objetivo declarado— silenciar el juego
-     NO silenciaba la música. Sin volumen solo hay dos estados, y hay que
-     comprobar que se llega a los dos. */
+  /* Aparatos que NO dejan fijar el volumen (iPhone y iPad) */
   var ajustePrevio = CB.musica.volumenAjustable;
   var basePrev2 = CB.musica.base;
   var agachPrev = CB.musica.agachada;
@@ -236,13 +195,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.ok(CB.musica.detectarVolumen(elNormal) === true,
     'y un aparato normal se detecta como ajustable');
 
-  /* ── La visibilidad de la pestaña se FIJA a mano ─────────────────────────
-     aplicarVolumenes() solo reanuda si `!document.hidden`: no se arranca música
-     en una pestaña de fondo, y eso está bien. Pero estas comprobaciones lo
-     leían del navegador de verdad, así que daban rojo sobre código correcto en
-     cuanto la ventana perdía el foco — que es justo lo que pasa cuando alguien
-     lanza la suite y se va a mirar otra cosa. Una prueba cuyo resultado depende
-     del foco es peor que no tenerla. */
+  /* La visibilidad de la pestaña se FIJA a mano */
   var descHidden = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
   function fijarVisible(v) {
     Object.defineProperty(document, 'hidden', {
@@ -309,7 +262,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   CB.musica.agachada = agachPrev;
   CB.audio.silenciado = silPrevio;
 
-  /* ── El agachado de la voz ──────────────────────────────────────────── */
+  /* El agachado de la voz */
   t.ok(CB.musica.AGACHADO > 0 && CB.musica.AGACHADO < 0.5,
     'la música se agacha por debajo de la mitad mientras habla la voz, pero no calla del todo');
   CB.voz.agacharMusica(true);
@@ -318,16 +271,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
   t.ok(CB.musica.agachada === false, 'cancelar la voz devuelve la música a su nivel');
 });
 
-/* ── E79 · La victoria del jefe suena a victoria ─────────────────────────────
-   CB.jefes.terminar() NO cambia de pantalla: pinta la victoria encima de p-jefe.
-   Como la música la manda el bus y el bus solo habla al cambiar de pantalla,
-   seguía sonando el tema del jefe en el único instante que el juego se reserva
-   para pararlo todo — cuatro veces en la vida de un perfil.
-
-   EL ESTADO SE CONSTRUYE CON CB.jefes.iniciar() DE VERDAD. Este fichero ya se
-   equivocó una vez fabricando a mano la forma del estado, y estuvo años de
-   acuerdo con el fallo que tenía que denunciar mientras tres de los cuatro temas
-   de mundo no sonaban nunca. No se vuelve a construir nada a mano aquí. */
+/* E79 · La victoria del jefe suena a victoria */
 CB.pruebas.suite('E79 · al ganar al jefe, la música cambia a victoria', function () {
   var t = CB.pruebas;
   var perfilPrevio = CB.perfil;
@@ -363,16 +307,7 @@ CB.pruebas.suite('E79 · al ganar al jefe, la música cambia a victoria', functi
   if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
 });
 
-/* ── E82 · La pista del mundo no vuelve al segundo cero ──────────────────────
-   Cada reparación y cada descanso ponen 'calma'. Al volver, poner() soltaba el
-   canal y creaba elemento nuevo colocándolo en su punto de entrada. Con un fallo
-   de cada dos llevando a reparación y un descanso cada 6-8 ítems, son cinco o
-   seis idas y venidas por partida: de nueve pistas normalizadas y con puntos de
-   bucle medidos, el niño oía siempre los mismos treinta primeros segundos.
-
-   SE AFIRMA LA RECUPERACIÓN, NO EL GUARDADO. Comprobar que
-   CB.musica.posiciones['mundoPradera'] existe pasaría en verde con el fallo
-   entero dentro: lo que importa es que poner() la USE. */
+/* E82 · La pista del mundo no vuelve al segundo cero */
 CB.pruebas.suite('E82 · la música del mundo retoma donde se quedó', function () {
   var t = CB.pruebas;
   if (!t.ok(!!CB.musica.posiciones, 'E82 · existe la tabla de posiciones')) return;

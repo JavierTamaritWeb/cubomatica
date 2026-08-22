@@ -1,22 +1,9 @@
-/* ============================================================================
-   99-arranque.js — ÚNICO DOMContentLoaded del proyecto
-   ----------------------------------------------------------------------------
-   Orden: texturas → sprites → ajustes del aparato → perfil → poda → pantalla.
-
-   NO HAY PANTALLA DE «¿POR DÓNDE VAS EN CLASE?» (PLAN §7.1). La primera pantalla
-   que veía un niño de 7 años le pedía declarar su trimestre. Un niño de 2.º no
-   sabe qué es un trimestre, no sabe en cuál está y no puede leer la pregunta con
-   fluidez el día 1. Era el punto exacto en el que el juego dejaba de ser
-   autónomo y exigía un adulto al lado, contradiciendo el criterio de «se abre
-   con doble clic».
-
-   El trimestre se DEDUCE de cuatro ítems jugables y del calendario escolar.
-   ========================================================================== */
+/* 99-arranque.js — ÚNICO DOMContentLoaded del proyecto */
 
 var CB = CB || {};
 CB.perfil = null;
 
-/* ── Manejadores globales de error ──────────────────────────────────────── */
+/* Manejadores globales de error */
 window.onerror = function (mensaje, fuente, linea, col, error) {
   try { CB.pantallas.fallo(error || { message: mensaje }); } catch (e) { }
   return false;
@@ -25,7 +12,7 @@ window.addEventListener('unhandledrejection', function (ev) {
   try { CB.pantallas.fallo(ev.reason || { message: 'promesa rechazada' }); } catch (e) { }
 });
 
-/* ── Calibración jugable: 4 ítems, sin cronómetro, sin luces, sin nota ──── */
+/* Calibración jugable: 4 ítems, sin cronómetro, sin luces, sin nota */
 CB.calibracion = {
   ITEMS: [
     { consigna: 'Toca el número más grande.', opciones: [34, 43], respuesta: 43,
@@ -73,16 +60,6 @@ CB.calibracion.servir = function () {
   CB.voz.leer(it.consigna);
   CB.a11y.anunciar(it.consigna);
 
-  /* UNA RESPUESTA POR PREGUNTA. Es el mismo cerrojo que CB.partida.responder, y
-     faltaba justo donde más caro sale: los botones siguen vivos los 1.300 ms que
-     dura el mensaje, así que machacar el botón —que es exactamente lo que hace
-     un niño de 7 años cuando la respuesta le sale sola— contaba un acierto por
-     toque. Medido: cinco toques en la primera pregunta dan CINCO aciertos sobre
-     cuatro ítems.
-
-     Y esos cuatro aciertos son lo único que decide `trimestreDeducido`, es decir
-     el techo de números de todo el juego a partir de ahí. Un niño que empieza en
-     el primer trimestre acababa colocado en el tercero por pulsar dos veces. */
   var contestada = false;
 
   function responder(valor) {
@@ -94,7 +71,10 @@ CB.calibracion.servir = function () {
     CB.ui.mensaje(ok ? '¡Muy bien!' : 'Vamos con la siguiente.', ok ? 'acierto' : 'animo');
     CB.audio.sfx(ok ? 'acierto' : 'picar');
     CB.calibracion.indice++;
+    var indiceEsperado = CB.calibracion.indice;
     setTimeout(function () {
+      if (CB.pantallas.actual !== 'p-calibracion' ||
+          CB.calibracion.indice !== indiceEsperado) return;
       CB.ui.ocultarMensaje();
       CB.calibracion.servir();
     }, 1300);
@@ -132,12 +112,6 @@ CB.calibracion.terminar = function () {
 
   CB.almacen.guardarPerfil(perfil);
 
-  /* Y decir que se ha acabado. Antes las cuatro preguntas terminaban en
-     silencio: contestabas la última y aparecías en un mapa, sin que nadie te
-     dijera que aquello era la preparación ni que el juego empieza ahora. Quien
-     lo probó lo dijo así: «empiezas con una demo y no avisa que es una demo».
-     Una prueba que no anuncia que termina no se distingue de una partida que se
-     ha roto. */
   var cierre = '¡Ya está! Ya sabemos por dónde empezar. Ahora sí empieza el ' +
                'juego: con reloj, con luces y con gemas. Puedes parar cuando ' +
                'quieras con Pausa.';
@@ -147,30 +121,15 @@ CB.calibracion.terminar = function () {
   CB.a11y.anunciar(cierre);
   CB.voz.leer(cierre);
 
-  /* Y SE EMPIEZA A JUGAR, que es lo que la frase acaba de prometer. Antes esto
-     llevaba a p-mapa: la frase decía literalmente «ahora sí empieza el juego» y
-     aparecía un menú con tres tarjetas bloqueadas y una jugable. Es el mismo
-     fallo que E21 un escalón más adelante, y con una asimetría que lo remata:
-     JUGAR costaba dos toques hasta el primer ítem y CANTERA TRANQUILA, uno.
-
-     Incondicional y sin riesgo: terminar() corre UNA vez por perfil —lo protege
-     perfil.calibrado— y en ese instante M1 es el único mundo abierto, así que no
-     se le quita ninguna decisión a nadie.
-
-     Y VA DESPUÉS del guardarPerfil de arriba, no antes: iniciar() acaba llamando
-     a servirItem(), que lee perfil.trimestreDeducido, y esa deducción se escribe
-     unas líneas más arriba. Adelantarlo serviría el primer ítem con el trimestre
-     por defecto en vez del recién calibrado — un fallo silencioso: la partida
-     arranca igual, solo que con la dificultad equivocada.
-
-     iniciar() navega solo; no hace falta ir() delante. */
+  /* Adelantarlo serviría el primer ítem con el trimestre por defecto en vez del recién calibrado — un fallo silencioso: la partida arranca igual, solo que con la dificultad equivocada. */
   setTimeout(function () {
+    if (CB.pantallas.actual !== 'p-calibracion' || CB.perfil !== perfil) return;
     CB.ui.ocultarMensaje();
     CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
   }, 3400);
 };
 
-/* ── Perfiles ───────────────────────────────────────────────────────────── */
+/* Perfiles */
 CB.perfiles = {};
 
 CB.perfiles.pintar = function () {
@@ -235,10 +194,7 @@ CB.perfiles.activar = function (id) {
   var p = CB.almacen.leerPerfil(id);
   if (!p) return;
   if (p.error) {
-    /* Se queda EN LA LISTA DE PERFILES, no se va a la pantalla de error. Aquí
-       hay algo que hacer —elegir otro minero o crear uno nuevo— y allí no hay
-       nada: «algo ha ido mal» con un botón de volver al mapa es un callejón.
-       El aviso va en la propia lista, encima de las tarjetas. */
+
     CB.a11y.anunciar(p.mensaje);
     CB.pantallas.ir('p-perfiles');
     var lista = document.getElementById('lista-perfiles');
@@ -262,17 +218,13 @@ CB.perfiles.activar = function (id) {
   CB.pantallas.ir('p-portada');
 };
 
-/* ── Ajustes visibles para el niño ──────────────────────────────────────── */
+/* Ajustes visibles para el niño */
 CB.ajustesNino = function (props) {
   var cont = document.getElementById('lista-ajustes');
   if (!cont) return;
   CB.ui.vaciar(cont);
   var perfil = CB.perfil;
 
-  /* Pulsar «Pausa» lleva aquí, y aquí ponía «Ajustes» en grande con la salida
-     al final de la lista. Un niño que pausa no ha venido a configurar nada:
-     ha venido a parar un momento, y necesita ver antes que nada cómo volver.
-     `desdePausa` ya se pasaba desde CB.partida.pausar() y no lo usaba nadie. */
   var enPausa = !!(props && props.desdePausa) ||
                 !!(CB.partida.estado && CB.partida.estado.pausada);
   var titulo = document.getElementById('ajustes-titulo');
@@ -295,11 +247,7 @@ CB.ajustesNino = function (props) {
     b.textContent = s ? 'No' : 'Sí';
   });
 
-  /* La música tiene su propio nivel, aparte del de los efectos, y llega hasta
-     el silencio total en un solo toque. No es un capricho: hay evidencia en
-     las dos direcciones sobre si la música de fondo ayuda o estorba cuando la
-     carga cognitiva es alta, y resolver problemas de enunciado con 7 años lo
-     es. Quien no la quiera tiene que poder quitarla sin buscarla. */
+  /* La música tiene su propio nivel, aparte del de los efectos, y llega hasta el silencio total en un solo toque. */
   fila('Música', CB.musica.NIVELES[CB.musica.nivelActual()].etiqueta, function (b) {
     var i = (CB.musica.nivelActual() + 1) % CB.musica.NIVELES.length;
     CB.musica.fijarNivel(i);
@@ -342,7 +290,7 @@ CB.ajustesNino = function (props) {
   }
 };
 
-/* ── Créditos ───────────────────────────────────────────────────────────── */
+/* Créditos */
 /* Dónde suena cada pista, dicho como lo diría un niño. */
 CB.DONDE_SUENA = {
   temaPrincipal: 'el tema del juego',
@@ -388,13 +336,10 @@ CB.creditos = function () {
   }
 };
 
-/* ── Enganches de pantalla ──────────────────────────────────────────────── */
+/* Enganches de pantalla */
 CB.pantallas.alEntrar['p-mapa'] = function () {
   CB.mapaDestrezas.pintarMundos();
-  /* Con un solo mundo abierto, el foco va al único botón que hace algo. Quien
-     navega con teclado recorría tres tarjetas bloqueadas antes de llegar a él.
-     ENFOCAR NO ES NAVEGAR: el contrato de que un alEntrar pinta y no navega
-     (E1) sigue intacto. */
+  /* Con un solo mundo abierto, el foco va al único botón que hace algo. */
   var abiertos = CB.MUNDOS.filter(function (m) {
     return CB.perfil && CB.perfil.mundos[m.id] && CB.perfil.mundos[m.id].desbloqueado;
   });
@@ -416,22 +361,15 @@ CB.pantallas.alEntrar['p-creditos'] = function () { CB.creditos(); };
    partida, cambio de pantalla) hay que matar sus temporizadores. */
 CB.pantallas.alSalir['p-reparacion'] = function () { CB.ui.limpiarReparacion(); };
 
-/* Y al abandonar la partida por cualquier vía hay que matar la cuenta atrás.
-   Sin esto, el intervalo del reloj sigue vivo en la tarjeta de reparación, en
-   el descanso y en el mapa: invisible, porque el HUD está oculto, pero
-   gastando y —peor— soltando «Hurry up!» encima de otra pantalla. */
 CB.pantallas.alSalir['p-partida'] = function () { CB.ui.reloj.parar(); };
 
-/* ── Arranque ───────────────────────────────────────────────────────────── */
+/* Arranque */
 CB.arranque = function () {
   var t0 = CB.util.ahora();
 
   CB.texturas.generarTodas();
   CB.sprites.precalentar();
-  /* Aquí se llamaba a CB.sprites.generarDinero(), que componía las siete piezas
-     en SVG y las publicaba como --pieza-*. Desde 1.20.0 las doce piezas son
-     fotografías declaradas en el propio CSS, así que el arranque no compone
-     nada: llegan como llega la hoja de estilos. */
+
   CB.ui.iniciarParticulas();
 
   var ap = CB.almacen.ajustesDispositivo();
@@ -538,19 +476,7 @@ CB.arranque = function () {
     }
   });
 
-  /* ── Volver de una recarga sin perder la partida ──────────────────────────
-     `pagehide` guarda la partida en curso, también cuando la recarga la provoca
-     otro (Live Server al guardar un fichero, un F5 sin querer, iOS reciclando
-     la pestaña). Lo que faltaba era la vuelta: se aterrizaba en la portada y
-     había que pulsar JUGAR, con lo que una recarga a media pregunta parecía que
-     el juego se había reiniciado solo.
-
-     La ventana es corta A PROPÓSITO. Con un minuto, lo único que cabe es una
-     recarga: nadie cierra el juego y vuelve a abrirlo en menos de eso. Pasado
-     ese minuto se aterriza en la portada como siempre y JUGAR sigue ofreciendo
-     reanudar durante 24 h, que es la conducta de toda la vida. Sin el límite,
-     un niño que abre el juego por la mañana se encontraría metido de golpe en
-     la expedición de ayer sin haber tocado nada. */
+  /* Volver de una recarga sin perder la partida */
   if (!CB.perfil) CB.pantallas.ir('p-perfiles');
   else if (CB.arranque.esRecarga(CB.perfil, Date.now()) &&
            CB.partida.hayPartidaGuardada(CB.perfil)) {
@@ -563,22 +489,9 @@ CB.arranque = function () {
   return CB.arranqueMs;
 };
 
-/* Ventana corta A PROPÓSITO: en un minuto lo único que cabe es una recarga.
-   Pasado ese minuto se aterriza en la portada y JUGAR sigue ofreciendo reanudar
-   durante 24 h, que es la conducta de siempre. Sin el límite, un niño que abre
-   el juego por la mañana se encontraría metido de golpe en la expedición de
-   ayer sin haber tocado nada. */
 CB.arranque.MS_RECARGA = 60000;
 
-/* ── El botón de la portada dice lo que va a pasar ──────────────────────────
-   «JUGAR» prometía una partida y llevaba a cuatro preguntas de colocación sin
-   reloj, sin luces y sin puntos. La colocación es necesaria y no debe parecer
-   un examen —por eso no tiene cronómetro— pero eso no justifica anunciarla como
-   una partida: quien lo probó lo describió como «muy muy muy confuso», y la
-   confusión no estaba en el flujo sino en el rótulo.
-
-   Devuelve TEXTO, no navega: quien decide a dónde se va sigue siendo el
-   manejador del clic. */
+/* El botón de la portada dice lo que va a pasar */
 CB.arranque.rotuloJugar = function (perfil) {
   if (!perfil || !perfil.calibrado) return 'EMPEZAR';
   if (CB.partida.hayPartidaGuardada(perfil)) return 'SEGUIR JUGANDO';
@@ -609,37 +522,7 @@ CB.arranque.esRecarga = function (perfil, ahoraMs) {
   return (ahoraMs - g.guardadaTs) < CB.arranque.MS_RECARGA;
 };
 
-/* ── UN GESTO, UN SONIDO ──────────────────────────────────────────────────────
-   El clic de «pulsar» se pide AL FINAL del gesto y solo si el gesto ha sido
-   mudo. La regla estaba escrita desde el primer día —«un clic que se añade
-   encima de un sonido que ya dice algo no informa, tapa»— pero se aplicaba con
-   una lista de tres excepciones escrita a mano, y la lista se quedó corta el
-   mismo día que se escribió: la tecla del teclado numérico ya trae su «picar» y
-   el ⌫ su «toc», así que cada cifra escrita sonaba DOS veces. Es otra vez el
-   fallo de familia de este proyecto: una regla buena aplicada en tres sitios de
-   cinco.
-
-   Así que no se enumeran los que callan: se mira si ha sonado algo. CB.audio
-   cuenta las peticiones, aquí se apunta el contador antes del gesto y se
-   compara después. Cualquier componente que gane voz propia mañana queda
-   cubierto sin tocar esta lista, porque ya no hay lista.
-
-   EL «DESPUÉS» ES UN setTimeout(0), y no hay forma de evitarlo: en captura
-   todavía no ha sonado nada, y en burbuja bastaría un stopPropagation() de
-   cualquier manejador para dejar mudo ese botón concreto sin que nada fallara.
-   El temporizador conserva la captura —que es lo que da inmunidad— y aun así
-   decide al final. El precio es un retraso de un fotograma como mucho, que en un
-   sonido de 35 ms no se oye; a cambio, el orden queda bien: primero lo que
-   significa algo, y el clic solo si no había nada que significar.
-
-   Queda UNA excepción, la única que el contador no puede ver, porque su sonido
-   llega en OTRO evento: el botón deshabilitado. Durante los 800 ms de
-   construcción el toque prematuro ya tiene su «toc» de madera en `pointerdown`,
-   que además dice lo contrario —«aún no»—, y taparlo con el «sí» sería
-   exactamente perder la distinción que los dos sonidos existen para hacer.
-
-   No hace falta comprobar el ajuste de silencio: CB.audio.sfx ya lo mira, y
-   repetirlo aquí sería la segunda copia de una regla que tiene dueño. */
+/* UN GESTO, UN SONIDO */
 CB.arranque.clicDiferido = function (antes) {
   setTimeout(function () {
     if (CB.audio.emitidos !== antes) return;      // el gesto ya ha hablado
@@ -647,45 +530,14 @@ CB.arranque.clicDiferido = function (antes) {
   }, 0);
 };
 
-/* CUALQUIER GESTO ABRE EL AUDIO, no solo JUGAR. El contexto de Web Audio nace
-   suspendido y solo un gesto del usuario lo despierta, y hasta ahora los dos
-   únicos sitios que lo despertaban eran los botones JUGAR y «partida tranquila».
-   Es decir: quien empezaba tocando «Ajustes», «Perfiles» o el panel del adulto
-   —o quien navegaba con el teclado— no oía NADA hasta llegar a la portada, con
-   lo que la promesa de que todo botón suena era falsa justo en los primeros
-   toques de la sesión, que son los que enseñan que el juego responde.
-
-   Va aquí, dentro del manejador, y no en clicDiferido: el temporizador ya está
-   fuera del gesto y para el navegador dejaría de contar como activación. Y se
-   llama siempre, no solo la primera vez, porque iniciar() también reanuda un
-   contexto que el navegador haya suspendido por su cuenta. Es lo mismo que hace
-   CB.musica.iniciar() con reintentar(), por el mismo motivo y desde 1.7.0.
-
-   UN EVENTO SINTÉTICO NO DESPIERTA NADA. El navegador solo abre el audio con un
-   gesto de verdad, así que llamar a iniciar() desde un dispatchEvent no puede
-   funcionar: deja un contexto suspendido que nadie va a reanudar. Y de paso
-   mantiene muda la página de pruebas, que dispara veintitantos clics de mentira
-   y no tiene por qué ponerse a pitar. */
+/* CUALQUIER GESTO ABRE EL AUDIO, no solo JUGAR. */
 CB.arranque.despertarAudio = function (ev) {
   if (ev && ev.isTrusted === false) return false;
   try { CB.audio.iniciar(); } catch (e) { }
   return true;
 };
 
-/* UN SOLO OYENTE, en el documento y en fase de captura. Hay botones en las
-   diecisiete pantallas y la mitad los crea el JS en tiempo de ejecución —el
-   teclado, las opciones, las monedas, los cromos, los ajustes—, así que
-   engancharlos uno a uno sería una lista que hay que acordarse de mantener.
-   Delegar cubre también los que todavía no existen.
-
-   ESTÁ FUERA DEL DOMContentLoaded, y eso es lo que la hace comprobable: el
-   arranque devuelve pronto cuando no hay #btn-jugar —así es como las páginas de
-   prueba evitan echar a andar un juego—, de modo que un oyente registrado ahí
-   dentro no existiría nunca en la suite. Con la función aparte, el guardián
-   ejecuta EL MISMO código de registro que el juego, y no una imitación.
-
-   Mismo cerrojo por atributo que CB.componentes.conectarToc(), y por el mismo
-   motivo: llamarla dos veces dejaría dos oyentes y el clic sonaría doble. */
+/* UN SOLO OYENTE, en el documento y en fase de captura. */
 CB.arranque.conectarSonidoBotones = function (raiz) {
   if (!raiz) return false;
   var marca = raiz.documentElement || raiz;
@@ -703,32 +555,7 @@ CB.arranque.conectarSonidoBotones = function (raiz) {
   return true;
 };
 
-/* ── Y LAS TECLAS TAMBIÉN ─────────────────────────────────────────────────────
-   Se puede jugar una partida entera solo con el teclado —es criterio de HECHO de
-   F8, no una comodidad—, y esa partida se jugaba en un silencio que la del dedo
-   ya no tiene. Con el mapa de PLAN §16.5 delante: las cifras del teclado
-   numérico sí sonaban («picar»), porque el sonido lo pone el componente; pero
-   Enter, Escape, las flechas que mueven el foco por la rejilla, el Tab, la L de
-   leer y la P de pista no sonaban nunca, y fuera de las tres pantallas de juego
-   NINGUNA tecla sonaba, porque el manejador de 06-a11y.js devuelve pronto.
-
-   La regla es la misma de arriba —toda tecla suena una vez— y por eso comparte
-   el contador. Lo que cambia son los cuatro casos que NO son un gesto sobre el
-   juego:
-
-   · la autorepetición. Un dedo apoyado en el 7 dispara treinta teclas por
-     segundo: eso no es pulsar treinta veces, y sonaría a ametralladora.
-   · los modificadores solos y los atajos del navegador. Shift no hace nada por
-     su cuenta —y sonaría dos veces en cada mayúscula— y Ctrl+R es del navegador,
-     no del juego.
-   · escribir en un campo. El único que hay es el de la puerta parental, y ahí la
-     confirmación de que la tecla ha entrado es el propio carácter, que se ve. Un
-     clic por letra es ruido, no información.
-   · Enter y Espacio sobre algo activable. El navegador convierte esa tecla en un
-     clic de verdad, así que el oyente de arriba ya se encarga; sin esta salida
-     sonaría dos veces. Con Espacio no vale fiarse del contador: el clic no llega
-     hasta que se SUELTA la tecla, mucho después de que el temporizador haya
-     decidido. */
+/* Y LAS TECLAS TAMBIÉN */
 CB.arranque.TECLAS_MUDAS = ['Shift', 'Control', 'Alt', 'AltGraph', 'Meta',
   'CapsLock', 'NumLock', 'ScrollLock', 'ContextMenu', 'Dead', 'Unidentified'];
 
@@ -771,12 +598,6 @@ document.addEventListener('DOMContentLoaded', function () {
      partida: monta su propio banco de pruebas sobre los mismos módulos. */
   if (!document.getElementById('btn-jugar')) return;
 
-  /* El service worker se registra AQUI, detras de la guarda de arriba, y no es
-     un detalle de colocacion: si pruebas.html registrara uno, cachearia la
-     propia suite y el siguiente cambio de codigo se serviria desde cache. El
-     sintoma seria «las pruebas no son deterministas», que ejecutor.js ya
-     identifica como la conclusion mas cara posible.
-     En file:// no hace nada y no dice nada: CB.offline.DISPONIBLE es false. */
   try { CB.offline.registrar(); } catch (eSW) { }
 
   try {

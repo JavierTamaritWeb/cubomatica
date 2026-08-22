@@ -1,14 +1,4 @@
-/* casos-marca.js — Auditoría de marca EN RUNTIME, sin fetch (PLAN §14.6)
-   ----------------------------------------------------------------------------
-   fetch() y XMLHttpRequest sobre file:// están BLOQUEADOS por CORS en Chrome y
-   Firefox («Origin 'null' has been blocked»). Los dos tests que el plan v1
-   declaraba bloqueantes para la entrega eran literalmente inejecutables en el
-   modo de uso principal del proyecto: el doble clic.
-
-   Aquí la comprobación es de COBERTURA PARCIAL DECLARADA: recorre
-   Function.prototype.toString() de las funciones exportadas y el texto de
-   document.styleSheets[i].cssRules. La auditoría completa que SÍ bloquea la
-   entrega es pruebas/auditar.sh sobre el sistema de ficheros. */
+/* casos-marca.js — Auditoría de marca EN RUNTIME, sin fetch (PLAN §14.6) */
 
 CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial)', function () {
   var t = CB.pruebas;
@@ -74,7 +64,7 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
   t.ok(CB.LEGAL.AVISO.indexOf('No está afiliada') !== -1,
     'el aviso declara expresamente la ausencia de afiliación');
 
-  /* ── innerHTML: solo con literales, nunca con variables (§15.8) ────────── */
+  /* innerHTML: solo con literales, nunca con variables (§15.8) */
   var conInnerHTML = [];
   function buscarInnerHTML(obj, ruta, prof) {
     if (prof > 3 || !obj) return;
@@ -96,7 +86,7 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
     'ninguna función asigna innerHTML: todo el texto del perfil se pinta con textContent',
     conInnerHTML.join(', '));
 
-  /* ── Frontera: el motor y los generadores son PUROS ────────────────────── */
+  /* Frontera: el motor y los generadores son PUROS */
   var PUROS = [
     ['CB.puntuacion', CB.puntuacion], ['CB.antiazar', CB.antiazar],
     ['CB.vidas', CB.vidas], ['CB.adaptativo', CB.adaptativo],
@@ -144,7 +134,7 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
   t.ok(conClave.length === 0,
     'los literales de clave «cubomatica.…» solo existen en 01-almacen.js', conClave.join(', '));
 
-  /* ── Vocabulario prohibido en la interfaz del niño (§12.4) ─────────────── */
+  /* Vocabulario prohibido en la interfaz del niño (§12.4) */
   var acusatorio = CB.antiazar.PROHIBIDO_EN_INTERFAZ.filter(function (p) {
     var enMensajes = CB.datos.MENSAJES.acierto.concat(CB.datos.MENSAJES.animo)
       .some(function (m) { return CB.util.normalizar(m).indexOf(CB.util.normalizar(p)) !== -1; });
@@ -160,7 +150,6 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
   var PROHIBIDO_FIN = ['has perdido', 'game over', 'fin de la partida', 'fallaste',
                        'te has quedado sin'];
   var srcFin = Function.prototype.toString.call(CB.partida.pintarFin).toLowerCase();
-  var enFin = PROHIBIDO_FIN.filter(function (p) { return srcFin.indexOf(p) !== -1; });
   /* Aparecen en el comentario que los prohíbe: se comprueba que no estén en los
      textos reales de la tabla. */
   var textosFin = srcFin.split('var textos')[1] || '';

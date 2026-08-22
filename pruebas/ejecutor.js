@@ -1,11 +1,4 @@
-/* ============================================================================
-   ejecutor.js — Ejecutor propio de la suite. Verde/rojo por caso.
-   ----------------------------------------------------------------------------
-   EJECUCIÓN POR LOTES OBLIGATORIA (PLAN §19.1): la suite grande corre en lotes
-   con setTimeout(…, 0) entre ellos, con barra de progreso y resultado parcial
-   visible. Sin esto, la pestaña se marca como «no responde» y la suite deja de
-   ejecutarse, que es donde muere la regla de oro del proyecto.
-   ========================================================================== */
+/* ejecutor.js — Ejecutor propio de la suite. Verde/rojo por caso. */
 
 var CB = CB || {};
 CB.pruebas = CB.pruebas || {};
@@ -15,6 +8,7 @@ CB.pruebas.modoLargo = false;
 CB.pruebas.total = 0;
 CB.pruebas.fallos = 0;
 CB.pruebas.saltados = 0;
+CB.pruebas._capturaGlobalInstalada = false;
 
 CB.pruebas.suite = function (nombre, fn) {
   CB.pruebas.suites.push({ nombre: nombre, fn: fn });
@@ -45,20 +39,32 @@ CB.pruebas.saltar = function (texto, motivo) {
   if (CB.pruebas._actual) CB.pruebas._actual.appendChild(li);
 };
 
-/* ¿EXISTE ESA CLASE EN LA HOJA QUE SE HA CARGADO?
-   Nace para el renombrado a BEM, y tapa un modo de fallo que ya existía: varias
-   comprobaciones hacen `querySelector('.x')` y, si no encuentran nada, siguen
-   como si tal cosa. Renombra `.enunciado` y esa prueba no se pone roja: mide
-   otra cosa —o no mide nada— y sale verde, que es peor que no tenerla.
+/* Es exactamente la clase de falso verde que una auditoría debe impedir. */
+CB.pruebas.capturarErroresGlobales = function () {
+  if (CB.pruebas._capturaGlobalInstalada) return;
+  CB.pruebas._capturaGlobalInstalada = true;
 
-   Se pregunta a `document.styleSheets`, es decir a las reglas REALMENTE
-   cargadas, no al fuente: sirve igual contra la hoja legible y contra la
-   minificada. Si el navegador no deja leerlas —pasa al abrir la página por
-   `file://`— devuelve null, y quien llama debe tratar ese null como un fallo
-   con instrucciones, nunca como un permiso para saltarse la comprobación. */
+  function registrar(tipo, causa) {
+    var detalle = causa && (causa.stack || causa.message) ?
+      (causa.stack || causa.message) : String(causa || 'sin detalle');
+    CB.pruebas.ok(false, tipo, detalle);
+    CB.pruebas.render();
+  }
+
+  window.addEventListener('error', function (ev) {
+    registrar('excepción no capturada', ev.error || ev.message);
+  });
+  window.addEventListener('unhandledrejection', function (ev) {
+    registrar('promesa rechazada sin manejar', ev.reason);
+  });
+};
+
+CB.pruebas.capturarErroresGlobales();
+
+/* Si el navegador no deja leerlas —pasa al abrir la página por `file://`— devuelve null, y quien llama debe tratar ese null como un fallo con instrucciones, nunca como un permiso para saltarse la comprobación. */
 CB.pruebas.claseEnHoja = function (nombre) {
   var busca = '.' + nombre.replace(/^\./, '');
-  var i, j, hojas = document.styleSheets, reglas;
+  var i, hojas = document.styleSheets, reglas;
   var visto = false;
   for (i = 0; i < hojas.length; i++) {
     try { reglas = hojas[i].cssRules; } catch (e) { continue; }   // otra procedencia
@@ -101,16 +107,7 @@ CB.pruebas.render = function () {
     (CB.pruebas.saltados ? ', ' + CB.pruebas.saltados + ' saltadas' : '');
 };
 
-/* Cerrojo de ejecución. Las suites se encadenan con setTimeout, así que una
-   segunda llamada mientras la primera sigue viva NO la cancela: las dos cadenas
-   escriben en el mismo #salida y suman en el mismo contador. El resultado son
-   más cajas de suite que suites y un total inflado —23 cajas para 15 suites,
-   541 comprobaciones donde había 450— y encima parece que la suite no es
-   determinista, que es la conclusión más cara posible.
-
-   Pasa con solo pulsar dos veces «Suite rápida», y en una pestaña de segundo
-   plano (donde Chrome estrangula los setTimeout y una ejecución tarda 80 s en
-   vez de 9) es lo normal, no lo raro. */
+/* Pasa con solo pulsar dos veces «Suite rápida», y en una pestaña de segundo plano (donde Chrome estrangula los setTimeout y una ejecución tarda 80 s en vez de 9) es lo normal, no lo raro. */
 CB.pruebas.ejecutando = false;
 
 CB.pruebas.ejecutar = function (largo) {
@@ -166,15 +163,6 @@ CB.pruebas.ejecutar = function (largo) {
       return;
     }
 
-    /* UNA SUITE PUEDE DEVOLVER UNA PROMESA, y la cadena la espera. Hasta ahora
-       no: se llamaba a s.fn() y se pasaba a la siguiente en el mismo turno.
-       Consecuencia, y no es teórica: cualquier comprobación sobre algo asíncrono
-       —una descarga, una caché, un callback— se escribía como
-       `if (aunNoHaLlegado) pasa`, o sea PASABA SIEMPRE. Verde por no haber
-       mirado, que es el peor verde que hay.
-       Se reconoce por `.then` y no por `instanceof Promise` para no atarse a la
-       implementación, y el rechazo cuenta como fallo de la suite en vez de
-       imprimir «Uncaught (in promise)» y dejar la cadena colgada para siempre. */
     if (devuelto && typeof devuelto.then === 'function') {
       devuelto.then(cerrar, function (e) {
         CB.pruebas.ok(false, 'la suite ha rechazado su promesa', e && e.message);

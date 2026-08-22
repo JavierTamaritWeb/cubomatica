@@ -1,35 +1,13 @@
-/* ============================================================================
-   stylelint.config.mjs — la gramática de la hoja de estilo, vigilada
-   ----------------------------------------------------------------------------
-   Dos de las tres reglas duras del proyecto dejaron de ser disciplina el día
-   que `bisel()` y `paso()` se quedaron sin parámetro donde meter un desenfoque
-   o una curva. La nomenclatura de las clases seguía siendo disciplina: BEM se
-   aplicaba donde alguien se acordaba, y por eso convivían `luces`/`luz`,
-   `pasos-reparacion`/`paso-reparacion` y `zona-superior` —que es un elemento de
-   `zona-juego` con nombre de bloque—. Esto es lo que la convierte en algo que
-   una herramienta comprueba.
+/* stylelint.config.mjs — la gramática de la hoja de estilo, vigilada */
 
-   ES UN FICHERO .mjs Y NO UN .json A PROPÓSITO: cada regla apagada necesita su
-   motivo escrito al lado, y JSON no admite comentarios. Un `"regla": null`
-   suelto en un JSON es indistinguible de un descuido.
-
-   No se usa `stylelint-selector-bem-pattern`: la gramática cabe en un regex de
-   una línea, y un regex propio se lee, se prueba y no envejece con un plugin.
-   ========================================================================== */
-
-/* BEM, en español y en kebab-case:
-     bloque                     luces, panel-bloque, btn-bloque
-     bloque__elemento           luces__luz, reloj__arena
-     bloque--modificador        pantalla--juego
-     bloque__elemento--mod      reloj__cifra--late
-   Un solo nivel de `__`, porque un `a__b__c` describe un árbol, no un bloque. */
+/* BEM, en español y en kebab-case: bloque luces, panel-bloque, btn-bloque bloque__elemento luces__luz, reloj__arena bloque--modificador pantalla--juego bloque__elemento--mod reloj__cifra--late Un solo nivel de `__`, porque un `a__b__c`… */
 const BEM = '^[a-z][a-z0-9]*(-[a-z0-9]+)*(__[a-z][a-z0-9]*(-[a-z0-9]+)*)?(--[a-z][a-z0-9]*(-[a-z0-9]+)*)?$';
 
 export default {
   extends: 'stylelint-config-standard-scss',
   ignoreFiles: ['dist/**', 'node_modules/**'],
   rules: {
-    /* ── La gramática ─────────────────────────────────────────────────── */
+    /* La gramática */
     'selector-class-pattern': [BEM, {
       message: (s) => `«${s}» no es BEM: bloque, bloque__elemento, bloque--modificador (kebab-case, un solo __)`,
       resolveNestedSelectors: true
@@ -43,17 +21,13 @@ export default {
     'max-nesting-depth': [2, { ignoreAtRules: ['media', 'supports', 'each', 'for', 'if', 'else', 'include'] }],
     'shorthand-property-no-redundant-values': true,
 
-    /* ── Apagadas, y por qué ──────────────────────────────────────────── */
+    /* Apagadas, y por qué */
 
     /* LA CASCADA ES CARGA ÚTIL. `_biomas.scss` gana a `_pantallas.scss`
        por venir después, y está documentado con seis líneas de comentario.
        Esta regla pediría reordenar justo eso. */
     'no-descending-specificity': null,
 
-    /* SOPORTE, NO ESTÉTICA. El suelo declarado es Safari 15.4 y una Chromebook
-       de 2019: la notación de rango `(width >= 480px)` es Safari 16.4, y el
-       `:not(a, b)` complejo también. Adoptarlas dejaría sin estilo justo a los
-       aparatos para los que está hecho el juego. */
     'media-feature-range-notation': null,
     'selector-not-notation': null,
 
@@ -63,12 +37,7 @@ export default {
     'property-no-deprecated': null,
     'property-no-vendor-prefix': null,
 
-    /* ESTILO DE LA CASA, deliberado y consistente en todas las hojas: una regla
-       corta cabe en una línea, los colores se escriben enteros en
-       `_variables.scss` —el único fichero que puede escribirlos— y las
-       líneas en blanco las decide quien lee, no una regla. Cambiar esto serían
-       ~390 modificaciones cosméticas en el mismo commit que el renombrado, que
-       es la mejor manera de esconder un error de verdad. */
+    /* ESTILO DE LA CASA, deliberado y consistente en todas las hojas: una regla corta cabe en una línea, los colores se escriben enteros en `_variables.scss` —el único fichero que puede escribirlos— y las líneas en blanco las decide quien… */
     'declaration-block-single-line-max-declarations': null,
     'rule-empty-line-before': null,
     'comment-empty-line-before': null,

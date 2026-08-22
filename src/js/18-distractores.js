@@ -1,29 +1,8 @@
-/* ============================================================================
-   18-distractores.js — Los 24 códigos de error, los distractores y el
-                        diagnóstico
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   EL PROBLEMA QUE RESUELVE EL ALGORITMO (PLAN §13.8): construir distractores
-   simulando errores es lo correcto pedagógicamente, pero muchas simulaciones
-   COLISIONAN con la respuesta correcta. E-S-LLEV-OLV sobre 20+30 devuelve 50,
-   que es correcto; E-R-INV sobre 68−24 devuelve 44, que es correcto; E-M-SUMA
-   sobre 2×2 devuelve 4, que es correcto. El plan v1 no decía qué pasaba
-   entonces: el niño podía ver DOS opciones correctas, o el bucle de relleno
-   podía no terminar nunca.
-
-   Aquí: se descartan las colisiones, se rellena con un plan B acotado, y si aun
-   así no hay 4 opciones únicas, ESE ÍTEM pasa a formato teclado. Ningún bucle
-   sin cota.
-
-   18 códigos tienen simular(); 6 tienen diagnostico:false porque simular un
-   error numérico sobre vocabulario, estimación, ordenación o un fallo de puro
-   cálculo no produce ninguna hipótesis discriminante (invariante 6-bis).
-   ========================================================================== */
+/* 18-distractores.js — Los 24 códigos de error, los distractores y el */
 
 var CB = CB || {};
 
-/* ── Ayudas de dígitos ──────────────────────────────────────────────────── */
+/* Ayudas de dígitos */
 function digitos(n) {
   var d = [], x = Math.abs(Math.round(n));
   if (x === 0) return [0];
@@ -38,7 +17,7 @@ function desdeDigitos(d) {
 
 CB.ERRORES = {
 
-  /* ══ SUMAS ═════════════════════════════════════════════════════════════ */
+  /* SUMAS */
   'E-S-LLEV-OLV': {
     familia: 'S', diagnostico: true,
     pista: 'Mira si al sumar las unidades pasas de diez.',
@@ -96,7 +75,7 @@ CB.ERRORES = {
     }
   },
 
-  /* ══ RESTAS ════════════════════════════════════════════════════════════ */
+  /* RESTAS */
   'E-R-INV': {
     familia: 'R', diagnostico: true,
     pista: 'Si el de arriba es más pequeño, pide una decena prestada.',
@@ -159,7 +138,7 @@ CB.ERRORES = {
     }
   },
 
-  /* ══ NUMERACIÓN ════════════════════════════════════════════════════════ */
+  /* NUMERACIÓN */
   'E-N-POS': {
     familia: 'N', diagnostico: true,
     pista: 'Mira qué lugar ocupa cada cifra.',
@@ -192,7 +171,7 @@ CB.ERRORES = {
   'E-N-ORDEN': { familia: 'N', diagnostico: false, simular: null,
     pista: 'Empieza por el más pequeño.', reparacion: 'rectaNumerica' },
 
-  /* ══ MULTIPLICACIÓN ════════════════════════════════════════════════════ */
+  /* MULTIPLICACIÓN */
   'E-M-SUMA': {
     familia: 'M', diagnostico: true,
     pista: 'Multiplicar es repetir el mismo número varias veces.',
@@ -226,7 +205,7 @@ CB.ERRORES = {
     }
   },
 
-  /* ══ PROBLEMAS ═════════════════════════════════════════════════════════ */
+  /* PROBLEMAS */
   'E-P-PALCLAVE': {
     familia: 'P', diagnostico: true,
     pista: 'No te fíes solo de la palabra: mira lo que cuenta el problema.',
@@ -252,7 +231,7 @@ CB.ERRORES = {
     pista: 'El planteamiento está bien. Repasa solo la cuenta.',
     reparacion: 'columnasCDU' },
 
-  /* ══ DINERO ════════════════════════════════════════════════════════════ */
+  /* DINERO */
   'E-E-VALOR': {
     familia: 'E', diagnostico: true,
     pista: 'No cuentes las monedas: cuenta lo que vale cada una.',
@@ -273,7 +252,7 @@ CB.ERRORES = {
     }
   },
 
-  /* ══ VOCABULARIO ═══════════════════════════════════════════════════════ */
+  /* VOCABULARIO */
   'E-V-TERMINO': { familia: 'V', diagnostico: false, simular: null,
     pista: 'Piensa en qué operación te pide esa palabra.', reparacion: 'rectaNumerica' },
   'E-V-SINONIMO': { familia: 'V', diagnostico: false, simular: null,
@@ -282,7 +261,7 @@ CB.ERRORES = {
 
 CB.ERRORES_IDS = Object.keys(CB.ERRORES);
 
-/* ── Los distractores ───────────────────────────────────────────────────── */
+/* Los distractores */
 CB.distractores = CB.distractores || {};
 
 CB.distractores.LIMITE_NORMAL = 999;
@@ -308,7 +287,7 @@ CB.distractores.codigosAplicables = function (item) {
  */
 CB.distractores.para = function (item, rng) {
   var correcta = item.respuesta;
-  var vistos = {}, opciones = [], i, k, v, cod;
+  var vistos = {}, opciones = [], i, v, cod;
 
   vistos[correcta] = true;
 
@@ -372,10 +351,7 @@ CB.distractores.para = function (item, rng) {
   return { opciones: mezcladas.slice(0, 4), formato: 'opciones4', posicionCorrecta: pos };
 };
 
-/* ── Diagnóstico ────────────────────────────────────────────────────────────
-   discriminante === true SOLO si un único código de error es compatible con la
-   respuesta dada. El informe solo acumula evidencia de ítems discriminantes: si
-   dos códigos empatan, se cuentan ambos pero NO SE AFIRMA NINGUNO. */
+/* Diagnóstico */
 CB.diagnosticar = function (item, valorDado) {
   var hipotesis = [], codigos, i, v;
   if (valorDado == null || !isFinite(valorDado)) {

@@ -1,20 +1,4 @@
-/* ============================================================================
-   01-almacen.js — Persistencia. ÚNICO fichero con literales 'cubomatica.…'
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma declarado: puede tocar localStorage (§14.4).
-
-   LA VERSIÓN VA EN EL OBJETO, NUNCA EN LA CLAVE (PLAN §15.1). El plan v1 la
-   ponía en las dos: en cuanto migrar() dejase el objeto en version:2, o se
-   seguía escribiendo bajo `.v1.` (y la clave mentía) o se escribía en `.v2.` y
-   quedaban HUÉRFANOS el índice y ultimoPerfil → pérdida silenciosa de todo el
-   progreso en la primera migración. Justo el caso que el «test obligatorio»
-   decía cubrir y que el esquema hacía imposible aprobar.
-
-   REGLA AÑADIDA (§15.4): este fichero NO puede referenciar ningún CB.* salvo
-   CB.util. El plan v1 llamaba desde aquí a CB.plantillas.esqueletoVacio(), que
-   no existe, desde un script que carga 13 ficheros ANTES que el generador de
-   problemas → TypeError, y el perfil no cargaba NUNCA.
-   ========================================================================== */
+/* 01-almacen.js — Persistencia. ÚNICO fichero con literales 'cubomatica.…' */
 
 var CB = CB || {};
 CB.almacen = CB.almacen || {};
@@ -36,7 +20,7 @@ CB.almacen.TOPES = {
   aula:      { respuestas: 150, historial: 20, perfiles: 30 }
 };
 
-/* ── Acceso crudo, con respaldo en memoria ──────────────────────────────── */
+/* Acceso crudo, con respaldo en memoria */
 function ls() {
   try {
     if (typeof localStorage === 'undefined') return null;
@@ -127,7 +111,7 @@ CB.almacen.borrar = function (clave) {
   delete CB.almacen.memoria[clave];
 };
 
-/* ── Ajustes del APARATO (solo lo físico) ───────────────────────────────── */
+/* Ajustes del APARATO (solo lo físico) */
 CB.almacen.ajustesDispositivo = function () {
   var a = CB.almacen.leerCrudo(CB.almacen.CLAVE_AJUSTES);
   if (!a) {
@@ -144,7 +128,7 @@ CB.almacen.guardarAjustesDispositivo = function (a) {
   return CB.almacen.escribir(CB.almacen.CLAVE_AJUSTES, a);
 };
 
-/* ── Índice de perfiles ─────────────────────────────────────────────────── */
+/* Índice de perfiles */
 CB.almacen.indice = function () {
   var i = CB.almacen.leerCrudo(CB.almacen.CLAVE_INDICE);
   return (i && i.length != null) ? i : [];
@@ -159,7 +143,7 @@ CB.almacen.fijarUltimoPerfil = function (id) {
   return CB.almacen.escribir(CB.almacen.CLAVE_ULTIMO, id);
 };
 
-/* ── Esqueleto de problemas: array literal LOCAL, sin dependencias ──────── */
+/* Esqueleto de problemas: array literal LOCAL, sin dependencias */
 CB.almacen.ESQUELETO_PROBLEMAS = function () {
   var subtipos = ['CAMBIO_1', 'CAMBIO_2', 'CAMBIO_3', 'CAMBIO_4', 'CAMBIO_5', 'CAMBIO_6',
                   'COMBINACION_1', 'COMBINACION_2',
@@ -174,7 +158,7 @@ CB.almacen.ESQUELETO_PROBLEMAS = function () {
   return o;
 };
 
-/* ── Perfil nuevo ───────────────────────────────────────────────────────── */
+/* Perfil nuevo */
 CB.almacen.perfilNuevo = function (id, mote, avatar, hoyISO, ajustesPrevios) {
   return {
     version: CB.almacen.VERSION_ESQUEMA,
@@ -233,7 +217,7 @@ CB.almacen.perfilNuevoDesdeRestos = function (roto) {
   return p;
 };
 
-/* ── Migración: cada paso AÑADE campos. JAMÁS BORRA ─────────────────────── */
+/* Migración: cada paso AÑADE campos. JAMÁS BORRA */
 CB.almacen.migrar = function (perfil) {
   try {
     if (!perfil.version) perfil.version = 1;
@@ -314,7 +298,7 @@ CB.almacen.recortarFechasFuturas = function (perfil) {
   return perfil;
 };
 
-/* ── Leer y guardar perfil ──────────────────────────────────────────────── */
+/* Leer y guardar perfil */
 /* ¿Hay algo escrito en esa clave, aunque no se pueda leer? Distinguir «no hay
    perfil» de «hay un perfil y está roto» es lo único que separa un mensaje útil
    de un botón que no hace nada. */
@@ -330,18 +314,6 @@ CB.almacen.leerPerfil = function (id) {
   var clave = CB.almacen.claveDePerfil(id);
   var p = CB.almacen.leerCrudo(clave);
 
-  /* PERFIL ILEGIBLE. leerCrudo() se traga el fallo de JSON.parse y devuelve
-     null, igual que cuando el perfil no existe. Para el índice o los ajustes
-     eso está bien: se cae a los valores por defecto y no pasa nada. Para un
-     perfil es lo contrario de lo que hay que hacer, porque quien lo llama
-     —CB.perfiles.activar()— hace «if (!p) return;» y se va sin decir nada.
-
-     El resultado era que pulsar JUGAR sobre un perfil dañado no hacía NADA:
-     ni mensaje, ni error, ni pantalla nueva. Un niño toca el botón, no pasa
-     nada, lo toca otra vez, sigue sin pasar nada. Y el adulto no tiene forma
-     de enterarse de que hay progreso guardado que ya no se puede leer.
-
-     Con el centinela de error, activar() sí tiene algo que contar. */
   if (!p && CB.almacen.existeCrudo(clave)) {
     return { error: 'perfil-ilegible',
              mensaje: 'Los datos de este minero están dañados y no se pueden ' +
@@ -386,7 +358,7 @@ CB.almacen.borrarPerfil = function (id) {
   }
 };
 
-/* ── Poda ───────────────────────────────────────────────────────────────── */
+/* Poda */
 CB.almacen.podar = function (perfil, opciones) {
   opciones = opciones || {};
   var aula = CB.almacen.ajustesDispositivo().modoAula;
@@ -432,11 +404,7 @@ CB.almacen.podar = function (perfil, opciones) {
   return perfil;
 };
 
-/* ── Exportar e importar CON VALIDACIÓN ─────────────────────────────────────
-   Aceptar JSON arbitrario y volcarlo al DOM es la ÚNICA superficie de ataque
-   que existe en este proyecto, y en v1 estaba abierta: un fichero manipulado
-   podía traer `mote` con HTML, `colorBloque` con una cadena que se inyecta en un
-   style, arrays de 500.000 entradas o version:99. */
+/* Exportar e importar CON VALIDACIÓN */
 CB.almacen.CAMPOS_PERMITIDOS = [
   'version', 'id', 'mote', 'avatar', 'colorBloque', 'creadoISO', 'trimestreDeducido',
   'calibrado', 'grupo', 'ajustes', 'gemas', 'puntosTotales', 'mejorPuntuacion',
@@ -467,7 +435,7 @@ CB.almacen.validarImportado = function (crudo, motesValidos) {
   }
   if (!/^#[0-9A-Fa-f]{6}$/.test(String(limpio.colorBloque))) limpio.colorBloque = '#5AA02C';
   limpio.avatar = CB.util.clamp(parseInt(limpio.avatar, 10) || 0, 0, 15);
-  if (!limpio.id || !/^[A-Za-z0-9\-]{1,32}$/.test(String(limpio.id))) {
+  if (!limpio.id || !/^[A-Za-z0-9-]{1,32}$/.test(String(limpio.id))) {
     limpio.id = 'p-' + CB.util.hash32(String(limpio.mote) + limpio.avatar).toString(16);
   }
 

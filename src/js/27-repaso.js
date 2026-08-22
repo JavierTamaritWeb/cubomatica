@@ -1,12 +1,4 @@
-/* ============================================================================
-   27-repaso.js — CB.leitner: 3 cajas y reinserción intra-partida
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   REINSERCIÓN: un ítem fallado vuelve a aparecer entre 3 y 5 ítems después, con
-   OTROS NÚMEROS del mismo tipo. Nunca el mismo ítem literal: eso sería
-   memorizar la respuesta, no aprender el procedimiento (PLAN §13.5).
-   ========================================================================== */
+/* 27-repaso.js — CB.leitner: 3 cajas y reinserción intra-partida */
 
 var CB = CB || {};
 CB.leitner = CB.leitner || {};
@@ -39,7 +31,7 @@ CB.leitner.venceHoy = function (estado, hoyISO) {
   return CB.util.diasEntre(estado.proximoRepaso, hoyISO) >= 0;
 };
 
-/* ── Reinserción intra-partida ──────────────────────────────────────────── */
+/* Reinserción intra-partida */
 
 CB.leitner.nuevaCola = function () { return []; };
 

@@ -1,23 +1,4 @@
-/* ============================================================================
-   15-gen-dinero.js — E1…E8
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   CONFORME AL TEXTO LITERAL del saber A.5 de PRIMER ciclo (PLAN §6.9):
-     «Sistema monetario europeo: monedas (1, 2 euros) y billetes de euro
-      (5, 10, 20, 50 y 100), valor y equivalencia.»
-
-   · MONEDAS y BILLETES son conjuntos SEPARADOS. No existe «billete de 1 €» ni
-     «moneda de 5 €», y el juego los distingue siempre visual y verbalmente.
-   · El billete de 100 € SE CONSERVA: está en el texto literal. Se le da poco
-     peso (aparece en reconocimiento y equivalencias, no en los niveles de pago).
-   · Los CÉNTIMOS son AMPLIACIÓN apagada por defecto: el saber de primer ciclo
-     cita solo monedas de 1 y 2 euros; los céntimos aparecen en el saber de
-     SEGUNDO ciclo. Se ofrecen porque la práctica de aula de 2.º sí los
-     introduce, pero la decisión es del adulto.
-   · Cuando se activan, se escriben SIEMPRE como entero + la palabra «céntimos»
-     («50 céntimos»), NUNCA como «0,50 €»: el invariante 3 prohíbe los decimales.
-   ========================================================================== */
+/* 15-gen-dinero.js — E1…E8 */
 
 var CB = CB || {};
 CB.gen = CB.gen || {};
@@ -35,16 +16,7 @@ CB.gen.dinero.CENTIMOS = [5, 10, 20, 50];          // AMPLIACIÓN, flagAdulto
    reconocerla sí tiene sentido; multiplicarla por cien, no. */
 CB.gen.dinero.PIEZAS_CENTIMO = [1, 5, 10, 20, 50];
 
-/* ── UNA PIEZA DE CÉNTIMO SE NOMBRA 'c20', NO 20 ─────────────────────────────
-   Y no es manía de notación: los valores CHOCAN. «5» es a la vez el billete de
-   5 € y la moneda de 5 céntimos, «10», «20» y «50» lo mismo. Con un solo número
-   por pieza, la pregunta «toca la moneda de 20 céntimos» habría aceptado el
-   billete de 20 € como respuesta correcta —y lo habría pintado con la foto del
-   billete, porque el CSS también selecciona por ese número—.
-
-   El precio de la decisión es que la respuesta de esas preguntas NO ES UN
-   NÚMERO, y por eso `40-partida.js` compara aparte y el invariante 1 de
-   `casos-generadores.js` exime a las piezas. Está anotado en los dos sitios. */
+/* UNA PIEZA DE CÉNTIMO SE NOMBRA 'c20', NO 20 */
 CB.gen.dinero.pieza      = function (c) { return 'c' + c; };
 CB.gen.dinero.esCentimo  = function (v) { return typeof v === 'string' && v.charAt(0) === 'c'; };
 CB.gen.dinero.valorCent  = function (v) { return parseInt(String(v).slice(1), 10); };
@@ -90,23 +62,14 @@ CB.gen.dinero.descomponer = function (importe, conBilletes) {
   return piezas;
 };
 
-/* ── E1 Reconocer monedas y billetes ────────────────────────────────────── */
+/* E1 Reconocer monedas y billetes */
 CB.gen.dinero.E1 = function (rng, D) {
   var todos = CB.gen.dinero.MONEDAS.concat(CB.gen.dinero.BILLETES);
   var v = CB.util.elegir(rng, todos);
   return {
     formato: 'opciones4',
     consigna: 'Toca ' + CB.gen.dinero.nombre(v) + '.',
-    /* LAS OPCIONES SE DIBUJAN COMO PIEZAS, NO COMO NÚMEROS. La cabecera de este
-       fichero dice que monedas y billetes son conjuntos separados y que «el juego
-       los distingue siempre visual y verbalmente», y en la única pregunta cuyo
-       objeto ES distinguirlos no se distinguían: las cuatro opciones salían como
-       cuatro botones de madera idénticos con un número dentro. Es decir, se
-       preguntaba «toca la moneda de 2 euros» y lo que había que reconocer era el
-       2, no la moneda — que se puede acertar sin saber lo que es una moneda.
 
-       La pieza dibujada ya existía y se usaba en pagar y en contar. Aquí faltaba,
-       que es justo donde hace falta. */
     piezasDinero: true,
     respuesta: v,
     expr: 'reconocer' + v,
@@ -118,7 +81,7 @@ CB.gen.dinero.E1 = function (rng, D) {
   };
 };
 
-/* ── E2 Contar con monedas de 1 y 2 € ───────────────────────────────────── */
+/* E2 Contar con monedas de 1 y 2 € */
 CB.gen.dinero.E2 = function (rng, D) {
   var n = CB.util.ent(rng, 3, (D === 1) ? 5 : 8), piezas = [], total = 0, i, v;
   for (i = 0; i < n; i++) {
@@ -136,7 +99,7 @@ CB.gen.dinero.E2 = function (rng, D) {
   };
 };
 
-/* ── E3 Contar con billetes ─────────────────────────────────────────────── */
+/* E3 Contar con billetes */
 CB.gen.dinero.E3 = function (rng, D) {
   var n = CB.util.ent(rng, 2, (D === 1) ? 3 : 4), piezas = [], total = 0, i, v;
   var pool = (D === 3) ? CB.gen.dinero.BILLETES : [5, 10, 20];
@@ -157,7 +120,7 @@ CB.gen.dinero.E3 = function (rng, D) {
   };
 };
 
-/* ── E4 Equivalencias entre billetes ────────────────────────────────────── */
+/* E4 Equivalencias entre billetes */
 CB.gen.dinero.E4 = function (rng, D) {
   var grande = CB.util.elegir(rng, [10, 20, 50, 100]);
   var pequeno = CB.util.elegir(rng, CB.gen.dinero.BILLETES.filter(function (v) {
@@ -174,7 +137,7 @@ CB.gen.dinero.E4 = function (rng, D) {
   };
 };
 
-/* ── E5 Pagar con importe exacto ────────────────────────────────────────── */
+/* E5 Pagar con importe exacto */
 CB.gen.dinero.E5 = function (rng, D) {
   var precio = CB.util.ent(rng, 3, (D === 1) ? 12 : 50);
   return {
@@ -189,7 +152,7 @@ CB.gen.dinero.E5 = function (rng, D) {
   };
 };
 
-/* ── E6 El cambio ───────────────────────────────────────────────────────── */
+/* E6 El cambio */
 CB.gen.dinero.E6 = function (rng, D) {
   var precio = CB.util.ent(rng, 2, (D === 1) ? 8 : 18);
   var pagaCon = CB.util.elegir(rng, CB.gen.dinero.BILLETES.filter(function (v) {
@@ -207,7 +170,7 @@ CB.gen.dinero.E6 = function (rng, D) {
   };
 };
 
-/* ── E7 La compra: gasto total ──────────────────────────────────────────── */
+/* E7 La compra: gasto total */
 CB.gen.dinero.E7 = function (rng, D) {
   var a = CB.util.ent(rng, 2, (D === 1) ? 15 : 45);
   var b = CB.util.ent(rng, 2, (D === 1) ? 15 : 45);
@@ -223,22 +186,7 @@ CB.gen.dinero.E7 = function (rng, D) {
   };
 };
 
-/* ── E8 Céntimos — AMPLIACIÓN, apagada por defecto ──────────────────────────
-   DOS PREGUNTAS, NO UNA, y el reparto no es decorativo.
-
-   La que había —cuántas monedas de X hacen un euro— es aritmética: se contesta
-   dividiendo, y se puede contestar sin haber visto una moneda de 20 céntimos en
-   la vida. Es la mitad del saber, y era la única que había.
-
-   La otra mitad es RECONOCERLA, que es exactamente lo que hace E1 con los euros
-   y lo que hasta 1.20.0 no se podía preguntar de los céntimos porque no había
-   con qué dibujarlos: cinco cuadrados de color idénticos con un número dentro no
-   preguntan «qué moneda es», preguntan «qué número pone». Con las cinco
-   fotografías sí se puede, y entra la de 1 céntimo, que es la única de las cinco
-   que no aparece en ninguna equivalencia.
-
-   En D=1 sale SIEMPRE la de reconocer: llegar al euro desde los céntimos exige
-   una división por 20 que en el primer nivel todavía no toca. */
+/* E8 Céntimos — AMPLIACIÓN, apagada por defecto */
 CB.gen.dinero.E8 = function (rng, D) {
   if (D === 1 || CB.util.ent(rng, 1, 2) === 1) return CB.gen.dinero.E8reconocer(rng, D);
   return CB.gen.dinero.E8equivalencia(rng, D);

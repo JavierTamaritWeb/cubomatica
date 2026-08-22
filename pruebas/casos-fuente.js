@@ -1,6 +1,4 @@
-/* casos-fuente.js — Cobertura de glifos (PLAN §10.2)
-   El nombre del juego lleva tilde y todo el módulo de dinero lleva €: si falta
-   un glifo, el niño ve un cuadrado vacío el primer día. */
+/* casos-fuente.js — Cobertura de glifos (PLAN §10.2) */
 
 CB.pruebas.suite('Tipografía: cobertura de glifos y rama activa de la cascada', function () {
   var CRITICOS = 'ÁÉÍÓÚÜÑáéíóúüñ¿¡«»€0123456789';
@@ -11,10 +9,6 @@ CB.pruebas.suite('Tipografía: cobertura de glifos y rama activa de la cascada',
   var g = lienzo.getContext('2d');
   if (!g) { CB.pruebas.saltar('cobertura de glifos', 'sin canvas'); return; }
 
-  /* Comparar ANCHOS no sirve: en una pila monoespaciada todos los caracteres
-     miden lo mismo, incluido el .notdef, y el test daría falsos positivos sobre
-     los 29 glifos. Se comparan los PÍXELES contra un carácter del área de uso
-     privado, que ninguna fuente cubre: si el dibujo es idéntico, el glifo falta. */
   function huella(fuente, ch) {
     g.clearRect(0, 0, 64, 64);
     g.font = '40px ' + fuente;
@@ -46,10 +40,6 @@ CB.pruebas.suite('Tipografía: cobertura de glifos y rama activa de la cascada',
       'faltan: ' + faltan.join(' '));
   });
 
-  /* Rama activa de la cascada declarada en 00-fuentes.css.
-     Si no hay ninguna fuente de mapa de bits instalada, la cascada cae en la
-     pila monoespaciada del sistema y el juego SIGUE siendo legible: eso es lo
-     que el test tiene que confirmar, no que exista una fuente concreta. */
   var pixel = getComputedStyle(document.documentElement)
     .getPropertyValue('--fuente-pixel');
   t.ok(pixel.indexOf('monospace') !== -1,
@@ -60,10 +50,7 @@ CB.pruebas.suite('Tipografía: cobertura de glifos y rama activa de la cascada',
     'la pila de lectura encabeza con Verdana (x-height alta, formas abiertas)');
 
   /* Los enunciados de problema NUNCA usan la fuente pixel (§10.2) */
-  /* La sonda se monta con la clase puesta, así que mide igual exista o no el
-     nodo en la maqueta. Lo que NO puede darse por hecho es que la clase siga
-     existiendo en la hoja: sin regla, la sonda hereda la tipografía del body
-     —que también es la de lectura— y la comprobación pasa midiendo la nada. */
+  /* Lo que NO puede darse por hecho es que la clase siga existiendo en la hoja: sin regla, la sonda hereda la tipografía del body —que también es la de lectura— y la comprobación pasa midiendo la nada. */
   var reglaEnunciado = t.claseEnHoja('.enunciado');
   t.ok(reglaEnunciado === true,
     'la clase .enunciado sigue teniendo regla en la hoja cargada',

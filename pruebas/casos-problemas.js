@@ -1,9 +1,7 @@
-/* casos-problemas.js — Los 20 subtipos, el validador de lectura fácil y el
-   equilibrio de género POR CONSTRUCCIÓN (PLAN §9). */
+/* casos-problemas.js — Los 20 subtipos, el validador de lectura fácil y el */
 
 CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10', function () {
   var t = CB.pruebas;
-  var perfil = CB.pruebas.perfilNuevo();
   var SUB = CB.gen.problemas.SUBTIPOS;
 
   t.igual(SUB.length, 20, 'hay exactamente 20 estructuras semánticas');
@@ -11,7 +9,7 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
   t.igual(CB.gen.problemas.INTERMEDIO.length, 6, '6 subtipos INTERMEDIOS (peso 2)');
   t.igual(CB.gen.problemas.AMPLIACION.length, 8, '8 subtipos de AMPLIACIÓN (peso 1)');
 
-  /* ── Producto cartesiano 20 subtipos × 60 objetos = 1.200 combinaciones ─── */
+  /* Producto cartesiano 20 subtipos × 60 objetos = 1.200 combinaciones */
   var porSubtipo = CB.pruebas.modoLargo ? 400 : 60;
   var invalidos = 0, motivos = {}, primerMalo = null;
   var resolverDistinto = 0, primerResolver = null;
@@ -63,7 +61,7 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
   t.ok(pobres.length === 0,
     'cada subtipo produce enunciados variados', pobres.join(', '));
 
-  /* ── INVARIANTE 7: forma del enunciado ────────────────────────────────── */
+  /* INVARIANTE 7: forma del enunciado */
   var mal7 = 0, ej7 = null;
   for (i = 0; i < SUB.length; i++) {
     for (k = 0; k < 40; k++) {
@@ -90,7 +88,7 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
     'INV 7 · ≤3 frases, la última interrogativa, ≤25 palabras, ≤34 caracteres/línea, ' +
     'y medirLineas() coincide con el validador', ej7);
 
-  /* ── INVARIANTE 8: lista blanca ───────────────────────────────────────── */
+  /* INVARIANTE 8: lista blanca */
   var fuera = {}, nFuera = 0;
   for (i = 0; i < SUB.length; i++) {
     for (k = 0; k < 40; k++) {
@@ -107,7 +105,7 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
   t.ok(nFuera === 0, 'INV 8 · todas las palabras están en la lista blanca',
        Object.keys(fuera).slice(0, 12).join(', '));
 
-  /* ── INVARIANTE 10: el dato sobrante nunca combina con uno necesario ───── */
+  /* INVARIANTE 10: el dato sobrante nunca combina con uno necesario */
   var mal10 = 0, ej10 = null;
   CB.catalogo.CON_DATO_SOBRANTE.forEach(function (nivelId) {
     var sub = CB.gen.problemas.SUBTIPO_DE_NIVEL[nivelId];
@@ -129,7 +127,7 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
   t.ok(mal10 === 0,
     'INV 10 · el dato sobrante nunca da la respuesta al combinarse con uno necesario', ej10);
 
-  /* ── §9.5: los problemas SIEMPRE con teclado en primer intento ─────────── */
+  /* §9.5: los problemas SIEMPRE con teclado en primer intento */
   var conOpciones = 0;
   for (i = 0; i < SUB.length; i++) {
     var it5 = CB.gen.problemas.generarSubtipo(SUB[i], CB.util.mulberry32(i + 1), 2,
@@ -139,7 +137,7 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
   t.igual(conOpciones, 0,
     'ningún PROBLEMA_* de primer intento se sirve con 4 opciones (§9.5)');
 
-  /* ── §9.7: equilibrio de género POR CONSTRUCCIÓN, con bolsa ────────────── */
+  /* §9.7: equilibrio de género POR CONSTRUCCIÓN, con bolsa */
   var bolsas = CB.gen.problemas.nuevoEstadoBolsas();
   var rngG = CB.util.mulberry32(20260725);
   var f1 = 0, m1 = 0;
@@ -170,7 +168,7 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
   t.ok(prohibidos.length === 0, 'ningún nombre propio está en la lista negra',
        prohibidos.join(', '));
 
-  /* ── §9.2: reparto proporcional a los pesos en 40 partidas simuladas ───── */
+  /* §9.2: reparto proporcional a los pesos en 40 partidas simuladas */
   var p2 = CB.pruebas.perfilNuevo();
   p2.trimestreDeducido = 1;                       // solo NUCLEARES disponibles
   var cuenta = {};

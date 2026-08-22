@@ -1,48 +1,9 @@
-/* ============================================================================
-   07-musica.js — Las 9 pistas de música de fondo
-   ----------------------------------------------------------------------------
-   Adaptador de plataforma (§14.4): toca el DOM y crea elementos <audio>. Está
-   por tanto FUERA de la regla de frontera, igual que 04-audio.js y 05-voz.js.
-
-   POR QUÉ <audio> Y NO WEB AUDIO. El resto del sonido del juego se sintetiza en
-   04-audio.js y sale por el nodo maestro de Web Audio. La música NO puede ir por
-   ahí: meter un fichero en un AudioContext exige decodeAudioData() sobre un
-   ArrayBuffer, es decir fetch() o XMLHttpRequest, y sobre file:// eso está
-   bloqueado por CORS. Un elemento <audio> con src relativo, en cambio, se carga
-   como subrecurso del documento igual que una hoja de estilo, y funciona con
-   doble clic. Ese es el criterio que manda: el juego se abre con doble clic.
-
-   La consecuencia es que la música NO pasa por CB.audio.maestro y tiene su
-   propio volumen. Se ha convertido en ventaja: la música lleva su nivel aparte
-   del de los efectos, que es lo que uno quiere de todas formas.
-
-   TRES COSAS QUE ESTE FICHERO ARREGLA Y QUE NO SON EVIDENTES:
-
-   1. Las nueve pistas tienen 8,2 dB de diferencia de volumen entre la más
-      fuerte y la más floja. Sin corregir, pasar del mapa a una partida en el
-      Río hunde la música y volver la dispara. Cada pista lleva su ganancia.
-
-   2. Cinco pistas acaban en silencio y dos empiezan con silencio. Con loop=true
-      a secas, el bucle mete hasta tres segundos de nada. Cada pista declara
-      dónde entra y dónde sale, y el bucle funde entre esos dos puntos.
-
-   3. Los navegadores prohíben reproducir sonido antes de un gesto del usuario.
-      Si play() se rechaza, no se pierde: queda pendiente y se reintenta en el
-      primer toque o la primera tecla.
-   ========================================================================== */
+/* 07-musica.js — Las 9 pistas de música de fondo */
 
 var CB = CB || {};
 CB.musica = CB.musica || {};
 
-/* ── Tabla CERRADA de pistas ────────────────────────────────────────────────
-   gan   ganancia de normalización = 10^((−16 − volumenMedio) / 20), medido con
-         ffmpeg -af volumedetect. Objetivo −16 dB.
-   entra segundo en el que empieza la música de verdad (tras el silencio inicial)
-   sale  segundo en el que empieza el silencio final, medido con silencedetect
-         a −45 dB. El bucle vuelve a `entra` al llegar aquí.
-   La equivalencia con el fichero original y el criterio de reparto están en
-   docs/musica.md; los créditos, en audio/CREDITOS.txt.
-   ────────────────────────────────────────────────────────────────────────── */
+/* Tabla CERRADA de pistas */
 CB.musica.PISTAS = {
   temaPrincipal: { fichero: 'tema-principal.mp3', gan: 0.851, entra: 0,    sale: 137.0 },
   cantera:       { fichero: 'cantera.mp3',        gan: 0.631, entra: 0,    sale: 72.8 },
@@ -55,18 +16,7 @@ CB.musica.PISTAS = {
   victoria:      { fichero: 'victoria.mp3',       gan: 0.624, entra: 0,    sale: 105.5 }
 };
 
-/* Qué suena en cada una de las 18 pantallas.
-   null  = silencio deliberado.
-   La ausencia de una pantalla en esta tabla NO ocurre: están las 18, para que
-   añadir una pantalla nueva y olvidarse de la música sea un fallo de prueba y
-   no un silencio que nadie note. 'p-partida' se resuelve por el mundo.
-
-   HAY UNA EXCEPCIÓN, Y SOLO UNA. CB.jefes.terminar() llama a poner('victoria')
-   por su cuenta, sin pasar por el bus, porque NO cambia de pantalla: pinta la
-   victoria encima de p-jefe, y sin esa línea la música seguiría diciendo que hay
-   peligro justo cuando el mundo se cierra. Se anota aquí para que quien lea esta
-   tabla no la crea completa: lo es para el bus, no para todo el juego. La
-   decisión está en docs/decisiones.md. */
+/* HAY UNA EXCEPCIÓN, Y SOLO UNA. */
 CB.musica.PANTALLAS = {
   'p-portada':     'temaPrincipal',
   'p-perfiles':    'temaPrincipal',
@@ -88,10 +38,6 @@ CB.musica.PANTALLAS = {
   'p-error':       null
 };
 
-/* Crédito de cada pista. La Pixabay Content License no exige atribución, pero
-   el crédito le corresponde a quien compuso la música igual. Esta lista es la
-   que pinta la pantalla de Créditos; audio/CREDITOS.txt dice lo mismo para
-   quien abra la carpeta sin abrir el juego. */
 CB.musica.CREDITOS = [
   { clave: 'temaPrincipal', autor: 'musicinmedia',        id: 381366, dura: '2:20' },
   { clave: 'victoria',      autor: 'musicinmedia',        id: 453214, dura: '1:49' },
@@ -115,17 +61,7 @@ CB.musica.POR_BIOMA = {
   mina:    'mundoMina'
 };
 
-/* Los cuatro niveles del ajuste. Son botones, no un deslizador: en esta
-   interfaz no hay ni un solo control continuo y no va a haberlo ahora (§10.2).
-
-   EL 0,62 DE «ALTA» NO ES UN GUSTO. El volumen que se le pide al elemento es
-   nivel × ganancia de la pista, y hay ganancias por encima de 1 (mundo-rio
-   venía 4 dB por debajo del resto y necesita 1,603). Si nivel × ganancia se
-   pasa de 1, el recorte cae justo sobre la pista que necesitaba el empujón:
-   la normalización se desactiva sola y vuelve el desnivel entre pistas que
-   venía a quitar. 0,62 × 1,603 = 0,994. Lo comprueba casos-musica.js, así que
-   una pista nueva más floja que mundo-rio suspende el test en vez de recortar
-   en silencio. */
+/* Son botones, no un deslizador: en esta interfaz no hay ni un solo control continuo y no va a haberlo ahora (§10.2). */
 CB.musica.NIVELES = [
   { etiqueta: 'No',    valor: 0 },
   { etiqueta: 'Baja',  valor: 0.20 },
@@ -155,7 +91,7 @@ CB.musica.canales = [
 CB.musica._activo = 0;
 CB.musica._reloj = null;
 
-/* ── Volumen ────────────────────────────────────────────────────────────── */
+/* Volumen */
 
 /* El silencio del aparato manda sobre todo: si un adulto apaga el sonido,
    apaga TODO el sonido, no solo los efectos. */
@@ -191,28 +127,7 @@ CB.musica.factorBucle = function (el, p) {
   return f;
 };
 
-/* ── iOS NO DEJA FIJAR EL VOLUMEN ───────────────────────────────────────────
-   En iPhone y iPad, `HTMLMediaElement.volume` es de solo lectura: asignarle un
-   valor no hace nada y leerlo devuelve siempre 1. Está documentado por Apple y
-   el motivo es que el volumen lo manda el botón físico del aparato.
-
-   Todo este módulo se apoyaba en `el.volume`, así que en un iPad —que es
-   objetivo declarado del proyecto, el de 6.ª generación— pasaba esto:
-
-     · silenciar el juego NO silenciaba la música. Justo el fallo que el
-       comentario de CB.audio.silenciar() llama «el más visible posible».
-     · «Baja», «Media» y «Alta» sonaban exactamente igual: a tope.
-     · la normalización por pista no hacía nada, y el desnivel de 8 dB entre
-       pistas volvía entero.
-     · el fundido cruzado no fundía: durante 900 ms sonaban DOS pistas a la vez
-       a todo volumen.
-     · el agachado durante la voz tampoco funcionaba, de modo que un niño que
-       aún no lee con fluidez tenía que separar la voz de la música a tope.
-
-   Sin volumen, solo hay dos estados: sonando o parado. Es peor que un fundido,
-   pero es infinitamente mejor que lo anterior, y el «No» del ajuste vuelve a
-   silenciar de verdad. Se detecta una vez, escribiendo y releyendo.
-   ────────────────────────────────────────────────────────────────────────── */
+/* iOS NO DEJA FIJAR EL VOLUMEN */
 CB.musica.volumenAjustable = null;          // null = todavía no se sabe
 
 CB.musica.detectarVolumen = function (el) {
@@ -248,7 +163,7 @@ CB.musica.aplicarVolumenes = function () {
   }
 };
 
-/* ── Motor ──────────────────────────────────────────────────────────────── */
+/* Motor */
 CB.musica.arrancarReloj = function () {
   if (CB.musica._reloj) return;
   CB.musica._reloj = setInterval(CB.musica.tick, CB.musica.MS_TICK);
@@ -296,16 +211,6 @@ CB.musica.tick = function () {
   if (!vivo) CB.musica.pararReloj();
 };
 
-/* DÓNDE SE QUEDÓ CADA PISTA. Es estado de SESIÓN, no del perfil: 07-musica.js es
-   adaptador de plataforma (capa 00-07) y puede tenerlo, pero el almacén no es
-   esto y aquí no se persiste nada.
-
-   Sin esto, cada reparación y cada descanso ponían 'calma' y al volver la pista
-   del mundo empezaba otra vez en su punto de entrada. Con un fallo de cada dos
-   llevando a reparación y un descanso cada 6-8 ítems, son cinco o seis idas y
-   venidas por partida: de nueve pistas normalizadas y con puntos de bucle
-   medidos, el niño oía siempre los mismos treinta primeros segundos. Monotonía
-   fabricada por el motor. */
 CB.musica.posiciones = {};
 
 CB.musica.soltar = function (c) {
@@ -327,7 +232,7 @@ CB.musica.soltar = function (c) {
   c.objetivo = 0;
 };
 
-/* ── Elementos ──────────────────────────────────────────────────────────── */
+/* Elementos */
 CB.musica.crearElemento = function (clave) {
   var p = CB.musica.PISTAS[clave];
   if (!p) return null;
@@ -348,7 +253,7 @@ CB.musica.crearElemento = function (clave) {
   return el;
 };
 
-/* ── API pública ────────────────────────────────────────────────────────── */
+/* API pública */
 
 /**
  * Pone una pista con fundido cruzado. Si ya suena esa misma, no hace nada:
@@ -454,35 +359,18 @@ CB.musica.parar = function () {
   CB.musica.pararReloj();
 };
 
-/* ── Resolución pantalla → pista ────────────────────────────────────────── */
+/* Resolución pantalla → pista */
 CB.musica.claveDePantalla = function (idPantalla) {
   var v = CB.musica.PANTALLAS[idPantalla];
   if (v !== '@mundo') return (v === undefined) ? null : v;
 
-  /* En partida, la música la fija el bioma del mundo: cambiar de mundo se oye
-     antes de leerse.
-
-     SE LEE `estado.mundo`, QUE ES LO QUE ESCRIBE CB.partida.iniciar(). Antes
-     leía `estado.mundoId`, que no existe en ninguna parte del proyecto: el
-     estado guarda el OBJETO de mundo, no su id. `mundoId` es el nombre del
-     parámetro de iniciar({mundoId:…}), y ahí se quedó.
-
-     La consecuencia era muda y completa: undefined → getMundo(null) → null →
-     el respaldo. Tres de las cuatro pistas de mundo —bosque, río y mina— no han
-     sonado jamás, y toda expedición sonaba a pradera. No hay error, no hay
-     silencio, no hay nada que mirar: suena música, solo que siempre la misma.
-
-     El test lo daba por bueno porque construía el estado a mano con la forma
-     equivocada, `{mundoId: m.id}`, copiada de esta misma línea. Un test escrito
-     contra la implementación en vez de contra la conducta se pone de acuerdo con
-     el fallo. El guardián E42 de casos-regresiones.js parte del estado que crea
-     iniciar() de verdad, que es lo único que no se puede inventar. */
+  /* No hay error, no hay silencio, no hay nada que mirar: suena música, solo que siempre la misma. */
   var mundo = (CB.partida && CB.partida.estado) ? CB.partida.estado.mundo : null;
   var clave = (mundo && mundo.bioma) ? CB.musica.POR_BIOMA[mundo.bioma] : null;
   return clave || 'mundoPradera';
 };
 
-/* ── Arranque ───────────────────────────────────────────────────────────── */
+/* Arranque */
 CB.musica.iniciar = function () {
   if (CB.musica.iniciada) return;
   CB.musica.iniciada = true;

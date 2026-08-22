@@ -1,16 +1,4 @@
-/* ============================================================================
-   40-partida.js — El bucle de juego
-   ----------------------------------------------------------------------------
-   PRESUPUESTO DE TIEMPO, NO DE ÍTEMS (PLAN §3.6): el plan v1 fijaba 15 ítems y a
-   la vez un objetivo de 6-9 minutos, y sus propios datos daban 21-58 s por
-   problema de enunciado. Una partida con 6 problemas y 9 operaciones supera los
-   12 minutos. Eran incompatibles.
-
-   CUOTA OBLIGATORIA: toda partida de ≥10 ítems sirve ≥2 problemas de enunciado y
-   ≥1 ítem de cada bloque desbloqueado. Sin ella, un motor adaptativo puro podía
-   dejar a un niño 10 sesiones sin ver un solo problema con texto, que es
-   exactamente lo que el usuario pidió que hubiera.
-   ========================================================================== */
+/* 40-partida.js — El bucle de juego */
 
 var CB = CB || {};
 CB.partida = CB.partida || {};
@@ -26,7 +14,7 @@ CB.partida.PROB_BLOQUE_RARO = 0.05;   // ~1 de cada 20
 CB.partida.estado = null;
 CB.partida.bloqueado = false;
 
-/* ── Construcción del guion ─────────────────────────────────────────────── */
+/* Construcción del guion */
 CB.partida.estimaSegundos = function (nivel) {
   if (nivel.letra === 'P') return CB.partida.EST_S.problema;
   if (nivel.letra === 'V') return CB.partida.EST_S.vocabulario;
@@ -39,11 +27,7 @@ CB.partida.rtMedianaDe = function (nivel, perfil) {
   return CB.partida.estimaSegundos(nivel);
 };
 
-/* Tope de repeticiones del MISMO nivel dentro de una partida.
-   Sin él, en la primera partida de la vida del niño solo hay cuatro niveles
-   abiertos (los que no tienen prerrequisitos) y el relleno por presupuesto de
-   tiempo produce un guion de 20 ítems con 12 del mismo nivel: monótono y, de
-   hecho, la mejor manera de que abandone en la sesión 1. */
+/* Sin él, en la primera partida de la vida del niño solo hay cuatro niveles abiertos (los que no tienen prerrequisitos) y el relleno por presupuesto de tiempo produce un guion de 20 ítems con 12 del mismo nivel: monótono y, de hecho, la… */
 CB.partida.MAX_REPETICIONES = 3;
 
 CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
@@ -138,7 +122,7 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   return CB.util.barajar(guion, rng).slice(0, CB.partida.MAX_ITEMS);
 };
 
-/* ── Iniciar ────────────────────────────────────────────────────────────── */
+/* Iniciar */
 CB.partida.iniciar = function (opciones) {
   opciones = opciones || {};
   var perfil = CB.perfil;
@@ -178,10 +162,7 @@ CB.partida.iniciar = function (opciones) {
     prerrequisitoPendiente: null,
     /* La veta del ítem ANTERIOR, para saber cuándo se cambia de veta. */
     vetaPrevia: null,
-    /* Las vetas que se quedaron a medias sin dejar deuda en la cola de repaso.
-       Hoy solo hay una manera de que eso pase —que se agote el tiempo, que no
-       reinserta nada— y sin este mapa el juego cantaría «Nivel superado» de una
-       veta cuyo único ítem se quedó sin contestar. */
+    /* Hoy solo hay una manera de que eso pase —que se agote el tiempo, que no reinserta nada— y sin este mapa el juego cantaría «Nivel superado» de una veta cuyo único ítem se quedó sin contestar. */
     vetasSinCerrar: {},
     colaRepaso: CB.leitner.nuevaCola(),
     itemsServidos: [],
@@ -217,16 +198,7 @@ CB.partida.iniciar = function (opciones) {
   return CB.partida.estado;
 };
 
-/**
- * Cuántos ítems de esta veta le quedan a la expedición: los del guion que aún no
- * se han servido, más los que esperan en la cola de repaso por haberse fallado.
- *
- * CUENTA DE MÁS A PROPÓSITO. Una reinserción consume el hueco de un ítem del
- * guion, así que este número es un techo, no una cifra exacta. Equivocarse por
- * arriba significa callarse una vez; equivocarse por abajo significa cantar
- * «Nivel superado» y volver a servir esa misma veta tres ítems después, que es
- * mentirle a quien juega. De los dos errores posibles solo uno es aceptable.
- */
+/* De los dos errores posibles solo uno es aceptable. */
 CB.partida.quedanDeLaVeta = function (e, nivelId) {
   if (!e || !nivelId) return 0;
   var n = 0, i;
@@ -239,25 +211,6 @@ CB.partida.quedanDeLaVeta = function (e, nivelId) {
   return n;
 };
 
-/**
- * ¿Se acaba de terminar una veta? Devuelve el nivel que queda atrás, o null.
- *
- * SUPERADA SIGNIFICA SUPERADA, y por eso hay tres condiciones y no una:
- *   1. que la veta del ítem que llega sea otra distinta;
- *   2. que a la anterior no le quede ni un ítem por delante —ni en el guion ni
- *      en la cola de repaso, donde cae todo lo que se falla dos veces—;
- *   3. que no se haya quedado a medias por tiempo agotado.
- *
- * La segunda es la que hace honesta a la frase: un ítem fallado vuelve, así que
- * mientras se deba un repaso de esa veta no se ha superado nada. La tercera
- * tapa el único agujero que deja la segunda, porque el tiempo agotado no
- * reinserta.
- *
- * Se pregunta al SERVIR el ítem siguiente y no al acertar el anterior, y eso
- * tampoco es casual: en el momento del acierto todavía no se sabe qué veta viene
- * —una reinserción puede colarse por delante del guion—, así que anunciarla
- * entonces sería adivinar. Aquí ya está decidida.
- */
 CB.partida.vetaSuperada = function (nivelId) {
   var e = CB.partida.estado;
   if (!e || !e.vetaPrevia || e.vetaPrevia === nivelId) return null;
@@ -266,7 +219,7 @@ CB.partida.vetaSuperada = function (nivelId) {
   return CB.catalogo.get(e.vetaPrevia);
 };
 
-/* ── Servir un ítem ─────────────────────────────────────────────────────── */
+/* Servir un ítem */
 CB.partida.servirItem = function () {
   var e = CB.partida.estado, perfil = CB.perfil;
   if (!e) return;
@@ -337,17 +290,11 @@ CB.partida.servirItem = function () {
   e.intento = 1;
   e.lecturaHecha = false;
 
-  /* LA GALERÍA SE PINTA AQUÍ, y no solo en trasAcierto: en ese momento e.indice
-     todavía es el del ítem que se acaba de responder, así que la fila iría un
-     bloque por detrás toda la partida. Aquí `indice` es exactamente el número de
-     ítems ya servidos, que es lo que la fila tiene que decir. */
+  /* LA GALERÍA SE PINTA AQUÍ, y no solo en trasAcierto: en ese momento e.indice todavía es el del ítem que se acaba de responder, así que la fila iría un bloque por detrás toda la partida. */
   CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
                     indice: e.indice, total: e.guion.length });
 
-  /* ── EN QUÉ VETA ESTAMOS ─────────────────────────────────────────────────
-     Se resuelve ANTES de mover e.vetaPrevia, que es lo que la pregunta compara.
-     El rótulo se repinta siempre; la cinta solo cuando de verdad se ha cerrado
-     una veta, que son tres o cuatro veces por expedición y no veinte. */
+  /* EN QUÉ VETA ESTAMOS */
   var superada = CB.partida.vetaSuperada(nivelId);
   e.vetaPrevia = nivelId;
   CB.ui.pintarVeta(nivel, e.mundo);
@@ -356,30 +303,10 @@ CB.partida.servirItem = function () {
   CB.ui.pintarBioma(e.mundo.bioma, e.indice / Math.max(1, e.guion.length));
   CB.partida.pintarRespuesta(item);
 
-  /* ── «NIVEL SUPERADO» ────────────────────────────────────────────────────
-     La cinta lleva el grito corto y el mensaje quieto lleva las dos frases que
-     hay que poder leer: cuál se ha cerrado y cuál empieza. Es el mismo reparto
-     que el resto del juego —la cinta cruza en un segundo y medio y ahí no cabe
-     nada que haya que leer— y es lo que hace que decir a la vez «superado» y «a
-     dónde vamos» no obligue a elegir entre las dos.
-
-     Va ANTES del anuncio de la consigna a propósito: CB.ui.mensaje escribe en la
-     región viva, y en el mismo turno gana la última escritura. La última tiene
-     que ser la que dice qué hay que hacer ahora.
-
-     Y NO CUANDO ADEMÁS SE BAJA AL PRERREQUISITO: los dos escriben en el mismo
-     nodo y el último ganaría, así que el aviso del escalón 4 —que es el que hace
-     falta entender— se comería a este. No pueden coincidir, porque el escalón 4
-     llega detrás de cuatro fallos seguidos y una veta que debe un repaso nunca
-     está superada; pero eso es un razonamiento sobre el estado de otro fichero,
-     y de esos ya se ha caído alguno en este proyecto. */
+  /* «NIVEL SUPERADO» */
   var dicho = '';
   if (superada && !delPrerrequisito) {
-    /* PRIMERO A DÓNDE VAMOS, y no es indiferente: la caja del mensaje garantiza
-       tres líneas y la veta con el nombre más largo del catálogo ocupa dos. Si
-       la frase de destino fuera la segunda, con dos nombres largos se quedaría
-       fuera justo la mitad que se ha pedido enseñar. La que puede recortarse es
-       la de despedida, que además ya la ha dicho la cinta. */
+
     dicho = 'Ahora vas a: ' + nivel.nombre + '. Ya has terminado ' +
             superada.nombre + '. ';
     CB.ui.mensaje('Ahora vas a: ' + nivel.nombre + '. Ya has terminado ' +
@@ -393,27 +320,7 @@ CB.partida.servirItem = function () {
   CB.a11y.anunciar(dicho + (item.esRetoBonus ? 'Reto. ' : '') +
                    (item.consigna || item.enunciado || ''));
 
-  /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la
-     primera versión sin que ocurriera: aquí solo había una llamada a la región
-     viva, que es texto para un lector de pantalla, no voz. Un niño de 7 años que
-     apenas lee se quedaba con el enunciado delante y nada que lo dijera, salvo
-     que supiera pulsar la tecla L.
-
-     TRES CONDICIONES, y las tres importan:
-
-     · Solo los problemas de enunciado (item.subtipo). Leer «6 − 3» en voz alta
-       no ayuda a nadie y alarga cada ítem sin motivo.
-     · Solo con el ajuste encendido. CB.voz.leer lo comprueba, pero se comprueba
-       también AQUÍ porque la alternativa —CB.voz.leerOGuiar— cae en
-       lecturaGuiada, que NO mira CB.voz.activa: sería audio que arranca solo y
-       no se puede apagar, es decir, WCAG 2.2 1.4.2 incumplido.
-     · Solo con voz de verdad disponible. En un Chromebook sin voz española la
-       lectura guiada va a 1000 ms por palabra: veinticinco segundos de resaltado
-       con el cronómetro corriendo, y todos los problemas se agotarían por tiempo.
-
-     El cronómetro se para mientras lee y se reanuda al terminar. Si la voz no
-     llega a salir, CB.voz.leer llama igualmente a alTerminar, así que el reloj
-     vuelve a arrancar en el peor caso. */
+  /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la primera versión sin que ocurriera: aquí solo había una llamada a la región viva, que es texto para un lector de pantalla, no voz. */
   if (item.subtipo && CB.voz.activa && CB.voz.disponible()) {
     CB.partida.pararCronometro();
     CB.voz.leer(item.enunciado || item.consigna || '', function () {
@@ -421,11 +328,6 @@ CB.partida.servirItem = function () {
     });
   }
 
-  /* Se dice DESPUÉS de pintar, porque servirItem empieza ocultando el mensaje:
-     ponerlo antes equivalía a no ponerlo. Y se dice, en vez de cambiar el nivel
-     en silencio, porque un niño que ve aparecer de golpe algo mucho más fácil
-     sin explicación concluye que el juego se ha estropeado o que le está dando
-     lástima. Se cuenta que es a propósito y que se vuelve. */
   if (delPrerrequisito) {
     CB.ui.mensaje('Vamos a por uno más fácil de este mismo tema. Luego volvemos.', 'animo');
   }
@@ -434,6 +336,8 @@ CB.partida.servirItem = function () {
 /* Elige y monta el componente de respuesta */
 CB.partida.pintarRespuesta = function (item) {
   var e = CB.partida.estado, perfil = CB.perfil;
+
+  if (!e || !item || e.itemActual !== item) return false;
 
   /* Se abre el cerrojo de «una respuesta por intento». Pasa por aquí tanto el
      ítem nuevo (desde servirItem) como el segundo intento tras un fallo. */
@@ -449,24 +353,7 @@ CB.partida.pintarRespuesta = function (item) {
 
   function responder(valor, origen, extra) { CB.partida.responder(valor, origen, extra); }
 
-  /* LA PRESENTACIÓN DE CADA COMPONENTE, LA PRIMERA VEZ QUE SE VE (§7.3).
-     Las siete frases llevaban escritas desde la primera versión, con sus dos
-     funciones de apoyo, y NO LAS LLAMABA NADIE: `componentesVistos` se declaraba
-     en el esqueleto del perfil, se reparaba en la migración y estaba en los
-     campos permitidos, pero no lo escribía nunca nadie. Un niño veía la balanza
-     por primera vez sin una sola frase que le dijera qué hacer, teniéndola
-     escrita. Es la familia de E41.
-
-     Se marca DONDE SE MONTA cada componente, no adivinando desde item.formato:
-     los nombres no coinciden —el formato dice 'ordenar' y el componente se llama
-     'ordenarFila'— y además el componente real depende de condiciones de
-     ejecución (un problema monta selectorDatos o tecladoBloques según el
-     trimestre). Resolverlo por el formato habría dado `undefined` en casi todos
-     los casos, sin fallar: la familia de E42.
-
-     Solo en el PRIMER intento: en el segundo ya hay un mensaje en pantalla
-     —«Esta no suma gemas. Te queda otro intento»— y taparlo con una instrucción
-     sería peor que no presentar nada. */
+  /* Las siete frases llevaban escritas desde la primera versión, con sus dos funciones de apoyo, y NO LAS LLAMABA NADIE: `componentesVistos` se declaraba en el esqueleto del perfil, se reparaba en la migración y estaba en los campos… */
   function presentar(tipo) {
     if (e.intento !== 1) return;
     var frase = CB.componentes.PRESENTACION[tipo];
@@ -490,7 +377,7 @@ CB.partida.pintarRespuesta = function (item) {
       CB.componentes.tecladoBloques(item, responder, { bloqueoMs: bloqueo });
     }
     CB.partida.iniciarCronometro(true);
-    return;
+    return true;
   }
 
   if (formato === 'opciones4') {
@@ -503,11 +390,7 @@ CB.partida.pintarRespuesta = function (item) {
       opciones.push({ valor: item.respuesta, texto: item.termino, codigoError: null });
       opciones = CB.util.barajar(opciones, e.rng);
     } else if (item.distractoresFijos) {
-      /* EL GENERADOR YA HA ELEGIDO LAS TRES, y antes se llamaba igualmente a
-         CB.distractores.para() para tirar el resultado dos líneas después. Con
-         los euros solo sobraba trabajo; con los céntimos rompe, porque la
-         respuesta es 'c20' y el motor de distractores hace aritmética con ella.
-         Un `else if` en vez de un `if` dentro. */
+      /* Con los euros solo sobraba trabajo; con los céntimos rompe, porque la respuesta es 'c20' y el motor de distractores hace aritmética con ella. */
       opciones = item.distractoresFijos.slice(0, 3)
         .map(function (v) { return { valor: v, codigoError: null }; })
         .concat([{ valor: item.respuesta, codigoError: null }]);
@@ -518,7 +401,7 @@ CB.partida.pintarRespuesta = function (item) {
         presentar('tecladoBloques');
         CB.componentes.tecladoBloques(item, responder, { bloqueoMs: bloqueo });
         CB.partida.iniciarCronometro(false);
-        return;
+        return true;
       }
       opciones = d.opciones;
     }
@@ -542,29 +425,11 @@ CB.partida.pintarRespuesta = function (item) {
   }
 
   CB.partida.iniciarCronometro(false);
+  return true;
 };
 
-/* ── Cronómetro ─────────────────────────────────────────────────────────────
-   En los PROBLEMA_* el cronómetro NO arranca al mostrar el enunciado: arrancar
-   ahí puntúa la VELOCIDAD LECTORA, no la competencia matemática. Un niño con
-   dislexia o con lectura silabeante obtendría M_tiempo bajo aunque razonara
-   perfectamente (§11.4). */
-/* SEGUNDOS POR ÍTEM. Un solo número para todo el juego: 30, que es lo pedido.
-
-   Antes cada familia tenía su propio tLimite (18 s la numeración, 50 s los
-   problemas) y «Con calma» lo doblaba, pero nada de eso se veía: era un
-   temporizador invisible. Ahora la cuenta atrás está en pantalla, y un reloj
-   que dura distinto en cada pregunta sin decir por qué desconcierta más que
-   ayuda. tIdeal y tLimite SIGUEN existiendo y siguen gobernando el bono por
-   rapidez (§11.7): lo que cambia es solo cuándo se agota el tiempo.
-
-   «Sin prisa» = 0 = sin cuenta atrás, y no es un detalle de gusto: la WCAG
-   2.2.1 exige que un límite de tiempo se pueda desactivar, y esto es material
-   escolar sujeto a la EN 301 549.
-
-   Los problemas de enunciado son el punto flojo de tener 30 s para todo: hay
-   que leer tres frases antes de poder empezar a pensar. Si el pilotaje con
-   niños dice que se quedan cortos, se sube AQUÍ y en ningún otro sitio. */
+/* Cronómetro */
+/* Un solo número para todo el juego: 30, que es lo pedido. */
 CB.partida.SEGUNDOS_ITEM = { normal: 30, conCalma: 30, sinPrisa: 0 };
 
 CB.partida.msDeItem = function (modoTiempo) {
@@ -595,7 +460,7 @@ CB.partida.iniciarCronometro = function (esProblema) {
   }, CB.componentes.MS_CONSTRUCCION);
 
   e.temporizador = setTimeout(function () {
-    CB.partida.tiempoAgotado();
+    if (CB.partida.estado === e) CB.partida.tiempoAgotado();
   }, limite + CB.componentes.MS_CONSTRUCCION);
 };
 
@@ -606,30 +471,7 @@ CB.partida.pararCronometro = function () {
   CB.ui.reloj.parar();
 };
 
-/* El primer toque de un problema arranca el cronómetro de puntuación.
-   ────────────────────────────────────────────────────────────────────────────
-   ESTA FUNCIÓN EXISTÍA Y NO LA LLAMABA NADIE. El único sitio que la invocaba era
-   `responder()`, o sea el instante EXACTO en que el niño contesta: `t0` se ponía
-   a `ahora()` y el rt que se medía a renglón seguido era 0 ms. Medido en
-   navegador: 3.743 ms reales de lectura y razonamiento → rt registrado 0.
-
-   Lo que eso rompía, y ninguna de las 405 comprobaciones lo veía:
-
-     · el multiplicador de tiempo salía siempre 1,4 —el tope— y con él las 3
-       gemas de bono por rapidez, en TODOS los problemas de enunciado, tardara
-       lo que tardara. La familia que más cuesta era la que más premiaba.
-     · el informe del adulto daba 0 ms de tiempo medio en los 20 subtipos.
-     · y lo peor: en el antiazar, rt = 0 dispara S1 (< 700 ms) siempre. Tres
-       problemas fallados seguidos disparan además S3 (tres fallos de menos de
-       2 s), y dos señales son azar. Es decir, el niño que lee despacio y falla
-       tres problemas seguidos —justo el que más ayuda necesita— quedaba marcado
-       como que responde al tuntún. Con el rt de verdad: cero señales.
-
-   Ahora la llama `CB.componentes.conectarLectura()` desde el contenedor de
-   respuesta, que es donde ocurre el primer toque REAL. Se comprueba `subtipo`
-   aquí dentro y no en quien llama, para que ningún sitio nuevo pueda pisar el
-   `t0` de una operación corriente: en esas el cronómetro arranca al mostrarlas y
-   mover `t0` al primer dígito regalaría el tiempo de pensarlo. */
+/* El primer toque de un problema arranca el cronómetro de puntuación. */
 CB.partida.marcarLectura = function () {
   var e = CB.partida.estado;
   if (!e || e.lecturaHecha) return;
@@ -646,11 +488,6 @@ CB.partida.tiempoAgotado = function () {
   /* El tiempo agotado NUNCA apaga una luz. Ni el primero, ni ninguno. */
   var r = CB.vidas.timeout(e.luces);
 
-  /* PERO SÍ DEJA LA VETA A MEDIAS. Un fallo reinserta el ítem —vuelve tres o
-     cinco ítems después— y por eso la deuda se ve en la cola de repaso; quedarse
-     sin tiempo no reinserta nada, así que la veta parecería cerrada sin que
-     nadie la haya contestado. Sin esta línea el juego cantaría «Nivel superado»
-     de una veta cuyo único ítem se quedó en blanco. */
   if (e.itemActual) e.vetasSinCerrar[e.itemActual.nivelId] = true;
 
   if (r.cambiaModo && e.modoTiempo !== 'sinPrisa') {
@@ -658,44 +495,24 @@ CB.partida.tiempoAgotado = function () {
     CB.ui.mensaje('Vamos con más calma.', 'animo');
     CB.a11y.anunciar('Vamos con más calma.');
   }
-  /* INALCANZABLE EN LA PRÁCTICA, y está bien que lo sea. A los 3 tiempos
-     agotados seguidos, r.cambiaModo pone la partida en «Sin prisa», y ese modo
-     apaga el cronómetro del todo: a partir de ahí no puede volver a agotarse el
-     tiempo, así que timeoutsPartida se queda clavado en 3 y nunca llega a los 6
-     que pide TIMEOUTS_FIN.
-
-     No se quita porque CB.vidas.timeout() es una función pura y su contrato es
-     suyo; pero conviene saber que la protección REAL contra un niño que se
-     queda sin tiempo una y otra vez es el cambio de modo de arriba, no esto.
-     Quitarle el reloj es mejor intervención que terminarle la sesión. */
+  /* A los 3 tiempos agotados seguidos, r.cambiaModo pone la partida en «Sin prisa», y ese modo apaga el cronómetro del todo: a partir de ahí no puede volver a agotarse el tiempo, así que timeoutsPartida se queda clavado en 3 y nunca llega a… */
   if (r.finAmable) { CB.partida.finalizar('pausa'); return; }
 
   CB.ui.mensaje(CB.mensajes.animo({
     perfil: CB.perfil, destreza: e.itemActual.destreza, rng: e.rng
   }), 'animo');
   CB.ui.festejo.mostrar('animo');
-  setTimeout(function () { CB.partida.siguiente(); }, 2200);
+  setTimeout(function () {
+    if (CB.partida.estado === e) CB.partida.siguiente();
+  }, 2200);
 };
 
-/* ── Responder ──────────────────────────────────────────────────────────── */
+/* Responder */
 CB.partida.responder = function (valor, origen, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
   if (!e || !e.itemActual || CB.partida.bloqueado) return;
 
-  /* UNA RESPUESTA POR INTENTO. Los botones NO se deshabilitan al responder
-     —siguen en pantalla mientras se ve el mensaje—, así que seis toques en OK
-     registraban SEIS respuestas. Medido: 6 pulsaciones, 18 gemas en vez de 3.
-
-     Y lo grave no eran las gemas. Cada toque metía una observación más en el
-     motor adaptativo, así que la competencia estimada de esa destreza se movía
-     seis veces por un solo ítem; y el informe del adulto contaba seis intentos
-     donde hubo uno. Es decir: machacar el botón, que es exactamente lo que hace
-     un niño de 7 años cuando la respuesta le sale sola, falseaba en silencio lo
-     único que este juego promete medir.
-
-     El cerrojo se abre en pintarRespuesta(), que es el único sitio donde se
-     construye la zona de respuesta, y por el que pasan tanto el ítem nuevo como
-     el segundo intento tras un fallo. */
+  /* Cada toque metía una observación más en el motor adaptativo, así que la competencia estimada de esa destreza se movía seis veces por un solo ítem; y el informe del adulto contaba seis intentos donde hubo uno. */
   if (e.respondido) return;
   e.respondido = true;
 
@@ -705,10 +522,7 @@ CB.partida.responder = function (valor, origen, extra) {
   var item = e.itemActual;
   var nivel = CB.catalogo.get(item.nivelId);
 
-  /* Red de seguridad: si nadie tocó nada antes de contestar —un formato que no
-     pase por el contenedor de respuesta, o una vía de teclado futura— se mide
-     desde que se MOSTRÓ el enunciado. Mide de más, porque incluye la lectura,
-     pero medir de más es un error que se ve; medir cero es el que no se ve. */
+  /* Red de seguridad: si nadie tocó nada antes de contestar —un formato que no pase por el contenedor de respuesta, o una vía de teclado futura— se mide desde que se MOSTRÓ el enunciado. */
   if (item.subtipo && !e.lecturaHecha) {
     e.lecturaHecha = true;
     e.t0 = e.tLectura0 || CB.util.ahora();
@@ -719,12 +533,7 @@ CB.partida.responder = function (valor, origen, extra) {
   var correcto;
   if (item.respuestaSigno) correcto = (valor === item.respuestaSigno);
   else if (origen === 'ordenar') correcto = (valor === item.respuesta);
-  /* LA RESPUESTA DE «TOCA LA MONEDA DE 20 CÉNTIMOS» NO ES UN NÚMERO: es 'c20',
-     porque el 20 a secas ya lo tiene el billete de 20 €. Sin esta rama,
-     Number('c20') es NaN, NaN === NaN es false y la pregunta se contestaría mal
-     siempre —tocando la moneda correcta—. Es exactamente la forma de fallo que
-     no rompe nada y que solo se ve jugando. Ver la cabecera de
-     `15-gen-dinero.js`. */
+  /* Es exactamente la forma de fallo que no rompe nada y que solo se ve jugando. */
   else if (typeof item.respuesta === 'string') correcto = (String(valor) === item.respuesta);
   else correcto = (Number(valor) === Number(item.respuesta));
 
@@ -749,7 +558,7 @@ CB.partida.responder = function (valor, origen, extra) {
   CB.partida.trasFallo(item, nivel, extra);
 };
 
-/* ── Acierto ────────────────────────────────────────────────────────────── */
+/* Acierto */
 CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
 
@@ -791,16 +600,8 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   CB.ui.personaje('cubi', 'acierto');
   if (e.rachaPrimerIntento >= 3) CB.ui.personaje('chispa', 'racha');
 
-  /* Y la celebración. Lo que cambia entre una y otra es el VEHÍCULO —una
-     insignia, una criatura, una cinta, un cartel, un temblor—, no el recorrido
-     de un mismo cartel: la forma es lo que se reconoce sin leer. Las cuatro
-     categorías ya las calculaba CB.mensajes.categoriaAcierto() desde el primer
-     día; aquí solo se les pone cuerpo. Encima va el bloque raro, que es 1 de
-     cada 20 y se lleva lo que casi nunca se ve. */
-  /* EL CROMO SE RESUELVE ANTES DE GRITAR, para poder decir cuál es. Efecto
-     colateral declarado: mover CB.util.elegir por delante de sacarDeBolsa cambia
-     el orden de consumo del RNG sembrado. La partida sigue siendo reproducible
-     desde su semilla, pero deja de dar la misma secuencia que daba antes. */
+  /* Las cuatro categorías ya las calculaba CB.mensajes.categoriaAcierto() desde el primer día; aquí solo se les pone cuerpo. */
+
   var cromo = item.esBloqueRaro ? CB.partida.darCromo() : null;
   /* Si coinciden, manda el más raro: el bloque raro es 1 de cada 20 y el reto
      necesita además D === 3. */
@@ -837,28 +638,18 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
 
   /* NUNCA menos de los 1600 ms de siempre: la espera se estira si la coreografía
      es larga, pero no se encoge nunca. Acortarla recortaría tiempo de lectura. */
-  setTimeout(function () { CB.partida.siguiente(); },
+  setTimeout(function () {
+    if (CB.partida.estado === e) CB.partida.siguiente();
+  },
              CB.ui.festejo.espera(festejo, 1600, msg));
 };
 
-/**
- * Cuánto se queda en pantalla el mensaje del primer fallo. Era un 2600 escrito a
- * pelo, el último número del bucle fuera de la fuente única —las otras dos
- * esperas ya pasaban por ella—. Se expone como función para poder comprobarla:
- * un literal dentro de un setTimeout no se puede probar sin leer el código.
- *
- * NO se recorta el suelo. Se estudió quitar los 800 ms de construcción en el
- * segundo intento y es exactamente el patrón de E40: iniciarCronometro tiene
- * MS_CONSTRUCCION cableado en tres sitios, y habilitar los botones antes deja el
- * t0 en el futuro. Eso da rt NEGATIVO: multiplicador de tiempo al tope, bono
- * máximo por rapidez, y esa muestra envenenada entra en el detector de azar.
- */
 CB.partida.esperaSegundoIntento = function (pista) {
   return CB.ui.festejo.espera('animo', 2600,
     'Esta no suma gemas. Te queda otro intento. ' + (pista || ''));
 };
 
-/* ── Fallo ──────────────────────────────────────────────────────────────── */
+/* Fallo */
 CB.partida.trasFallo = function (item, nivel, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
 
@@ -874,19 +665,14 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     e.intento = 2;
     var pistas = CB.datos.MENSAJES.PISTAS[item.destreza];
     var pista = pistas ? pistas[0] : 'Vuelve a mirarlo con calma.';
-    /* «Te queda otro intento» es la frase que faltaba. Sin ella, un fallo no
-       tiene ninguna consecuencia visible —no cae la gema y ya está— y quien
-       juega concluye que el juego no se entera de los errores. La regla es que
-       la luz se apaga SOLO al fallar el segundo intento (docs/decisiones.md,
-       Documento 5), y esa regla hay que contarla en el momento en que importa,
-       no dejarla escrita en un documento que el niño no lee. */
+    /* La regla es que la luz se apaga SOLO al fallar el segundo intento (docs/decisiones.md, Documento 5), y esa regla hay que contarla en el momento en que importa, no dejarla escrita en un documento que el niño no lee. */
     CB.ui.mensaje('Esta no suma gemas. Te queda otro intento. ' + pista, 'animo');
     CB.ui.festejo.mostrar('animo');
     CB.audio.sfx('rocarr');
     setTimeout(function () {
+      if (CB.partida.estado !== e || e.itemActual !== item) return;
       CB.ui.ocultarMensaje();
-      CB.partida.pintarRespuesta(item);
-      CB.partida.iniciarCronometro(!!item.subtipo);
+      if (CB.partida.pintarRespuesta(item)) CB.partida.iniciarCronometro(!!item.subtipo);
     }, CB.partida.esperaSegundoIntento(pista));
     return;
   }
@@ -901,6 +687,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
 
   var diag = CB.diagnosticar(item, Number(item.valorDado));
   CB.ui.mostrarReparacion(item, diag.hipotesis, function () {
+    if (CB.partida.estado !== e || e.itemActual !== item) return;
     var r = CB.vidas.fallo(e.luces, 2, e.modo);
     if (r.apagada) {
       e.lucesApagadas++;
@@ -909,22 +696,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     CB.ui.pintarHUD({ luces: e.luces.luces, gemas: e.gemas,
                    indice: e.indice, total: e.guion.length });
 
-    /* Escalones 3, 4 y 5 según los fallos acumulados de ESE concepto.
-       LA DECISIÓN LA TOMA CB.escalera, no este fichero. Antes se llamaba a
-       siguienteEscalon() al entrar en trasFallo, se guardaba en una variable
-       `esc` que no leía nadie, y aquí abajo se volvían a escribir los umbrales a
-       mano. Dos implementaciones de la misma escalera, y solo una probada: la
-       que no se usaba. Se pedía además ANTES de registrar el fallo, con lo que
-       el escalón que devolvía iba siempre uno por detrás.
-
-       EL ESCALÓN 4 YA ESTÁ. Estuvo declarado y sin implementación desde la
-       primera versión: la escalera decía «al cuarto fallo seguido de un
-       concepto, volvemos un paso atrás al prerrequisito», CB.grafo tenía escrita
-       y documentada la función que lo resuelve —prerrequisitoDominado(), con un
-       comentario que dice literalmente «para el escalón 4»— y no la llamaba
-       nadie. Un agujero de los que no fallan: el juego seguía preguntando lo
-       mismo que el niño no entendía, cuatro veces, cinco, y de ahí saltaba a
-       retirarle el concepto. Reconstruir desde abajo es §12.5 del plan. */
+    /* Dos implementaciones de la misma escalera, y solo una probada: la que no se usaba. */
     CB.partida.aplicarEscalon(
       CB.escalera.siguienteEscalon(
         CB.escalera.fallosDe(e.escalera, item.destreza), 2),
@@ -933,11 +705,6 @@ CB.partida.trasFallo = function (item, nivel, extra) {
     CB.pantallas.ir('p-partida');
     if (CB.vidas.agotadas(e.luces)) { CB.partida.finalizar('luces'); return; }
 
-    /* Y decir que se ha apagado. El HUD lo pinta —la luz se pone gris— pero eso
-       pasa arriba del todo mientras se mira la tarjeta de reparación, así que
-       nadie lo ve ocurrir. Sin esta línea, la luz desaparece sin causa aparente
-       varias pantallas después del fallo que la costó. Se dice lo que pasó y
-       cuántas quedan, sin regañar y sin números negativos (§3.4). */
     if (r.apagada) {
       var quedan = e.luces.luces;
       var aviso = 'Se ha apagado una luz. Te ' +
@@ -948,6 +715,7 @@ CB.partida.trasFallo = function (item, nivel, extra) {
          cuenta a un nino que ya esta en otra pregunta. */
       CB.a11y.urgente(aviso);
       setTimeout(function () {
+        if (CB.partida.estado !== e) return;
         CB.ui.ocultarMensaje();
         CB.partida.siguiente();
       }, 2200);
@@ -957,15 +725,6 @@ CB.partida.trasFallo = function (item, nivel, extra) {
   });
 };
 
-/**
- * Lo que la escalera manda hacer, aplicado. Devuelve la acción realmente
- * ejecutada, o null si no se hizo nada.
- *
- * ESTÁ EXTRAÍDO A PROPÓSITO. Mientras vivía dentro del callback de la tarjeta de
- * reparación, la única forma de comprobar que el escalón 4 funciona era leer el
- * código, y leer el código es exactamente como el escalón 4 pasó varias
- * versiones declarado y sin implementar sin que nada se pusiera rojo.
- */
 CB.partida.aplicarEscalon = function (esc, item, perfil, e) {
   if (!esc || !item || !perfil || !e) return null;
 
@@ -976,12 +735,7 @@ CB.partida.aplicarEscalon = function (esc, item, perfil, e) {
   }
 
   if (esc.accion === 'prerrequisito') {
-    /* Escalón 4. Si no hay ningún prerrequisito dominado —pasa en los niveles
-       que abren un bloque, que por definición no tienen ninguno— no se hace nada
-       y el fallo siguiente cae en el escalón 5, que es lo que ocurría antes de
-       implementar esto. Degradar así es lo correcto: nunca inventarse un nivel
-       que el niño no haya superado ya, porque entonces «volvemos un paso atrás»
-       sería mentira y le pondría delante algo aún más difícil. */
+    /* Degradar así es lo correcto: nunca inventarse un nivel que el niño no haya superado ya, porque entonces «volvemos un paso atrás» sería mentira y le pondría delante algo aún más difícil. */
     var previo = CB.grafo.prerrequisitoDominado(item.nivelId, perfil);
     if (!previo) return null;
     e.prerrequisitoPendiente = previo;
@@ -996,7 +750,7 @@ CB.partida.aplicarEscalon = function (esc, item, perfil, e) {
   return null;
 };
 
-/* ── Azar ───────────────────────────────────────────────────────────────── */
+/* Azar */
 CB.partida.trasAzar = function (item, punt) {
   var e = CB.partida.estado;
   e.azares++;
@@ -1013,16 +767,16 @@ CB.partida.trasAzar = function (item, punt) {
   CB.ui.parpadeoGris();
 
   setTimeout(function () {
+    if (CB.partida.estado !== e || e.itemActual !== item) return;
     if (ef.fuerzaDescanso) { CB.partida.microDescanso(); return; }
     CB.ui.ocultarMensaje();
     CB.ui.ocultarPersonaje('gluglu');
     e.intento = 1;
-    CB.partida.pintarRespuesta(item);
-    CB.partida.iniciarCronometro(!!item.subtipo);
+    if (CB.partida.pintarRespuesta(item)) CB.partida.iniciarCronometro(!!item.subtipo);
   }, 2600);
 };
 
-/* ── Registro en el perfil ──────────────────────────────────────────────── */
+/* Registro en el perfil */
 CB.partida.registrarRespuesta = function (item, rt, correcto, az, extra) {
   var e = CB.partida.estado, perfil = CB.perfil;
 
@@ -1099,7 +853,7 @@ CB.partida.actualizarDestreza = function (item, nivel, correcto) {
   return false;
 };
 
-/* ── Logros y luces extra ───────────────────────────────────────────────── */
+/* Logros y luces extra */
 CB.partida.comprobarLogros = function (item) {
   var e = CB.partida.estado;
   var nuevos = CB.logros.comprobar('acierto', {
@@ -1110,15 +864,18 @@ CB.partida.comprobarLogros = function (item) {
   CB.partida.aplicarLogros(nuevos);
 };
 
-/**
- * Celebra un logro ENCOLADO. Si caen dos en el mismo ítem, el bucle llamaba dos
- * veces a mostrar() y la segunda cancelaba a la primera —mostrar() empieza por
- * ocultar()—, así que el segundo logro no se veía. Es la lección de E51 llegando
- * por una ruta que E51 no vigila.
- */
 CB.partida.festejarLogro = function (grito, indice) {
   if (!indice) { CB.ui.festejo.mostrar('logro', grito); return; }
-  setTimeout(function () { CB.ui.festejo.mostrar('logro', grito); },
+  var e = CB.partida.estado;
+  setTimeout(function () {
+    /* finalizar() pone estado a null después de pintar p-fin; allí la cola sí
+       pertenece a la partida que acaba. En cualquier otra pantalla o partida,
+       el logro diferido ya es caduco. */
+    if (CB.partida.estado === e ||
+        (CB.partida.estado === null && CB.pantallas.actual === 'p-fin')) {
+      CB.ui.festejo.mostrar('logro', grito);
+    }
+  },
              CB.ui.festejo.espera('logro', 0) * indice);
 };
 
@@ -1128,10 +885,7 @@ CB.partida.aplicarLogros = function (nuevos) {
     l = nuevos[i];
     if (!l.luz) {
       CB.a11y.anunciar('Logro: ' + l.nombre);
-      /* EL NOMBRE SE VE, y no cabe en la cinta: «Reto bonus superado» son 19
-         caracteres y el tope del texto de cinta es 16. La cinta lleva el grito
-         corto y fijo; el nombre va al mensaje quieto, que es donde se lee. Sin
-         esta línea el nombre del logro solo lo oía un lector de pantalla. */
+      /* Sin esta línea el nombre del logro solo lo oía un lector de pantalla. */
       CB.ui.mensaje('Logro: ' + l.nombre, 'acierto');
       CB.partida.festejarLogro('¡Logro!', i);
       continue;
@@ -1152,19 +906,7 @@ CB.partida.aplicarLogros = function (nuevos) {
   }
 };
 
-/**
- * Entrega un cromo del bloque raro. DEVUELVE su id, o null si ya están los once.
- *
- * Antes no devolvía nada y su única salida era un anuncio con el ID CRUDO
- * —«el cromo de gluglu»—, que solo oía un lector de pantalla. El premio más raro
- * del juego, uno de cada veinte ítems, se entregaba sin decir qué era.
- *
- * Y NO comprueba logros aquí: lo hace quien la llama, DESPUÉS de pintar la cinta.
- * Estaba dentro, y aplicarLogros pinta su propia cinta 'estalla', que empieza por
- * ocultar la anterior: en el ítem donde cae el quinto cromo y salta
- * «Coleccionista», la cinta del cromo se cancelaba a sí misma. Es E51 otra vez,
- * llegando por una ruta que E51 no vigila.
- */
+/* Antes no devolvía nada y su única salida era un anuncio con el ID CRUDO —«el cromo de gluglu»—, que solo oía un lector de pantalla. */
 CB.partida.darCromo = function () {
   var perfil = CB.perfil, e = CB.partida.estado;
   var posibles = Object.keys(CB.ui.CRIATURAS).filter(function (c) {
@@ -1187,7 +929,7 @@ CB.partida.logrosDeCromo = function () {
   }));
 };
 
-/* ── Avanzar ────────────────────────────────────────────────────────────── */
+/* Avanzar */
 CB.partida.siguiente = function () {
   var e = CB.partida.estado;
   if (!e) return;
@@ -1216,30 +958,19 @@ CB.partida.comprobarLimiteSesion = function () {
   if (transcurrido >= limite) e.finTrasEsteItem = true;
 };
 
-/* ── Micro-descansos: 5 distintos, en bolsa para que no se repitan ──────── */
+/* Micro-descansos: 5 distintos, en bolsa para que no se repitan */
 CB.partida.DESCANSOS = [
   { id: 'romper', titulo: '¡Descanso! Rompe los bloques' },
   { id: 'blopi', titulo: '¡Descanso! Dale de comer a Blopi' },
   { id: 'casa', titulo: '¡Descanso! Coloca bloques en tu casa' },
-  /* NO PROMETE GEMAS, y el título lo decía. El manejador de microDescanso solo
-     marca el cofre como roto, tira partículas y suena: no suma ni una gema a
-     e.gemas ni a perfil.gemas, y los tres cofres siguen pulsables, así que
-     «Elige uno» tampoco era verdad. Se corrige el TEXTO, no la economía: regalar
-     gemas aquí rompería el invariante de la moneda visible, haría del cofre el
-     único de los cinco descansos que paga, y ni siquiera se vería —servirItem no
-     llama a pintarHUD, así que el premio no aparecería hasta el acierto
-     siguiente—. Si algún día se quiere la mecánica entera, es una decisión de
-     economía y va a docs/decisiones.md, no un arreglo de texto. */
+  /* El manejador de microDescanso solo marca el cofre como roto, tira partículas y suena: no suma ni una gema a e.gemas ni a perfil.gemas, y los tres cofres siguen pulsables, así que «Elige uno» tampoco era verdad. */
   { id: 'cofre', titulo: '¡Descanso! Rompe los cofres de piedra' },
   { id: 'vagoneta', titulo: '¡Descanso! Monta en la vagoneta' }
 ];
 
 CB.partida.microDescanso = function () {
   var e = CB.partida.estado;
-  /* EN BOLSA, ahora sí. El comentario decía «en bolsa para que no se repitan» y
-     la línea sorteaba CON REEMPLAZO: con tres descansos por sesión, un 52 % de
-     probabilidad de ver dos veces el mismo. Se reutiliza la bolsa barajada de
-     los mensajes, que ya existe y ya está probada. */
+
   var m = CB.mensajes.asegurar(CB.perfil);
   var idx = CB.mensajes.sacarDeBolsa(m, 'bolsaDescansos',
     CB.partida.DESCANSOS.length, [], [], 0, e.rng);
@@ -1284,7 +1015,7 @@ CB.partida.microDescanso = function () {
   /* Ninguno se puede fallar, ninguno puntúa, todos se pueden saltar. */
 };
 
-/* ── Pausa y partida guardada ───────────────────────────────────────────── */
+/* Pausa y partida guardada */
 CB.partida.pausar = function () {
   var e = CB.partida.estado;
   if (!e || e.pausada) return;
@@ -1343,7 +1074,7 @@ CB.partida.reanudarGuardada = function (perfil) {
   return e;
 };
 
-/* ── Fin de la expedición ───────────────────────────────────────────────── */
+/* Fin de la expedición */
 CB.partida.finalizar = function (motivo) {
   var e = CB.partida.estado, perfil = CB.perfil;
   if (!e) return;
@@ -1395,10 +1126,6 @@ CB.partida.finalizar = function (motivo) {
   });
   CB.partida.aplicarLogros(logrosFin);
 
-  /* QUÉ MUNDOS ESTABAN ABIERTOS, ANTES de abrir ninguno. Capturarlo después
-     daría siempre «ninguno nuevo», que es la forma silenciosa de que esto no
-     funcione. Abrir el Bosque, el Río o la Mina son los tres hitos más grandes
-     de la vida de un perfil y ocurrían sin una sola línea de interfaz. */
   var abiertosAntes = {};
   CB.MUNDOS.forEach(function (m) {
     abiertosAntes[m.id] = !!(perfil.mundos[m.id] && perfil.mundos[m.id].desbloqueado);
@@ -1469,10 +1196,6 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
       'Hoy has practicado. Mañana se notará en el mapa.'));
   }
 
-  /* 1.º bis · HOY ADEMÁS: los tres hitos que el juego calculaba y no enseñaba.
-     Panel nuevo, declarado en docs/decisiones.md porque el orden de lectura de
-     §3.7 es contrato cerrado. Va entre lo dominado y las gemas: son hitos, y los
-     hitos van antes que el recuento. */
   hitos = hitos || {};
   var caja = document.getElementById('fin-hitos');
   var lista = document.getElementById('fin-hitos-lista');
@@ -1503,18 +1226,11 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
 
   /* 2.º Gemas y desglose del bono. */
   var g = document.getElementById('fin-gemas');
-  /* Desde cero, y contando. Es el único sitio donde el número de la partida
-     entera aparece de golpe, así que es donde más se nota que aparezca subiendo.
-     Se pone el 0 a mano porque el nodo conserva el total de la partida anterior:
-     sin eso, contarHasta compararía contra esa cifra vieja y una partida peor que
-     la anterior escribiría el número sin más. */
+
   if (g) { g.textContent = '0'; CB.ui.contarHasta(g, Math.max(0, e.gemas)); }
   var bl = document.getElementById('fin-bono');
   if (bl) {
-    /* EN GEMAS, no en puntos. Decía «+340 de bono» justo debajo del recuento de
-       gemas, en puntos, y parecía que eran gemas. Las gemas del bono ya están
-       dentro de #fin-gemas —se suman en finalizar—, así que esta cifra es
-       literalmente verdad y además es la moneda que el niño conoce. */
+
     var gemasBono = Math.max(0, Math.round(bono.total / 50));
     bl.textContent = gemasBono > 0
       ? ('+' + gemasBono + ' gemas de bono: ' + bono.extras.map(function (x) {
@@ -1537,7 +1253,9 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
   if (cajaAnimo) {
     cajaAnimo.hidden = true;
     if (duro) {
-      setTimeout(function () { cajaAnimo.hidden = false; }, 1500);
+      setTimeout(function () {
+        if (CB.pantallas.actual === 'p-fin') cajaAnimo.hidden = false;
+      }, 1500);
     }
   }
 
@@ -1565,16 +1283,8 @@ CB.partida.nombreDestreza = function (slug) {
   return CB.partida.NOMBRES_DESTREZA[slug] || slug;
 };
 
-/* ── Acciones de la barra de herramientas ───────────────────────────────── */
-/**
- * Como accionLeer, pero SIN levantar el bloqueo de construcción.
- * Es la que usa el altavoz que va dentro del enunciado, y la diferencia no es
- * cosmética: accionLeer pone CB.partida.bloqueado = false a propósito —quien
- * pulsa el altavoz de la barra ya ha invertido tiempo en el ítem—, pero un
- * altavoz que está justo encima de la pregunta se roza sin querer, y ese roce
- * anularía de un toque el bloqueo antiazar de 1200 ms. El niño se quedaría sin
- * la única protección que hay contra responder al tuntún, sin enterarse.
- */
+/* Acciones de la barra de herramientas */
+
 CB.partida.accionLeerSuave = function () {
   var e = CB.partida.estado;
   if (!e || !e.itemActual) return;
@@ -1589,12 +1299,7 @@ CB.partida.accionLeerSuave = function () {
 CB.partida.accionLeer = function () {
   var e = CB.partida.estado;
 
-  /* La calibración NO crea estado de partida (no tiene cronómetro, ni luces, ni
-     puntuación: no debe parecer un test). Sin esta rama, el altavoz de esa
-     pantalla salía por el `return` de abajo y no hacía absolutamente nada —
-     justo en la primera pantalla de la vida del niño, donde más falta hace
-     poder volver a oír la pregunta. Aquí no se toca el cronómetro porque en la
-     calibración no hay ninguno que parar ni que reanudar. */
+  /* La calibración NO crea estado de partida (no tiene cronómetro, ni luces, ni puntuación: no debe parecer un test). */
   if (!e || !e.itemActual) {
     if (CB.pantallas.actual === 'p-calibracion' &&
         CB.calibracion && CB.calibracion.consignaActual) {
@@ -1626,13 +1331,7 @@ CB.partida.accionPista = function () {
   CB.audio.sfx('rocarr');
 };
 
-/* ── El botón de silencio dice la verdad, y lo dicen los DOS ────────────────
-   Hay un botón de sonido por pantalla con barra (calibración y partida) y el
-   silencio es uno solo, del aparato. Actualizando únicamente el botón pulsado
-   pasaban tres cosas: el otro se quedaba mintiendo, el ajuste guardado se
-   restauraba al arrancar sin que el icono se enterara (silencio real con icono
-   de altavoz encendido), y `aria-pressed` no existía hasta el primer clic, de
-   modo que un lector de pantalla no podía decir si estaba pulsado. */
+/* El botón de silencio dice la verdad, y lo dicen los DOS */
 CB.partida.sincronizarSonido = function () {
   var s = !!CB.audio.silenciado;
   var bs = document.querySelectorAll('[data-accion="sonido"]');
@@ -1646,20 +1345,6 @@ CB.partida.sincronizarSonido = function () {
   }
 };
 
-/* SUBE POR EL ÁRBOL, COMO CB.pantallas.conectar. Los cuatro botones de la barra
-   llevan dos <span> dentro —el icono y el rótulo, que existen porque E15/E16
-   exigen palabra visible en todo botón de barra—, así que el ev.target de un
-   toque sobre el emoji o sobre la palabra es el span, no el botón, y el span no
-   tiene data-accion. Leerlo directamente de ev.target dejaba Pista, Pausa,
-   Sonido y Salir sin responder salvo que se acertara en el reborde de padding.
-
-   Es un fallo que se prueba y no se ve: en el navegador el botón se hunde igual
-   —eso es CSS, :active— y no hay ningún error. Lo mismo que 31-pantallas.js ya
-   había resuelto para data-ir con este mismo bucle, y con este mismo comentario.
-
-   La resolución vive en su propia función y no dentro del oyente a propósito:
-   así se puede comprobar sin instalar un oyente de documento en la suite, que
-   además se quedaría puesto y contaría doble en la segunda ejecución. */
 CB.partida.accionDe = function (nodo) {
   var n = 0, a = null;
   while (nodo && nodo !== document.body && n < 4) {
@@ -1672,29 +1357,13 @@ CB.partida.accionDe = function (nodo) {
 
 CB.partida.MS_CONFIRMAR_SALIDA = 3000;
 
-/**
- * Salir pide dos toques. NO se usa CB.componentes.pedirConfirmacion: esa función
- * empieza con `if (!_confirmacionPendiente) { alConfirmar(); return; }`, y esa
- * bandera solo se pone a true cuando el antiazar ha detectado azar. En una
- * partida normal vale false, así que pasar por ahí habría sido un no-operativo
- * — un cerrojo que no cierra, verde en las pruebas y roto en el juego.
- *
- * El botón está abajo a la derecha, a 16 px del de sonido y del mismo tamaño:
- * la zona del pulgar que sujeta la tableta. Un roce y se acababa la expedición.
- *
- * Y el aviso CAMBIA EL TEXTO del botón, no su color: «nunca solo color» es
- * obligación legal, y aquí además el color no se vería —el dedo está encima.
- */
+/* NO se usa CB.componentes.pedirConfirmacion: esa función empieza con `if (!_confirmacionPendiente) { alConfirmar(); return; }`, y esa bandera solo se pone a true cuando el antiazar ha detectado azar. */
 CB.partida.pedirSalida = function (nodo) {
   var boton = nodo && nodo.closest ? nodo.closest('[data-accion="salir-partida"]') : null;
   if (!boton) { CB.partida.finalizar('salida'); return false; }
 
   if (boton.getAttribute('data-confirmando') === 'si') {
-    /* SE SUELTA EL CERROJO ANTES DE SALIR, y no es limpieza cosmética: sin esto
-       el botón se queda armado para siempre. Al volver a una partida, el primer
-       roce en Salir la terminaría sin aviso ninguno — es decir, el fallo que este
-       cerrojo venía a impedir, reaparecido por la puerta de atrás. Lo cazó E66,
-       en su tercera aserción, que es justo la que parecía la menos importante. */
+    /* Lo cazó E66, en su tercera aserción, que es justo la que parecía la menos importante. */
     CB.partida.soltarSalida(boton);
     CB.partida.finalizar('salida');
     return true;

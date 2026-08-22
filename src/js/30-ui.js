@@ -1,14 +1,4 @@
-/* ============================================================================
-   30-ui.js — Pintado. Toca el DOM (serie 30-, fuera de la regla de frontera)
-   ----------------------------------------------------------------------------
-   REGLA DE SEGURIDAD (PLAN §15.8): todo texto que venga del perfil o de un
-   fichero importado se pinta con textContent, NUNCA con innerHTML. En este
-   fichero no hay ni una asignación a innerHTML con variables.
-
-   POOL DE 24 PARTÍCULAS: se crean una vez y se reciclan. Crear y destruir nodos
-   en cada acierto produce tirones en un Chromebook de 2019, que es justo el
-   dispositivo objetivo.
-   ========================================================================== */
+/* 30-ui.js — Pintado. Toca el DOM (serie 30-, fuera de la regla de frontera) */
 
 var CB = CB || {};
 CB.ui = CB.ui || {};
@@ -17,7 +7,7 @@ CB.ui.POOL_PARTICULAS = 24;
 CB.ui._particulas = [];
 CB.ui._sigParticula = 0;
 
-/* ── Utilidades de creación ─────────────────────────────────────────────── */
+/* Utilidades de creación */
 CB.ui.crear = function (etiqueta, clase, texto) {
   var el = document.createElement(etiqueta);
   if (clase) el.className = clase;
@@ -43,15 +33,13 @@ CB.ui.boton = function (texto, clase, alPulsar, datos) {
   return b;
 };
 
-/* ── medirLineas: el MISMO algoritmo que usa el validador (§9.3) ────────────
-   Si la interfaz cortase por píxeles y el validador por caracteres, el
-   invariante 7 mediría una cosa y la pantalla mostraría otra. */
+/* medirLineas: el MISMO algoritmo que usa el validador (§9.3) */
 CB.ui.ANCHO_LINEA = 34;
 CB.ui.medirLineas = function (texto) {
   return CB.util.cortarLineas(texto, CB.ui.ANCHO_LINEA);
 };
 
-/* ── HUD ────────────────────────────────────────────────────────────────── */
+/* HUD */
 CB.ui.pintarHUD = function (estado) {
   var cont = document.getElementById('hud-luces');
   if (cont) {
@@ -69,19 +57,7 @@ CB.ui.pintarHUD = function (estado) {
   /* El contador de gemas SOLO SUBE. Nunca baja, nunca es negativo (§3.4). */
   if (g) CB.ui.contarHasta(g, Math.max(0, estado.gemas || 0));
 
-  /* ── CUÁNTO QUEDA ─────────────────────────────────────────────────────────
-     Lo único que codificaba el avance era el cielo, y el cielo es aria-hidden.
-     El guion tiene entre 8 y 20 ítems y su longitud cambia de partida en partida,
-     así que un niño de siete años no tenía forma de saber si va por la mitad o
-     por el final. La lección ya estaba aprendida en este código para cuatro
-     preguntas —la calibración escribe «Pregunta 3 de 4»— y en la expedición de
-     siete minutos no se había aplicado.
-
-     LOS BLOQUES CAEN, NO QUEDAN: se pinta lo hecho. Un contador que baja se lee
-     como cuenta atrás, y aquí no hay ninguna.
-
-     Solo se repinta si viene `total`. Sin esa guarda, una llamada parcial
-     —cualquiera que pase solo luces y gemas— borraría la fila entera. */
+  /* CUÁNTO QUEDA */
   var gal = document.getElementById('hud-galeria');
   if (gal && estado.total) {
     CB.ui.vaciar(gal);
@@ -99,16 +75,7 @@ CB.ui.pintarHUD = function (estado) {
   }
 };
 
-/* ── EN QUÉ VETA SE ESTÁ ────────────────────────────────────────────────────
-   El HUD sabía decir cuánto queda y no sabía decir en qué se está. Una
-   expedición encadena hasta veinte ítems de siete vetas distintas, barajadas
-   —el barajado es deliberado: la práctica intercalada retiene mejor que la
-   agrupada— y el nombre de la veta solo se veía en la Cantera, dos pantallas
-   atrás. Con esto, cambiar de veta deja de ser un cambio de pregunta sin causa.
-
-   SIN ARIA. Es texto de verdad y se lee solo; el nombre del mundo se aparta
-   visualmente por debajo de 480 px pero sigue en el árbol de accesibilidad. Un
-   aria-label sobre un <p> además está prohibido por ARIA y axe lo marca. */
+/* EN QUÉ VETA SE ESTÁ */
 CB.ui.pintarVeta = function (nivel, mundo) {
   var nombre = document.getElementById('hud-veta-nombre');
   var mun = document.getElementById('hud-veta-mundo');
@@ -116,27 +83,8 @@ CB.ui.pintarVeta = function (nivel, mundo) {
   if (mun) mun.textContent = mundo ? mundo.nombre : '';
 };
 
-/* ── UNA PIEZA DE DINERO ────────────────────────────────────────────────────
-   Estaba escrita tres veces —en las opciones, en el modo pagar y en el modo
-   contar— y las tres iban a divergir en cuanto la pieza dejara de ser un
-   rectángulo de un solo color, que es exactamente lo que pasa aquí.
-
-   `data-valor` es lo que permite que el CSS dibuje CADA denominación como la que
-   es: el aro bimetálico invertido de las monedas de 1 y 2 €, y el color y el
-   tamaño reales de cada billete. No hay ni una imagen en el proyecto —la
-   auditoría no admite un solo fichero binario— así que la pieza se dibuja, igual
-   que el reloj de arena, las gemas y el terreno. */
-/* ── UNA PIEZA DE DINERO ────────────────────────────────────────────────────
-   LA CIFRA VA EN SU PROPIO NODO desde 1.20.0, y no suelta dentro de la pieza.
-   Mientras la pieza era un cuadrado de color, un nodo de texto centrado se leía
-   perfectamente; encima de una fotografía de una moneda no se lee nada. El
-   `<span>` es lo que permite al CSS darle una cinta opaca debajo de la imagen en
-   vez de encima de ella. `textContent` de la pieza sigue devolviendo «2 €», así
-   que nada de lo que ya la leía se entera.
-
-   LOS CÉNTIMOS VAN POR data-centimos, no por data-valor, porque los valores
-   chocan —«5» es el billete de 5 € y la moneda de 5 céntimos—. Lo explica entero
-   la cabecera de `15-gen-dinero.js`. */
+/* UNA PIEZA DE DINERO */
+/* UNA PIEZA DE DINERO */
 CB.ui.pieza = function (etiqueta, v) {
   var esCent = CB.gen.dinero.esCentimo(v);
   var el = CB.ui.crear(etiqueta,
@@ -153,30 +101,7 @@ CB.ui.pieza = function (etiqueta, v) {
   return el;
 };
 
-/* ── LA CIFRA QUE SUBE ──────────────────────────────────────────────────────
-   El marcador cambiaba de golpe: donde ponía 12 ponía 15 en el fotograma
-   siguiente. Toda la ganancia se contaba fuera de él —la insignia «+1» que brota
-   al lado, la hilera de «+2 por rapidez»— y el número, que es el sitio donde de
-   verdad vive la puntuación, no se enteraba. Un cambio instantáneo entre dos
-   números de dos cifras no se ve: se descubre después, y entonces ya no se sabe
-   de dónde ha salido.
-
-   Sube DE UNO EN UNO, con tope de pasos. Contar 3 gemas de una en una es lo que
-   hace que se noten las tres; contar 40 así al final de la partida serían cuatro
-   segundos de espera, y por eso el salto se agranda cuando la diferencia es
-   grande. El último paso escribe el destino EXACTO, nunca el acumulado de las
-   divisiones: una cifra de puntuación que se quede en 39 porque el reparto no
-   era entero es peor que no animar nada.
-
-   NUNCA BAJA. Empezar una partida repinta el HUD con 0 gemas y el nodo aún
-   guarda las de la anterior; contar hacia atrás contradice de frente la regla de
-   que el marcador solo sube (§3.4). Si el destino es menor, se escribe y ya.
-
-   Y CON EL MOVIMIENTO APAGADO SE ESCRIBE EL NÚMERO FINAL, no se pierde nada: la
-   información es la cifra, el movimiento solo es la gracia. La clase
-   `sin-movimiento` de la raíz es la fuente única de ese ajuste —la pone
-   CB.a11y.aplicarAjustes juntando el ajuste del juego y el del sistema— así que
-   aquí se lee de ahí y no se vuelve a preguntar a matchMedia. */
+/* LA CIFRA QUE SUBE */
 CB.ui.MS_PASO_CIFRA = 90;
 CB.ui.PASOS_CIFRA = 8;
 CB.ui._cuentas = {};
@@ -242,18 +167,14 @@ CB.ui.encenderLuz = function (indice) {
   }
 };
 
-/* ── Enunciado del ítem ─────────────────────────────────────────────────── */
+/* Enunciado del ítem */
 CB.ui.pintarItem = function (item) {
   var cont = document.getElementById('item-enunciado');
   if (!cont) return;
   CB.ui.vaciar(cont);
   cont.className = 'panel-bloque';
 
-  /* EL DISTINTIVO DE RETO, y va aquí arriba a propósito: la rama de los problemas
-     de enunciado hace `return` unas líneas más abajo, así que ponerlo al final no
-     se vería nunca en los problemas — que es justo donde D === 3 es más probable.
-     El reto se calculaba, se guardaba y concedía una luz extra sin que el niño
-     supiera por qué. Es texto, no color: «nunca solo color» también aquí. */
+  /* EL DISTINTIVO DE RETO, y va aquí arriba a propósito: la rama de los problemas de enunciado hace `return` unas líneas más abajo, así que ponerlo al final no se vería nunca en los problemas — que es justo donde D === 3 es más probable. */
   if (item.esRetoBonus) {
     cont.appendChild(CB.ui.crear('span', 'distintivo', 'reto'));
   }
@@ -268,10 +189,7 @@ CB.ui.pintarItem = function (item) {
       caja.appendChild(p);
     }
     cont.appendChild(caja);
-    /* El altavoz va DENTRO del enunciado, donde está lo que hay que oír, y no
-       en la barra: P3 retiró el de la barra a petición expresa y esto no lo
-       devuelve. Llama a accionLeerSuave, que no levanta el bloqueo antiazar.
-       Solo en problemas: en «6 − 3» no hay nada que leer. */
+    /* Solo en problemas: en «6 − 3» no hay nada que leer. */
     var altavoz = CB.ui.boton('🔊 Leer', 'btn-bloque--icono enunciado__altavoz', function () {
       if (CB.partida && CB.partida.accionLeerSuave) CB.partida.accionLeerSuave();
     });
@@ -376,12 +294,8 @@ CB.ui.filaVagonetas = function (total, marcada) {
   return caja;
 };
 
-/* ── Mensajes ───────────────────────────────────────────────────────────── */
-/* El nodo de mensaje de la pantalla que está a la vista. #item-mensaje vive
-   DENTRO de <section id="p-partida">, así que mientras se calibra está oculto:
-   escribir ahí el «¡Muy bien!» de cada una de las cuatro preguntas equivalía a
-   no dar ninguna respuesta. Mismo patrón que usa 32-componentes.js para elegir
-   entre cal-respuesta e item-respuesta. */
+/* Mensajes */
+
 CB.ui.nodoMensaje = function () {
   var id = (CB.pantallas && CB.pantallas.actual === 'p-calibracion')
     ? 'cal-mensaje' : 'item-mensaje';
@@ -406,7 +320,7 @@ CB.ui.ocultarMensaje = function () {
   });
 };
 
-/* ── Bono retrospectivo: GANANCIA, nunca pérdida en directo (§3.4) ──────── */
+/* Bono retrospectivo: GANANCIA, nunca pérdida en directo (§3.4) */
 CB.ui.hileraBono = function (n) {
   var h = document.getElementById('item-bono');
   if (!h) return;
@@ -418,7 +332,7 @@ CB.ui.hileraBono = function (n) {
   h.appendChild(CB.ui.crear('span', null, '+' + n + ' por rapidez'));
 };
 
-/* ── Partículas ─────────────────────────────────────────────────────────── */
+/* Partículas */
 CB.ui.iniciarParticulas = function () {
   if (CB.ui._particulas.length) return;
   var i, p;
@@ -456,7 +370,7 @@ CB.ui.particulasDe = function (el, color) {
   CB.ui.particulas(r.left + r.width / 2, r.top + r.height / 2, color, 10);
 };
 
-/* ── Criaturas ──────────────────────────────────────────────────────────── */
+/* Criaturas */
 CB.ui.CRIATURAS = {
   cubi: '🧍', rocarr: '🪨', gluglu: '💧', chispa: '✨', blopi: '🟩',
   tronquete: '🌳', ranacubo: '🐸', cristalina: '💠', brasita: '🔥',
@@ -469,11 +383,7 @@ CB.ui.personaje = function (quien, estado) {
   var el = document.getElementById('cri-' + quien);
   if (!el) return;
   el.hidden = false;
-  /* OJO al renombrar: estas dos listas NO las ve un codemod de clases, porque
-     aqui los nombres no estan en posicion de clase —estan en un array y en una
-     tabla de consulta, y classList.remove/add reciben una VARIABLE. Quien lo
-     atrapa si se olvidan es la direccion 1 del cruce (herramientas/
-     cruzar-clases.mjs): la clase se quedaria en el CSS sin que nadie la nombre. */
+
   ['criatura--flota', 'criatura--saltito', 'criatura--asiente',
    'criatura--gotea', 'criatura--gira'].forEach(function (c) {
     el.classList.remove(c);
@@ -490,7 +400,7 @@ CB.ui.ocultarPersonaje = function (quien) {
   if (el) el.hidden = true;
 };
 
-/* ── Lectura guiada: resalta la palabra que se está leyendo ─────────────── */
+/* Lectura guiada: resalta la palabra que se está leyendo */
 CB.ui.resaltarLinea = function (indice) {
   var lineas = document.querySelectorAll('#item-enunciado .enunciado__frase');
   var i;
@@ -514,7 +424,7 @@ CB.ui.resaltarPalabra = function (indice, texto) {
   }
 };
 
-/* ── Bioma y cielo ──────────────────────────────────────────────────────── */
+/* Bioma y cielo */
 CB.ui.pintarBioma = function (bioma, avance) {
   var z = document.getElementById('zona-juego');
   if (z) {
@@ -528,20 +438,9 @@ CB.ui.pintarBioma = function (bioma, avance) {
   cielo.style.setProperty('--avance', String(CB.util.clamp(avance || 0, 0, 1)));
 };
 
-/* ── Tarjeta de reparación: PUERTA DE INTERACCIÓN, no temporizador ──────────
-   El botón «¡Lo pillo!» aparece deshabilitado y solo se habilita cuando el niño
-   ha tocado los 3 pasos EN ORDEN, con un suelo temporal de max(4 s, palabras ×
-   900 ms). Salvavidas a los 25 s: la tarjeta se autocompleta con voz y el botón
-   se habilita. NUNCA se deja al niño atrapado (§12.6). */
+/* Tarjeta de reparación: PUERTA DE INTERACCIÓN, no temporizador */
 CB.ui._timersReparacion = null;
 
-/* Limpia los temporizadores de una tarjeta anterior. SIN ESTO la puerta de
-   interacción quedaba anulada en cuanto había una segunda reparación en la
-   sesión: el setInterval de la tarjeta vieja seguía vivo, apuntaba al MISMO
-   nodo #btn-lo-pillo y lo habilitaba usando el estado de SU puerta (ya
-   completada). Es decir, a partir del segundo fallo grave del día el botón
-   «¡Lo pillo!» volvía a ser saltable de un toque, que es exactamente el defecto
-   que §12.6 existe para impedir. */
 CB.ui.limpiarReparacion = function () {
   if (!CB.ui._timersReparacion) return;
   clearTimeout(CB.ui._timersReparacion.salvavidas);
@@ -718,7 +617,7 @@ CB.ui.resaltarPasoDibujo = function (foco) {
   }
 };
 
-/* ── Barra de progreso genérica ─────────────────────────────────────────── */
+/* Barra de progreso genérica */
 CB.ui.barra = function (fraccion) {
   var b = CB.ui.crear('div', 'tarjeta-mundo__barra');
   var i = CB.ui.crear('i', 'tarjeta-mundo__relleno');
@@ -727,45 +626,10 @@ CB.ui.barra = function (fraccion) {
   return b;
 };
 
-/* ── Reloj de arena de la cuenta atrás ──────────────────────────────────────
-   30 segundos por ítem, visibles. El plan original decía expresamente lo
-   contrario («la rapidez suma, nunca resta; jamás una cuenta atrás que corre
-   mientras el niño piensa») y esto lo cambia por petición explícita. Las dos
-   salvaguardas que SÍ se conservan, porque no son de gusto:
-
-   1. El modo «Sin prisa» apaga la cuenta atrás entera. Un límite de tiempo que
-      no se puede desactivar incumple la WCAG 2.2.1, y esto es material escolar
-      sujeto a la EN 301 549.
-   2. Quedarse sin tiempo NO apaga una luz. Eso ya era así y sigue siéndolo:
-      lo comprueba CB.vidas.timeout().
-
-   La cifra es texto de verdad y el dibujo es aria-hidden. Un lector de pantalla
-   lee «18», no «reloj de arena a dos tercios».
-   ────────────────────────────────────────────────────────────────────────── */
-/* ── LA CINTA ───────────────────────────────────────────────────────────────
-   Un solo cartel para los nueve momentos que merecen uno, y UN SOLO NODO por
-   pantalla. Lo segundo importa más de lo que parece: dos cintas superpuestas
-   son ilegibles, y mientras hubiera un nodo por cada tipo de aviso, evitar que
-   coincidieran era disciplina. Con un nodo es imposible que coincidan.
-
-   EL REPARTO DE NÚMEROS, que es lo que hace que esto no se pudra:
-     · el CSS es dueño de la FORMA — los fotogramas y el número de pasos
-     · el JS es dueño del TIEMPO — la tabla de aquí abajo
-   Ningún número vive en los dos sitios. Antes MS_CARTEL valía 1900 «porque es
-   lo que dura prisa-cruza», copiado a mano, con un comentario avisando de lo
-   frágil que era. Con nueve coreografías habrían sido nueve copias.
-   ────────────────────────────────────────────────────────────────────────── */
+/* Reloj de arena de la cuenta atrás */
+/* LA CINTA */
 CB.ui.cinta = { nodo: null, _salida: null, _clave: null };
 
-/* LA CINTA ES UN VEHÍCULO, NO EL SISTEMA DE CELEBRACIÓN. Quedan tres
-   coreografías, y las tres son de cosas que casi no pasan: el aviso de tiempo,
-   la superación y el jefe. Quién usa la cinta lo decide CB.ui.festejo.
-
-   Eran nueve. La primera versión de 1.8.0 daba a cada momento su propio
-   recorrido —entrar por abajo, caer, estallar— pero TODAS eran la misma banda,
-   del mismo ancho, en el mismo sitio y con la misma letra. Visto en pantalla,
-   veinte veces por sesión, eso no es variedad: es el mismo rectángulo moviéndose
-   distinto. Lo que tiene que cambiar es el VEHÍCULO, no la trayectoria. */
 CB.ui.cinta.COREOGRAFIAS = {
   'prisa':   { ms: 1900, sfx: 'prisa'      },
   'junta':   { ms: 1300, sfx: 'subirNivel' },
@@ -822,26 +686,7 @@ CB.ui.cinta.ocultar = function () {
   n.hidden = true;
 };
 
-/* ── EL FESTEJO ─────────────────────────────────────────────────────────────
-   SEIS VEHÍCULOS, no seis recorridos. Esta es la corrección de la primera
-   versión de 1.8.0, y conviene que quede escrito por qué: allí cada momento
-   tenía su propia coreografía, pero todas eran la misma banda oscura, del mismo
-   ancho, en el mismo sitio y con la misma tipografía. Un niño no ve nueve
-   celebraciones distintas; ve el mismo rectángulo entrando de nueve maneras. A
-   la tercera vez ya no celebra nada.
-
-   Peor: al unificarlo todo en un nodo se escribió un guardián (E47) que PROHIBÍA
-   a cada modificador tocar la posición. Es decir, la monotonía estaba blindada
-   por una prueba. Ese guardián se reescribe: lo que hay que prohibir no es que
-   el cartel se mueva, es que invada la zona de respuesta.
-
-   La regla que ordena la tabla no cambia, y ahora sí se cumple de verdad: EL
-   ESPECTÁCULO ES INVERSAMENTE PROPORCIONAL A LA FRECUENCIA. Lo que sale en el
-   60 % de los aciertos es lo más pequeño que hay —un «+1» que brota junto al
-   contador de gemas— y ni siquiera usa la banda. La banda se reserva para lo
-   que casi no pasa.
-
-   Ni un efecto de sonido nuevo: los doce de 04-audio.js son contrato. */
+/* EL FESTEJO */
 CB.ui.festejo = { _salida: null, _clave: null };
 
 CB.ui.festejo.CELEBRACIONES = {
@@ -857,19 +702,13 @@ CB.ui.festejo.CELEBRACIONES = {
                 quien: 'chispa', gesto: 'racha', particulas: true },
   /* Logro o luz extra: un cartel centrado con bisel, no una franja. */
   logro:      { vehiculo: 'cartel',   ms: 1600, sfx: 'luzExtra' },
-  /* Se acaba una veta y empieza otra. Es lo único de esta tabla que NO celebra
-     un acierto: sitúa. Por eso la cinta sube en peldaños y no rebota, y por eso
-     va sola —la fiesta del acierto que la cerró ya ha pasado hace un segundo y
-     medio, y dos fiestas seguidas no son el doble de fiesta. */
+
   vetaSuperada: { vehiculo: 'cinta',  ms: 1400, sfx: 'subirNivel', coreo: 'sube' },
   /* El jefe cede. Cuatro veces en la vida de un perfil. */
   jefe:       { vehiculo: 'cinta',    ms: 1800, sfx: 'cofre', coreo: 'bandera' },
   /* Bloque raro, 1 de cada 20: tiembla la cantera entera. */
   raro:       { vehiculo: 'sacudida', ms: 1200, sfx: 'cofre', particulas: true },
-  /* Detrás de un fallo NO se celebra: se acompaña. Rocarr asiente despacio, que
-     es un gesto que ya existía y que un niño lee sin que nadie se lo explique.
-     Ni cartel ni banda ni grito: un rótulo de fiesta encima de un fallo se lee
-     como burla, y lo que importa está escrito debajo, quieto y legible. */
+
   animo:      { vehiculo: 'criatura', ms: 1100, sfx: null,
                 quien: 'rocarr', gesto: 'pista' }
 };
@@ -881,11 +720,7 @@ CB.ui.festejo.POR_CATEGORIA = {
   A: 'normal', B: 'esfuerzo', C: 'superacion', D: 'hallazgo'
 };
 
-/**
- * Cuánto espera el juego antes de servir el ítem siguiente.
- * NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es
- * justo lo contrario de lo que se busca.
- */
+/* NUNCA menos que antes: acortar la espera recortaría tiempo de lectura, que es justo lo contrario de lo que se busca. */
 CB.ui.festejo.MS_POR_PALABRA = 350;
 CB.ui.festejo.TOPE_LECTURA = 3200;
 
@@ -1095,10 +930,7 @@ CB.ui.reloj.pintar = function (restaMs) {
    aviso que oye un lector de pantalla va en español y se dice UNA vez. */
 CB.ui.reloj.gritar = function () {
   CB.ui.cinta.mostrar('prisa', 'Hurry up!');
-  /* URGENTE, no educado. Este aviso caduca: dentro de diez segundos ya no sirve
-     de nada. En la region polite se leia detras de la cola —«¡Muy bien!», «has
-     ganado 3 gemas»— y podia llegar con la pregunta ya cerrada. Es el unico
-     mensaje del juego que tiene fecha de caducidad, junto con el de la luz. */
+
   CB.a11y.urgente('Quedan diez segundos.');
 };
 

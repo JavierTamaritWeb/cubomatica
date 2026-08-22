@@ -1,21 +1,4 @@
-/* ============================================================================
-   26-reparacion.js — La tarjeta de reparación y los 6 explicadores
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA: devuelve una descripción de la tarjeta; quien la pinta es
-   30-ui.js. Cero DOM aquí.
-
-   POR QUÉ EL BOTÓN «¡LO PILLO!» ES UNA PUERTA DE INTERACCIÓN Y NO UN
-   TEMPORIZADOR (PLAN §12.6): el plan v1 lo habilitaba a los 2,0 s. Dos segundos
-   no bastan ni para leer el título —un niño de 2.º lee ≈1 palabra por segundo y
-   una explicación de columnas C-D-U tiene 15-25 palabras—. El propio protocolo
-   de observación de v1 listaba «pulsa a los 2,0 s exactos sin mirar» como señal
-   de alarma y mantenía el valor. La única intervención reparadora del juego era
-   saltable de un toque, y se habría saltado siempre.
-
-   Ahora el botón se habilita cuando el niño ha TOCADO LOS 3 PASOS EN ORDEN.
-   Con salvavidas: si a los 25 s no ha tocado nada, la tarjeta se autocompleta
-   con voz y el botón se habilita. NUNCA se deja al niño atrapado.
-   ========================================================================== */
+/* 26-reparacion.js — La tarjeta de reparación y los 6 explicadores */
 
 var CB = CB || {};
 CB.reparacion = CB.reparacion || {};
@@ -23,14 +6,7 @@ CB.reparacion = CB.reparacion || {};
 CB.reparacion.SUELO_MS_MIN = 4000;
 CB.reparacion.MS_POR_PALABRA = 900;
 
-/* El salvavidas NO es un valor fijo (corrección de un defecto del plan):
-   con 25 palabras el suelo temporal sale a 22,5 s y el salvavidas fijo de 25 s
-   quedaba a solo 2,5 s de distancia. Esperar dos segundos y medio daba el mismo
-   resultado que tocar los tres pasos, con lo que la PUERTA DE INTERACCIÓN
-   —razón de ser de §12.6— volvía a ser un temporizador disfrazado.
-
-   Ahora el salvavidas va siempre 8 s por detrás del suelo, y nunca antes de los
-   25 s. Tocar los tres pasos sigue siendo el camino corto y real. */
+/* El salvavidas NO es un valor fijo (corrección de un defecto del plan): con 25 palabras el suelo temporal sale a 22,5 s y el salvavidas fijo de 25 s quedaba a solo 2,5 s de distancia. */
 CB.reparacion.SALVAVIDAS_MIN_MS = 25000;
 CB.reparacion.SALVAVIDAS_MARGEN_MS = 8000;
 
@@ -61,7 +37,7 @@ CB.reparacion.explicadorDe = function (destreza) {
   }
 };
 
-/* ── Los 6 explicadores. Cada uno devuelve EXACTAMENTE 3 pasos ─────────── */
+/* Los 6 explicadores. Cada uno devuelve EXACTAMENTE 3 pasos */
 
 CB.reparacion.columnasCDU = function (item) {
   var a = item.operandos ? item.operandos[0] : 63;
@@ -199,7 +175,7 @@ CB.reparacion.tarjeta = function (item, hipotesis) {
   };
 };
 
-/* ── La puerta de interacción ───────────────────────────────────────────── */
+/* La puerta de interacción */
 
 CB.reparacion.nuevaPuerta = function (sueloMs) {
   return { tocados: [], sueloMs: sueloMs || CB.reparacion.SUELO_MS_MIN,

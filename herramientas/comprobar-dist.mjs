@@ -1,31 +1,5 @@
 #!/usr/bin/env node
-/* ============================================================================
-   comprobar-dist.mjs — la cadena que sustituye a los contadores 44/44/17/9
-   ----------------------------------------------------------------------------
-   Los cuatro contadores del bloque 5 de la auditoría medían el mismo hecho —«se
-   carga lo que hay que cargar, en el orden que hay que cargarlo»— de la única
-   manera posible sin build: contando etiquetas. Con un bundle, `dist/index.html`
-   tiene UN <script>, así que contar deja de significar nada.
-
-   Lo que nace en su lugar es más fuerte, no más débil: `manifiesto.json` es la
-   fuente, y todo lo demás se verifica contra él. Cinco eslabones:
-
-     manifiesto  →  sin duplicados
-     manifiesto ↔ disco     igualdad EXACTA, no subconjunto: un fichero nuevo
-                            que nadie añadió al manifiesto es un fallo
-     manifiesto ↔ index.html  el bloque entre marcadores es exactamente eso
-     manifiesto ↔ bundle    se reconstruye en memoria y se compara BYTE A BYTE.
-                            Tres líneas, y es la comprobación más fuerte posible:
-                            si coinciden, el orden es correcto, sin heurística.
-     bundle     → parsea, conserva los 12 globales y lleva el aviso legal
-
-   El cuarto eslabón trae gratis la comprobación más insidiosa que no existía:
-   que `dist/` esté al día. Sin ella la auditoría puede pasar en verde sobre una
-   entrega de hace tres días.
-
-   CERO DEPENDENCIAS: solo node:*, para que corra en un clon limpio sin npm i.
-   Lo que necesita dist/ se salta con aviso en vez de fallar.
-   ========================================================================== */
+/* comprobar-dist.mjs — la cadena que sustituye a los contadores 44/44/17/9 */
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -56,7 +30,7 @@ function listarRecursivo(dir, ext) {
   }).sort();
 }
 
-/* ── 1. El manifiesto no se contradice ─────────────────────────────────── */
+/* 1. El manifiesto no se contradice */
 const dup = M.guiones.filter((f, i) => M.guiones.indexOf(f) !== i);
 juzgar(!dup.length, 'el manifiesto declara ' + M.guiones.length + ' guiones sin duplicados',
   'guiones duplicados en el manifiesto', dup.join(', '));
@@ -65,7 +39,7 @@ const sinPuro = M.puros.filter((p) => !M.guiones.includes(p));
 juzgar(!sinPuro.length, 'los ' + M.puros.length + ' ficheros puros estan dentro de los guiones',
   'hay puros que no son guiones', sinPuro.join(', '));
 
-/* ── 2. Manifiesto ↔ disco, igualdad exacta ────────────────────────────── */
+/* 2. Manifiesto ↔ disco, igualdad exacta */
 const enDisco = ['js', 'datos']
   .flatMap((d) => existsSync(join(BASE, d))
     ? readdirSync(join(BASE, d)).filter((f) => f.endsWith('.js')).map((f) => d + '/' + f)
@@ -88,11 +62,6 @@ juzgar(JSON.stringify(cssDisco) === JSON.stringify([...M.estilos].sort()),
   'los parciales del manifiesto no coinciden con el disco',
   'disco: ' + cssDisco.join(', ') + ' | manifiesto: ' + M.estilos.join(', '));
 
-/* EL ORDEN DE LAS HOJAS YA NO LO DECLARA index.html. Antes eran nueve <link> y
-   la cascada era el orden de las etiquetas; ahora Sass compila una sola hoja y
-   la cascada es el orden de los @use de app.scss. Se verifica ahi, que
-   es donde vive de verdad — y se sigue verificando contra el manifiesto, que es
-   el unico dueño del orden en todo el proyecto. */
 const entrada = join(BASE, M.entradaEstilos);
 if (!existsSync(entrada)) {
   mal('falta ' + M.entradaEstilos, 'es el punto de entrada declarado en el manifiesto');
@@ -108,7 +77,7 @@ if (!existsSync(entrada)) {
     'scss: ' + usados.join(' ') + ' | manifiesto: ' + esperados.join(' '));
 }
 
-/* ── 3. Manifiesto ↔ index.html, entre marcadores ──────────────────────── */
+/* 3. Manifiesto ↔ index.html, entre marcadores */
 const html = readFileSync(HTML, 'utf8');
 const bloque = (nombre) => {
   const m = html.match(new RegExp('<!-- ' + nombre + ':INICIO[\\s\\S]*?' + nombre + ':FIN -->'));
@@ -145,7 +114,7 @@ for (const [pagina, bundle] of [['pruebas.html', 'cubomatica.js'],
     'pruebas/' + pagina + ' carga ' + guiones.length + ' guiones del juego: ' + guiones.join(', '));
 }
 
-/* ── 4 y 5. Todo lo que necesita dist/ ─────────────────────────────────── */
+/* 4 y 5. Todo lo que necesita dist/ */
 if (!existsSync(join(DIST, 'js', 'cubomatica.js'))) {
   salto('saltado lo que mira dist/: no existe todavia (ejecuta `npm run build`)');
   process.exit(fallos ? 1 : 0);
@@ -181,10 +150,6 @@ if (!existsSync(rutaHuellas)) {
     (sinHuella.length ? 'sin huella: ' + sinHuella.join(', ') : '') + ' → `npm run build`');
 }
 
-/* Los 44 (45 con el offline) terminan en \n. Hoy es cierto y nadie lo comprueba;
-   un editor puede romperlo y el sintoma seria `var CB = CB || {};var CB = …`
-   pegado en la misma linea, que casualmente sigue funcionando hasta que un
-   fichero acabe en un comentario de //. */
 const sinSalto = M.guiones.filter((f) => !readFileSync(join(BASE, f), 'utf8').endsWith('\n'));
 juzgar(!sinSalto.length, 'los ' + M.guiones.length + ' guiones terminan en salto de linea',
   'hay guiones que no terminan en salto de linea', sinSalto.join(', '));
@@ -216,15 +181,6 @@ if (!mg) {
     perdidos.join(', '));
 }
 
-/* Si terser borrase el aviso legal, habria desaparecido del producto entregado
-   y hoy no lo comprobaria nadie: el bloque 1 exime a 00-nucleo.js por nombre, y
-   el bundle no se llama asi.
-
-   Se busca la FRASE del aviso, no la marca. Nombrar la marca aqui haria saltar
-   la lista negra contra este mismo fichero, y la salida seria una exencion nueva
-   que debilita el grep — el mismo razonamiento que en el gulpfile. Ademas es
-   mejor comprobacion: lo que importa es que sobreviva la declaracion de no
-   afiliacion, no que aparezca un nombre. */
 const FRASE_LEGAL = 'No está afiliada';
 const nLegal = (min.split(FRASE_LEGAL).length - 1);
 juzgar(nLegal >= 1, 'el aviso de no afiliacion sobrevive a la minificacion',
@@ -249,12 +205,7 @@ const ausentes = referidos.filter((u) => !existsSync(join(DIST, u.split('?')[0])
 juzgar(!ausentes.length, 'todo lo que referencia dist/index.html existe en dist/',
   'dist/index.html apunta a ficheros que no estan', ausentes.join(', '));
 
-/* EL PRESUPUESTO QUE IMPORTA: lo que un navegador descarga para arrancar. Se
-   suman el HTML y exactamente lo que referencia, y nada mas — en dist/ conviven
-   el bundle minificado que se sirve y el legible que solo usan la auditoria y la
-   suite, asi que pesar la carpeta entera daria mas del doble de lo que nadie
-   descarga. La musica queda fuera: va con preload="none" y no se pide hasta que
-   suena. Los 900 KB de antes querian proteger el arranque; esto lo protege. */
+/* Se suman el HTML y exactamente lo que referencia, y nada mas — en dist/ conviven el bundle minificado que se sirve y el legible que solo usan la auditoria y la suite, asi que pesar la carpeta entera daria mas del doble de lo que nadie… */
 const TOPE_KB = 400;
 const pesa = (f) => readFileSync(join(DIST, f)).length;
 const arranque = ['index.html'].concat(referidos.filter((u) => !/^audio\//.test(u)));

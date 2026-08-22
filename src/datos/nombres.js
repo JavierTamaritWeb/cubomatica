@@ -1,18 +1,4 @@
-/* ============================================================================
-   nombres.js — 40 nombres propios para los enunciados (20 F + 20 M)
-   ----------------------------------------------------------------------------
-   Criterios (PLAN §9.7):
-     · 1 o 2 sílabas: un lector de 7 años no debe gastar su presupuesto de
-       decodificación en el nombre, sino en la estructura del problema.
-     · Diversidad real del aula de la escuela pública española.
-     · Sin tilde en la medida de lo posible, para no añadir carga ortográfica.
-     · El género se ALTERNA por construcción con BolsaBarajada, no se sortea:
-       el equilibrio 50/50 con muestreo aleatorio es matemáticamente inalcanzable
-       en 200 extracciones (σ ≈ 7).
-
-   LISTA NEGRA DE NOMBRES: quedan excluidos los que colisionan con la auditoría
-   de marca de §21.1 o con personajes de terceros.
-   ========================================================================== */
+/* nombres.js — 40 nombres propios para los enunciados (20 F + 20 M) */
 
 var CB = CB || {};
 CB.datos = CB.datos || {};

@@ -1,14 +1,4 @@
-/* ============================================================================
-   28-memoria.js — Curva de olvido y los 6 estados de una veta
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   LA RAZÓN PARA VOLVER MAÑANA ES HONESTA (PLAN §13.4): una veta se ha cubierto
-   de musgo y repasarla cuesta dos minutos. Eso SUSTITUYE a la racha que se
-   pierde, que es un patrón oscuro prohibido por el código de diseño apropiado a
-   la edad. La diferencia no es cosmética: el musgo informa de un hecho real
-   sobre la memoria del niño; la racha perdida solo fabrica miedo a no volver.
-   ========================================================================== */
+/* 28-memoria.js — Curva de olvido y los 6 estados de una veta */
 
 var CB = CB || {};
 CB.memoria = CB.memoria || {};
@@ -62,10 +52,6 @@ CB.memoria.clasificar = function (estado, hoyISO, bloqueado) {
   /* Oxidada: era sólida y se ha olvidado. Es el único estado que MIRA ATRÁS. */
   if (eraSolida && R < 0.6) return 'oxidada';
 
-  /* Dominada, criterio endurecido (§17.2 métrica 5): no basta con acertar
-     mucho; hace falta volumen, precisión a primer intento y persistencia en el
-     tiempo. Sin las tres condiciones, «dominada» es una palabra vacía que el
-     informe le enseña a una familia. */
   if (estado.n >= 12 && p1 >= 0.90 && (estado.estabilidadDias || 1) >= 6 && R >= 0.8) {
     return 'dominada';
   }

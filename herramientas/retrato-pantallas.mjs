@@ -1,37 +1,5 @@
 #!/usr/bin/env node
-/* ============================================================================
-   retrato-pantallas.mjs — la foto de las 18 pantallas, para renombrar sin miedo
-   ----------------------------------------------------------------------------
-   POR QUÉ EXISTE: un renombrado de clases no puede cambiar NADA de lo que se
-   ve, y ninguna de las redes que ya tiene el proyecto comprueba eso. El cruce
-   de clases ve que los nombres cuadran; la suite mide comportamientos sueltos;
-   la auditoría vigila reglas duras. Ninguna mira la pantalla entera. Aquí se
-   fotografían las dieciocho a tres anchos y se guarda el sha256 de cada imagen:
-   si después del renombrado las 54 son idénticas, el renombrado fue solo eso.
-
-   NO GUARDA LAS IMÁGENES EN EL REPOSITORIO. Son varios MB y el presupuesto de
-   pruebas es de 500 KB; van a una carpeta de trabajo que se pasa por argumento
-   y que por defecto está fuera del proyecto. Lo único que se compara es el JSON
-   de huellas.
-
-   PARA QUE DOS FOTOS SEAN COMPARABLES hay que apagar todo lo que se mueve o
-   cambia solo, y eso se hace en la propia página antes de disparar:
-     · `:root.sin-movimiento`, que es el interruptor que ya tiene el juego
-     · perfil FIJO —id, mote, avatar y fecha de creación—, porque la semilla de
-       la partida sale de `perfil.id + hoyISO()`
-     · modo «Sin prisa», que quita el reloj: una cuenta atrás cambia la imagen
-       cada segundo
-   Queda una dependencia que no se puede quitar: `hoyISO()` entra en la semilla,
-   así que las dos pasadas tienen que ser DEL MISMO DÍA. Es una herramienta de
-   una tarde, no un guardián permanente, y por eso se dice aquí en vez de
-   fingir que no pasa.
-
-   CERO DEPENDENCIAS: Chrome se conduce por CDP con el WebSocket que trae Node.
-
-   Uso:
-     node herramientas/retrato-pantallas.mjs [--dir CARPETA] [--url URL]
-     node herramientas/retrato-pantallas.mjs --comparar [--dir CARPETA]
-   ========================================================================== */
+/* retrato-pantallas.mjs — la foto de las 18 pantallas, para renombrar sin miedo */
 
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -53,9 +21,11 @@ const DIR = arg('--dir', join(tmpdir(), 'cubomatica-retratos'));
 const URL_JUEGO = arg('--url', 'http://localhost:8081/dist/index.html');
 const HUELLAS = join(DIR, 'huellas.json');
 
-const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+const dormir = (ms) => new Promise((resolver) => {
+  setTimeout(resolver, ms);
+});
 
-/* ── El guion que se evalúa DENTRO de la página ──────────────────────────── */
+/* El guion que se evalúa DENTRO de la página */
 const PREPARAR = `(async function () {
   var esperar = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
   document.documentElement.classList.add('sin-movimiento');
@@ -94,7 +64,7 @@ const guionDe = (id) => `(async function () {
   return CB.pantallas.actual;
 })()`;
 
-/* ── Conductor CDP mínimo ────────────────────────────────────────────────── */
+/* Conductor CDP mínimo */
 function conectar(ws) {
   const sock = new WebSocket(ws);
   let id = 0;
@@ -157,17 +127,7 @@ try {
       const { result: { targetId } } = await c.enviar('Target.createTarget', { url: 'about:blank' });
       const { result: { sessionId } } = await c.enviar('Target.attachToTarget', { targetId, flatten: true });
 
-      /* SE NAVEGA A MANO, Y ANTES SE APAGAN LAS DOS CACHÉS. El juego registra un
-         service worker en cuanto no está en file://, y ese worker guarda el
-         armazón —incluida la hoja de estilo—. Una herramienta que compara dos
-         pasadas no puede permitirse que la segunda mida el CSS de la primera:
-         serían 54 imágenes idénticas, en verde, por el peor motivo posible. No
-         está demostrado que llegara a pasar; está quitado de en medio, que para
-         una comparación es lo que importa.
-
-         Que la herramienta VE los cambios sí está demostrado: con una regla de
-         más al final del minificado, `--comparar` se pone rojo y nombra las
-         quince fotos de las cinco pantallas que llevan ese bloque. */
+      /* Que la herramienta VE los cambios sí está demostrado: con una regla de más al final del minificado, `--comparar` se pone rojo y nombra las quince fotos de las cinco pantallas que llevan ese bloque. */
       await c.enviar('Network.enable', {}, sessionId);
       await c.enviar('Network.setBypassServiceWorker', { bypass: true }, sessionId);
       await c.enviar('Network.setCacheDisabled', { cacheDisabled: true }, sessionId);

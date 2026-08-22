@@ -1,22 +1,9 @@
-/* ============================================================================
-   00-nucleo.js — CB.util y CB.LEGAL
-   ----------------------------------------------------------------------------
-   REGLAS DE FRONTERA (PLAN §14.4), verificadas por pruebas/auditar.sh:
-     · Cero DOM: ni document., ni window., ni localStorage, ni navigator.
-     · Cero Math.random: todo aleatorio pasa por el rng inyectado.
-     · Cero toISOString.
-     · Cero literales de clave 'cubomatica.…' (solo en 01-almacen.js).
-
-   EXENCIÓN DECLARADA (docs/decisiones.md): CB.util.ahora() necesita el reloj
-   monotónico de la plataforma. Se implementa con `typeof performance` en lugar
-   de `window.performance` precisamente para no romper el grep de frontera.
-   ES2017 estricto: sin ?., sin ??, sin campos privados.
-   ========================================================================== */
+/* 00-nucleo.js — CB.util y CB.LEGAL */
 
 var CB = CB || {};
 CB.util = CB.util || {};
 
-/* ── Aleatoriedad reproducible ─────────────────────────────────────────── */
+/* Aleatoriedad reproducible */
 
 /* mulberry32: generador de 32 bits, rápido y con semilla. Devuelve [0,1). */
 CB.util.mulberry32 = function (semilla) {
@@ -68,14 +55,7 @@ CB.util.rango = function (n) {
   return a;
 };
 
-/* ── BolsaBarajada ──────────────────────────────────────────────────────────
-   Reparte índices 0..n-1 sin repetir hasta agotar la bolsa. Es el mecanismo que
-   sostiene el requisito 4 del usuario (mensajes de enhorabuena nunca repetidos)
-   y el equilibrio de género por CONSTRUCCIÓN de §9.7.
-
-   Se persiste como array de índices restantes, exactamente como el esquema del
-   perfil (§15.3): "bolsaA": [12, 3].
-   ────────────────────────────────────────────────────────────────────────── */
+/* BolsaBarajada */
 CB.util.BolsaBarajada = function (n, rng, restantes) {
   this.n = n | 0;
   this.rng = rng || CB.util.mulberry32(0x9E3779B9);
@@ -107,7 +87,7 @@ CB.util.BolsaBarajada.prototype.estado = function () {
   return this.restantes.slice();
 };
 
-/* ── Matemáticas de apoyo ──────────────────────────────────────────────── */
+/* Matemáticas de apoyo */
 
 CB.util.clamp = function (v, a, b) {
   if (!isFinite(v)) return a;
@@ -136,12 +116,7 @@ CB.util.mediaIncremental = function (medio, n, valor) {
   return (medio * n + valor) / (n + 1);
 };
 
-/* ── Tiempo y fechas ────────────────────────────────────────────────────────
-   toISOString está PROHIBIDO en todo el proyecto: new Date().toISOString() da el
-   DÍA ANTERIOR para cualquier partida jugada después de las 22:00 en horario
-   peninsular de verano (UTC+2). La racha se rompería sola y el repaso vencería
-   dos veces (§15.5).
-   ────────────────────────────────────────────────────────────────────────── */
+/* Tiempo y fechas */
 
 CB.util.hoyISO = function (d) {
   d = d || new Date();
@@ -182,7 +157,7 @@ CB.util.rt = function (t0) {
   return CB.util.clamp(Math.round(CB.util.ahora() - t0), 0, 600000);
 };
 
-/* ── Texto ──────────────────────────────────────────────────────────────── */
+/* Texto */
 
 /* Minúsculas, sin tildes y sin signos. Base del test M3 de unicidad de mensajes. */
 CB.util.normalizar = function (t) {
@@ -223,7 +198,7 @@ CB.util.mayus1 = function (t) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 };
 
-/* ── EventoSimple: pub/sub mínimo, sin dependencias ─────────────────────── */
+/* EventoSimple: pub/sub mínimo, sin dependencias */
 CB.util.EventoSimple = function () { this.oyentes = {}; };
 CB.util.EventoSimple.prototype.escuchar = function (nombre, fn) {
   (this.oyentes[nombre] = this.oyentes[nombre] || []).push(fn);
@@ -238,24 +213,9 @@ CB.util.EventoSimple.prototype.emitir = function (nombre, dato) {
 
 CB.bus = new CB.util.EventoSimple();
 
-/* ── CB.LEGAL ───────────────────────────────────────────────────────────────
-   ÚNICA constante del proyecto donde vive el aviso de no afiliación. README.md
-   y la pantalla de Créditos lo INSERTAN desde aquí. Este fichero está excluido
-   del grep de marca precisamente por esto (§21.1).
-   ────────────────────────────────────────────────────────────────────────── */
-/* ── Versión ────────────────────────────────────────────────────────────────
-   FUENTE ÚNICA, y desde 1.7.0 tiene CINCO réplicas: README.md, CHANGELOG.md,
-   LEEME.txt, package.json y dist/sw.js. Las cuatro primeras las escribe una
-   persona y `pruebas/auditar.mjs` comprueba que no se separen; la quinta la
-   inyecta gulp leyendo esta misma línea, así que no puede desviarse.
-   Un número de versión repetido a mano en cinco sitios está mal en cuatro en
-   cuanto alguien se despista una vez.
-
-   Versionado semántico: la segunda cifra sube cuando entra algo nuevo —contenido
-   o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
-   el formato del perfil guardado, porque eso obliga a una migración en
-   `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.23.2';
+/* CB.LEGAL */
+/* Versión */
+CB.VERSION = '1.23.3';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +

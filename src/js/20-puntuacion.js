@@ -1,15 +1,4 @@
-/* ============================================================================
-   20-puntuacion.js — Requisitos 6 y 7 del usuario
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA: cero DOM, cero Math.random, cero fechas.
-   Los 30 casos de PLAN §11.7 se verifican SIN TOLERANCIA en casos-formulas.js.
-
-   DOS INVARIANTES QUE NO SE NEGOCIAN:
-     · Ningún valor de `puntos` ni de `gemas` es nunca < 0. Un niño de 7 años no
-       ha visto un entero negativo en su vida (están en 2.º/3.er ciclo) y verlo
-       justo en el instante del castigo convierte el marcador en una deuda.
-     · El marcador NUNCA baja. Un error cuesta la recompensa de ESE ítem, nada más.
-   ========================================================================== */
+/* 20-puntuacion.js — Requisitos 6 y 7 del usuario */
 
 var CB = CB || {};
 CB.puntuacion = CB.puntuacion || {};
@@ -47,10 +36,7 @@ CB.puntuacion.calcular = function (item, rtMs, estado) {
   if (estado.modoTiempo === 'sinPrisa') {
     mT = CB.puntuacion.M_SIN_PRISA;
   } else {
-    /* mT se calcula SIEMPRE con la d base del nivel, sea cual sea el modo. El
-       modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta
-       regla, «Con calma» con la d duplicada regalaba multiplicadores altos por
-       respuestas lentas y era el modo que más puntuaba. */
+    /* El modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta regla, «Con calma» con la d duplicada regalaba multiplicadores altos por respuestas lentas y era el modo que más puntuaba. */
     mT = CB.util.clamp(
       CB.puntuacion.M_MAX - 0.8 * (rtMs - tI) / (tL - tI),
       CB.puntuacion.M_MIN, CB.puntuacion.M_MAX

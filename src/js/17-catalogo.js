@@ -1,45 +1,9 @@
-/* ============================================================================
-   17-catalogo.js — Los 92 niveles y los 4 mundos. ESTE FICHERO ES UN CONTRATO.
-   ----------------------------------------------------------------------------
-   FUNCIÓN PURA.
-
-   El plan v1 escribía «N1…N12, S1…S15, R1…R13» como rótulos vacíos: no se podía
-   verificar ni un solo rango numérico, y el requisito 2 del usuario (basarse en
-   el currículo oficial) era NO AUDITABLE. Aquí cada nivel declara su rango, sus
-   llevadas, su trimestre SUGERIDO, su saber y sus criterios, y casos-curriculo.js
-   comprueba una a una las 8 condiciones CU1-CU8.
-
-   `trimestreSugerido` se llama así y no `trimestre` porque el RD 157/2022 fija
-   los saberes POR CICLO, no por curso ni por trimestre: la secuenciación es una
-   decisión propia del proyecto.
-
-   NOTA SOBRE EL REPARTO POR MUNDOS: el encabezado del plan decía «24+24+22+22»
-   pero sus propias listas suman 24+26+18+24. Manda la LISTA, que es el contenido
-   real; el total sigue siendo 92 y CU7 lo verifica.
-   ========================================================================== */
+/* 17-catalogo.js — Los 92 niveles y los 4 mundos. ESTE FICHERO ES UN CONTRATO. */
 
 var CB = CB || {};
 CB.catalogo = CB.catalogo || {};
 
-/* ── Valores base por familia ───────────────────────────────────────────────
-   `puntosBase`, `tIdeal` y `tLimite` son EXACTAMENTE los de PLAN §8.1: son el
-   contrato de los 30 casos de puntuación y no se tocan.
-
-   Las `beta`, en cambio, están RECALIBRADAS. Las del plan (880-1420) no cubren
-   el rango de competencia que el motor puede estimar (400-1800): con una β
-   mínima de 880, el nivel MÁS FÁCIL del catálogo —contar ocho bloques— quedaba
-   fuera del alcance de un niño flojo, y el niño sintético se quedaba en el 44 %
-   en lugar del 75-92 % exigido. Dicho de otro modo: el juego no tenía nada
-   suficientemente fácil que ofrecer al niño que más lo necesita.
-
-   La escala nueva va de 320 a 1280 y se lee así: β es la competencia a la que
-   ese nivel se acierta el 50 % de las veces. «Contar 8 bloques» tiene β 320
-   porque casi cualquier niño de 2.º lo hace; «CDU − CDU con llevada» tiene β
-   1160 porque es el techo del curso.
-
-   Estas cifras son una CALIBRACIÓN INICIAL RAZONADA, no una medida. F10 las
-   recalcula con 10-15 niños reales mediante pruebas/calibrar-beta.js, que es
-   justo para lo que el plan reserva esa fase. */
+/* Valores base por familia */
 CB.catalogo.FAMILIAS = {
   N: { puntosBase: 80,  tIdeal: 6000,  tLimite: 18000, beta: [320, 1000] },
   S: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [340, 1120] },
@@ -50,17 +14,8 @@ CB.catalogo.FAMILIAS = {
   V: { puntosBase: 70,  tIdeal: 7000,  tLimite: 20000, beta: [320, 920] }
 };
 
-/* Tabla compacta. Orden de columnas:
-   [id, nombre, destreza, minRango, maxRango, llevadas, trimestreSugerido,
-    formato, saber, criterios, prerrequisitos, cardinalidad, ampliacion,
-    flagAdulto, saberSecundario?]
-
-   `saberSecundario` es opcional y existe porque la propia tabla del plan asigna
-   DOS saberes a algunos niveles (N16 = A.4.b + A.2.a; E6 = A.5 + A.4.c;
-   E7 = A.5 + A.3.b). Sin él, el saber A.2.c —«representación de una misma
-   cantidad de distintas formas»— se quedaba sin ningún nivel y CU4 fallaba. */
 CB.catalogo.TABLA = [
-  /* ── Numeración: 16 ───────────────────────────────────────────────────── */
+  /* Numeración: 16 */
   ['N1','Contar y recontar','numeracion',0,99,0,1,'opciones4','A.1',['1.1','5.1'],[],22,false,null,'A.2.c'],
   ['N2','Leer y escribir hasta 99','numeracion',0,99,0,1,'teclado','A.2.b',['6.1'],['N1'],90,false,null],
   ['N3','Decenas y unidades','valor_posicional',0,99,0,1,'opciones4','A.4.a',['1.2','6.1'],['N1'],178,false,null],
@@ -78,7 +33,7 @@ CB.catalogo.TABLA = [
   ['N15','Números hasta 999','numeracion',0,999,0,3,'teclado','A.2.b',['6.1'],['N12'],800,false,null],
   ['N16','Comparar y aproximar hasta 999','numeracion',0,999,0,3,'balanza','A.4.b',['2.1','5.1'],['N10','N13'],900,false,null,'A.2.a'],
 
-  /* ── Sumas: 16 ────────────────────────────────────────────────────────── */
+  /* Sumas: 16 */
   ['S1','Sumas hasta 10','suma_sin_llevar',0,10,0,1,'teclado','A.3.b',['2.1'],[],66,false,null],
   ['S2','Sumas hasta 20 sin llevar','suma_sin_llevar',0,20,0,1,'teclado','A.3.b',['2.1'],['S1'],55,false,null],
   ['S3','Dobles hasta 10 + 10','suma_sin_llevar',0,20,0,1,'opciones4','A.3.a',['3.1'],['S1'],10,false,null],
@@ -96,7 +51,7 @@ CB.catalogo.TABLA = [
   ['S15','CDU + CDU con una llevada','suma_llevada',0,999,1,3,'teclado','A.3.b',['2.1','6.2'],['S14','S12'],2000,false,null],
   ['S16','Tres sumandos con decenas','suma_llevada',0,999,1,3,'teclado','A.3.b',['2.1'],['S10','S13'],1800,false,null],
 
-  /* ── Restas: 14 ───────────────────────────────────────────────────────── */
+  /* Restas: 14 */
   ['R1','Restas hasta 10','resta_sin_llevar',0,10,0,1,'teclado','A.3.b',['2.1'],[],66,false,null],
   ['R2','Restas hasta 20 sin llevar','resta_sin_llevar',0,20,0,1,'teclado','A.3.b',['2.1'],['R1'],66,false,null],
   ['R3','Restar 10','resta_sin_llevar',0,99,0,1,'teclado','A.3.a',['3.1'],['R1'],89,false,null],
@@ -112,7 +67,7 @@ CB.catalogo.TABLA = [
   ['R13','CDU − CDU con una llevada','resta_llevada',0,999,1,3,'teclado','A.3.b',['2.1','6.2'],['R12','R11'],2000,false,null],
   ['R14','Restas con doble llevada','resta_llevada',0,999,2,3,'teclado','A.3.b',['2.1'],['R13'],1500,true,'restasDobleLlevada'],
 
-  /* ── Multiplicación: 10 (M1-M8 iniciación nuclear de T3; M9-M10 ampliación) */
+  /* Multiplicación: 10 (M1-M8 iniciación nuclear de T3; M9-M10 ampliación) */
   ['M1','Veces: la suma reiterada','multiplicacion',2,5,0,3,'opciones4','A.3.b',['1.2','5.1'],['S1'],16,false,null],
   ['M2','Filas y columnas','multiplicacion',2,5,0,3,'opciones4','A.3.b',['1.2','6.1'],['M1'],16,false,null],
   ['M3','Del dibujo a «a × b»','multiplicacion',2,5,0,3,'teclado','A.3.b',['6.2'],['M2'],16,false,null],
@@ -124,7 +79,7 @@ CB.catalogo.TABLA = [
   ['M9','Tabla del 3','multiplicacion',0,30,0,3,'teclado','A.3.a',['3.1'],['M7'],11,true,'tablas69'],
   ['M10','Tabla del 4','multiplicacion',0,40,0,3,'teclado','A.3.a',['3.1'],['M7'],11,true,'tablas69'],
 
-  /* ── Problemas de enunciado: 20 ───────────────────────────────────────── */
+  /* Problemas de enunciado: 20 */
   ['P1','Cambio: cuántos hay ahora','problemas_cambio',0,99,0,1,'teclado','A.3.b',['1.1','2.1','2.2'],['S1'],600,false,null],
   ['P2','Cambio: cuántos quedan','problemas_cambio',0,99,0,1,'teclado','A.3.b',['1.1','2.1','2.2'],['R1'],600,false,null],
   ['P3','Combinación: el total','problemas_combinacion',0,99,0,1,'teclado','A.3.b',['1.1','2.1','2.2'],['S2'],600,false,null],
@@ -146,7 +101,7 @@ CB.catalogo.TABLA = [
   ['P19','Igualación: referente con añadir','problemas_igualacion',0,99,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,true,null],
   ['P20','Igualación: referente con quitar','problemas_igualacion',0,99,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,true,null],
 
-  /* ── Dinero: 8 ────────────────────────────────────────────────────────── */
+  /* Dinero: 8 */
   ['E1','Monedas y billetes: reconocerlos','dinero',0,100,0,1,'opciones4','A.5',['5.2','6.1'],[],7,false,null],
   ['E2','Contar con monedas de 1 y 2 €','dinero',0,20,0,1,'monedas','A.5',['2.1','5.2'],['E1','S1'],250,false,null],
   ['E3','Contar con billetes','dinero',0,100,0,2,'monedas','A.5',['2.1','5.2'],['E1'],120,false,null],
@@ -156,7 +111,7 @@ CB.catalogo.TABLA = [
   ['E7','La compra: gasto total','dinero',0,99,0,3,'teclado','A.5',['2.1','2.2'],['E5','S6'],400,false,null,'A.3.b'],
   ['E8','Céntimos y equivalencias','dinero',5,100,0,3,'opciones4','A.5',['5.2'],['E4'],4,true,'centimos'],
 
-  /* ── Vocabulario: 8 ───────────────────────────────────────────────────── */
+  /* Vocabulario: 8 */
   ['V1','Las palabras de la suma','vocabulario',0,0,0,2,'opciones4','A.3.b',['6.1'],['S1'],6,false,null],
   ['V2','Las palabras de la resta','vocabulario',0,0,0,2,'opciones4','A.3.b',['6.1'],['R1'],6,false,null],
   ['V3','Unidades, decenas, centenas','vocabulario',0,0,0,3,'opciones4','A.4.a',['6.1'],['N3'],6,false,null],
@@ -179,7 +134,7 @@ CB.catalogo.CATEGORIA_MULT = {
   M9: 'AMPLIACION', M10: 'AMPLIACION'
 };
 
-/* ── Construcción de los objetos Nivel ──────────────────────────────────── */
+/* Construcción de los objetos Nivel */
 CB.catalogo._porId = {};
 CB.catalogo._ids = [];
 
@@ -260,7 +215,7 @@ CB.catalogo._ids = [];
   });
 })();
 
-/* ── API ────────────────────────────────────────────────────────────────── */
+/* API */
 CB.catalogo.get  = function (id) { return CB.catalogo._porId[id] || null; };
 CB.catalogo.ids  = function () { return CB.catalogo._ids.slice(); };
 CB.catalogo.todos = function () {
@@ -284,12 +239,7 @@ CB.catalogo.desbloqueados = function (perfil) {
   return CB.grafo.desbloqueados(perfil).map(function (id) { return CB.catalogo.get(id); });
 };
 
-/**
- * candidatos() NUNCA devuelve []. El plan v1 no definía qué pasaba cuando no
- * había ningún nivel desbloqueado en la banda β —caso frecuente al principio,
- * con θ=1000 y casi todo el grafo bloqueado—. Si devolvía [], construirGuion
- * generaba un guion vacío y LA PARTIDA TERMINABA EN EL ÍTEM 0.
- */
+/* candidatos() NUNCA devuelve []. */
 CB.catalogo.candidatos = function (slug, banda, perfil) {
   var abiertos = CB.catalogo.porDestreza(slug).filter(function (n) {
     if (CB.grafo.estado(n.id, perfil) !== 'abierta') return false;
@@ -331,7 +281,7 @@ CB.catalogo.candidatos = function (slug, banda, perfil) {
   return [CB.catalogo.get('S1')];
 };
 
-/* ── Los 4 mundos (§5.2). Tabla CERRADA ─────────────────────────────────── */
+/* Los 4 mundos (§5.2). Tabla CERRADA */
 CB.MUNDOS = [
   { id: 'M1', nombre: 'La Pradera de los Números', bioma: 'pradera', jefe: 'Tronquete',
     jefeIcono: '🌳',
@@ -397,20 +347,7 @@ CB.catalogo.progresoMundo = function (mundoId, perfil) {
            fraccion: nucleares.length ? hechos / nucleares.length : 0 };
 };
 
-/* ── INVARIANTE 12 (variedad) — reformulado ─────────────────────────────────
-   El plan lo escribía así: «en 200 generaciones con semillas distintas, los
-   ítems únicos son ≥ min(200, 0,8 × cardinalidad)». Con cardinalidad ≥ 250 eso
-   exige 200 únicos en 200 tiradas, es decir CERO COLISIONES, que es imposible
-   por el problema del cumpleaños: extrayendo 200 veces de un espacio de 250, el
-   número esperado de valores distintos es 250·(1−(1−1/250)^200) ≈ 138, no 200.
-   El test habría fallado siempre contra generadores correctos.
-
-   Reformulación que sí mide lo que se quería medir —que el generador no se
-   colapse y recorra su espacio—: se compara con la esperanza bajo muestreo
-   uniforme y se exige el 75 % de ella. Un generador que devolviese siempre el
-   mismo ítem, o que solo recorriese una esquina de su rango, falla en rojo.
-
-   Documentado en docs/decisiones.md. */
+/* INVARIANTE 12 (variedad) — reformulado */
 CB.catalogo.unicosEsperados = function (cardinalidad, tiradas) {
   var C = Math.max(1, cardinalidad);
   return C * (1 - Math.pow(1 - 1 / C, tiradas));

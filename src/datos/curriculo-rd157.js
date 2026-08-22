@@ -1,22 +1,4 @@
-/* ============================================================================
-   curriculo-rd157.js — FUENTE ÚNICA DE VERDAD CURRICULAR
-   ----------------------------------------------------------------------------
-   Real Decreto 157/2022, de 1 de marzo, por el que se establecen la ordenación y
-   las enseñanzas mínimas de la Educación Primaria (BOE núm. 52, de 2 de marzo de
-   2022; referencia BOE-A-2022-3296). Anexo II, área de Matemáticas, PRIMER CICLO.
-
-   REGLA DE PROCESO (PLAN §6.4): toda cita de un criterio o de un saber en
-   cualquier documento del proyecto va entre comillas, con su código y su ciclo, y
-   PROVIENE DE AQUÍ. Si no está en este fichero, no se cita.
-
-   ADVERTENCIA NORMATIVA: el Real Decreto fija saberes básicos y criterios de
-   evaluación POR CICLO (1.er ciclo = 1.º y 2.º juntos), NO por curso ni por
-   trimestre. La distribución por curso y trimestre del catálogo es una
-   secuenciación PROPIA del proyecto, basada en la práctica de aula habitual; no
-   procede del Real Decreto ni de ningún decreto autonómico. Debe confirmarse con
-   la programación didáctica del centro. Por eso el campo del catálogo se llama
-   `trimestreSugerido` y nunca `trimestre`.
-   ========================================================================== */
+/* curriculo-rd157.js — FUENTE ÚNICA DE VERDAD CURRICULAR */
 
 var CB = CB || {};
 
@@ -26,7 +8,7 @@ CB.CURRICULO = {
   ciclo: 'Primer ciclo de Educación Primaria',
   area: 'Matemáticas',
 
-  /* ── Competencias específicas del área, texto literal ─────────────────── */
+  /* Competencias específicas del área, texto literal */
   competencias: {
     CE1: 'Interpretar situaciones de la vida cotidiana, proporcionando una representación matemática de las mismas mediante conceptos, herramientas y estrategias, para analizar la información más relevante.',
     CE2: 'Resolver situaciones problematizadas, aplicando diferentes técnicas, estrategias y formas de razonamiento, para explorar distintas maneras de proceder, obtener soluciones y asegurar su validez desde un punto de vista formal y en relación con el contexto planteado.',
@@ -38,7 +20,7 @@ CB.CURRICULO = {
     CE8: 'Desarrollar destrezas sociales, reconociendo y respetando las emociones, las experiencias de los demás y el valor de la diversidad y participando activamente en equipos de trabajo heterogéneos con roles asignados, para construir una identidad positiva como estudiante de matemáticas, fomentar el bienestar personal y crear relaciones saludables.'
   },
 
-  /* ── Criterios de evaluación del PRIMER CICLO, texto literal ──────────── */
+  /* Criterios de evaluación del PRIMER CICLO, texto literal */
   criterios: {
     '1.1': 'Comprender las preguntas planteadas a través de diferentes estrategias o herramientas, reconociendo la información contenida en problemas de la vida cotidiana.',
     '1.2': 'Proporcionar ejemplos de representaciones de situaciones problematizadas sencillas, con recursos manipulativos y gráficos que ayuden en la resolución de un problema de la vida cotidiana.',
@@ -59,7 +41,7 @@ CB.CURRICULO = {
     '8.2': 'Aceptar la tarea y rol asignado en el trabajo en equipo, cumpliendo con las responsabilidades individuales y contribuyendo a la consecución de los objetivos del grupo.'
   },
 
-  /* ── Saberes básicos del PRIMER CICLO. Bloques A y F. Texto literal ───── */
+  /* Saberes básicos del PRIMER CICLO. Bloques A y F. Texto literal */
   saberes: {
     'A.1':   'Conteo. Estrategias variadas de conteo y recuento sistemático en situaciones de la vida cotidiana en cantidades hasta el 999.',
     'A.2.a': 'Cantidad. Estimaciones razonadas de cantidades en contextos de resolución de problemas.',
@@ -77,14 +59,14 @@ CB.CURRICULO = {
     'F.2.c': 'Trabajo en equipo, inclusión, respeto y diversidad. Contribución de las matemáticas a los distintos ámbitos del conocimiento humano desde una perspectiva de género.'
   },
 
-  /* ── Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones ─ */
+  /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */
   segundoCicloReferencia: {
     'A.3.c-2c': 'Construcción de las tablas de multiplicar apoyándose en número de veces, suma repetida o disposición en cuadrículas.',
     'A.2.d-2c': 'Fracciones propias con denominador hasta 12 en contextos de la vida cotidiana.',
     'A.5-2c':   'Cálculo y estimación de cantidades y cambios (euros y céntimos de euro) en problemas de la vida cotidiana: ingresos, gastos y ahorro. Decisiones de compra responsable.'
   },
 
-  /* ── Bloques del área y qué cubre este juego ──────────────────────────── */
+  /* Bloques del área y qué cubre este juego */
   bloques: {
     A: { nombre: 'Sentido numérico',      cubierto: true  },
     B: { nombre: 'Sentido de la medida',  cubierto: false },
@@ -94,12 +76,10 @@ CB.CURRICULO = {
     F: { nombre: 'Sentido socioafectivo', cubierto: true, modo: 'transversal' }
   },
 
-  /* ── Techo numérico por trimestre. DECISIÓN PROPIA del proyecto ───────── */
+  /* Techo numérico por trimestre. DECISIÓN PROPIA del proyecto */
   techoTrimestre: { 1: 199, 2: 599, 3: 999 },
 
-  /* ── Calendario escolar por defecto, para deducir el trimestre sin
-        preguntarle nada al niño (PLAN §6.6). Ajustable por el adulto.
-        Devuelve 1, 2, 3 o 'verano'. ───────────────────────────────────── */
+  /* Calendario escolar por defecto, para deducir el trimestre sin */
   trimestrePorFecha: function (isoFecha) {
     var partes = String(isoFecha).split('-');
     var mes = parseInt(partes[1], 10), dia = parseInt(partes[2], 10);

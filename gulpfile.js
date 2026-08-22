@@ -1,21 +1,10 @@
-/* ============================================================================
-   gulpfile.js — el paso de construcción de Cubomática
-   ----------------------------------------------------------------------------
-   CommonJS a propósito, sin "type": "module". Las dependencias elegidas son CJS
-   o híbridas; las que obligarían a ESM (del, globby, chalk) no hacen falta, y el
-   proyecto entero es ES5 con `var`: un gulpfile CJS no obliga a nadie a cambiar
-   de modelo mental. Si algún día hiciera falta, gulpfile.mjs funciona en gulp 5
-   sin más cambios.
-
-   REGLA QUE GOBIERNA TODO ESTE FICHERO: `manifiesto.json` es la fuente única del
-   orden de carga. Aquí no se escribe ni una lista de ficheros a mano.
-   ========================================================================== */
+/* gulpfile.js — el paso de construcción de Cubomática */
 
 const { src, dest, series, parallel, watch } = require('gulp');
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
-const http = require('node:http');   /* solo para el servidor de pruebas de `gulp dev` */
+const http = require('node:http');   /* los dos servidores locales de `gulp dev` */
 
 const concat = require('gulp-concat');
 /* gulp-sass no trae compilador: hay que pasárselo. sass-embedded es dart-sass
@@ -28,28 +17,12 @@ const cssnano = require('cssnano');
 const rename = require('gulp-rename');
 const replace = require('gulp-replace');
 const htmlmin = require('gulp-html-minifier-terser');
-const navegador = require('browser-sync').create();
 
 const M = require('./manifiesto.json');
 
-/* ── Rutas ─────────────────────────────────────────────────────────────────
-   Las del manifiesto son relativas a src/, que es donde viven las fuentes.
-
-   `audio/` NO aparece: los 9 MP3 viven directamente en `dist/audio/` porque no
-   se compilan desde nada —ya SON el artefacto— y con dist/ versionada, tenerlos
-   en dos sitios duplicaría 42 MB en el árbol de trabajo de todo el que clone.
-   Gulp no los toca nunca, y por eso `limpiar` borra rutas concretas en vez de
-   arrasar la carpeta. */
+/* Rutas */
 const FUENTE = 'src';
-/* Los DOCE .scss, no los diez del manifiesto. El manifiesto declara los diez
-   PARCIALES —lo que se compila, y en qué orden—, pero el punto de entrada y el
-   fichero de mixins también son fuentes de estilo y también hay que vigilarlos
-   y firmarlos.
-   Dejarlos fuera del vigilante fue un fallo real: `_mixins.scss` es donde
-   viven `bisel()`, `paso()` y los mapas de puntos de ruptura, o sea el sitio
-   donde más se toca al ajustar el diseño, y `npm run dev` no reconstruía al
-   guardarlo. El síntoma no es un error: es que la pantalla no cambia, que se lee
-   como «el mixin no funciona». */
+
 const SCSS_EXTRA = [FUENTE + '/' + M.entradaEstilos,
                     FUENTE + '/scss/abstracts/_mixins.scss'];
 const RUTAS = {
@@ -61,9 +34,7 @@ const RUTAS = {
   salida: 'dist',
 };
 
-/* ══════════════════════════════════════════════════════════════════════════
-   TERSER — cada opción está aquí por un fallo concreto que provocaría
-   ══════════════════════════════════════════════════════════════════════════ */
+/* TERSER — cada opción está aquí por un fallo concreto que provocaría */
 const OPCIONES_TERSER = {
   /* El suelo declarado es un Chromebook de 2019 y un iPad de 6.ª generación.
      Con ecma:2015 terser reescribe `function(){}` como arrow y los objetos en
@@ -73,10 +44,7 @@ const OPCIONES_TERSER = {
   toplevel: false,
 
   compress: {
-    /* ← LA OPCIÓN CRÍTICA. Con true, terser borra las doce `function tabla()`,
-       `function serie()`, `function ls()`… porque NADIE las llama por su nombre
-       dentro del bundle: solo pruebas/casos-carga.js las busca en window. Doce
-       comprobaciones en rojo y la multiplicación rota, sin un error. */
+    /* Con true, terser borra las doce `function tabla()`, `function serie()`, `function ls()`… porque NADIE las llama por su nombre dentro del bundle: solo pruebas/casos-carga.js las busca en window. */
     toplevel: false,
     /* Los 44 `var CB = CB || {}` y los IIFE de datos/vocabulario.js y
        js/17-catalogo.js son efectos laterales POR DISEÑO. Con true terser puede
@@ -94,34 +62,17 @@ const OPCIONES_TERSER = {
        definir y casos-carga.js falla igual. */
     toplevel: false,
     reserved: ['CB'],
-    /* properties: PROHIBIDO Y NO NEGOCIABLE.
-       js/01-almacen.js serializa el perfil con JSON.stringify. Manglear
-       propiedades reescribe las CLAVES GUARDADAS en localStorage y todo perfil
-       existente de todo niño se vuelve ilegible. Además los slugs de destreza y
-       los data-* son cadenas que se comparan por igualdad. */
+
   },
 
   format: {
-    /* Conserva la cabecera legal. El aviso de no afiliacion NO depende de esto:
-       vive en CB.LEGAL.AVISO, que es una cadena, y terser no toca las cadenas.
-       Nombrar la marca aqui haria saltar la lista negra del bloque 1 de la
-       auditoria contra este mismo fichero, y la salida seria una exencion nueva
-       que debilita el grep para nada. */
+
     comments: /Cubom|AVISO|Licencia|MIT|©/i,
     ascii_only: false,     // el juego es UTF-8 y lo declara en <meta charset>
   },
 };
 
-/* Y lo que NO se pone, explícitamente:
-
-   · SIN envoltura IIFE (output.wrap). Una IIFE saca los 12 globales de window y,
-     peor, deja `var CB` local del bundle: los 14 pruebas/casos-*.js se cargan
-     como <script> aparte y no verían CB en absoluto. Moriría la suite entera.
-
-   · SIN 'use strict'. Las 11 989 líneas nunca se han ejecutado en modo estricto.
-     Activarlo convierte en TypeError cosas hoy silenciosas (asignar a variable
-     no declarada, parámetros duplicados, literales octales). Es otra migración,
-     con su fase y su suite; no se cuela dentro de esta. */
+/* Las 11 989 líneas nunca se han ejecutado en modo estricto. */
 
 /* cssnano conservador. reduceIdents renombraría los @keyframes —hoy es seguro
    porque ningún JS nombra uno, verificado, pero se desactiva igual— y zindex
@@ -152,9 +103,7 @@ const OPCIONES_HTML = {
   keepClosingSlash: true,
 };
 
-/* ══════════════════════════════════════════════════════════════════════════
-   Tareas
-   ══════════════════════════════════════════════════════════════════════════ */
+/* Tareas */
 
 /* Borra rutas concretas, NUNCA `dist/` entera: dist/audio/ está versionada y
    son 42 MB que no se regeneran desde nada. */
@@ -165,10 +114,7 @@ async function limpiar() {
     fsp.rm(path.join(RUTAS.salida, f), { recursive: true, force: true })));
 }
 
-/* El expandido es el que audita el bloque 3 (las tres reglas duras de estilo),
-   así que sale con `expanded` y sin sourcemap: nada que no sea CSS del
-   proyecto, y una regla por línea para que los filtros por línea del bloque 3
-   sigan significando algo. */
+/* El expandido es el que audita el bloque 3 (las tres reglas duras de estilo), así que sale con `expanded` y sin sourcemap: nada que no sea CSS del proyecto, y una regla por línea para que los filtros por línea del bloque 3 sigan… */
 function estilosDev() {
   return src(RUTAS.entradaScss)
     .pipe(sass.sync({ style: 'expanded' }).on('error', sass.logError))
@@ -176,19 +122,7 @@ function estilosDev() {
     .pipe(dest(RUTAS.salida + '/css'));
 }
 
-/* SIN MAPA DE ORIGEN, y es una corrección, no un olvido.
-   Los emitía, `.gitignore` los excluía (977 KB por construcción) y `dist/` está
-   versionada: resultado, los dos ficheros minificados que SÍ se publican
-   terminaban con un `sourceMappingURL` que apunta a algo que no existe en
-   ningún clon. Correcto solo en la máquina que acababa de construir, roto para
-   todos los demás — un 404 por fichero en cuanto se abren las herramientas de
-   desarrollo, en un proyecto cuyo criterio de entrega es «consola limpia».
-
-   Las dos salidas eran malas: publicar 977 KB generados en cada construcción, o
-   dejar la referencia colgando. Y no hacen falta, porque la depuración de este
-   proyecto ya está resuelta mejor: `dist/js/cubomatica.js` es el bundle legible,
-   que no es una reconstrucción aproximada sino las fuentes pegadas byte a byte,
-   y `pruebas/pruebas.html` corre contra él justamente por eso. */
+/* Correcto solo en la máquina que acababa de construir, roto para todos los demás — un 404 por fichero en cuanto se abren las herramientas de desarrollo, en un proyecto cuyo criterio de entrega es «consola limpia». */
 function estilosMin() {
   return src(RUTAS.entradaScss)
     .pipe(sass.sync({ style: 'compressed' }).on('error', sass.logError))
@@ -197,14 +131,6 @@ function estilosMin() {
     .pipe(dest(RUTAS.salida + '/css'));
 }
 
-/* El bundle legible es la concatenación BYTE A BYTE de los 44, unidos con \n.
-   Nada más. Así la auditoría puede reconstruirlo en memoria desde el manifiesto
-   y compararlo: si coinciden, el orden es correcto, sin heurística ninguna.
-
-   Y por eso NO lleva sourcemap: la línea `//# sourceMappingURL=…` son 39 bytes
-   que rompen esa igualdad y obligarían a normalizar antes de comparar. Un mapa
-   de origen aquí tampoco aporta nada —el fichero ES las fuentes pegadas—;
-   el minificado, que sí lo necesita, lo conserva. */
 function guionesDev() {
   return src(RUTAS.guiones)
     .pipe(concat('cubomatica.js', { newLine: '\n' }))
@@ -233,14 +159,6 @@ function estaticos() {
   return src(RUTAS.estaticos, { encoding: false }).pipe(dest(RUTAS.salida));
 }
 
-/* Huellas de las fuentes, para que la auditoría pueda demostrar que dist/ está
-   al día SIN tener que compilar nada.
-   Con el JS basta con reconstruir el bundle en memoria y compararlo byte a byte,
-   porque es una concatenación pura. Con el CSS ya no: Sass no concatena, genera.
-   Recompilar desde la auditoría exigiría sass-embedded, y la auditoría tiene que
-   correr en un clon limpio sin `npm install`. Así que gulp deja escrito el sha1
-   de cada fuente y la auditoría lo recalcula: cero dependencias, y detecta
-   igualmente un .scss tocado sin reconstruir. */
 async function huellas() {
   const crypto = require('node:crypto');
   const sha = (f) => crypto.createHash('sha1').update(fs.readFileSync(f)).digest('hex');
@@ -252,20 +170,10 @@ async function huellas() {
     JSON.stringify({ _: 'lo escribe gulp; lo verifica la auditoria', fuentes }, null, 2) + '\n');
 }
 
-/* ── sw ────────────────────────────────────────────────────────────────────
-   VA EN `series`, NUNCA EN `parallel`, y es el error clásico de esta tarea:
-   necesita el HTML, el CSS y el JS ya escritos EN DISCO para calcular la huella
-   sha1 de su contenido. En paralelo calcularía la huella de un fichero que aún
-   no existe, y el resultado sería una caché con nombre estable sobre contenido
-   cambiante — es decir, exactamente el fallo que la huella venía a evitar. */
+/* sw */
 async function sw() {
   const crypto = require('node:crypto');
-  /* LAS DOCE PIEZAS DE DINERO ENTRAN EN EL ARMAZÓN, la música no. La diferencia
-     es el peso: 64 KB las doce contra 42 MB las nueve pistas. Un juego sin red
-     que se queda mudo sigue siendo el juego; uno que en la pregunta «toca la
-     moneda de 2 euros» pinta cuatro rectángulos de color, no.
-     Van en `dist/img/` y NO se compilan desde nada, igual que `dist/audio/`:
-     `docs/dinero.md` guarda los comandos con los que se generaron. */
+
   const PIEZAS = ['c1', 'c5', 'c10', 'c20', 'c50', '1', '2', '5', '10', '20', '50', '100'];
   const armazon = ['index.html', 'css/cubomatica.min.css',
                    'js/cubomatica.min.js', 'manifest.webmanifest']
@@ -278,10 +186,7 @@ async function sw() {
   const version = (nucleo.match(/CB\.VERSION\s*=\s*'(\d+\.\d+\.\d+)'/) || [])[1];
   if (!version) throw new Error('no se encuentra CB.VERSION en 00-nucleo.js');
 
-  /* El manifest primero: entra en el armazón, así que su contenido cuenta para
-     la huella. Icono SVG en data: URI porque el proyecto no admite un solo
-     binario —el bloque 4 de la auditoría lo prohíbe— y sin icons Chrome no
-     ofrece instalar. */
+  /* Icono SVG en data: URI porque el proyecto no admite un solo binario —el bloque 4 de la auditoría lo prohíbe— y sin icons Chrome no ofrece instalar. */
   const icono = encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
     '<rect width="64" height="64" fill="#2B2118"/>' +
@@ -316,54 +221,9 @@ async function sw() {
   console.log('  sw: version ' + version + ', huella ' + huella);
 }
 
-/* ── LOS DOS SERVIDORES DE DESARROLLO, Y POR QUE SON DOS ─────────────────────
+/* LOS DOS SERVIDORES DE DESARROLLO, Y POR QUE SON DOS */
 
-   8080 · EL JUEGO, con recarga en vivo. Lo sirve browser-sync desde dist/ e
-          inyecta su cliente en el HTML para poder recargar solo.
-
-   8081 · LAS PRUEBAS, sin tocar nada. Un servidor estatico de veinte lineas
-          sobre la raiz del repositorio, para que /pruebas/pruebas.html encuentre
-          su ../dist/js/cubomatica.js.
-
-   Podrian ser uno, y se intento: browser-sync inyecta su cliente como un <script>
-   mas en CADA html que sirve, y `casos-carga.js` comprueba —con razon— que la
-   pagina de pruebas cargue UN SOLO guion, el bundle de dist/ y nada mas. Con la
-   inyeccion puesta, la suite decia «obtenido 2, esperado 1» y señalaba a
-   browser-sync-client.js. Su `snippetOptions.blacklist` deberia excluir una ruta;
-   con este browser-sync apaga la inyeccion ENTERA, y entonces lo que se pierde es
-   la recarga del juego, que es justo lo que se venia a ganar.
-
-   Asi que la comprobacion se queda como esta —el dia que alguien vuelva a partir
-   el juego en 45 <script> sueltos tiene que ponerse rojo— y lo que se separa son
-   los servidores. Cada uno hace una cosa y ninguno estorba al otro.
-   ────────────────────────────────────────────────────────────────────────── */
-
-/* SIN CACHE, Y NO ES PARANOIA. Chrome reutiliza alegremente un
-   `dist/js/cubomatica.js` de hace tres ediciones: la pagina recarga, el numero de
-   comprobaciones no cambia, y lo verde que sale mide codigo viejo. Es el modo de
-   fallo mas caro que tiene este proyecto, porque no se distingue de funcionar. */
-function sinCache(req, res, siguiente) {
-  res.setHeader('Cache-Control', 'no-store, must-revalidate');
-  siguiente();
-}
-
-/* ── EL SERVICE WORKER, DESARMADO EN DESARROLLO ──────────────────────────────
-   Este es EL motivo por el que `npm run dev` podia recompilar, recargar y seguir
-   enseñando el bundle anterior. `dist/index.html` registra un service worker que
-   cachea el armazon con politica cache-first (js/45-offline.js): en cuanto se
-   instala una vez, deja de importar lo que diga el servidor, sirve su copia.
-   Guardas, gulp recompila, browser-sync recarga, y en pantalla no cambia nada.
-   Es la version local del riesgo R7 —«el SW sirve una version vieja para
-   siempre»— que el plan preveia para un aula de 25 aparatos.
-
-   La respuesta es un sw.js que se suicida: se instala, borra TODAS las caches, se
-   da de baja y renavega las pestañas abiertas. La primera carga tras arrancar
-   `npm run dev` limpia lo que hubiera registrado, y a partir de ahi manda el
-   servidor.
-
-   PARA PROBAR EL SERVICE WORKER DE VERDAD: `CON_SW=1 npm run dev`. Sin esa
-   salida no se podria comprobar el modo sin conexion, que es una funcion
-   entregada y hay que poder mirarla. */
+/* EL SERVICE WORKER, DESARMADO EN DESARROLLO */
 const SW_SUICIDA = [
   "self.addEventListener('install', function () { self.skipWaiting(); });",
   "self.addEventListener('activate', function (ev) {",
@@ -375,14 +235,6 @@ const SW_SUICIDA = [
   "});",
 ].join('\n');
 
-function swDesarmado(req, res, siguiente) {
-  if (process.env.CON_SW === '1') return siguiente();
-  if (req.url.split('?')[0] !== '/sw.js') return siguiente();
-  res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store');
-  res.end(SW_SUICIDA);
-}
-
 const TIPOS_DEV = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -393,60 +245,105 @@ const TIPOS_DEV = {
   '.mp3': 'audio/mpeg',
   '.webmanifest': 'application/manifest+json',
 };
+const PUERTO_JUEGO = Number(process.env.PUERTO_JUEGO) || 8080;
+const PUERTO_PRUEBAS = Number(process.env.PUERTO_PRUEBAS) || 8081;
+
+/* SIN CACHE, Y NO ES PARANOIA. Chrome reutiliza alegremente un bundle de hace
+   tres ediciones: la pagina recarga y lo verde mide codigo viejo. Además se
+   resuelve la ruta antes de leer nada: `..` nunca puede escapar de la raiz. */
+function rutaDev(raiz, url) {
+  var rel;
+  try { rel = decodeURIComponent(url.split('?')[0]).replace(/^\/+/, ''); }
+  catch (e) { return null; }
+  var f = path.resolve(raiz, rel || 'index.html');
+  return (f === raiz || f.startsWith(raiz + path.sep)) ? f : null;
+}
+
+function servirFichero(raiz, req, res, opciones) {
+  var f = rutaDev(raiz, req.url);
+  if (!f || !fs.existsSync(f) || fs.statSync(f).isDirectory()) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('no existe');
+    return;
+  }
+
+  var cabeceras = {
+    'Content-Type': TIPOS_DEV[path.extname(f)] || 'application/octet-stream',
+    'Cache-Control': 'no-store, must-revalidate',
+  };
+  if (opciones && opciones.inyectarRecarga && path.extname(f) === '.html') {
+    var htmlDev = fs.readFileSync(f, 'utf8').replace('</body>', CLIENTE_RECARGA + '</body>');
+    res.writeHead(200, cabeceras);
+    res.end(htmlDev);
+    return;
+  }
+  res.writeHead(200, cabeceras);
+  fs.createReadStream(f).pipe(res);
+}
 
 /* El servidor de las pruebas. Sin dependencias y sin inyectar nada: lo que llega
    al navegador es exactamente el fichero del disco. */
 function servidorPruebas(cb) {
   const raiz = path.resolve('.');
   http.createServer((req, res) => {
-    const rel = decodeURIComponent(req.url.split('?')[0]);
-    const f = path.join(raiz, rel);
-    if (!f.startsWith(raiz) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('no existe: ' + rel);
-      return;
-    }
-    res.writeHead(200, {
-      'Content-Type': TIPOS_DEV[path.extname(f)] || 'application/octet-stream',
-      'Cache-Control': 'no-store, must-revalidate',
-    });
-    fs.createReadStream(f).pipe(res);
-  }).listen(8081, cb);
+    servirFichero(raiz, req, res);
+  }).listen(PUERTO_PRUEBAS, cb);
+}
+
+const CLIENTE_RECARGA = '<script>(function(){var e=new EventSource("/__recarga");' +
+  'e.onmessage=function(){location.reload();};})();</script>';
+const clientesRecarga = new Set();
+
+function recargarNavegadores() {
+  clientesRecarga.forEach((res) => res.write('data: recargar\n\n'));
 }
 
 function servidor(cb) {
-  navegador.init({
-    server: { baseDir: RUTAS.salida, middleware: [sinCache, swDesarmado] },
-    open: false, notify: false, ghostMode: false, port: 8080,
+  const raiz = path.resolve(RUTAS.salida);
+  http.createServer((req, res) => {
+    var url = req.url.split('?')[0];
+    if (url === '/__recarga') {
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-store',
+        'Connection': 'keep-alive',
+      });
+      res.write(': conectado\n\n');
+      clientesRecarga.add(res);
+      req.on('close', () => clientesRecarga.delete(res));
+      return;
+    }
+    if (url === '/sw.js' && process.env.CON_SW !== '1') {
+      res.writeHead(200, {
+        'Content-Type': 'text/javascript; charset=utf-8',
+        'Cache-Control': 'no-store',
+      });
+      res.end(SW_SUICIDA);
+      return;
+    }
+    servirFichero(raiz, req, res, { inyectarRecarga: true });
+  }).listen(PUERTO_JUEGO, () => {
+    console.log('');
+    console.log('  juego (recarga sola):  http://localhost:' + PUERTO_JUEGO + '/');
+    console.log('  pruebas:               http://localhost:' + PUERTO_PRUEBAS + '/pruebas/pruebas.html');
+    console.log('  pruebas minificadas:   http://localhost:' + PUERTO_PRUEBAS + '/pruebas/pruebas-min.html');
+    console.log('  las dos paginas de prueba se recargan a mano (F5): no se les');
+    console.log('  inyecta nada, para que sigan cargando un solo guion y nada mas.');
+    if (process.env.CON_SW === '1') {
+      console.log('  CON_SW=1: el service worker REAL esta activo; los cambios pueden');
+      console.log('            tardar en verse porque su cache manda sobre el servidor.');
+    }
+    console.log('');
+    cb();
   });
-  console.log('');
-  console.log('  juego (recarga sola):  http://localhost:8080/');
-  console.log('  pruebas:               http://localhost:8081/pruebas/pruebas.html');
-  console.log('  pruebas minificadas:   http://localhost:8081/pruebas/pruebas-min.html');
-  console.log('  las dos paginas de prueba se recargan a mano (F5): no se les');
-  console.log('  inyecta nada, para que sigan cargando un solo guion y nada mas.');
-  if (process.env.CON_SW === '1') {
-    console.log('  CON_SW=1: el service worker REAL esta activo; los cambios pueden');
-    console.log('            tardar en verse porque su cache manda sobre el servidor.');
-  }
-  console.log('');
-  cb();
 }
 
-/* Lo que se vigila tiene que ser lo que se compila, o el modo desarrollo miente
-   por omisión: guardas, no pasa nada, y concluyes que el cambio no funciona.
-   `manifiesto.json` NO está aquí a propósito: gulp lo lee con require() al
-   arrancar, así que cambiarlo obliga a reiniciar `npm run dev` de todas formas.
-   Vigilarlo daría una recarga que parece atender el cambio sin atenderlo. */
 function vigilar(cb) {
-  const recarga = (d) => series(d, (f) => { navegador.reload(); f(); });
+  const recarga = (d) => series(d, (f) => { recargarNavegadores(); f(); });
   watch(RUTAS.estilos, recarga(series(estilos, sw, huellas)));
   watch(RUTAS.guiones, recarga(series(guiones, sw)));
   watch([RUTAS.html, FUENTE + '/sw.plantilla.js'], recarga(series(html, sw)));
-  /* Las pruebas NO se compilan: los casos-*.js y las dos paginas se sirven tal
-     cual desde la raiz. No hay nada que reconstruir, solo que recargar — y sin
-     esto habia que darle a F5 a mano despues de cada guardado, que es la razon
-     por la que se acababa mirando una suite de hace dos ediciones. */
+  /* No hay nada que reconstruir, solo que recargar — y sin esto habia que darle a F5 a mano despues de cada guardado, que es la razon por la que se acababa mirando una suite de hace dos ediciones. */
   watch(['pruebas/*.js', 'pruebas/*.html'], (f) => {
     console.log('  pruebas: cambio detectado — recarga la pestaña de 8081 (F5)');
     f();
@@ -470,9 +367,6 @@ exports.estaticos = estaticos;
 exports.sw = sw;
 exports.build = build;
 exports.dev = dev;
-/* `watch` es el alias explicito para quien invoque Gulp directamente. La tarea
-   predeterminada tambien entra en desarrollo para que `gulp` no construya y se
-   cierre, sino que quede a la espera de cambios. `gulp build` conserva la
-   construccion puntual para CI y entregas. */
+
 exports.watch = dev;
 exports.default = dev;

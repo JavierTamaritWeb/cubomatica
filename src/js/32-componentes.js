@@ -1,18 +1,4 @@
-/* ============================================================================
-   32-componentes.js — Los 7 formatos de respuesta
-   ----------------------------------------------------------------------------
-   tecladoBloques · opciones4 · selectorSigno · balanza · ordenarFila · monedas
-   · selectorDatos
-
-   TODOS son manejables SOLO CON TECLADO (criterio de HECHO de F8) y todos
-   respetan los 800 ms de construcción visible: los botones se montan bloque a
-   bloque, quedan grises con el bisel hundido, y un toque prematuro produce un
-   «toc» de madera y un desplazamiento de 2 px. NUNCA en silencio: un botón
-   inerte y mudo hace que el niño crea que el juego está roto (§3.5).
-
-   ARRASTRAR Y SOLTAR NO ES NUNCA LA VÍA ÚNICA (§16.1): «ordenar» se resuelve
-   tocando en secuencia.
-   ========================================================================== */
+/* 32-componentes.js — Los 7 formatos de respuesta */
 
 var CB = CB || {};
 CB.componentes = CB.componentes || {};
@@ -24,6 +10,7 @@ CB.componentes.actual = null;      // {tipo, valor(), reset(), item}
 CB.componentes._valor = '';
 CB.componentes._seleccion = [];
 CB.componentes._confirmacionPendiente = false;
+CB.componentes._montaje = 0;
 
 CB.componentes.contenedor = function () {
   return document.getElementById(
@@ -31,10 +18,11 @@ CB.componentes.contenedor = function () {
   );
 };
 
-/* ── Construcción visible + bloqueo ─────────────────────────────────────── */
+/* Construcción visible + bloqueo */
 CB.componentes.montar = function (contenedor, bloqueoMs, alDesbloquear) {
   var ms = (bloqueoMs == null) ? CB.componentes.MS_CONSTRUCCION : bloqueoMs;
   var botones = [].slice.call(contenedor.querySelectorAll('button'));
+  var montaje = ++CB.componentes._montaje;
   var i;
 
   for (i = 0; i < botones.length; i++) {
@@ -44,6 +32,10 @@ CB.componentes.montar = function (contenedor, bloqueoMs, alDesbloquear) {
   if (CB.partida) CB.partida.bloqueado = true;
 
   setTimeout(function () {
+    /* Un montaje anterior puede vencer después de que el siguiente ya haya
+       bloqueado sus botones. Solo el montaje más reciente puede abrir el
+       cerrojo global, mover el foco o ejecutar su callback. */
+    if (montaje !== CB.componentes._montaje) return;
     for (i = 0; i < botones.length; i++) {
       botones[i].disabled = false;
       botones[i].classList.remove('btn-bloque--monta');
@@ -61,20 +53,7 @@ CB.componentes.montar = function (contenedor, bloqueoMs, alDesbloquear) {
   }, ms);
 };
 
-/* Toque prematuro: «toc» de madera y desplazamiento de 2 px.
-
-   SE REGISTRA UNA SOLA VEZ POR CONTENEDOR. Esto no es una precaución teórica:
-   `contenedor()` devuelve #item-respuesta, que es un nodo PERMANENTE del
-   index.html —se vacía y se rellena en cada ítem, pero no se sustituye—, y
-   conectarToc() se llama desde los siete componentes de respuesta, es decir una
-   vez por ítem. Sin este cerrojo, en el ítem 12 había once oyentes sobre el
-   mismo elemento y un solo toque prematuro reproducía el «toc» ONCE VECES
-   simultáneas: un chasquido cada vez más fuerte que además empeoraba cuanto más
-   jugaba el niño. Medido en navegador, no deducido.
-
-   Se marca con un atributo y no con una propiedad JS porque el atributo se ve
-   en el inspector, y el día que alguien dude de si esto sigue vivo lo comprueba
-   mirando, sin leer este comentario. */
+/* Sin este cerrojo, en el ítem 12 había once oyentes sobre el mismo elemento y un solo toque prematuro reproducía el «toc» ONCE VECES simultáneas: un chasquido cada vez más fuerte que además empeoraba cuanto más jugaba el niño. */
 CB.componentes.conectarToc = function (contenedor) {
   if (!contenedor || contenedor.getAttribute('data-toc') === 'si') return;
   contenedor.setAttribute('data-toc', 'si');
@@ -95,19 +74,7 @@ CB.componentes.conectarToc = function (contenedor) {
   });
 };
 
-/* ── El primer toque real de un problema de enunciado ───────────────────────
-   En los PROBLEMA_* el cronómetro de puntuación no arranca al mostrar el
-   enunciado: arrancar ahí puntúa la velocidad lectora y no la competencia
-   matemática (§11.4). Arranca en el primer toque, y ESTE es el sitio donde ese
-   toque se puede ver una sola vez para los siete formatos.
-
-   Va sobre el contenedor de respuesta y no sobre el documento a propósito: así
-   el altavoz, la pista y la pausa —que están en la barra, fuera— no cuentan como
-   empezar a pensar. Pedir que te lo lean otra vez sigue siendo leer.
-
-   Mismo cerrojo por atributo que conectarToc(), y por el mismo motivo: el
-   contenedor es un nodo PERMANENTE del index.html que se vacía y se rellena en
-   cada ítem, así que sin marca acumularía un oyente por ítem servido. */
+/* El primer toque real de un problema de enunciado */
 CB.componentes.conectarLectura = function (contenedor) {
   if (!contenedor || contenedor.getAttribute('data-lectura') === 'si') return;
   contenedor.setAttribute('data-lectura', 'si');
@@ -119,7 +86,7 @@ CB.componentes.conectarLectura = function (contenedor) {
   contenedor.addEventListener('keydown', arranca);
 };
 
-/* ── Confirmación de doble toque, tras detectar azar (§12.3) ────────────── */
+/* Confirmación de doble toque, tras detectar azar (§12.3) */
 CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
   if (!CB.componentes._confirmacionPendiente) { alConfirmar(); return; }
   if (boton.getAttribute('data-confirmando') === 'si') {
@@ -133,20 +100,11 @@ CB.componentes.pedirConfirmacion = function (boton, alConfirmar) {
   boton.setAttribute('data-confirmando', 'si');
   boton.classList.add('btn-bloque--hundido');
   setTimeout(function () { boton.classList.remove('btn-bloque--hundido'); }, 300);
-  /* SE VE, no solo se oye. Esto era un CB.a11y.anunciar, que escribe en
-     #region-viva —`clip: rect(0 0 0 0)`, invisible por definición—: justo después
-     de decidir que el niño va al tuntún, el juego le cambiaba la regla de entrada
-     y se lo contaba SOLO a un lector de pantalla. El hundido de 300 ms no vale
-     como aviso: es indistinguible del :active de cualquier botón.
-
-     Se SUSTITUYE el anuncio, no se añade: CB.ui.mensaje ya llama por dentro a
-     CB.a11y.anunciar, así que dejar los dos haría que el lector lo dijera dos
-     veces. Y no se usa la cinta: podría pisarse con la del fallo, que es
-     exactamente el defecto que cerró E51. */
+  /* SE VE, no solo se oye. */
   CB.ui.mensaje('Toca otra vez para confirmar.', 'animo');
 };
 
-/* ══ 1. TECLADO DE BLOQUES ═════════════════════════════════════════════════ */
+/* 1. TECLADO DE BLOQUES */
 /**
  * El teclado numérico. Desde 1.11.0 lo montan DOS sitios: la respuesta normal y
  * la tercera fase de selectorDatos, que antes tenía su propia copia.
@@ -198,10 +156,7 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   var botonOK = null;
   for (i = 0; i < teclas.length; i++) {
     (function (t) {
-      /* La tecla lleva ADEMAS la clase de elemento del teclado. Antes el
-         tamano de las teclas salia de `.teclado-bloques .btn-bloque`, o sea del
-         contenedor estilando a un bloque ajeno: el boton cambiaba de tamano
-         segun donde estuviera, que es lo que un bloque no puede hacer. */
+
       var b = CB.ui.boton(t, 'teclado-bloques__tecla' +
         (t === 'OK' ? ' btn-bloque--primario' : ''), function () {
         pulsa(t, b);
@@ -222,13 +177,7 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     tecla: function (k) {
       if (/^[0-9]$/.test(k)) { pulsa(k, null); return true; }
       if (k === 'Backspace' || k === 'Delete') { pulsa('⌫', null); return true; }
-      /* Enter PASA POR pulsa('OK'), no por alResponder directo. Iba por su
-         cuenta y se saltaba pedirConfirmacion(), así que la confirmación de dos
-         toques que impone el antiazar tras una detección solo se le aplicaba a
-         quien juega tocando: con teclado, Enter contestaba a la primera. Un
-         antiazar que se desactiva cambiando de dispositivo de entrada no es un
-         antiazar, y F8 pide una partida entera solo con teclado —lo que no pide
-         es que el teclado tenga reglas distintas. */
+      /* Iba por su cuenta y se saltaba pedirConfirmacion(), así que la confirmación de dos toques que impone el antiazar tras una detección solo se le aplicaba a quien juega tocando: con teclado, Enter contestaba a la primera. */
       if (k === 'Enter') { pulsa('OK', botonOK); return true; }
       return false;
     }
@@ -236,7 +185,7 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   return CB.componentes.actual;
 };
 
-/* ══ 2. OPCIONES 4 ═════════════════════════════════════════════════════════ */
+/* 2. OPCIONES 4 */
 CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -259,16 +208,6 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
         });
       }
 
-      /* PIEZAS DE DINERO: la opción se dibuja como la moneda o el billete que es,
-         con la misma forma que ya tienen en pagar y en contar —el cuadrado de oro
-         y el rectángulo verde—, no como un botón de madera con un número.
-
-         Las dos formas cumplen el suelo de 44 px de WCAG 2.5.8 por sí solas (72
-         y 128×64), así que no hace falta envolverlas en un botón: la pieza ES el
-         botón, igual que en el modo pagar. Y el nombre accesible es el de la
-         pieza entera —«la moneda de 2 euros»— y no el «2 €» que lleva escrito,
-         que es lo que hace que quien juega con lector de pantalla oiga la misma
-         pregunta que ve quien mira. */
       if (item.piezasDinero) {
         b = CB.ui.pieza('button', op.valor);
         b.type = 'button';
@@ -303,7 +242,7 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
   return CB.componentes.actual;
 };
 
-/* ══ 3. SELECTOR DE SIGNO ══════════════════════════════════════════════════ */
+/* 3. SELECTOR DE SIGNO */
 CB.componentes.selectorSigno = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -331,7 +270,7 @@ CB.componentes.selectorSigno = function (item, alResponder, opciones) {
   return CB.componentes.actual;
 };
 
-/* ══ 4. BALANZA ════════════════════════════════════════════════════════════ */
+/* 4. BALANZA */
 CB.componentes.balanza = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -371,7 +310,7 @@ CB.componentes.balanza = function (item, alResponder, opciones) {
   return CB.componentes.actual;
 };
 
-/* ══ 5. ORDENAR FILA (por toque, nunca solo por arrastre) ══════════════════ */
+/* 5. ORDENAR FILA (por toque, nunca solo por arrastre) */
 CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -389,10 +328,7 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   cont.appendChild(huecos);
 
   var piezas = CB.ui.crear('div', 'fila-ordenar');
-  /* Los botones en el orden en que se han tocado, para poder deshacer. Se lleva
-     aparte de _seleccion —que guarda VALORES— porque buscar la pieza por su
-     número obliga a suponer que no hay valores repetidos, y eso es una suposición
-     sobre el generador que este componente no tiene por qué hacer. */
+
   var usados = [];
 
   function cerrarSiEstaLlena() {
@@ -417,10 +353,6 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
       b.classList.add('btn-bloque--hundido');
       CB.audio.sfx('picar');
 
-      /* La confirmación de dos toques cuelga del gesto QUE CIERRA la respuesta,
-         que aquí es colocar la última pieza: no hay OK del que colgarla. Y por
-         eso esta parte necesita el ⌫ de abajo — sin poder deshacer, un «toca otra
-         vez» sobre la última pieza no tendría segunda oportunidad posible. */
       if (CB.componentes._seleccion.length === item.orden.length) {
         CB.componentes.pedirConfirmacion(b, cerrarSiEstaLlena);
       }
@@ -430,14 +362,6 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   });
   cont.appendChild(piezas);
 
-  /* DESHACER SIN PEAJE. Antes, tocar el 5 cuando se quería el 3 obligaba a
-     terminar mal a propósito: la fila se contestaba sola al llenarse y no había
-     forma de retirar una pieza. Peor que perder el ítem: el registro guardaba
-     «falló ordenar», que le atribuye al niño un problema que no tiene.
-
-     NO se añade un OK. Exigirlo metería un toque obligatorio en cada ítem de este
-     formato, que es lo contrario de lo que se busca; se sigue contestando al
-     colocar la última pieza, así que el caso bueno no cuesta ni un toque más. */
   var deshacer = CB.ui.boton('⌫ Quitar', '', function () {
     if (CB.partida && CB.partida.bloqueado) return;
     if (!CB.componentes._seleccion.length) return;
@@ -462,7 +386,7 @@ CB.componentes.ordenarFila = function (item, alResponder, opciones) {
   return CB.componentes.actual;
 };
 
-/* ══ 6. MONEDAS ════════════════════════════════════════════════════════════ */
+/* 6. MONEDAS */
 CB.componentes.monedas = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -501,14 +425,7 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
         total += v;
         marcador.textContent = String(total);
         cogidas.push(v);
-        /* CONTAR, NO MARCAR. `disponibles` es una pieza por valor, sin repetir, y
-           el manejador no tiene cerrojo: pagar 6 € es tocar tres veces la de 2 €.
-           Un aria-pressed convertiría un contador en un interruptor —le diría
-           «pulsado» al lector de pantalla de un botón que hay que seguir
-           pulsando—, que es mal uso de ARIA (WCAG 4.1.2). Por eso se cuenta.
-
-           Y va ANTES de comprobar el objetivo: si fuera después, la pieza que
-           cierra el pago no llegaría a verse marcada nunca. */
+        /* Y va ANTES de comprobar el objetivo: si fuera después, la pieza que cierra el pago no llegaría a verse marcada nunca. */
         var veces = (parseInt(b.getAttribute('data-veces'), 10) || 0) + 1;
         b.setAttribute('data-veces', String(veces));
         pintarCogidas();
@@ -557,7 +474,7 @@ CB.componentes.monedas = function (item, alResponder, opciones) {
   return CB.componentes.tecladoBloques(item, alResponder, opciones);
 };
 
-/* ══ 7. SELECTOR DE DATOS (3 toques que hacen visible el razonamiento) ═════ */
+/* 7. SELECTOR DE DATOS (3 toques que hacen visible el razonamiento) */
 CB.componentes.selectorDatos = function (item, alResponder, opciones) {
   opciones = opciones || {};
   var cont = CB.componentes.contenedor();
@@ -595,11 +512,7 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
       numeros.forEach(function (n, idx) {
         var b = CB.ui.boton(String(n), 'rejilla-respuestas__opcion', function () {
           if (CB.partida && CB.partida.bloqueado) return;
-          /* DESTOCAR. Antes este `if` salía sin hacer nada: el número elegido por
-             error se quedaba elegido y el niño tenía que terminar mal el ítem a
-             propósito. Y el registro guardaba faseFallada = 'datos', que es
-             decir que no ha entendido el enunciado cuando lo que ha pasado es
-             que se le ha ido el dedo. */
+
           if (b.getAttribute('aria-pressed') === 'true') {
             b.setAttribute('aria-pressed', 'false');
             b.classList.remove('btn-bloque--hundido');
@@ -653,18 +566,6 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     volverDatos.setAttribute('aria-label', 'Volver a elegir los números del problema');
     zona.appendChild(volverDatos);
 
-    /* ESTE TECLADO ERA UNA COPIA, y llevaba desincronizada desde que se escribió.
-       Se usa en TODOS los problemas de enunciado desde el segundo trimestre, así
-       que no era un rincón: sus diferencias con el original eran el ⌫ mudo, el
-       dígito mudo, un visor sin `role="status"` ni `aria-live` —o sea, invisible
-       para un lector de pantalla—, ningún respeto por CB.partida.bloqueado, y un
-       data-tecla="OK" en MAYÚSCULAS que hacía que `[data-tecla="ok"]` no lo
-       alcanzara: ni siquiera recibía el verde del botón primario.
-
-       Ahora delega. El envoltorio conserva intactos el origen 'datos' y los
-       cuatro campos de diagnóstico: los lee CB.partida.registrarRespuesta y de
-       ahí sale el informe del adulto. Unificar teclados es fácil; perder el
-       informe por el camino es el fallo de verdad, y no se ve en pantalla. */
     montado = CB.componentes.tecladoBloques(item, function (valor) {
       /* Cada fase se registra por separado: un niño que elige bien los datos y la
          operación pero se equivoca al calcular NO tiene un problema de comprensión
@@ -680,11 +581,6 @@ CB.componentes.selectorDatos = function (item, alResponder, opciones) {
     CB.componentes.actual.tipo = 'selectorDatos';
   }
 
-  /* ANTES de pintar, no después. Estaba al final y por tanto pisaba el bloqueo que
-     pone montar(): selectorDatos era el ÚNICO de los siete formatos sin la
-     protección de los 800 ms contra el toque heredado del ítem anterior, y encima
-     ignoraba su propio opciones.bloqueoMs. Se arregla aquí porque la fase 3 ya lo
-     recibe al delegar, y dejar la línea abajo lo habría anulado igual. */
   if (CB.partida) CB.partida.bloqueado = false;
   pintarFase();
   CB.componentes.conectarToc(cont);
@@ -719,7 +615,7 @@ CB.componentes.tecla = function (k, ev) {
   return false;
 };
 
-/* ── Presentación de cada componente la PRIMERA vez (§7.3) ──────────────── */
+/* Presentación de cada componente la PRIMERA vez (§7.3) */
 CB.componentes.PRESENTACION = {
   tecladoBloques: 'Escribe el 7',
   opciones4: 'Toca el 5',
