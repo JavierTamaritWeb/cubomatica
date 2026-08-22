@@ -281,10 +281,10 @@ if (!HAY_DIST) {
      «no se PUEDE escribir». `paso()` y `bisel()` no tienen parámetro donde meter
      un easing ni un desenfoque. */
   /* Cada exclusión se nombra por su motivo, y NO se hereda. Antes había una
-     sola lista —«todo menos _herramientas»— excluida porque el mixin `paso()`
+     sola lista —«todo menos _mixins»— excluida porque el mixin `paso()`
      es quien tiene derecho a escribir `transition:`; y esa misma lista se
      reutilizaba para los colores, así que los 39 hex del mapa de materiales de
-     _herramientas.scss quedaban sin mirar POR ACCIDENTE, mientras el verde
+     _mixins.scss quedaban sin mirar POR ACCIDENTE, mientras el verde
      seguía diciendo «todos con nombre en _variables.scss». Verde y falso. */
   const SCSS = listarRecursivo(D('src/scss'), '.scss');
   const salvo = (lista, ...nombres) => lista.filter((f) => !nombres.some((n) => f.includes(n)));
@@ -297,8 +297,8 @@ if (!HAY_DIST) {
      falso acaba desactivada, llevándose por delante la que sí valía.
      A las animaciones las cubre, mejor, el detector EN POSITIVO de arriba, que
      mira el CSS compilado y exige steps() en todas. */
-  const aMano = buscar(salvo(SCSS, '_herramientas'), /transition:/, sinComentariosCSS);
-  juzgar(!aMano.length, 'ninguna transición escrita a mano: todas pasan por @include paso()',
+  const aMano = buscar(salvo(SCSS, '_mixins'), /transition:/, sinComentariosCSS);
+  juzgar(!aMano.length, 'ninguna transición escrita a mano: todas pasan por @include m.paso()',
     'hay transiciones fuera del mixin', aMano.join('\n'));
 
   /* Un solo fichero DECLARA color y por eso puede escribir hex: _variables.
@@ -650,7 +650,7 @@ if (!existsSync(CSS_COMPILADO)) {
   const cssE105 = sinComentariosCSS(leer(CSS_COMPILADO));
   /* Lo que va dentro de un :not() NO cuenta: son exclusiones, no contexto. Es
      lo que salva al unico selector estructural del proyecto —el
-     `.pantalla > *:not(.cielo):not(.cinta):not(.cartel)` de _06-biomas.scss, que
+     `.pantalla > *:not(.cielo):not(.cinta):not(.cartel)` de _biomas.scss, que
      garantiza que todo hijo directo entra en el flujo y lo vigila E47—. */
   const bloqueDe = (compuesto) => {
     const limpio = compuesto.replace(/:not\([^)]*\)/g, '');

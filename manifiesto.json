@@ -48,16 +48,16 @@
     "js/99-arranque.js"
   ],
   "estilos": [
-    "scss/base/_00-fuentes.scss",
+    "scss/base/_fuentes.scss",
     "scss/abstracts/_variables.scss",
-    "scss/base/_02-base.scss",
-    "scss/components/_03-componentes.scss",
-    "scss/layout/_04-pantallas.scss",
-    "scss/base/_05-animaciones.scss",
-    "scss/themes/_06-biomas.scss",
-    "scss/pages/_07-adulto.scss",
-    "scss/utilities/_08-imprimir.scss",
-    "scss/utilities/_09-forzado.scss"
+    "scss/base/_base.scss",
+    "scss/components/_componentes.scss",
+    "scss/layout/_pantallas.scss",
+    "scss/base/_animaciones.scss",
+    "scss/themes/_biomas.scss",
+    "scss/pages/_adulto.scss",
+    "scss/utilities/_imprimir.scss",
+    "scss/utilities/_forzado.scss"
   ],
   "puros": [
     "js/00-nucleo.js",

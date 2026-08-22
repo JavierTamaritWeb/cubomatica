@@ -2,7 +2,7 @@
 
 # Los 24 códigos de error y su actividad de aula
 
-> Cubomática 1.0.0
+> Cubomática 1.23.2
 
 Tabla de referencia. La fuente de verdad es `datos/recomendaciones.js`, y
 `casos-curriculo.js` (CU8) verifica que este conjunto de claves coincide
@@ -278,4 +278,3 @@ aparezca en el panel.
 **Explicador de la tarjeta de reparación:** `rectaNumerica`
 
 **10 minutos de aula:** Que sea él quien INVENTE un problema usando la palabra. Inventar el problema exige entender la palabra mucho más que resolverlo.
-

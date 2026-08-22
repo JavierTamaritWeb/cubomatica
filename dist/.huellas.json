@@ -1,17 +1,17 @@
 {
   "_": "lo escribe gulp; lo verifica la auditoria",
   "fuentes": {
-    "src/scss/base/_00-fuentes.scss": "047b2661693b08fb5b222acf18355b74489f926e",
+    "src/scss/base/_fuentes.scss": "047b2661693b08fb5b222acf18355b74489f926e",
     "src/scss/abstracts/_variables.scss": "a70d5960af2638429528edee37238f6dafb7ea32",
-    "src/scss/base/_02-base.scss": "ce45ccba14d4521ddc7e91a0d3d8163a48d50f70",
-    "src/scss/components/_03-componentes.scss": "07648d802a0ace719bdb3473eba933e154310f1d",
-    "src/scss/layout/_04-pantallas.scss": "753ea55b91d72465371020c6c2b217971a734590",
-    "src/scss/base/_05-animaciones.scss": "6684d8ce6e83d2d6cb77b60b20a88d722b5eb0c2",
-    "src/scss/themes/_06-biomas.scss": "f2478d43b38b77e0ca3331ea48ff7fe226aebdb1",
-    "src/scss/pages/_07-adulto.scss": "dc4a15ef57474b5f50220bb9f114bbc1b685c4d8",
-    "src/scss/utilities/_08-imprimir.scss": "d7517886443f5d4411da002d0b1566cf1a86f9c8",
-    "src/scss/utilities/_09-forzado.scss": "b285a72e7703af57a6cdf853cd4ca3212c79cdfe",
-    "src/scss/app.scss": "8d3178d38cb7867f5e89c35d4f4adf8913d1c72a",
-    "src/scss/abstracts/_herramientas.scss": "7585b7e603b456438e500731c4a2de75a67be5c0"
+    "src/scss/base/_base.scss": "58a5ae059d4ccc7b052421e490e79a4c207a3697",
+    "src/scss/components/_componentes.scss": "17928dbecf8184ce316f2d8043c504b3816a31ea",
+    "src/scss/layout/_pantallas.scss": "b196136d8571b192a91fee8469055aa2737e74f0",
+    "src/scss/base/_animaciones.scss": "b53ca6524ebced5006177b1ddd2be7b379a1d157",
+    "src/scss/themes/_biomas.scss": "cf7754fd651af858e6c0880bfb781a71bfa0068f",
+    "src/scss/pages/_adulto.scss": "8f78a2ae6b919481dab884e2c4528b1d94b10d13",
+    "src/scss/utilities/_imprimir.scss": "d7517886443f5d4411da002d0b1566cf1a86f9c8",
+    "src/scss/utilities/_forzado.scss": "b285a72e7703af57a6cdf853cd4ca3212c79cdfe",
+    "src/scss/app.scss": "57df67107688f728fca997246affc7864e06fc79",
+    "src/scss/abstracts/_mixins.scss": "de000b756fe9b9743de11dbe47e03d3ff3fe876f"
   }
 }

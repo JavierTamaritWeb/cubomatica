@@ -81,7 +81,7 @@ juzgar(!sobran.length && !faltan.length,
   (faltan.length ? 'declarados y sin fichero: ' + faltan.join(', ') : ''));
 
 const cssDisco = listarRecursivo(join(BASE, 'scss'), '.scss')
-  .filter((f) => !['app.scss', '_herramientas.scss'].includes(basename(f)))
+  .filter((f) => !['app.scss', '_mixins.scss'].includes(basename(f)))
   .map((f) => relative(BASE, f).replaceAll('\\', '/'));
 juzgar(JSON.stringify(cssDisco) === JSON.stringify([...M.estilos].sort()),
   'los ' + M.estilos.length + ' parciales del manifiesto son los que hay en disco',
@@ -99,7 +99,7 @@ if (!existsSync(entrada)) {
 } else {
   const scss = readFileSync(entrada, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
   const usados = [...scss.matchAll(/@use\s+'([^']+)'/g)].map((m) => m[1])
-    .filter((n) => n !== 'abstracts/herramientas');
+    .filter((n) => n !== 'abstracts/mixins');
   const esperados = M.estilos.map((f) => f.replace(/^scss\//, '')
     .replace(/(^|\/)_(?=[^/]+$)/, '$1').replace(/\.scss$/, ''));
   juzgar(JSON.stringify(usados) === JSON.stringify(esperados),

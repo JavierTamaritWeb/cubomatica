@@ -2181,9 +2181,9 @@ contrario, tienen que sorprender.»*
 
 Se lanzó un workflow de cinco lentes —pedagogía, diversión, facilidad, cintas y pruebas—
 con crítica adversaria por lente. **Murió entero: los seis agentes fallaron por límite
-semanal de uso y el diario no guardó ni un resultado parcial.** Lo que hay en
-`docs/plan-mejoras-1.8.0.md` y lo que se ha implementado sale de una lectura directa del
-código.
+semanal de uso y el diario no guardó ni un resultado parcial.** El plan de trabajo de
+1.8.0, retirado en 1.23.2 por estar ya ejecutado, y lo que se implementó salieron de una
+lectura directa del código; el detalle permanece en el historial de Git.
 
 Se anota porque cambia lo que se puede afirmar: **las fases de la cinta, el escalón 4 y
 las pruebas están apoyadas línea a línea**; las de diversión y fricción quedaron como
@@ -3702,3 +3702,22 @@ El modo vigilancia sigue el mismo contrato: los diez parciales del manifiesto,
 la entrada y los mixins forman las doce fuentes que pueden cambiar el CSS. Gulp
 vigila las doce; `manifiesto.json` requiere reiniciar el proceso porque se carga
 una sola vez al arrancar.
+
+---
+
+## D-1.23.2 — El orden no forma parte del nombre del parcial
+
+Los prefijos `00-` a `09-` duplicaban una información que ya tiene un único
+dueño comprobable: `manifiesto.json`. Se retiran de los nueve parciales y la
+cascada no cambia; `app.scss`, el manifiesto y la auditoría siguen comparando el
+mismo orden. Las referencias anteriores a nombres numerados en este documento
+describen correctamente las versiones en las que se tomaron aquellas decisiones.
+
+`_herramientas.scss` pasa a `_mixins.scss`. Las dependencias Sass compartidas
+dejan de entrar en el espacio global: `v` identifica variables y `m` identifica
+mixins en todos sus consumidores. Así una llamada como `m.bisel()` declara su
+procedencia sin obligar a conocer qué `@use ... as *` se ejecutó antes.
+
+El plan de mejoras de 1.8.0 se elimina del árbol actual porque ya estaba
+ejecutado y duplicaba el historial. Sus decisiones estables viven aquí y el
+documento original permanece recuperable en Git.

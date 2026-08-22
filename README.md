@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 1.23.1**
+**Versión 1.23.2**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.
@@ -171,7 +171,7 @@ npm run autoprueba   # ¿ve la auditoría lo que dice que ve?
 
 `npm run dev`, `npx gulp watch` y `npx gulp` permanecen activos esperando
 cambios. Vigilan los diez parciales del manifiesto, `app.scss` y
-`abstracts/_herramientas.scss`; al guardar reconstruyen `dist/` y recargan el
+`abstracts/_mixins.scss`; al guardar reconstruyen `dist/` y recargan el
 juego. Si cambia `manifiesto.json`, hay que reiniciar el proceso porque Gulp lo
 lee una sola vez al arrancar.
 
@@ -179,6 +179,11 @@ El SCSS sigue una estructura 7-1 adaptada al proyecto. Los comentarios usan
 `//` para documentar únicamente decisiones no evidentes y no se incluyen en el
 CSS compilado. El historial y las justificaciones extensas viven en
 `docs/decisiones.md`.
+
+Los parciales ya no llevan números en el nombre: el orden de la cascada lo
+declara únicamente `manifiesto.json`. Las variables se consumen mediante el
+namespace `v` y los mixins mediante `m`, desde `abstracts/_variables.scss` y
+`abstracts/_mixins.scss` respectivamente.
 
 Desde 1.7.0 el proyecto tiene compilación. Hasta 1.6.0 no la tenía, y la razón de
 que ahora sí es concreta: SCSS con BEM, minificado, responsive y caché sin

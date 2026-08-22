@@ -1,31 +1,31 @@
-@use '../abstracts/herramientas' as *;
-@use '../abstracts/variables' as variables;
+@use '../abstracts/mixins' as m;
+@use '../abstracts/variables' as v;
 
 // Todas las animaciones usan pasos discretos mediante los mixins de herramientas.
 @keyframes particula-cae {
   0%   { transform: translate(0, 0) scale(1); opacity: 1; }
   100% { transform: translate(var(--dx, 0), var(--dy, 90px)) scale(.5); opacity: 0; }
 }
-.particula.particula--viva { display: block; @include animar('particula-cae', 620ms, 6, 1, forwards); }
+.particula.particula--viva { display: block; @include m.animar('particula-cae', 620ms, 6, 1, forwards); }
 
 @keyframes flotar {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-8px); }
 }
-.criatura--flota { @include animar('flotar', 1600ms, 4, infinite); }
+.criatura--flota { @include m.animar('flotar', 1600ms, 4, infinite); }
 
 @keyframes saltito {
   0%, 100% { transform: translateY(0); }
   40%      { transform: translateY(-20px); }
   60%      { transform: translateY(-4px); }
 }
-.criatura--saltito { @include animar('saltito', 520ms, 4, 2); }
+.criatura--saltito { @include m.animar('saltito', 520ms, 4, 2); }
 
 @keyframes asiente {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   50%      { transform: translateY(6px) rotate(-4deg); }
 }
-.criatura--asiente { @include animar('asiente', 1100ms, 3, 2); }
+.criatura--asiente { @include m.animar('asiente', 1100ms, 3, 2); }
 
 @keyframes gotea {
   0%   { transform: translateY(-24px) scaleY(1.25); }
@@ -33,13 +33,13 @@
   75%  { transform: translateY(-6px)  scaleY(1.1);  }
   100% { transform: translateY(0)     scaleY(1);    }
 }
-.criatura--gotea { @include animar('gotea', 420ms, 5, 1); }
+.criatura--gotea { @include m.animar('gotea', 420ms, 5, 1); }
 
 @keyframes gira {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-.criatura--gira { @include animar('gira', 500ms, 8, 2); }
+.criatura--gira { @include m.animar('gira', 500ms, 8, 2); }
 
 @keyframes nube-cruza {
   from { transform: translateX(-140px); }
@@ -50,7 +50,7 @@
   background: var(--blanco);
   box-shadow: 32px -16px 0 0 var(--blanco), 64px 0 0 0 var(--blanco);
   opacity: .9;
-  @include animar('nube-cruza', 42s, 60, infinite);
+  @include m.animar('nube-cruza', 42s, 60, infinite);
 }
 .nube:nth-of-type(2) { animation-duration: 63s; animation-delay: -18s; }
 .nube:nth-of-type(3) { animation-duration: 52s; animation-delay: -34s; }
@@ -59,13 +59,13 @@
   0%   { box-shadow: inset 0 0 0 0 var(--deco-musgo); }
   100% { box-shadow: inset 0 0 0 var(--e3) var(--deco-musgo); }
 }
-.veta--musgo { @include animar('musgo-crece', 900ms, 4, 1, forwards); }
+.veta--musgo { @include m.animar('musgo-crece', 900ms, 4, 1, forwards); }
 
 @keyframes monta-bloque {
   0%   { transform: translateY(-32px); opacity: 0; }
   100% { transform: translateY(0);     opacity: 1; }
 }
-.btn-bloque--monta { @include animar('monta-bloque', 200ms, 3, 1, backwards); }
+.btn-bloque--monta { @include m.animar('monta-bloque', 200ms, 3, 1, backwards); }
 .btn-bloque--monta:nth-child(1) { animation-delay:   0ms; }
 .btn-bloque--monta:nth-child(2) { animation-delay: 200ms; }
 .btn-bloque--monta:nth-child(3) { animation-delay: 400ms; }
@@ -76,19 +76,19 @@
   50%  { filter: brightness(1.6); }
   100% { filter: brightness(1); }
 }
-.btn-bloque--destello { @include animar('destello', 100ms, 2, 1); }
+.btn-bloque--destello { @include m.animar('destello', 100ms, 2, 1); }
 
 @keyframes reloj-voltea {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-.reloj__arena.reloj__arena--voltea { @include animar('reloj-voltea', 640ms, 8, 1); }
+.reloj__arena.reloj__arena--voltea { @include m.animar('reloj-voltea', 640ms, 8, 1); }
 
 @keyframes reloj-chorro {
   0%, 100% { opacity: 1;   transform: translateY(0); }
   50%      { opacity: .35; transform: translateY(3px); }
 }
-.reloj__chorro { @include animar('reloj-chorro', 420ms, 2, infinite); }
+.reloj__chorro { @include m.animar('reloj-chorro', 420ms, 2, infinite); }
 
 @keyframes reloj-tiembla {
   0%, 100% { transform: translate(0, 0); }
@@ -96,15 +96,15 @@
   50%      { transform: translate(2px, -1px); }
   75%      { transform: translate(-1px, -2px); }
 }
-.reloj--prisa .reloj__arena { @include animar('reloj-tiembla', 320ms, 4, infinite); }
-.reloj--prisa .reloj__chorro   { @include animar('reloj-chorro', 180ms, 2, infinite); }
+.reloj--prisa .reloj__arena { @include m.animar('reloj-tiembla', 320ms, 4, infinite); }
+.reloj--prisa .reloj__chorro   { @include m.animar('reloj-chorro', 180ms, 2, infinite); }
 
 @keyframes cifra-late {
   0%   { transform: scale(1);    }
   30%  { transform: scale(1.45); }
   100% { transform: scale(1);    }
 }
-.reloj__cifra.reloj__cifra--late { @include animar('cifra-late', 400ms, 4, 1); }
+.reloj__cifra.reloj__cifra--late { @include m.animar('cifra-late', 400ms, 4, 1); }
 
 // Coreografías de la cinta. Su duración se establece desde JavaScript.
 @keyframes cinta-prisa {
@@ -117,14 +117,14 @@
   86%  { transform: translateY(-30%) scale(1.14); opacity: 1; }
   100% { transform: translateY(-340%) scale(.6);  opacity: 0; }
 }
-.cinta--prisa.cinta--entra { @include coreografia('cinta-prisa', 18); }
+.cinta--prisa.cinta--entra { @include m.coreografia('cinta-prisa', 18); }
 
 @keyframes cinta-arde {
   0%, 100% { color: var(--deco-oro-cla); }
   33%      { color: var(--deco-brasa-cla); }
   66%      { color: var(--blanco); }
 }
-.cinta--prisa.cinta--entra .cinta__texto { @include animar('cinta-arde', 300ms, 3, 6); }
+.cinta--prisa.cinta--entra .cinta__texto { @include m.animar('cinta-arde', 300ms, 3, 6); }
 
 @keyframes cinta-junta {
   0%   { clip-path: inset(0 50% 0 50%); opacity: 0; }
@@ -135,7 +135,7 @@
   90%  { clip-path: inset(0 0 0 0); opacity: 1; }
   100% { clip-path: inset(0 0 0 0); opacity: 0; }
 }
-.cinta--junta.cinta--entra { @include coreografia('cinta-junta', 10); }
+.cinta--junta.cinta--entra { @include m.coreografia('cinta-junta', 10); }
 
 @keyframes cinta-sube {
   0%   { transform: translateY(56%); opacity: 0; }
@@ -147,7 +147,7 @@
   94%  { transform: translateY(0);   opacity: 1; }
   100% { transform: translateY(0);   opacity: 0; }
 }
-.cinta--sube.cinta--entra { @include coreografia('cinta-sube', 12); }
+.cinta--sube.cinta--entra { @include m.coreografia('cinta-sube', 12); }
 
 @keyframes cinta-bandera {
   0%   { transform: scaleX(0) scaleY(.4); opacity: 0; }
@@ -157,7 +157,7 @@
   92%  { transform: scaleX(1) scaleY(1);   opacity: 1; }
   100% { transform: scaleX(1) scaleY(1);   opacity: 0; }
 }
-.cinta--bandera.cinta--entra { @include coreografia('cinta-bandera', 14); }
+.cinta--bandera.cinta--entra { @include m.coreografia('cinta-bandera', 14); }
 
 @keyframes cifra-sube {
   0%   { transform: translateY(0) scale(1); }
@@ -165,7 +165,7 @@
   60%  { transform: translateY(-2px) scale(1.12); }
   100% { transform: translateY(0) scale(1); }
 }
-.cifra-viva.cifra-viva--sube { @include animar('cifra-sube', 400ms, 4, 1); }
+.cifra-viva.cifra-viva--sube { @include m.animar('cifra-sube', 400ms, 4, 1); }
 
 @keyframes insignia-brota {
   0%   { transform: translateY(6px) scale(.6); opacity: 0; }
@@ -174,7 +174,7 @@
   75%  { transform: translateY(-8px) scale(1); opacity: 1; }
   100% { transform: translateY(-14px) scale(1); opacity: 0; }
 }
-.insignia.insignia--brota { @include animar('insignia-brota', 700ms, 5, 1, forwards); }
+.insignia.insignia--brota { @include m.animar('insignia-brota', 700ms, 5, 1, forwards); }
 
 @keyframes cartel-brota {
   0%   { transform: translateX(-50%) scale(.2); opacity: 0; }
@@ -184,7 +184,7 @@
   88%  { transform: translateX(-50%) scale(1); opacity: 1; }
   100% { transform: translateX(-50%) scale(1); opacity: 0; }
 }
-.cartel.cartel--brota { @include animar('cartel-brota', 1600ms, 10, 1, forwards); }
+.cartel.cartel--brota { @include m.animar('cartel-brota', 1600ms, 10, 1, forwards); }
 
 @keyframes zona-sacude {
   0%, 100% { transform: translate(0, 0); }
@@ -194,10 +194,10 @@
   60%      { transform: translate(4px, 2px); }
   80%      { transform: translate(-2px, 0); }
 }
-.zona-juego.zona-juego--sacude { @include animar('zona-sacude', 1200ms, 12, 1); }
+.zona-juego.zona-juego--sacude { @include m.animar('zona-sacude', 1200ms, 12, 1); }
 
 // Debe permanecer al final para neutralizar todas las animaciones anteriores.
 @media (prefers-reduced-motion: reduce) {
-  @include desactivar-movimiento(variables.$animados);
+  @include m.desactivar-movimiento(v.$animados);
 }
-@include desactivar-movimiento(variables.$animados, ':root.sin-movimiento ');
+@include m.desactivar-movimiento(v.$animados, ':root.sin-movimiento ');

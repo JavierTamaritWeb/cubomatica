@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.23.1';
+CB.VERSION = '1.23.2';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +

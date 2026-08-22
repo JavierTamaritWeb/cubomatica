@@ -1,12 +1,12 @@
-@use '../abstracts/herramientas' as *;
-@use '../abstracts/variables' as variables;
+@use '../abstracts/mixins' as m;
+@use '../abstracts/variables' as v;
 
 // Superficies y controles reutilizables.
 .panel-bloque {
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
   padding: var(--e4);
-  @include bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel), var(--e2) var(--e2) 0 0 rgba(0,0,0,.45));
+  @include m.bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel), var(--e2) var(--e2) 0 0 rgba(0,0,0,.45));
   max-width: 640px;
   width: 100%;
 }
@@ -35,8 +35,8 @@
   font-size: var(--tam-texto-min);
   background: var(--btn-fondo);
   color: var(--btn-texto);
-  @include bisel(var(--btn-borde-luz), var(--btn-borde-sombra), var(--bisel), 0 var(--bisel) 0 0 var(--btn-borde-sombra));
-  @include paso(transform box-shadow);
+  @include m.bisel(var(--btn-borde-luz), var(--btn-borde-sombra), var(--bisel), 0 var(--bisel) 0 0 var(--btn-borde-sombra));
+  @include m.paso(transform box-shadow);
   position: relative;
   text-align: center;
 }
@@ -46,20 +46,20 @@
 .btn-bloque.btn-bloque--hundido {
   transform: translateY(var(--bisel));
   background: var(--btn-fondo-hundido);
-  @include bisel(var(--btn-borde-sombra), var(--btn-borde-luz));
+  @include m.bisel(var(--btn-borde-sombra), var(--btn-borde-luz));
 }
 
 .btn-bloque:disabled,
 .btn-bloque[aria-disabled="true"] {
-  @include apagado;
-  @include bisel(var(--deco-piedra-osc), var(--deco-carbon));
+  @include m.apagado;
+  @include m.bisel(var(--deco-piedra-osc), var(--deco-carbon));
   transform: translateY(var(--bisel));
 }
 
 .btn-bloque--primario {
   background: var(--btn-primario);
   color: var(--btn-primario-texto);
-  @include bisel(var(--deco-hierba-cla), var(--btn-primario-hundido), var(--bisel), 0 var(--bisel) 0 0 var(--btn-primario-hundido));
+  @include m.bisel(var(--deco-hierba-cla), var(--btn-primario-hundido), var(--bisel), 0 var(--bisel) 0 0 var(--btn-primario-hundido));
 }
 .btn-bloque--primario:hover:not(:disabled) { background: var(--btn-primario-hundido); }
 
@@ -89,7 +89,7 @@
   50%  { transform: translateX(2px); }
   100% { transform: translateX(0); }
 }
-.btn-bloque.btn-bloque--toc { @include animar('toc-madera', 120ms, 2, 2); }
+.btn-bloque.btn-bloque--toc { @include m.animar('toc-madera', 120ms, 2, 2); }
 
 .hud {
   display: flex; align-items: center; justify-content: space-between;
@@ -127,7 +127,7 @@
   50%  { transform: scale(1.3); }
   100% { transform: scale(1); }
 }
-.luces__luz.luces__luz--recien-encendida { @include animar('luz-extra', 1500ms, 6, 1); }
+.luces__luz.luces__luz--recien-encendida { @include m.animar('luz-extra', 1500ms, 6, 1); }
 
 .reloj {
   display: flex; align-items: center; gap: var(--e2);
@@ -235,7 +235,7 @@
   padding: var(--e3) var(--e4);
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
-  @include bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel),
+  @include m.bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel),
                  var(--e2) var(--e2) 0 0 rgba(0, 0, 0, .45));
   font-family: var(--fuente-pixel);
   font-size: calc(var(--tam-texto-min) + 8px);
@@ -255,7 +255,7 @@
   box-shadow: inset 6px 6px 0 0 var(--deco-cristal-cla),
               inset -6px -6px 0 0 var(--deco-cristal-osc);
 }
-.gemas.gemas--parpadeo { @include animar('parpadeo-gris', 200ms, 2, 1); }
+.gemas.gemas--parpadeo { @include m.animar('parpadeo-gris', 200ms, 2, 1); }
 
 .cifra-viva { display: inline-block; }
 @keyframes parpadeo-gris { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
@@ -311,13 +311,13 @@
 // La mayor especificidad del OK no debe sobreescribir su estado desactivado.
 .teclado-bloques__tecla[data-tecla="ok"]:disabled,
 .teclado-bloques__tecla[data-tecla="ok"][aria-disabled="true"] {
-  @include apagado;
+  @include m.apagado;
 }
 
-@include hasta-alto(alta)  { :root, :root.modo-proyeccion { --lado-techo: 80px; } }
-@include hasta-alto(media) { :root, :root.modo-proyeccion { --lado-techo: 72px; }
+@include m.hasta-alto(alta)  { :root, :root.modo-proyeccion { --lado-techo: 80px; } }
+@include m.hasta-alto(media) { :root, :root.modo-proyeccion { --lado-techo: 72px; }
                              .respuesta__visor { min-height: 60px; font-size: 36px; } }
-@include hasta-alto(baja)  { :root, :root.modo-proyeccion { --lado-techo: 64px; } }
+@include m.hasta-alto(baja)  { :root, :root.modo-proyeccion { --lado-techo: 64px; } }
 
 // La disposición 6×2 solo se activa cuando también cabe horizontalmente.
 @media (max-height: 660px) and (min-width: 480px) {
@@ -331,7 +331,7 @@
   font-size: var(--tam-numero-opcion);
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
-  @include bisel(var(--btn-borde-sombra), var(--blanco));
+  @include m.bisel(var(--btn-borde-sombra), var(--blanco));
   padding: 0 var(--e3);
 }
 .respuesta__visor:empty::before { content: "_"; color: var(--texto-secundario); }
@@ -443,7 +443,7 @@
 .pieza--billete[data-valor="100"] { --ancho-pieza: 125px; --alto-pieza: 70px;
                              background-image: var(--pieza-100);
                              background-color: var(--deco-hierba-cla); }
-.contenedor-dinero { @include fila-envuelta; }
+.contenedor-dinero { @include m.fila-envuelta; }
 
 .pieza[data-veces] {
   outline: var(--bisel) solid var(--foco-oro);
@@ -467,7 +467,7 @@
 
 .pieza:active { transform: translateY(var(--bisel)); }
 .pieza:disabled {
-  @include apagado;
+  @include m.apagado;
   transform: translateY(var(--bisel));
 }
 
@@ -487,7 +487,7 @@
 }
 .hilera-cogidas__mas { color: var(--texto-claro); }
 
-.fila-ordenar { @include fila-envuelta; }
+.fila-ordenar { @include m.fila-envuelta; }
 .fila-ordenar__hueco {
   width: 80px; height: 80px;
   background: var(--bg-texto-panel);
@@ -499,11 +499,11 @@
 .cromo {
   width: 128px; padding: var(--e2);
   background: var(--bg-texto-panel);
-  @include bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel), var(--e1) var(--e1) 0 0 rgba(0,0,0,.4));
+  @include m.bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel), var(--e1) var(--e1) 0 0 rgba(0,0,0,.4));
   text-align: center; font-size: 16px;
 }
 .cromo--bloqueado { background: var(--deco-piedra); color: var(--deco-carbon); }
-.rejilla-cromos { @include fila-envuelta; }
+.rejilla-cromos { @include m.fila-envuelta; }
 
 .veta {
   width: 96px; min-height: 96px;
@@ -518,7 +518,7 @@
 .veta__icono { font-size: 26px; line-height: 1; }
 
 // Cada estado combina color, texto o forma; nunca se comunica solo por color.
-@each $estado, $tono in variables.$estados-veta {
+@each $estado, $tono in v.$estados-veta {
   .veta[data-estado="#{$estado}"] {
     background: var(--deco-#{$tono});
 
@@ -527,7 +527,7 @@
 }
 .veta.veta--frontera { box-shadow: 0 0 0 var(--bisel) var(--foco-oro),
                              inset 4px 4px 0 0 var(--blanco); }
-.rejilla-vetas { @include fila-envuelta; }
+.rejilla-vetas { @include m.fila-envuelta; }
 
 .criatura {
   width: var(--lado-criatura, 96px); height: var(--lado-criatura, 96px);
@@ -562,7 +562,7 @@
 .region-viva { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
 // Contenido disponible para lectores de pantalla sin alterar el diseño visual.
-.solo-lectores { @include oculto-visual; }
+.solo-lectores { @include m.oculto-visual; }
 
 .enunciado__altavoz {
   display: block;

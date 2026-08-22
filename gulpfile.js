@@ -45,13 +45,13 @@ const FUENTE = 'src';
    PARCIALES —lo que se compila, y en qué orden—, pero el punto de entrada y el
    fichero de mixins también son fuentes de estilo y también hay que vigilarlos
    y firmarlos.
-   Dejarlos fuera del vigilante fue un fallo real: `_herramientas.scss` es donde
+   Dejarlos fuera del vigilante fue un fallo real: `_mixins.scss` es donde
    viven `bisel()`, `paso()` y los mapas de puntos de ruptura, o sea el sitio
    donde más se toca al ajustar el diseño, y `npm run dev` no reconstruía al
    guardarlo. El síntoma no es un error: es que la pantalla no cambia, que se lee
    como «el mixin no funciona». */
 const SCSS_EXTRA = [FUENTE + '/' + M.entradaEstilos,
-                    FUENTE + '/scss/abstracts/_herramientas.scss'];
+                    FUENTE + '/scss/abstracts/_mixins.scss'];
 const RUTAS = {
   html: FUENTE + '/index.html',
   guiones: M.guiones.map((f) => FUENTE + '/' + f),

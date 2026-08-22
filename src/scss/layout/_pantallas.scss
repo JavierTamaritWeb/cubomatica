@@ -1,4 +1,4 @@
-@use '../abstracts/herramientas' as *;
+@use '../abstracts/mixins' as m;
 
 // Portada.
 .pantalla--portada { position: relative; overflow: hidden; }
@@ -14,7 +14,7 @@
   background: var(--bg-texto-panel);
   color: var(--texto-principal);
   padding: var(--e3) var(--e4);
-  @include bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel), var(--e2) var(--e2) 0 0 rgba(0,0,0,.5));
+  @include m.bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel), var(--e2) var(--e2) 0 0 rgba(0,0,0,.5));
   margin: 0;
 
   max-width: 100%;
@@ -39,11 +39,11 @@
   position: absolute; top: var(--e3); right: var(--e3);
 }
 
-.lista-perfiles { @include fila-envuelta; }
+.lista-perfiles { @include m.fila-envuelta; }
 .tarjeta-perfil {
   flex: 0 1 176px; max-width: 176px; padding: var(--e3);
   background: var(--bg-texto-panel); color: var(--texto-principal);
-  @include bisel(var(--blanco), var(--btn-borde-sombra));
+  @include m.bisel(var(--blanco), var(--btn-borde-sombra));
   display: flex; flex-direction: column; align-items: center; gap: var(--e2);
   font-size: var(--tam-texto-min);
 }
@@ -66,11 +66,11 @@
   max-width: none;
   padding: var(--e1) var(--e3);
   background: var(--bg-texto-oscuro);
-  @include bisel-lateral(var(--deco-oro));
+  @include m.bisel-lateral(var(--deco-oro));
   overflow: hidden;
 }
 
-.rotulo-veta__mundo { @include oculto-visual; }
+.rotulo-veta__mundo { @include m.oculto-visual; }
 @media (max-width: 479px) {
 
   .portada__titulo { padding: var(--e3); }
@@ -83,7 +83,7 @@
   .contenido ol { padding-left: var(--e3); }
 }
 
-@include desde(movil) {
+@include m.desde(movil) {
   .rotulo-veta__mundo {
     position: static;
     width: auto; height: auto;
@@ -106,7 +106,7 @@
   color: var(--texto-claro);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-@include hasta-alto(baja) {
+@include m.hasta-alto(baja) {
   .rotulo-veta { padding: 0 var(--e3); }
 }
 
@@ -137,7 +137,7 @@
 }
 
 // En escritorio se acercan pregunta y respuesta al eje central.
-@include desde(escritorio) {
+@include m.desde(escritorio) {
   .zona-juego { flex-direction: row; align-items: stretch; gap: var(--e5); }
 
   .zona-juego__alta { flex: 1 1 0; align-items: safe flex-end;
@@ -156,11 +156,11 @@
 .barra-herramientas__grupo { display: flex; gap: var(--e2); }
 
 // Mapa de mundos.
-.rejilla-mundos { @include fila-envuelta; }
+.rejilla-mundos { @include m.fila-envuelta; }
 .tarjeta-mundo {
   flex: 1 1 200px; max-width: 240px; padding: var(--e3);
   background: var(--bg-texto-panel); color: var(--texto-principal);
-  @include bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel), var(--e1) var(--e1) 0 0 rgba(0,0,0,.4));
+  @include m.bisel(var(--blanco), var(--btn-borde-sombra), var(--bisel), var(--e1) var(--e1) 0 0 rgba(0,0,0,.4));
   display: flex; flex-direction: column; gap: var(--e2);
   font-size: var(--tam-texto-min); text-align: left;
 }
@@ -192,13 +192,13 @@
   display: flex; align-items: center; gap: var(--e3);
   padding: var(--e3);
   background: var(--bg-texto-panel); color: var(--texto-secundario);
-  @include bisel-lateral(var(--deco-piedra));
+  @include m.bisel-lateral(var(--deco-piedra));
   font-size: var(--tam-texto-min);
   text-align: left; width: 100%;
 }
 .reparacion__paso[data-hecho="si"] {
   color: var(--texto-principal);
-  @include bisel-lateral(var(--btn-primario));
+  @include m.bisel-lateral(var(--btn-primario));
   background: var(--ok-fondo);
 }
 .reparacion__numero {
@@ -235,7 +235,7 @@
   background-color: var(--deco-piedra);
   background-image: var(--tex-piedra);
   background-size: 72px 72px;
-  @include bisel(var(--deco-piedra-cla), var(--deco-piedra-osc));
+  @include m.bisel(var(--deco-piedra-cla), var(--deco-piedra-osc));
 }
 .tablero-descanso__bloque[data-roto="si"] { visibility: hidden; }
 
@@ -247,7 +247,7 @@
               inset -4px -4px 0 0 var(--deco-piedra-osc);
 }
 .jefe__bloque[data-caido="si"] { background: transparent; box-shadow: none; }
-.jefe__opciones { @include fila-envuelta; }
+.jefe__opciones { @include m.fila-envuelta; }
 
 .bloque-dominado {
   display: flex; align-items: center; gap: var(--e2);
@@ -259,14 +259,14 @@
   width: 88px; height: 88px; font-size: 44px;
   display: flex; align-items: center; justify-content: center;
   background: var(--bg-texto-panel);
-  @include bisel(var(--blanco), var(--btn-borde-sombra));
+  @include m.bisel(var(--blanco), var(--btn-borde-sombra));
 }
 .animo__cara[aria-pressed="true"] { background: var(--deco-oro-cla); }
 
 .lista-glosario { display: flex; flex-direction: column; gap: var(--e2); width: 100%; max-width: 560px; }
 .termino-glosario {
   padding: var(--e3); background: var(--bg-texto-panel); color: var(--texto-principal);
-  @include bisel-lateral(var(--deco-cristal));
+  @include m.bisel-lateral(var(--deco-cristal));
   font-size: var(--tam-texto-min); text-align: left;
 }
 .termino-glosario[data-bloqueado="si"] { background: var(--deco-piedra); }
@@ -339,7 +339,7 @@
   font-size: var(--tam-texto-min);
   color: var(--texto-claro);
 }
-@include desde(movil) {
+@include m.desde(movil) {
   .galeria-avance {
     width: 128px;
   }

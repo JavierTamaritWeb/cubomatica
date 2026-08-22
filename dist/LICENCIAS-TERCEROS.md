@@ -64,7 +64,7 @@ una lista cerrada y `docs/dinero.md` explica cómo se regeneran.
 ## 4. Las fuentes de mapa de píxeles
 
 El proyecto **no incluye ningún fichero de fuente**. Se declaran con `local()`
-en `src/scss/base/_00-fuentes.scss` y se usan únicamente si el sistema ya las tiene
+en `src/scss/base/_fuentes.scss` y se usan únicamente si el sistema ya las tiene
 instaladas; si no, la cascada cae en la pila monoespaciada del sistema.
 
 Las licencias **SIL Open Font License** de Silkscreen y de Press Start 2P están

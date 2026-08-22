@@ -1,4 +1,4 @@
-@use '../abstracts/herramientas' as *;
+@use '../abstracts/mixins' as m;
 
 // El panel adulto usa una escala tipográfica más compacta que el área infantil.
 .pantalla--documento {
@@ -30,7 +30,7 @@
   background: var(--bg-texto-aviso);
   color: var(--texto-aviso);
   padding: var(--e3);
-  @include bisel-lateral(var(--deco-oro-osc));
+  @include m.bisel-lateral(var(--deco-oro-osc));
   margin-bottom: var(--e3);
 }
 

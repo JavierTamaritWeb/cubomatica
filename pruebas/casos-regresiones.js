@@ -1482,7 +1482,7 @@ CB.pruebas.suite('E46 · Enter pasa por la misma confirmación que el toque', fu
    histórico que reproducir: hay un fallo histórico que NO repetir. El de E47 ya
    se cometió una vez con el cartel de prisa —tapaba la fila del ⌫, el 0 y el OK,
    justo el botón con el que se contesta— y está contado en el comentario de
-   _03-componentes.scss. Con nueve coreografías en vez de una, la probabilidad de
+   _componentes.scss. Con nueve coreografías en vez de una, la probabilidad de
    volver a cometerlo se multiplica por nueve; de ahí que se mida, no se confíe.
 
    E55 sí es un fallo con historia: la escalera anti-frustración declaraba cinco
@@ -1531,7 +1531,7 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
      Lo que hay que prohibir no es que un cartel se coloque distinto: es que
      invada la zona con la que se contesta. Eso ya pasó una vez —el aviso de
      prisa caía sobre la fila del ⌫, el 0 y el OK— y está contado en
-     _03-componentes.scss. Así que la regla pasa a ser de TERRITORIO. */
+     _componentes.scss. Así que la regla pasa a ser de TERRITORIO. */
   /* DOS UMBRALES, Y NO SON EL MISMO. Aquí había un `TOPE = 45` que usaba solo la
      segunda comprobación, mientras la primera llevaba un 30 escrito a mano; leído
      deprisa parece una constante muerta y un número duplicado, y unificarlos en
@@ -1586,7 +1586,7 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
     'E47 · lo que se superpone deja pasar el toque', pasan.join(', '));
 
   /* Y SIGUEN SIENDO ABSOLUTOS. Esto no es una comprobación de estilo: es la
-     única que ve el fallo que ya se ha cometido dos veces. _06-biomas.scss pone
+     única que ve el fallo que ya se ha cometido dos veces. _biomas.scss pone
      `position: relative` a todo hijo directo de .pantalla y de .zona-juego que
      no esté en su lista de exclusiones, y gana por orden de cascada. Un
      superpuesto que se olvide de apuntarse ahí conserva su `top`, deja de ser
@@ -3536,7 +3536,7 @@ CB.pruebas.suite('E88 · el rótulo de veta se ve', function () {
 
   /* ESTA ES LA LECCIÓN DE 1.8.1, Y VA POR TRES. El cartel de logro se pintó
      `absolute` y se olvidó apuntarlo en la lista de exclusiones de
-     _06-biomas.scss: `position: relative` le ganó por orden de cascada, su `top`
+     _biomas.scss: `position: relative` le ganó por orden de cascada, su `top`
      pasó a ser relativo y quedó a 887 px, fuera de la vista, con la suite entera
      en verde. Aquí se comprueba lo contrario —que el rótulo es de flujo— porque
      es lo que le corresponde: si alguien lo saca del flujo para «colocarlo

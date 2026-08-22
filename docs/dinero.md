@@ -130,7 +130,7 @@ generación— lo soporta de sobra (Chrome 32 y Safari 14).
 Cuatro sitios, y los cuatro se comprueban solos:
 
 1. `src/scss/abstracts/_variables.scss` — las declara como `--pieza-*`;
-2. `src/scss/components/_03-componentes.scss` — el tamaño de cada una;
+2. `src/scss/components/_componentes.scss` — el tamaño de cada una;
 3. `gulpfile.js` — la lista que entra en el armazón del service worker;
 4. `pruebas/auditar.mjs` — la lista cerrada del bloque 4.
 

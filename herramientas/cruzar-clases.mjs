@@ -37,7 +37,7 @@ const BASE = HAY_SRC ? D('src') : RAIZ;
 /* EL UNIVERSO CSS SE LEE DEL COMPILADO, no de las fuentes.
    Con Sass, media docena de clases no existen literalmente en ningun .scss: son
    `.bioma--#{$bioma}`, `.cielo--#{$i}` y `.veta[data-estado="#{$estado}"]`,
-   generadas por @each desde los mapas de _herramientas.scss. Leyendo la fuente
+   generadas por @each desde los mapas de _mixins.scss. Leyendo la fuente
    desaparecian diez clases del universo y la direccion 2 las denunciaba a todas
    como inexistentes.
    Ademas es lo correcto: lo que hay que cruzar es lo que se SIRVE. */

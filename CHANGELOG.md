@@ -12,6 +12,32 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.23.2] — 2026-08-22
+
+**Tercera cifra.** Limpieza de la arquitectura Sass y de la documentación; no
+cambia el formato del perfil guardado ni el funcionamiento del juego.
+
+### Cambiado
+
+- **Namespaces Sass explícitos**: las variables se importan como `v` y los
+  mixins como `m`; todos los `@include` indican ahora de qué módulo proceden.
+- **Parciales SCSS sin prefijos numéricos**: `_fuentes.scss`, `_base.scss`,
+  `_animaciones.scss`, `_componentes.scss`, `_pantallas.scss`, `_biomas.scss`,
+  `_adulto.scss`, `_imprimir.scss` y `_forzado.scss`. El orden sigue perteneciendo
+  exclusivamente a `manifiesto.json`, no al nombre de los ficheros.
+- **El módulo de mixins se llama `_mixins.scss`** en código, vigilancia, huellas,
+  auditorías y documentación.
+- La documentación operativa y las notas de licencia apuntan a las rutas
+  actuales y declaran la versión vigente.
+
+### Eliminado
+
+- **`docs/plan-mejoras-1.8.0.md`**, un plan ya ejecutado que duplicaba el registro
+  estable de `CHANGELOG.md` y `docs/decisiones.md`; permanece recuperable en el
+  historial de Git.
+
+---
+
 ## [1.23.1] — 2026-08-22
 
 **Tercera cifra.** Reorganización interna de Sass y documentación; no cambia el

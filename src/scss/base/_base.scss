@@ -1,4 +1,4 @@
-@use '../abstracts/herramientas' as *;
+@use '../abstracts/mixins' as m;
 
 // Normalización y restricciones visuales globales.
 *, *::before, *::after {
@@ -121,6 +121,6 @@ button:focus:not(:focus-visible) { box-shadow: none; }
 
 // El ajuste del juego y la preferencia del sistema deben frenar lo mismo.
 @media (prefers-reduced-motion: reduce) {
-  @include frenar-todo;
+  @include m.frenar-todo;
 }
-@include frenar-todo(':root.sin-movimiento ');
+@include m.frenar-todo(':root.sin-movimiento ');

@@ -1,5 +1,5 @@
-@use '../abstracts/herramientas' as *;
-@use '../abstracts/variables' as variables;
+@use '../abstracts/mixins' as m;
+@use '../abstracts/variables' as v;
 
 // El cielo queda en la capa 0; el contenido sube a 1 sin afectar cintas ni carteles.
 .cielo { position: absolute; inset: 0; z-index: 0; background: var(--cielo-0); }
@@ -14,7 +14,7 @@
   .cielo {
     background: color-mix(in srgb,
                 var(--cielo-noche) calc(var(--avance) * 100%), var(--cielo-dia));
-    @include paso(--avance, 600ms, 6);
+    @include m.paso(--avance, 600ms, 6);
   }
 }
 
@@ -28,7 +28,7 @@
 }
 
 // Un único mapa genera el terreno y la cinta de cada mundo.
-@each $bioma, $material in variables.$biomas {
+@each $bioma, $material in v.$biomas {
   .bioma--#{$bioma} { --tinte-bioma: var(--deco-#{$material}); }
   .bioma--#{$bioma}::after {
     background-color: var(--deco-#{$material});
@@ -36,7 +36,7 @@
   }
 }
 
-@each $bioma, $material in variables.$biomas {
+@each $bioma, $material in v.$biomas {
   .tarjeta-mundo__cinta[data-bioma="#{$bioma}"] {
     background-color: var(--deco-#{$material});
     background-image: var(--tex-#{$material});

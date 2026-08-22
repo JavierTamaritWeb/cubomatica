@@ -1,20 +1,20 @@
 @use 'sass:map';
 @use 'sass:list';
-@use 'variables' as variables;
+@use 'variables' as v;
 
 // Los nombres inválidos fallan durante la compilación en vez de omitir una media query.
 @mixin desde($punto) {
-  @if not map.has-key(variables.$puntos, $punto) {
-    @error 'Punto de ruptura desconocido: #{$punto}. Validos: #{map.keys(variables.$puntos)}.';
+  @if not map.has-key(v.$puntos, $punto) {
+    @error 'Punto de ruptura desconocido: #{$punto}. Validos: #{map.keys(v.$puntos)}.';
   }
-  @media (min-width: map.get(variables.$puntos, $punto)) { @content; }
+  @media (min-width: map.get(v.$puntos, $punto)) { @content; }
 }
 
 @mixin hasta-alto($punto) {
-  @if not map.has-key(variables.$alturas, $punto) {
-    @error 'Altura desconocida: #{$punto}. Validas: #{map.keys(variables.$alturas)}.';
+  @if not map.has-key(v.$alturas, $punto) {
+    @error 'Altura desconocida: #{$punto}. Validas: #{map.keys(v.$alturas)}.';
   }
-  @media (max-height: map.get(variables.$alturas, $punto)) { @content; }
+  @media (max-height: map.get(v.$alturas, $punto)) { @content; }
 }
 
 @mixin bisel($luz, $sombra, $grosor: var(--bisel), $extra: null) {

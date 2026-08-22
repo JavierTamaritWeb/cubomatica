@@ -45,7 +45,7 @@ export default {
 
     /* ── Apagadas, y por qué ──────────────────────────────────────────── */
 
-    /* LA CASCADA ES CARGA ÚTIL. `_06-biomas.scss` gana a `_04-pantallas.scss`
+    /* LA CASCADA ES CARGA ÚTIL. `_biomas.scss` gana a `_pantallas.scss`
        por venir después, y está documentado con seis líneas de comentario.
        Esta regla pediría reordenar justo eso. */
     'no-descending-specificity': null,
