@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 1.18.0**
+**Versión 1.21.0**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.
@@ -126,12 +126,15 @@ pruebas/            Suite (dos páginas) y auditar.mjs, la puerta de entrega
 docs/               Documentación interna. NO se distribuye con el juego.
 ```
 
-Cero ficheros de imagen, cero fuentes, cero peticiones de red. Las texturas se
-generan con `canvas`, los efectos de sonido con Web Audio y los sprites con mapas
-de píxeles. Los únicos ficheros binarios son las nueve pistas de música.
+Cero fuentes y cero peticiones de red. Las texturas se generan con `canvas`, los
+efectos de sonido con Web Audio y los sprites con mapas de píxeles. Los únicos
+ficheros binarios son las nueve pistas de música y las doce fotografías de las
+monedas y los billetes (64 KB las doce), que están ahí porque reconocer una
+moneda de 2 € es literalmente lo que pide el currículo y un cuadrado de color con
+un 2 dentro no enseña eso.
 
 **Peso: unos 43 MB**, de los cuales 42 MB son música. Lo que el navegador
-descarga al arrancar son **319 KB**. Cabe de sobra en cualquier memoria USB, pero
+descarga al arrancar son **361 KB**. Cabe de sobra en cualquier memoria USB, pero
 **no cabe en un correo**: para repartirlo en un centro, usa un USB o una carpeta
 compartida.
 
@@ -179,7 +182,7 @@ La suite son **dos páginas**, y hay que mirar las dos:
   ponen rojas.
 
 Las dos necesitan `npm run build` antes; sin él lo dicen en vez de quedarse en
-blanco. Base actual: **704 comprobaciones, 0 fallos**.
+blanco. Base actual: **837 comprobaciones, 0 fallos**.
 
 Sírvelas con la caché desactivada. Una recarga normal de Chrome reutiliza tanto
 el bundle como los `casos-*.js`, y entonces el verde que sale mide el código de
@@ -197,6 +200,12 @@ es falso. `npm run entregar` construye primero.
 
 Chrome / Edge 100+, Firefox 100+, Safari 15.4+. Sintaxis ES2017 estricta: el juego
 funciona en el Chromebook escolar de 2019 y en el iPad de 6.ª generación.
+
+Desde 1.21.0 la maquetación usa la palabra clave `safe` en el centrado de las dos
+zonas de la partida (Chrome 93+, Safari 16, Firefox 63+). Un navegador que no la
+entienda **descarta esa declaración y alinea al principio**, que es justo la
+degradación buscada: se pierde el centrado y no se pierde ni una línea de texto
+ni una tecla. Nada del juego depende de ella para funcionar.
 
 ## Licencia
 

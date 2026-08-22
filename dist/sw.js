@@ -21,9 +21,9 @@
        que un maestro puede pulsar sin saber qué es un service worker.
    ========================================================================== */
 
-var VERSION = '1.18.0';
-var HUELLA  = 'd69a96d5';
-var ARMAZON = ["index.html","css/cubomatica.min.css","js/cubomatica.min.js","manifest.webmanifest"];
+var VERSION = '1.21.0';
+var HUELLA  = 'aff4f57e';
+var ARMAZON = ["index.html","css/cubomatica.min.css","js/cubomatica.min.js","manifest.webmanifest","img/pieza-c1.webp","img/pieza-c5.webp","img/pieza-c10.webp","img/pieza-c20.webp","img/pieza-c50.webp","img/pieza-1.webp","img/pieza-2.webp","img/pieza-5.webp","img/pieza-10.webp","img/pieza-20.webp","img/pieza-50.webp","img/pieza-100.webp"];
 
 var MAYOR = VERSION.split('.')[0];
 var CACHE_ARMAZON = 'cubomatica-armazon-' + VERSION + '-' + HUELLA;

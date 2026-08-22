@@ -251,6 +251,10 @@
   --lado-respuesta: min(var(--lado-deseado), var(--lado-techo));
   --lado-icono: 64px;
   --bisel: 4px;
+  /* La cinta con la cifra que lleva debajo cada moneda y cada billete. Se define
+     a partir del suelo de texto y no como número fijo: con «Letra grande» la
+     cifra pasa a 24px y la cinta a 28, y si no creciera se saldría. */
+  --cinta-pieza: calc(var(--tam-texto-min) + var(--e1));
   /* ══ GRUPO 1 — FONDOS DE TEXTO (planos, verificados) ═══════════════════ */
   --bg-texto-panel: #FFF6E5; /* crema, NUNCA blanco puro */
   --bg-texto-crema: #FFF6E5;
@@ -451,6 +455,52 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
     --lado-deseado: 128px;
   }
 } /* pizarra digital */
+/* ── LAS DOCE PIEZAS DE DINERO, QUE AHORA SON FOTOGRAFÍAS ──────────────────
+   Hasta 1.19.0 las monedas y los billetes se DIBUJABAN: `js/03-sprites.js`
+   componía un SVG con el metal, las doce estrellas y un arco, lo publicaba como
+   data: URI en estas mismas variables y el CSS no sabía de dónde venía. El
+   motivo escrito entonces —«la auditoría no admite un solo binario»— era cierto
+   como regla del proyecto y falso como restricción técnica: una imagen es un
+   SUBRECURSO, igual que la hoja de estilos o los nueve MP3, y `file://` la sirve
+   sin pedir nada a la red. Lo que la prohibía era el bloque 4 de la auditoría, y
+   eso es una lista, no una ley.
+
+   Así que se abre la misma puerta que ya tiene la música: una LISTA CERRADA,
+   declarada en `pruebas/auditar.mjs`, comprobada en los dos sentidos. Doce
+   ficheros, ni uno más.
+
+   POR QUÉ MERECE LA PENA. Lo que hay que aprender en el saber A.5 es reconocer
+   una moneda de 2 € cuando la tiene en la mano, y un cuadrado de color con un 2
+   dentro no enseña eso: enseña a leer el 2, que es justo lo que no se pregunta.
+
+   PESAN 64 KB LAS DOCE, y no entran en el presupuesto de arranque porque
+   `index.html` no las referencia: las pide el CSS, y solo cuando sale una pieza
+   en pantalla. Sí entran en el armazón del service worker, para que el juego sin
+   red siga enseñando dinero.
+
+   CADA UNA MIDE LO QUE MIDE DE VERDAD (ver `_03-componentes.scss`): el fichero
+   se genera al DOBLE de su caja CSS, que es lo que necesita una tableta con
+   pantalla de doble densidad y ni un píxel más.
+
+   EL COLOR PLANO SE QUEDA DEBAJO. Si un navegador no entiende WebP —ninguno de
+   los dos aparatos de referencia, pero el fallo hay que preverlo—, la pieza
+   sigue teniendo su `background-color`, su tamaño y su cifra, que ya la
+   distinguen. Misma red de seguridad que las ocho texturas del terreno. */
+:root {
+  --pieza-c1: url('../img/pieza-c1.webp');
+  --pieza-c5: url('../img/pieza-c5.webp');
+  --pieza-c10: url('../img/pieza-c10.webp');
+  --pieza-c20: url('../img/pieza-c20.webp');
+  --pieza-c50: url('../img/pieza-c50.webp');
+  --pieza-1: url('../img/pieza-1.webp');
+  --pieza-2: url('../img/pieza-2.webp');
+  --pieza-5: url('../img/pieza-5.webp');
+  --pieza-10: url('../img/pieza-10.webp');
+  --pieza-20: url('../img/pieza-20.webp');
+  --pieza-50: url('../img/pieza-50.webp');
+  --pieza-100: url('../img/pieza-100.webp');
+}
+
 /* ── Ajuste «Letra grande» del panel del adulto ────────────────────────── */
 :root.letra-grande {
   --tam-enunciado: 34px;
@@ -465,7 +515,19 @@ no llega al 4,5 exigido para texto normal. Verificado en casos-contraste. */
   --tam-texto-min: 32px;
   --tam-numero-opcion: 70px;
   --tam-titulo: 64px;
-  --lado-respuesta: 150px;
+  /* ESCRIBE LOS DOS EJES, NO --lado-respuesta. Escribir el resultado a mano se
+     salta el `min()` que combina anchura y altura, que es justo lo que toda esta
+     parte existe para evitar: en un proyector de 1200×700 el teclado 3×4 a
+     150 px mide más que la zona de juego, y como ahí abajo no hay barra de
+     desplazamiento, la fila del OK se quedaba fuera de la pantalla — sin nada
+     que fallara y sin forma de contestar.
+
+     Subiendo los dos, la pizarra de 1920×1080 sigue dando 150 px (ninguna
+     consulta de altura le pone techo) y el proyector bajo recibe el techo que le
+     corresponde por altura, que es lo que hace que quepa. Un botón de 72 px en
+     una pizarra se ve pequeño; uno de 150 que no se ve no se puede pulsar. */
+  --lado-deseado: 150px;
+  --lado-techo: 150px;
 }
 
 /* ── Alto contraste ────────────────────────────────────────────────────────
@@ -1308,10 +1370,10 @@ button:focus:not(:focus-visible) {
 }
 /* ── Cuando las opciones SON piezas de dinero ───────────────────────────────
    La pregunta de reconocer una moneda o un billete pinta las cuatro opciones con
-   la forma que tienen —el cuadrado de oro y el rectángulo verde—, y esas formas
-   traen su propio tamaño: 72×72 y 128×64. Las columnas de --lado-respuesta valen
-   64 px en la pantalla más estrecha, así que un billete desbordaría su celda.
-   Aquí el ancho lo manda el contenido.
+   la forma que tienen —la fotografía de la pieza más su cinta—, y esas formas
+   traen su propio tamaño: de 50×74 la moneda de 1 céntimo a 125×94 el billete de
+   100. Las columnas de --lado-respuesta valen 64 px en la pantalla más estrecha,
+   así que un billete desbordaría su celda. Aquí el ancho lo manda el contenido.
 
    VA DESPUÉS DE LAS DOS CONSULTAS DE ARRIBA A PROPÓSITO: las dos reescriben
    `grid-template-columns` de `.rejilla-respuestas` y tienen la misma
@@ -1365,13 +1427,23 @@ button:focus:not(:focus-visible) {
 
    El minimo absoluto de 64x64 NUNCA se cruza: por debajo de 320x420 de viewport
    se muestra «Gira el dispositivo». */
+/* LOS TRES ESCALONES NOMBRAN TAMBIÉN `:root.modo-proyeccion`, Y NO ES UNA
+   REPETICIÓN OCIOSA. El modo proyección sube los dos ejes a 150 px, y lo hace
+   desde un selector CON CLASE: `:root.modo-proyeccion` (0,2,0) le gana a `:root`
+   (0,1,0) por ESPECIFICIDAD, no por orden, así que un `:root { --lado-techo }`
+   escrito más abajo no lo baja nunca. Sin nombrar la clase aquí, un proyector de
+   1200×700 dibujaba el teclado 3×4 a 150 px, la última fila —la del OK— se
+   quedaba fuera de la zona de juego, y ahí abajo no hay barra que la recupere.
+
+   La nota de _01-variables.scss («gana el orden de origen») vale entre selectores
+   de la MISMA especificidad; en cuanto uno lleva clase deja de valer. */
 @media (max-height: 900px) {
-  :root {
+  :root, :root.modo-proyeccion {
     --lado-techo: 80px;
   }
 }
 @media (max-height: 780px) {
-  :root {
+  :root, :root.modo-proyeccion {
     --lado-techo: 72px;
   }
   .visor-respuesta {
@@ -1380,11 +1452,19 @@ button:focus:not(:focus-visible) {
   }
 }
 @media (max-height: 660px) {
-  :root {
+  :root, :root.modo-proyeccion {
     --lado-techo: 64px;
   }
-  /* Aqui SI decide columnas la altura, y es la excepcion documentada: en 660px
-     de alto el 3x4 no cabe de ninguna manera, asi que se despliega a 6x2. */
+}
+/* Aqui SI decide columnas la altura, y es la excepcion documentada: en 660px de
+   alto el 3x4 no cabe de ninguna manera, asi que se despliega a 6x2.
+
+   PERO PIDE ANCHURA, Y ANTES NO LA PEDIA. Seis columnas de 64 px mas sus huecos
+   son 424 px; en un movil de 360x640 —que entra por altura— dos de las seis
+   columnas se salian de la pantalla, sin barra horizontal que las alcanzara: el
+   9, el 0 y el OK quedaban fuera y la pregunta no se podia contestar. La
+   excepcion se pedia por altura y se pagaba en anchura. */
+@media (max-height: 660px) and (min-width: 480px) {
   .teclado-bloques {
     grid-template-columns: repeat(6, var(--lado-respuesta));
   }
@@ -1477,126 +1557,164 @@ button:focus:not(:focus-visible) {
   font-size: var(--tam-numero-opcion);
 }
 
+/* ══ LAS PIEZAS DE DINERO ═══════════════════════════════════════════════════
+   LA PIEZA ES LA FOTOGRAFÍA MÁS UNA CINTA CON LA CIFRA, y son dos zonas que no
+   se pisan: la imagen ocupa arriba su caja exacta, la cinta va debajo. Antes la
+   cifra iba ENCIMA del dibujo y el dibujo se apartaba —el SVG dejaba libre la
+   franja central a propósito—; sobre una fotografía eso no se puede hacer,
+   porque el hueco lo decide el grabado del billete y no nosotros. Apilándolas
+   se gana además que la imagen no se deforme nunca: `background-size` es el
+   tamaño real de su caja, no `100% 100%`.
+
+   LA CIFRA SIGUE SIENDO DEL DOM y no del fichero, por lo mismo de siempre: crece
+   con `letra-grande` y con `modo-proyeccion`, se mide en los pares de contraste
+   y sigue estando si la imagen no llega. Y es la razón de que la cinta mida
+   `--tam-texto-min + 4px` en vez de un número fijo: si creciera la letra y no la
+   cinta, la cifra se saldría.
+
+   CADA PIEZA MIDE LO QUE MIDE DE VERDAD, a escala. Las monedas van a 3,1 px por
+   milímetro tomando como ancla la de 1 €, que sigue en los 72 px de siempre; los
+   billetes a 0,85 px/mm. De ahí salen dos cosas que un niño usa sin que nadie se
+   las explique: que el billete crece con el valor, y que la moneda de 10
+   céntimos es MÁS PEQUEÑA que la de 5 —que es verdad, y es la trampa que tiene
+   el dinero de verdad—.
+
+   EL COLOR PLANO SE QUEDA DEBAJO, como red de seguridad: sin la imagen, la pieza
+   conserva color, tamaño y cifra. Lo que se ha ido son los biseles `inset` que
+   simulaban el bimetal: sobre la foto de la moneda dibujaban un marco cuadrado
+   encima del canto redondo. El bimetal ya lo trae la foto, que es de donde tenía
+   que haber venido siempre.
+
+   NO SON FACSÍMILES NI PRETENDEN SERLO: son fotografías a un cuarto del tamaño
+   real, de una sola cara, con una finalidad didáctica. Los billetes de 20 y 50
+   llevan además la palabra MUESTRA impresa en el original. */
 .moneda, .billete {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  /* EL DIBUJO SE ESTIRA A LA PIEZA, y el color plano se queda debajo: si
-     js/03-sprites.js no llegara a ejecutarse —o si el SVG no se pudiera
-     codificar— la pieza sigue teniendo su color y su tamaño, que ya la
-     distinguen. Misma red de seguridad que las ocho texturas del terreno.
-
-     La CIFRA no está en el dibujo: la escribe el DOM encima, para que crezca con
-     `letra-grande` y con `modo-proyeccion` y para que siga midiéndose en los
-     pares de contraste. Por eso el motivo del SVG deja libre la franja central,
-     que es donde cae el texto. */
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
-  font-family: var(--fuente-pixel);
-  font-size: var(--tam-texto-min);
-  color: var(--texto-principal);
+  background-position: top center;
+  padding: 0;
+  border: 0;
   /* Ancla la esquina donde va el contador de veces cogida. */
   position: relative;
 }
 
-.moneda { /* redonda NO: en este mundo todo es cúbico */
-  width: 72px;
-  height: 72px;
-  background: var(--deco-oro);
-  box-shadow: inset 6px 6px 0 0 var(--deco-oro-cla), inset -6px -6px 0 0 var(--deco-oro-osc);
+.pieza__cifra {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--cinta-pieza);
+  background: var(--bg-texto-oscuro);
+  color: var(--texto-claro);
+  font-family: var(--fuente-pixel);
+  font-size: var(--tam-texto-min);
+  line-height: 1;
 }
 
-/* ── LAS DOS MONEDAS SON BIMETÁLICAS, Y DEL REVÉS UNA DE OTRA ────────────────
-   Antes las dos eran el mismo cuadrado de oro con un número distinto dentro, así
-   que lo único que las diferenciaba era la cifra — y en la pregunta cuyo objeto
-   es reconocerlas, leer la cifra es justamente lo que no se quiere que baste.
-
-   Las de verdad se distinguen así: la de 1 € lleva el aro dorado y el centro
-   plateado; la de 2 €, el aro plateado y el centro dorado. Es la diferencia que
-   usa cualquiera para separarlas en la mano sin mirar el número, y aquí se
-   dibuja con un aro `inset` de desenfoque cero, que pasa la regla dura.
-
-   NO HAY IMÁGENES en el proyecto: la auditoría no admite un solo fichero
-   binario y todo se abre desde file://. Estas piezas se dibujan como se dibuja
-   el reloj de arena o el terreno. Y no son facsímiles de nada: son cuadrados de
-   colores con una cifra, no reproducciones de moneda. */
-.moneda[data-valor="1"] {
-  background-image: var(--pieza-1);
-  background-color: var(--deco-piedra-cla); /* centro plateado */
-  box-shadow: inset 6px 6px 0 0 var(--deco-oro-cla), inset -6px -6px 0 0 var(--deco-oro-osc), inset 0 0 0 14px var(--deco-oro); /* aro dorado */
-}
-
-.moneda[data-valor="2"] {
-  background-image: var(--pieza-2);
-  background-color: var(--deco-oro); /* centro dorado */
-  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-piedra-osc), inset 0 0 0 14px var(--deco-piedra-cla); /* aro plateado */
-}
-
-.moneda[data-material=cobre] {
-  background: var(--deco-cobre);
-  box-shadow: inset 6px 6px 0 0 var(--deco-cobre-cla), inset -6px -6px 0 0 var(--deco-cobre-osc);
+.moneda {
+  --lado-pieza: 72px;
+  width: var(--lado-pieza);
+  height: calc(var(--lado-pieza) + var(--cinta-pieza));
+  background-size: var(--lado-pieza) var(--lado-pieza);
+  background-color: var(--deco-oro);
 }
 
 .billete {
-  width: 112px;
-  height: 64px;
-  background: var(--deco-hierba-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-hierba-osc);
+  --ancho-pieza: 113px;
+  --alto-pieza: 61px;
+  width: var(--ancho-pieza);
+  height: calc(var(--alto-pieza) + var(--cinta-pieza));
+  background-size: var(--ancho-pieza) var(--alto-pieza);
+  background-color: var(--deco-hierba-cla);
 }
 
-/* ── CADA BILLETE, DE SU COLOR Y DE SU TAMAÑO ────────────────────────────────
-   Los cinco eran verdes y del mismo ancho: cinco rectángulos idénticos con un
-   número. Los de verdad se reconocen por el color antes que por la cifra —gris
-   el de 5, rojo el de 10, azul el de 20, naranja el de 50, verde el de 100— y
-   además crecen con el valor, que es una pista de tamaño que un niño de siete
-   años usa sin que nadie se la explique.
+/* Las monedas de euro. La de 1 € es el ancla de la escala: 23,25 mm → 72 px. */
+.moneda[data-valor="1"] {
+  --lado-pieza: 72px;
+  background-image: var(--pieza-1);
+  background-color: var(--deco-piedra-cla);
+}
 
-   Cuatro de los cinco colores son los reales; el del 10 tira a cobre porque la
-   paleta de trece materiales no tiene un rojo y añadir uno reordenaría las 39
-   variables `--deco-*`, que son contrato.
+.moneda[data-valor="2"] {
+  --lado-pieza: 80px;
+  background-image: var(--pieza-2);
+  background-color: var(--deco-piedra-cla);
+}
 
-   NUNCA SOLO COLOR: cada billete lleva además su cifra escrita y su propio
-   ancho, así que quien no distinga los colores tiene otras dos señales. Los
-   cinco pares de contraste con --texto-principal están medidos en
-   casos-contraste.js, no supuestos.
+/* Las monedas de céntimo. Se seleccionan por `data-centimos` y NO por
+   `data-valor`, porque los valores chocan: «5» es a la vez el billete de 5 € y
+   la moneda de 5 céntimos, y con un solo atributo la de 5 céntimos habría salido
+   con la foto del billete. Es el mismo motivo por el que en el JS la pieza se
+   nombra 'c5' y no 5. */
+.moneda[data-centimos="1"] {
+  --lado-pieza: 50px;
+  background-image: var(--pieza-c1);
+  background-color: var(--deco-cobre);
+}
 
-   Los anchos suben de ocho en ocho hasta 128, que es el tope: con dos columnas y
-   la retícula de las opciones, 128×2 + 16 de hueco caben en los 288 px útiles de
-   la pantalla más estrecha del proyecto. */
+.moneda[data-centimos="5"] {
+  --lado-pieza: 66px;
+  background-image: var(--pieza-c5);
+  background-color: var(--deco-cobre);
+}
+
+.moneda[data-centimos="10"] {
+  --lado-pieza: 61px;
+  background-image: var(--pieza-c10);
+  background-color: var(--deco-oro);
+}
+
+.moneda[data-centimos="20"] {
+  --lado-pieza: 69px;
+  background-image: var(--pieza-c20);
+  background-color: var(--deco-oro);
+}
+
+.moneda[data-centimos="50"] {
+  --lado-pieza: 75px;
+  background-image: var(--pieza-c50);
+  background-color: var(--deco-oro);
+}
+
+/* Los billetes, a 0,85 px por milímetro de los tamaños reales del BCE. El más
+   ancho es el de 100 con 125 px: con dos columnas y 16 px de hueco caben en los
+   288 px útiles de la pantalla más estrecha del proyecto, que es el tope que
+   manda aquí. */
 .billete[data-valor="5"] {
-  width: 96px;
+  --ancho-pieza: 102px;
+  --alto-pieza: 53px;
   background-image: var(--pieza-5);
   background-color: var(--deco-piedra-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-piedra-osc);
 }
 
 .billete[data-valor="10"] {
-  width: 104px;
+  --ancho-pieza: 108px;
+  --alto-pieza: 57px;
   background-image: var(--pieza-10);
   background-color: var(--deco-cobre);
-  box-shadow: inset 6px 6px 0 0 var(--deco-cobre-cla), inset -6px -6px 0 0 var(--deco-cobre-osc);
 }
 
 .billete[data-valor="20"] {
-  width: 112px;
+  --ancho-pieza: 113px;
+  --alto-pieza: 61px;
   background-image: var(--pieza-20);
   background-color: var(--deco-agua-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-agua-osc);
 }
 
 .billete[data-valor="50"] {
-  width: 120px;
+  --ancho-pieza: 119px;
+  --alto-pieza: 65px;
   background-image: var(--pieza-50);
   background-color: var(--deco-brasa-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-brasa-osc);
 }
 
 .billete[data-valor="100"] {
-  width: 128px;
+  --ancho-pieza: 125px;
+  --alto-pieza: 70px;
   background-image: var(--pieza-100);
   background-color: var(--deco-hierba-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco), inset -6px -6px 0 0 var(--deco-hierba-osc);
 }
 
 .contenedor-dinero {
@@ -1626,12 +1744,17 @@ button:focus:not(:focus-visible) {
 
    Va en una ESQUINA, colocada aparte, y no dentro del texto de la pieza: metido
    en el flujo, el «×2» partía en dos líneas el «2 €» de la moneda y la dejaba
-   ilegible. Se vio mirando la pantalla, que es la única forma de ver esto. */
+   ilegible. Se vio mirando la pantalla, que es la única forma de ver esto.
+
+   Y va ARRIBA, no abajo: desde 1.20.0 la cifra vive en una cinta que ocupa todo
+   el borde inferior de la pieza, así que en la esquina de abajo el «×2» caía
+   justo encima del «2 €». Dos cifras superpuestas en el sitio donde el niño mira
+   para saber cuánto lleva pagado. */
 .moneda[data-veces]::after, .billete[data-veces]::after {
   content: "×" attr(data-veces);
   position: absolute;
   right: 0;
-  bottom: 0;
+  top: 0;
   padding: 0 2px;
   background: var(--bg-texto-oscuro);
   color: var(--deco-oro-cla);
@@ -1981,6 +2104,17 @@ button:focus:not(:focus-visible) {
   padding: var(--e3) var(--e4);
   box-shadow: inset var(--bisel) var(--bisel) 0 0 var(--blanco), inset calc(var(--bisel) * -1) calc(var(--bisel) * -1) 0 0 var(--btn-borde-sombra), var(--e2) var(--e2) 0 0 rgba(0, 0, 0, 0.5);
   margin: 0;
+  /* NO SE SALE NUNCA DE LA PANTALLA. «CUBOMÁTICA» en la tipografía de píxel a
+     40 px, más los dos rellenos de 32, mide 337: en una ventana de 320 —tamaño
+     soportado, el aviso de «gira el aparato» solo salta por debajo de 320×420—
+     se comía ocho píxeles por cada lado y el título aparecía descabezado.
+
+     Se arregla dejando que se parta, no bajando el tamaño a un número fijo: el
+     tamaño lo mandan «Letra grande» y el modo proyección a través de
+     --tam-titulo, y escribir aquí un valor literal para pantallas estrechas
+     habría anulado los dos ajustes justo donde más falta hacen. */
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .pantalla--portada .lema {
@@ -2105,6 +2239,13 @@ button:focus:not(:focus-visible) {
   white-space: nowrap;
 }
 
+@media (max-width: 479px) {
+  /* Un relleno lateral menos generoso en la pantalla más estrecha: son 32 px
+     que el título necesita para caber entero en una línea. */
+  .pantalla--portada .titulo-juego {
+    padding: var(--e3);
+  }
+}
 @media (min-width: 480px) {
   .rotulo-veta__mundo {
     position: static;
@@ -2161,8 +2302,27 @@ button:focus:not(:focus-visible) {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  /* `safe center`, NO `center` a secas, Y ES UNA CORRECCIÓN, no un adorno.
+     Esta caja es a la vez contenedor centrado y contenedor con scroll, y esas
+     dos cosas se llevan mal: mientras el contenido cabe, `center` lo centra y no
+     pasa nada; en cuanto NO cabe —el enunciado largo de un problema más el
+     .mensaje-resultado, que tiene un suelo de tres líneas— el centrado reparte
+     el desbordamiento a los DOS lados, y lo que sobresale por arriba queda fuera
+     del alcance de la barra: `scrollTop` no puede ser negativo, así que las
+     primeras líneas del enunciado no se recuperan de ninguna manera. Se ve
+     cortado y el scroll solo llega hasta donde ya estabas.
+
+     `safe` es la palabra clave pensada para exactamente esto: centra mientras
+     quepa y se comporta como `start` en cuanto desborda. Un navegador que no la
+     entienda descarta la declaración entera y se queda en `start`, que es
+     justamente la degradación que queremos.
+
+     VA EN LOS DOS EJES. Con `overflow-y: auto` y el eje horizontal en `visible`,
+     el horizontal pasa a `auto` también (así lo manda CSS), así que un hijo más
+     ancho que la columna —una fila de piezas de dinero— se recortaba por la
+     izquierda por el mismo motivo y con el mismo remedio. */
+  align-items: safe center;
+  justify-content: safe center;
   gap: var(--e3);
   padding: var(--e3);
   min-height: 0;
@@ -2172,19 +2332,95 @@ button:focus:not(:focus-visible) {
 
 .zona-inferior { /* SIEMPRE la mitad inferior: alcance del pulgar */
   flex: 0 0 auto;
+  /* `safe center` por el mismo motivo que arriba: aquí no hay barra que
+     recuperar lo que se salga, así que un teclado más alto que su hueco se
+     perdería por arriba —y arriba está el visor, que es donde se lee lo que el
+     niño lleva escrito—. */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: safe center;
+  justify-content: safe center;
   gap: var(--e2);
   padding: var(--e2) var(--e3) var(--e3);
   min-height: 0;
+  /* Y BARRA, COMO LA DE ARRIBA. El suelo de 64 px por tecla no se negocia (WCAG
+     2.5.8 y un niño de siete años), así que hay ventanas donde el teclado 3×4
+     más su visor NO CABEN: en 320×480 —tamaño soportado, el aviso de «gira el
+     aparato» solo salta por debajo de 320×420— la fila del OK quedaba casi cien
+     píxeles por debajo del borde, y sin barra no había manera de llegar a ella:
+     la pregunta no se podía contestar. Con el modo proyección encendido pasaba
+     lo mismo en cualquier móvil.
+
+     Antes esto quedaba tapado a medias por la excepción de seis columnas, que se
+     pedía por altura sin mirar la anchura: cabía por abajo y se salía por la
+     derecha. Un recorte por otro. */
+  overflow-y: auto;
 }
 
+/* ── DOS COLUMNAS DESDE 1200 px: enunciado a la izquierda, respuesta a la
+      derecha ────────────────────────────────────────────────────────────────
+   En vertical el reparto arriba/abajo es el correcto: el pulgar llega al tercio
+   inferior y el enunciado queda a la vista por encima. En una pantalla ancha —
+   portátil, proyector, pizarra— ese mismo reparto deja dos franjas de aire a los
+   lados y obliga a un barrido vertical largo entre la pregunta y el teclado, que
+   es justo el recorrido que el niño hace en cada ítem.
+
+   Puestos en fila, la pregunta y la respuesta caben en un solo golpe de vista y
+   el enunciado deja de competir por la altura con la última fila del teclado.
+
+   POR QUÉ LA ANCHURA Y NO LA ALTURA: es la regla de los dos ejes
+   (_herramientas.scss) — la anchura decide CUÁNTAS COLUMNAS, la altura decide el
+   lado del botón. Esto es una columna más, así que va por anchura, y por eso no
+   toca ni --lado ni ningún tamaño.
+
+   Y por qué 1200 y no 1024: por debajo de eso el sitio es de una tableta
+   apaisada, que se sujeta con las dos manos, y ahí el alcance del pulgar sigue
+   mandando sobre el barrido de la vista.
+
+   La `.cinta`, el `.cartel` y el `.cielo` no se enteran de este cambio: están
+   fuera del flujo (absolute), que es lo que dice la lista de exclusiones de
+   _06-biomas.scss. */
+@media (min-width: 1200px) {
+  .zona-juego {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--e5);
+  }
+  /* LAS DOS MITADES SE ARRIMAN AL CENTRO, no se centran cada una en su mitad.
+     Con las dos columnas centradas en sí mismas, en 1440 px el enunciado queda
+     a 360 y el teclado a 1080: setecientos píxeles de barrido, más que los
+     cuatrocientos que había en vertical. Se habría cambiado un recorrido largo
+     por otro más largo. Alineando el enunciado a la derecha de su mitad y el
+     teclado a la izquierda de la suya, el par queda junto en el centro y el aire
+     sobrante se va a los lados, que es donde no estorba.
+
+     `flex: 1 1 0` y no `1 1 auto`: con la base en `auto` un enunciado largo se
+     queda con el ancho que pida y empuja al teclado contra el borde. */
+  /* `safe flex-end` y no `flex-end`: arrimar al centro es una preferencia, y
+     como toda alineación posicional en una caja con scroll, en cuanto el hijo es
+     más ancho que la columna manda el desbordamiento hacia el lado que la barra
+     no alcanza. Con `safe` la preferencia se cae sola y vuelve a `start`. */
+  .zona-superior {
+    flex: 1 1 0;
+    align-items: safe flex-end;
+    padding: var(--e3) 0 var(--e3) var(--e3);
+  }
+  .zona-inferior {
+    flex: 1 1 0;
+    align-items: flex-start;
+    justify-content: safe center;
+    padding: var(--e3) var(--e3) var(--e3) 0;
+  }
+}
 .barra-herramientas {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* ENVUELVE. Los cuatro controles —Pista, Salir, Pausa, Sonido— no caben en una
+     fila de 320 px: el de Sonido se salía nueve píxeles por la derecha y quedaba
+     cortado contra el borde, que es el único que apaga la música. Antes que
+     encoger botones por debajo del suelo de 64 px, se pasan a dos filas. */
+  flex-wrap: wrap;
   gap: var(--e2);
   padding: var(--e2) var(--e3);
   background: var(--bg-texto-oscuro);

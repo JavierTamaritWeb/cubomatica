@@ -386,10 +386,10 @@
 
 /* ── Cuando las opciones SON piezas de dinero ───────────────────────────────
    La pregunta de reconocer una moneda o un billete pinta las cuatro opciones con
-   la forma que tienen —el cuadrado de oro y el rectángulo verde—, y esas formas
-   traen su propio tamaño: 72×72 y 128×64. Las columnas de --lado-respuesta valen
-   64 px en la pantalla más estrecha, así que un billete desbordaría su celda.
-   Aquí el ancho lo manda el contenido.
+   la forma que tienen —la fotografía de la pieza más su cinta—, y esas formas
+   traen su propio tamaño: de 50×74 la moneda de 1 céntimo a 125×94 el billete de
+   100. Las columnas de --lado-respuesta valen 64 px en la pantalla más estrecha,
+   así que un billete desbordaría su celda. Aquí el ancho lo manda el contenido.
 
    VA DESPUÉS DE LAS DOS CONSULTAS DE ARRIBA A PROPÓSITO: las dos reescriben
    `grid-template-columns` de `.rejilla-respuestas` y tienen la misma
@@ -436,12 +436,30 @@
 
    El minimo absoluto de 64x64 NUNCA se cruza: por debajo de 320x420 de viewport
    se muestra «Gira el dispositivo». */
-@include hasta-alto(alta)  { :root { --lado-techo: 80px; } }
-@include hasta-alto(media) { :root { --lado-techo: 72px; }
+/* LOS TRES ESCALONES NOMBRAN TAMBIÉN `:root.modo-proyeccion`, Y NO ES UNA
+   REPETICIÓN OCIOSA. El modo proyección sube los dos ejes a 150 px, y lo hace
+   desde un selector CON CLASE: `:root.modo-proyeccion` (0,2,0) le gana a `:root`
+   (0,1,0) por ESPECIFICIDAD, no por orden, así que un `:root { --lado-techo }`
+   escrito más abajo no lo baja nunca. Sin nombrar la clase aquí, un proyector de
+   1200×700 dibujaba el teclado 3×4 a 150 px, la última fila —la del OK— se
+   quedaba fuera de la zona de juego, y ahí abajo no hay barra que la recupere.
+
+   La nota de _01-variables.scss («gana el orden de origen») vale entre selectores
+   de la MISMA especificidad; en cuanto uno lleva clase deja de valer. */
+@include hasta-alto(alta)  { :root, :root.modo-proyeccion { --lado-techo: 80px; } }
+@include hasta-alto(media) { :root, :root.modo-proyeccion { --lado-techo: 72px; }
                              .visor-respuesta { min-height: 60px; font-size: 36px; } }
-@include hasta-alto(baja)  { :root { --lado-techo: 64px; }
-  /* Aqui SI decide columnas la altura, y es la excepcion documentada: en 660px
-     de alto el 3x4 no cabe de ninguna manera, asi que se despliega a 6x2. */
+@include hasta-alto(baja)  { :root, :root.modo-proyeccion { --lado-techo: 64px; } }
+
+/* Aqui SI decide columnas la altura, y es la excepcion documentada: en 660px de
+   alto el 3x4 no cabe de ninguna manera, asi que se despliega a 6x2.
+
+   PERO PIDE ANCHURA, Y ANTES NO LA PEDIA. Seis columnas de 64 px mas sus huecos
+   son 424 px; en un movil de 360x640 —que entra por altura— dos de las seis
+   columnas se salian de la pantalla, sin barra horizontal que las alcanzara: el
+   9, el 0 y el OK quedaban fuera y la pregunta no se podia contestar. La
+   excepcion se pedia por altura y se pagaba en anchura. */
+@media (max-height: 660px) and (min-width: 480px) {
   .teclado-bloques { grid-template-columns: repeat(6, var(--lado-respuesta)); }
 }
 
@@ -507,122 +525,115 @@
                             inset -4px -4px 0 0 var(--deco-piedra-osc); }
 .balanza__cifra { font-family: var(--fuente-pixel); font-size: var(--tam-numero-opcion); }
 
-.moneda, .billete {
-  display: inline-flex; align-items: center; justify-content: center;
-  /* EL DIBUJO SE ESTIRA A LA PIEZA, y el color plano se queda debajo: si
-     js/03-sprites.js no llegara a ejecutarse —o si el SVG no se pudiera
-     codificar— la pieza sigue teniendo su color y su tamaño, que ya la
-     distinguen. Misma red de seguridad que las ocho texturas del terreno.
+/* ══ LAS PIEZAS DE DINERO ═══════════════════════════════════════════════════
+   LA PIEZA ES LA FOTOGRAFÍA MÁS UNA CINTA CON LA CIFRA, y son dos zonas que no
+   se pisan: la imagen ocupa arriba su caja exacta, la cinta va debajo. Antes la
+   cifra iba ENCIMA del dibujo y el dibujo se apartaba —el SVG dejaba libre la
+   franja central a propósito—; sobre una fotografía eso no se puede hacer,
+   porque el hueco lo decide el grabado del billete y no nosotros. Apilándolas
+   se gana además que la imagen no se deforme nunca: `background-size` es el
+   tamaño real de su caja, no `100% 100%`.
 
-     La CIFRA no está en el dibujo: la escribe el DOM encima, para que crezca con
-     `letra-grande` y con `modo-proyeccion` y para que siga midiéndose en los
-     pares de contraste. Por eso el motivo del SVG deja libre la franja central,
-     que es donde cae el texto. */
+   LA CIFRA SIGUE SIENDO DEL DOM y no del fichero, por lo mismo de siempre: crece
+   con `letra-grande` y con `modo-proyeccion`, se mide en los pares de contraste
+   y sigue estando si la imagen no llega. Y es la razón de que la cinta mida
+   `--tam-texto-min + 4px` en vez de un número fijo: si creciera la letra y no la
+   cinta, la cifra se saldría.
+
+   CADA PIEZA MIDE LO QUE MIDE DE VERDAD, a escala. Las monedas van a 3,1 px por
+   milímetro tomando como ancla la de 1 €, que sigue en los 72 px de siempre; los
+   billetes a 0,85 px/mm. De ahí salen dos cosas que un niño usa sin que nadie se
+   las explique: que el billete crece con el valor, y que la moneda de 10
+   céntimos es MÁS PEQUEÑA que la de 5 —que es verdad, y es la trampa que tiene
+   el dinero de verdad—.
+
+   EL COLOR PLANO SE QUEDA DEBAJO, como red de seguridad: sin la imagen, la pieza
+   conserva color, tamaño y cifra. Lo que se ha ido son los biseles `inset` que
+   simulaban el bimetal: sobre la foto de la moneda dibujaban un marco cuadrado
+   encima del canto redondo. El bimetal ya lo trae la foto, que es de donde tenía
+   que haber venido siempre.
+
+   NO SON FACSÍMILES NI PRETENDEN SERLO: son fotografías a un cuarto del tamaño
+   real, de una sola cara, con una finalidad didáctica. Los billetes de 20 y 50
+   llevan además la palabra MUESTRA impresa en el original. */
+.moneda, .billete {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
-  font-family: var(--fuente-pixel); font-size: var(--tam-texto-min);
-  color: var(--texto-principal);
+  background-position: top center;
+  padding: 0;
+  border: 0;
   /* Ancla la esquina donde va el contador de veces cogida. */
   position: relative;
 }
-.moneda {                              /* redonda NO: en este mundo todo es cúbico */
-  width: 72px; height: 72px; background: var(--deco-oro);
-  box-shadow: inset 6px 6px 0 0 var(--deco-oro-cla),
-              inset -6px -6px 0 0 var(--deco-oro-osc);
+.pieza__cifra {
+  display: flex; align-items: center; justify-content: center;
+  height: var(--cinta-pieza);
+  background: var(--bg-texto-oscuro);
+  color: var(--texto-claro);
+  font-family: var(--fuente-pixel);
+  font-size: var(--tam-texto-min);
+  line-height: 1;
 }
-/* ── LAS DOS MONEDAS SON BIMETÁLICAS, Y DEL REVÉS UNA DE OTRA ────────────────
-   Antes las dos eran el mismo cuadrado de oro con un número distinto dentro, así
-   que lo único que las diferenciaba era la cifra — y en la pregunta cuyo objeto
-   es reconocerlas, leer la cifra es justamente lo que no se quiere que baste.
-
-   Las de verdad se distinguen así: la de 1 € lleva el aro dorado y el centro
-   plateado; la de 2 €, el aro plateado y el centro dorado. Es la diferencia que
-   usa cualquiera para separarlas en la mano sin mirar el número, y aquí se
-   dibuja con un aro `inset` de desenfoque cero, que pasa la regla dura.
-
-   NO HAY IMÁGENES en el proyecto: la auditoría no admite un solo fichero
-   binario y todo se abre desde file://. Estas piezas se dibujan como se dibuja
-   el reloj de arena o el terreno. Y no son facsímiles de nada: son cuadrados de
-   colores con una cifra, no reproducciones de moneda. */
-.moneda[data-valor="1"] {
-  background-image: var(--pieza-1);
-  background-color: var(--deco-piedra-cla);              /* centro plateado */
-  box-shadow: inset 6px 6px 0 0 var(--deco-oro-cla),
-              inset -6px -6px 0 0 var(--deco-oro-osc),
-              inset 0 0 0 14px var(--deco-oro);          /* aro dorado */
-}
-.moneda[data-valor="2"] {
-  background-image: var(--pieza-2);
-  background-color: var(--deco-oro);                     /* centro dorado */
-  box-shadow: inset 6px 6px 0 0 var(--blanco),
-              inset -6px -6px 0 0 var(--deco-piedra-osc),
-              inset 0 0 0 14px var(--deco-piedra-cla);   /* aro plateado */
-}
-.moneda[data-material="cobre"] {
-  background: var(--deco-cobre);
-  box-shadow: inset 6px 6px 0 0 var(--deco-cobre-cla),
-              inset -6px -6px 0 0 var(--deco-cobre-osc);
+.moneda {
+  --lado-pieza: 72px;
+  width: var(--lado-pieza);
+  height: calc(var(--lado-pieza) + var(--cinta-pieza));
+  background-size: var(--lado-pieza) var(--lado-pieza);
+  background-color: var(--deco-oro);
 }
 .billete {
-  width: 112px; height: 64px; background: var(--deco-hierba-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco),
-              inset -6px -6px 0 0 var(--deco-hierba-osc);
-}
-/* ── CADA BILLETE, DE SU COLOR Y DE SU TAMAÑO ────────────────────────────────
-   Los cinco eran verdes y del mismo ancho: cinco rectángulos idénticos con un
-   número. Los de verdad se reconocen por el color antes que por la cifra —gris
-   el de 5, rojo el de 10, azul el de 20, naranja el de 50, verde el de 100— y
-   además crecen con el valor, que es una pista de tamaño que un niño de siete
-   años usa sin que nadie se la explique.
-
-   Cuatro de los cinco colores son los reales; el del 10 tira a cobre porque la
-   paleta de trece materiales no tiene un rojo y añadir uno reordenaría las 39
-   variables `--deco-*`, que son contrato.
-
-   NUNCA SOLO COLOR: cada billete lleva además su cifra escrita y su propio
-   ancho, así que quien no distinga los colores tiene otras dos señales. Los
-   cinco pares de contraste con --texto-principal están medidos en
-   casos-contraste.js, no supuestos.
-
-   Los anchos suben de ocho en ocho hasta 128, que es el tope: con dos columnas y
-   la retícula de las opciones, 128×2 + 16 de hueco caben en los 288 px útiles de
-   la pantalla más estrecha del proyecto. */
-.billete[data-valor="5"] {
-  width: 96px;
-  background-image: var(--pieza-5);
-  background-color: var(--deco-piedra-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco),
-              inset -6px -6px 0 0 var(--deco-piedra-osc);
-}
-.billete[data-valor="10"] {
-  width: 104px;
-  background-image: var(--pieza-10);
-  background-color: var(--deco-cobre);
-  box-shadow: inset 6px 6px 0 0 var(--deco-cobre-cla),
-              inset -6px -6px 0 0 var(--deco-cobre-osc);
-}
-.billete[data-valor="20"] {
-  width: 112px;
-  background-image: var(--pieza-20);
-  background-color: var(--deco-agua-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco),
-              inset -6px -6px 0 0 var(--deco-agua-osc);
-}
-.billete[data-valor="50"] {
-  width: 120px;
-  background-image: var(--pieza-50);
-  background-color: var(--deco-brasa-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco),
-              inset -6px -6px 0 0 var(--deco-brasa-osc);
-}
-.billete[data-valor="100"] {
-  width: 128px;
-  background-image: var(--pieza-100);
+  --ancho-pieza: 113px;
+  --alto-pieza: 61px;
+  width: var(--ancho-pieza);
+  height: calc(var(--alto-pieza) + var(--cinta-pieza));
+  background-size: var(--ancho-pieza) var(--alto-pieza);
   background-color: var(--deco-hierba-cla);
-  box-shadow: inset 6px 6px 0 0 var(--blanco),
-              inset -6px -6px 0 0 var(--deco-hierba-osc);
 }
+
+/* Las monedas de euro. La de 1 € es el ancla de la escala: 23,25 mm → 72 px. */
+.moneda[data-valor="1"] { --lado-pieza: 72px; background-image: var(--pieza-1);
+                          background-color: var(--deco-piedra-cla); }
+.moneda[data-valor="2"] { --lado-pieza: 80px; background-image: var(--pieza-2);
+                          background-color: var(--deco-piedra-cla); }
+
+/* Las monedas de céntimo. Se seleccionan por `data-centimos` y NO por
+   `data-valor`, porque los valores chocan: «5» es a la vez el billete de 5 € y
+   la moneda de 5 céntimos, y con un solo atributo la de 5 céntimos habría salido
+   con la foto del billete. Es el mismo motivo por el que en el JS la pieza se
+   nombra 'c5' y no 5. */
+.moneda[data-centimos="1"]  { --lado-pieza: 50px; background-image: var(--pieza-c1);
+                              background-color: var(--deco-cobre); }
+.moneda[data-centimos="5"]  { --lado-pieza: 66px; background-image: var(--pieza-c5);
+                              background-color: var(--deco-cobre); }
+.moneda[data-centimos="10"] { --lado-pieza: 61px; background-image: var(--pieza-c10);
+                              background-color: var(--deco-oro); }
+.moneda[data-centimos="20"] { --lado-pieza: 69px; background-image: var(--pieza-c20);
+                              background-color: var(--deco-oro); }
+.moneda[data-centimos="50"] { --lado-pieza: 75px; background-image: var(--pieza-c50);
+                              background-color: var(--deco-oro); }
+
+/* Los billetes, a 0,85 px por milímetro de los tamaños reales del BCE. El más
+   ancho es el de 100 con 125 px: con dos columnas y 16 px de hueco caben en los
+   288 px útiles de la pantalla más estrecha del proyecto, que es el tope que
+   manda aquí. */
+.billete[data-valor="5"]   { --ancho-pieza: 102px; --alto-pieza: 53px;
+                             background-image: var(--pieza-5);
+                             background-color: var(--deco-piedra-cla); }
+.billete[data-valor="10"]  { --ancho-pieza: 108px; --alto-pieza: 57px;
+                             background-image: var(--pieza-10);
+                             background-color: var(--deco-cobre); }
+.billete[data-valor="20"]  { --ancho-pieza: 113px; --alto-pieza: 61px;
+                             background-image: var(--pieza-20);
+                             background-color: var(--deco-agua-cla); }
+.billete[data-valor="50"]  { --ancho-pieza: 119px; --alto-pieza: 65px;
+                             background-image: var(--pieza-50);
+                             background-color: var(--deco-brasa-cla); }
+.billete[data-valor="100"] { --ancho-pieza: 125px; --alto-pieza: 70px;
+                             background-image: var(--pieza-100);
+                             background-color: var(--deco-hierba-cla); }
 .contenedor-dinero { display: flex; flex-wrap: wrap; gap: var(--e3); justify-content: center; }
 /* ── Piezas ya cogidas ──────────────────────────────────────────────────────
    Esta regla estaba escrita para [aria-pressed="true"] y NADIE ponía nunca ese
@@ -643,11 +654,16 @@
 
    Va en una ESQUINA, colocada aparte, y no dentro del texto de la pieza: metido
    en el flujo, el «×2» partía en dos líneas el «2 €» de la moneda y la dejaba
-   ilegible. Se vio mirando la pantalla, que es la única forma de ver esto. */
+   ilegible. Se vio mirando la pantalla, que es la única forma de ver esto.
+
+   Y va ARRIBA, no abajo: desde 1.20.0 la cifra vive en una cinta que ocupa todo
+   el borde inferior de la pieza, así que en la esquina de abajo el «×2» caía
+   justo encima del «2 €». Dos cifras superpuestas en el sitio donde el niño mira
+   para saber cuánto lleva pagado. */
 .moneda[data-veces]::after, .billete[data-veces]::after {
   content: "×" attr(data-veces);
   position: absolute;
-  right: 0; bottom: 0;
+  right: 0; top: 0;
   padding: 0 2px;
   background: var(--bg-texto-oscuro);
   color: var(--deco-oro-cla);

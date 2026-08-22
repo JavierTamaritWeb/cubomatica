@@ -1,5 +1,5 @@
 /* ============================================================================
-   04-audio.js — 12 efectos sintetizados con Web Audio. CERO ficheros de sonido
+   04-audio.js — 13 efectos sintetizados con Web Audio. CERO ficheros de sonido
    ----------------------------------------------------------------------------
    Adaptador de plataforma declarado (§14.4).
 
@@ -19,6 +19,20 @@ CB.audio.ctx = null;
 CB.audio.maestro = null;
 CB.audio.silenciado = false;
 CB.audio.vol = 0.7;
+
+/* ── CUÁNTOS SONIDOS SE HAN PEDIDO ─────────────────────────────────────────
+   Es lo que hace posible la regla de UN GESTO, UN SONIDO (99-arranque.js). El
+   clic genérico de «pulsar» no puede saber si el botón o la tecla que acaban de
+   tocarse tienen voz propia —el «picar» del teclado numérico, el «gema» de la
+   moneda, el «toc» del borrado—, pero sí puede mirar si durante el gesto ha
+   sonado ALGO y callarse. Sin esto, la alternativa es una lista de excepciones
+   escrita a mano, y de esas ya se han caído varias en este proyecto.
+
+   Se cuenta la PETICIÓN, no el sonido, y ANTES de mirar el contexto de audio: si
+   se contara después, en la página de pruebas —donde no hay AudioContext— el
+   contador no se movería nunca, la regla se comprobaría en el vacío y saldría
+   verde diciendo nada. */
+CB.audio.emitidos = 0;
 
 CB.audio.NOTAS = {
   do4: 261.63, re4: 293.66, mi4: 329.63, fa4: 349.23, sol4: 392.00,
@@ -197,9 +211,10 @@ CB.audio.EFECTOS = {
 };
 
 CB.audio.sfx = function (nombre) {
-  if (!CB.audio.ctx) return false;
   var f = CB.audio.EFECTOS[nombre];
   if (!f) return false;
+  CB.audio.emitidos++;                    // la petición, y antes que el contexto
+  if (!CB.audio.ctx) return false;
   try { f(); } catch (e) { }
   return true;
 };

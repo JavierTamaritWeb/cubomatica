@@ -62,17 +62,17 @@ CB.pruebas.suite('Contraste: ratios WCAG par a par', function () {
     ['--foco-borde',       '--bg-texto-panel',       3.0, 'anillo de foco: borde contra panel'],
     ['--foco-borde',       '--bg-pantalla',          1.0, 'anillo de foco sobre fondo oscuro'],
     ['--alto-contraste-bg','--alto-contraste-texto', 7.0, 'modo de alto contraste'],
-    /* Las siete piezas de dinero. Cada una lleva su cifra escrita encima, así que
-       cada color de billete es un par de contraste de pleno derecho — y el del 10
-       (cobre) es el más justo de los siete: 4,7:1 medido contra un mínimo de 4,5.
-       Se mide, no se supone: este proyecto ya se comió un fallo por creerse un
-       contraste a ojo (E63, 1,52:1 en las cifras del teclado bloqueado). */
-    ['--deco-piedra-cla',  '--texto-principal',      4.5, 'cifra del billete de 5 y del centro de la moneda de 1'],
-    ['--deco-cobre',       '--texto-principal',      4.5, 'cifra del billete de 10'],
-    ['--deco-agua-cla',    '--texto-principal',      4.5, 'cifra del billete de 20'],
-    ['--deco-brasa-cla',   '--texto-principal',      4.5, 'cifra del billete de 50'],
-    ['--deco-hierba-cla',  '--texto-principal',      4.5, 'cifra del billete de 100'],
-    ['--deco-oro',         '--texto-principal',      4.5, 'cifra sobre el centro dorado de la moneda de 2']
+    /* LA CIFRA DE LAS DOCE PIEZAS DE DINERO, EN UN PAR Y NO EN SEIS.
+       Aquí había seis pares, uno por color de pieza, porque la cifra iba escrita
+       ENCIMA del dibujo y cada color de billete era su propio fondo de texto. En
+       1.20.0 las piezas pasan a ser fotografías y la cifra baja a una cinta opaca
+       propia: sobre una foto no hay contraste que medir —la foto tiene los
+       colores que tiene— y la única forma honesta de garantizar la cifra es
+       sacarla de encima de la imagen. Así que ahora el par es uno, y es el de la
+       cinta.
+       Los colores de las piezas siguen declarados como fondo de respaldo, pero ya
+       no llevan texto encima, así que no son pares de contraste. */
+    ['--bg-texto-oscuro',  '--texto-claro',          4.5, 'la cifra en la cinta de cada moneda y cada billete']
   ];
 
   var malos = 0, saltados = [], i;

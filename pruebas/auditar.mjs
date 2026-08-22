@@ -340,11 +340,51 @@ if (!HAY_DIST) {
 }
 
 /* ══ 4. AUTONOMÍA: CERO ACTIVOS EXTERNOS ══════════════════════════════════ */
-titulo('4. Autonomía: cero red, cero binarios salvo la música declarada');
+titulo('4. Autonomía: cero red, cero binarios salvo la musica y el dinero declarados');
+
+/* ── LA SEGUNDA LISTA CERRADA: LAS DOCE PIEZAS DE DINERO ─────────────────────
+   Hasta 1.19.0 aqui no habia lista: cero binarios, punto. Y el comentario que lo
+   justificaba decia que una imagen seria «una peticion de red que en file:// no
+   existe», que es FALSO — una imagen es un subrecurso como la hoja de estilos, y
+   el doble clic la abre igual—. Lo que prohibia las imagenes era esta linea, no
+   el navegador.
+
+   Se abre igual que se abrio para la musica y con las mismas tres condiciones,
+   que son las que hacen que esto sea una excepcion y no un agujero:
+     · la lista es CERRADA y esta escrita aqui;
+     · se comprueba en LOS DOS SENTIDOS —ni falta ninguna ni sobra ninguna—;
+     · y cada pieza tiene que estar DECLARADA EN EL CSS, porque un fichero que no
+       usa nadie es peso muerto que nadie volvera a mirar.
+   Todo lo demas sigue prohibido: una fuente, un icono, una captura. */
+const PIEZAS = ['c1', 'c5', 'c10', 'c20', 'c50', '1', '2', '5', '10', '20', '50', '100'];
+const RUTAS_PIEZAS = PIEZAS.map((p) => 'dist/img/pieza-' + p + '.webp');
+
 const BINARIOS = /\.(png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf)$/i;
-const binarios = [...recorrer(RAIZ, false)].filter((f) => BINARIOS.test(f)).map(corto);
-juzgar(!binarios.length, 'cero ficheros de imagen y de fuente', 'hay imagenes o fuentes',
-  binarios.join('\n'));
+const binarios = [...recorrer(RAIZ, false)].filter((f) => BINARIOS.test(f)).map(corto)
+  .filter((f) => !RUTAS_PIEZAS.includes(f));
+juzgar(!binarios.length, 'cero imagenes y fuentes fuera de las 12 piezas de dinero',
+  'hay imagenes o fuentes no declaradas', binarios.join('\n'));
+
+const faltanPiezas = RUTAS_PIEZAS.filter((f) => !existsSync(D(f)));
+juzgar(!faltanPiezas.length,
+  'estan las 12 piezas de dinero de dist/img/',
+  'faltan piezas de dinero — NO se generan al construir, estan versionadas en git '
+  + '(recuperalas con `git checkout -- dist/img`, y ver docs/dinero.md)',
+  faltanPiezas.join('\n'));
+
+/* Que esten no basta: que las USE el CSS. Se lee la hoja compilada y no el SCSS
+   porque lo que se entrega es la hoja, y porque una variable declarada y jamas
+   consumida seria verde aqui y negra en pantalla. */
+if (existsSync(D('dist/css/cubomatica.css'))) {
+  const hoja = leer(D('dist/css/cubomatica.css'));
+  const sinDeclarar = PIEZAS.filter((p) => !hoja.includes('img/pieza-' + p + '.webp')
+                                        || !hoja.includes('var(--pieza-' + p + ')'));
+  juzgar(!sinDeclarar.length,
+    'las 12 piezas estan declaradas Y consumidas en el CSS compilado',
+    'hay piezas que el CSS no declara o no usa', sinDeclarar.join(', '));
+} else {
+  salto('las piezas contra el CSS: falta dist/css/cubomatica.css');
+}
 
 const PISTAS = ['calma', 'cantera', 'jefe', 'mundo-bosque', 'mundo-mina',
                 'mundo-pradera', 'mundo-rio', 'tema-principal', 'victoria'];

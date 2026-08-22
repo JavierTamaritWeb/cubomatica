@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.18.0';
+CB.VERSION = '1.21.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -2282,137 +2282,30 @@ CB.sprites.precalentar = function () {
   return n;
 };
 
-/* ══ EL DINERO, DIBUJADO DE VERDAD ═══════════════════════════════════════════
+/* ══ EL DINERO YA NO SE DIBUJA: SE FOTOGRAFÍA ════════════════════════════════
 
-   Petición expresa: que las monedas y los billetes se vean como los de verdad y
-   no como rectángulos de colores.
+   Aquí vivían `svgMoneda`, `svgBillete`, `estrellasSVG` y `generarDinero`: siete
+   piezas compuestas en SVG al arrancar y publicadas como data: URI en las
+   variables `--pieza-*`. Desde 1.20.0 las doce piezas son fotografías en
+   `dist/img/*.webp` y el CSS las declara él mismo, así que este bloque no tiene
+   nada que hacer y se ha ido entero —64 KB de imágenes a cambio de 90 líneas de
+   dibujo y de un arranque que ya no compone nada—.
 
-   NO HAY FICHEROS. El bloque 4 de la auditoría no admite un solo binario, porque
-   `dist/` se abre con doble clic desde file:// y una imagen suelta sería una
-   petición de red que ahí no existe. La salida es la misma que ya usan las ocho
-   texturas: se dibuja al arrancar y se publica como data: URI en una variable
-   CSS. Aquí en SVG en vez de canvas, porque lo que hay que dibujar son círculos,
-   estrellas y arcos y no ruido de 16×16.
+   El porqué del cambio está escrito donde ahora se decide, que es
+   `src/scss/_01-variables.scss`. Se anota aquí porque el motivo que se dio en su
+   día para dibujarlas —«la auditoría no admite un solo binario»— sigue siendo
+   verdad y no era la razón que parecía: lo que prohíbe binarios es una lista del
+   bloque 4 de `auditar.mjs`, no `file://`. Una imagen es un subrecurso y se abre
+   con doble clic igual que la hoja de estilos.
 
-   TRES DECISIONES QUE NO SON DE GUSTO:
-
-   · LA CIFRA NO VA DENTRO DEL SVG. El dibujo trae el metal, el aro, las doce
-     estrellas y los arcos; el número lo sigue poniendo el DOM encima. Así crece
-     con `letra-grande` y con `modo-proyeccion`, sigue midiéndose en los pares de
-     contraste, y sigue estando si el SVG no llega a pintarse. Un número dibujado
-     dentro de la imagen sería un número que no obedece a los ajustes de
-     accesibilidad, que en material escolar no es un detalle.
-
-   · SIN CANVAS NI SVG SE QUEDA EL COLOR PLANO, que es lo que ya había: el
-     `background-color` de cada pieza sigue declarado en el CSS y el dibujo va
-     encima. Misma red de seguridad que las texturas.
-
-   · NO SON FACSÍMILES. Son dibujos: el metal, las doce estrellas de la Unión, la
-     silueta del continente y la ventana con arco que llevan los billetes. Ni se
-     copia un billete ni haría falta —lo que hay que aprender a distinguir es el
-     color, el tamaño y el metal, no el grabado—.
+   LO QUE NO SE HA IDO es el resto del fichero: las ocho texturas del terreno
+   SIGUEN dibujándose en canvas. Ahí el argumento sí se sostiene, porque lo que
+   producen es ruido de 16×16 que como fichero pesaría más de lo que pesa el
+   código que lo genera.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* [valor, metalAro, metalCentro] — el bimetal REAL, y del revés una de otra:
-   la de 1 € lleva el aro dorado y el centro plateado; la de 2 €, al contrario.
-   Es lo que permite separarlas en la mano sin leer el número. */
-CB.sprites.MONEDAS = [
-  [1, '#C9A227', '#C8CBD0'],
-  [2, '#C8CBD0', '#C9A227']
-];
-
-/* [valor, fondo, tinta] — el color de cada billete es el de verdad salvo el del
-   10, que en la paleta del juego tira a cobre porque no hay un rojo entre los
-   trece materiales y añadir uno reordenaría las 39 variables --deco-*. */
-CB.sprites.BILLETES = [
-  [5,   '#ADADAD', '#7A7A7A'],
-  [10,  '#C87137', '#8E4C21'],
-  [20,  '#5C9BE8', '#2A5CA8'],
-  [50,  '#F58B52', '#B84618'],
-  [100, '#7BC44A', '#3F7A1E']
-];
-
-/* Las doce estrellas de la Unión, colocadas en círculo. Se calculan porque
-   escribir doce pares de coordenadas a mano es doce sitios donde equivocarse. */
-CB.sprites.estrellasSVG = function (cx, cy, radio, tam, color) {
-  var s = '', i, a, x, y;
-  for (i = 0; i < 12; i++) {
-    a = (i / 12) * Math.PI * 2 - Math.PI / 2;
-    x = cx + Math.cos(a) * radio;
-    y = cy + Math.sin(a) * radio;
-    s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
-         '" r="' + tam + '" fill="' + color + '"/>';
-  }
-  return s;
-};
-
-CB.sprites.svgMoneda = function (valor, aro, centro) {
-  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">';
-  s += '<circle cx="36" cy="36" r="35" fill="' + aro + '"/>';
-  /* El canto: un anillo más oscuro que hace que se lea como metal y no como un
-     disco de color. Sin desenfoque, como todo lo demás del juego. */
-  s += '<circle cx="36" cy="36" r="35" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2"/>';
-  s += CB.sprites.estrellasSVG(36, 36, 29, 1.6, 'rgba(0,0,0,.4)');
-  s += '<circle cx="36" cy="36" r="23" fill="' + centro + '"/>';
-  s += '<circle cx="36" cy="36" r="23" fill="none" stroke="rgba(0,0,0,.28)" stroke-width="1.5"/>';
-  /* La silueta del continente, muy esquemática: lo que tiene que leerse es «hay
-     un mapa», no la geografía. Va en la mitad de arriba para dejar libre la de
-     abajo, que es donde el DOM escribe la cifra. */
-  s += '<path fill="rgba(0,0,0,.22)" d="M23 22l4-5 5 1 3-4 6 1 4-3 5 2-2 5-5 1-3 4-6-1-4 3z"/>';
-  s += '</svg>';
-  return s;
-};
-
-CB.sprites.svgBillete = function (valor, fondo, tinta) {
-  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 64">';
-  s += '<rect width="128" height="64" fill="' + fondo + '"/>';
-  s += '<rect x="1.5" y="1.5" width="125" height="61" fill="none" stroke="' + tinta + '" stroke-width="2"/>';
-  /* La ventana con arco: el motivo que llevan todos los billetes de euro y que
-     los distingue de un rectángulo cualquiera. */
-  s += '<path fill="none" stroke="' + tinta + '" stroke-width="2" ' +
-       'd="M12 52V26a10 10 0 0 1 20 0v26"/>';
-  s += '<path fill="none" stroke="' + tinta + '" stroke-width="1.5" d="M22 20v32"/>';
-  /* La banda holográfica de la derecha. */
-  s += '<rect x="110" y="6" width="10" height="52" fill="rgba(255,255,255,.45)"/>';
-  /* Las doce estrellas van en corro arriba a la derecha, como en la bandera, y
-     NO alrededor del centro: ahí es donde el DOM escribe la cifra, y un corro de
-     estrellas por detrás del número lo vuelve ilegible. */
-  s += CB.sprites.estrellasSVG(88, 17, 9, 1.4, tinta);
-  s += '</svg>';
-  return s;
-};
-
-/* Publica las siete piezas como --pieza-N. El CSS las usa sin saber de dónde
-   vienen, exactamente igual que las --tex-*. */
-CB.sprites.generarDinero = function () {
-  if (typeof document === 'undefined' || !document.documentElement) return 0;
-  var raiz = document.documentElement, n = 0, i;
-
-  function poner(valor, svg) {
-    var url;
-    try {
-      url = 'data:image/svg+xml,' + encodeURIComponent(svg);
-    } catch (e) { return; }
-    CB.sprites.cache['pieza' + valor] = url;
-    raiz.style.setProperty('--pieza-' + valor, 'url("' + url + '")');
-    n++;
-  }
-
-  for (i = 0; i < CB.sprites.MONEDAS.length; i++) {
-    poner(CB.sprites.MONEDAS[i][0],
-          CB.sprites.svgMoneda(CB.sprites.MONEDAS[i][0],
-                               CB.sprites.MONEDAS[i][1], CB.sprites.MONEDAS[i][2]));
-  }
-  for (i = 0; i < CB.sprites.BILLETES.length; i++) {
-    poner(CB.sprites.BILLETES[i][0],
-          CB.sprites.svgBillete(CB.sprites.BILLETES[i][0],
-                                CB.sprites.BILLETES[i][1], CB.sprites.BILLETES[i][2]));
-  }
-  return n;
-};
-
 /* ============================================================================
-   04-audio.js — 12 efectos sintetizados con Web Audio. CERO ficheros de sonido
+   04-audio.js — 13 efectos sintetizados con Web Audio. CERO ficheros de sonido
    ----------------------------------------------------------------------------
    Adaptador de plataforma declarado (§14.4).
 
@@ -2432,6 +2325,20 @@ CB.audio.ctx = null;
 CB.audio.maestro = null;
 CB.audio.silenciado = false;
 CB.audio.vol = 0.7;
+
+/* ── CUÁNTOS SONIDOS SE HAN PEDIDO ─────────────────────────────────────────
+   Es lo que hace posible la regla de UN GESTO, UN SONIDO (99-arranque.js). El
+   clic genérico de «pulsar» no puede saber si el botón o la tecla que acaban de
+   tocarse tienen voz propia —el «picar» del teclado numérico, el «gema» de la
+   moneda, el «toc» del borrado—, pero sí puede mirar si durante el gesto ha
+   sonado ALGO y callarse. Sin esto, la alternativa es una lista de excepciones
+   escrita a mano, y de esas ya se han caído varias en este proyecto.
+
+   Se cuenta la PETICIÓN, no el sonido, y ANTES de mirar el contexto de audio: si
+   se contara después, en la página de pruebas —donde no hay AudioContext— el
+   contador no se movería nunca, la regla se comprobaría en el vacío y saldría
+   verde diciendo nada. */
+CB.audio.emitidos = 0;
 
 CB.audio.NOTAS = {
   do4: 261.63, re4: 293.66, mi4: 329.63, fa4: 349.23, sol4: 392.00,
@@ -2610,9 +2517,10 @@ CB.audio.EFECTOS = {
 };
 
 CB.audio.sfx = function (nombre) {
-  if (!CB.audio.ctx) return false;
   var f = CB.audio.EFECTOS[nombre];
   if (!f) return false;
+  CB.audio.emitidos++;                    // la petición, y antes que el contexto
+  if (!CB.audio.ctx) return false;
   try { f(); } catch (e) { }
   return true;
 };
@@ -5034,9 +4942,33 @@ CB.gen.dinero = {};
 
 CB.gen.dinero.MONEDAS  = [1, 2];                   // euros
 CB.gen.dinero.BILLETES = [5, 10, 20, 50, 100];     // euros
+
+/* Las que hacen 1 euro justo, que es lo que pregunta la equivalencia de E8. La
+   de 1 céntimo no está: cien monedas no es una equivalencia, es una lista. */
 CB.gen.dinero.CENTIMOS = [5, 10, 20, 50];          // AMPLIACIÓN, flagAdulto
 
-CB.gen.dinero.esMoneda  = function (v) { return CB.gen.dinero.MONEDAS.indexOf(v) !== -1; };
+/* Las CINCO que existen como pieza, que son las cinco que hay en un bolsillo y
+   las cinco que tienen fotografía. La de 1 céntimo entra aquí y no arriba porque
+   reconocerla sí tiene sentido; multiplicarla por cien, no. */
+CB.gen.dinero.PIEZAS_CENTIMO = [1, 5, 10, 20, 50];
+
+/* ── UNA PIEZA DE CÉNTIMO SE NOMBRA 'c20', NO 20 ─────────────────────────────
+   Y no es manía de notación: los valores CHOCAN. «5» es a la vez el billete de
+   5 € y la moneda de 5 céntimos, «10», «20» y «50» lo mismo. Con un solo número
+   por pieza, la pregunta «toca la moneda de 20 céntimos» habría aceptado el
+   billete de 20 € como respuesta correcta —y lo habría pintado con la foto del
+   billete, porque el CSS también selecciona por ese número—.
+
+   El precio de la decisión es que la respuesta de esas preguntas NO ES UN
+   NÚMERO, y por eso `40-partida.js` compara aparte y el invariante 1 de
+   `casos-generadores.js` exime a las piezas. Está anotado en los dos sitios. */
+CB.gen.dinero.pieza      = function (c) { return 'c' + c; };
+CB.gen.dinero.esCentimo  = function (v) { return typeof v === 'string' && v.charAt(0) === 'c'; };
+CB.gen.dinero.valorCent  = function (v) { return parseInt(String(v).slice(1), 10); };
+
+CB.gen.dinero.esMoneda  = function (v) {
+  return CB.gen.dinero.esCentimo(v) || CB.gen.dinero.MONEDAS.indexOf(v) !== -1;
+};
 CB.gen.dinero.esBillete = function (v) { return CB.gen.dinero.BILLETES.indexOf(v) !== -1; };
 
 /* Concordancia obligatoria: «1 euro», no «1 euros». Es material escolar; una
@@ -5045,7 +4977,16 @@ CB.gen.dinero.euros = function (v) {
   return v + (v === 1 ? ' euro' : ' euros');
 };
 
+/* SIEMPRE entero + la palabra, NUNCA «0,50 €»: el invariante 3 prohíbe los
+   decimales y en 2.º todavía no se han visto. Y la misma concordancia. */
+CB.gen.dinero.centimos = function (c) {
+  return c + (c === 1 ? ' céntimo' : ' céntimos');
+};
+
 CB.gen.dinero.nombre = function (v) {
+  if (CB.gen.dinero.esCentimo(v)) {
+    return 'la moneda de ' + CB.gen.dinero.centimos(CB.gen.dinero.valorCent(v));
+  }
   if (CB.gen.dinero.esMoneda(v))  return 'la moneda de ' + CB.gen.dinero.euros(v);
   if (CB.gen.dinero.esBillete(v)) return 'el billete de ' + CB.gen.dinero.euros(v);
   return CB.gen.dinero.euros(v);
@@ -5199,14 +5140,52 @@ CB.gen.dinero.E7 = function (rng, D) {
   };
 };
 
-/* ── E8 Céntimos — AMPLIACIÓN, apagada por defecto ──────────────────────── */
+/* ── E8 Céntimos — AMPLIACIÓN, apagada por defecto ──────────────────────────
+   DOS PREGUNTAS, NO UNA, y el reparto no es decorativo.
+
+   La que había —cuántas monedas de X hacen un euro— es aritmética: se contesta
+   dividiendo, y se puede contestar sin haber visto una moneda de 20 céntimos en
+   la vida. Es la mitad del saber, y era la única que había.
+
+   La otra mitad es RECONOCERLA, que es exactamente lo que hace E1 con los euros
+   y lo que hasta 1.20.0 no se podía preguntar de los céntimos porque no había
+   con qué dibujarlos: cinco cuadrados de color idénticos con un número dentro no
+   preguntan «qué moneda es», preguntan «qué número pone». Con las cinco
+   fotografías sí se puede, y entra la de 1 céntimo, que es la única de las cinco
+   que no aparece en ninguna equivalencia.
+
+   En D=1 sale SIEMPRE la de reconocer: llegar al euro desde los céntimos exige
+   una división por 20 que en el primer nivel todavía no toca. */
 CB.gen.dinero.E8 = function (rng, D) {
+  if (D === 1 || CB.util.ent(rng, 1, 2) === 1) return CB.gen.dinero.E8reconocer(rng, D);
+  return CB.gen.dinero.E8equivalencia(rng, D);
+};
+
+CB.gen.dinero.E8reconocer = function (rng, D) {
+  var todas = CB.gen.dinero.PIEZAS_CENTIMO.map(CB.gen.dinero.pieza);
+  var v = CB.util.elegir(rng, todas);
+  return {
+    formato: 'opciones4',
+    consigna: 'Toca ' + CB.gen.dinero.nombre(v) + '.',
+    piezasDinero: true,
+    /* NO ES UN NÚMERO, y es a propósito: ver la cabecera del fichero. */
+    respuesta: v,
+    expr: 'reconocerC' + v,
+    diagnostico: false,
+    contexto: { pieza: v, esMoneda: true, esCentimo: true },
+    distractoresFijos: CB.util.barajar(
+      todas.filter(function (x) { return x !== v; }), rng
+    ).slice(0, 3)
+  };
+};
+
+CB.gen.dinero.E8equivalencia = function (rng, D) {
   var c = CB.util.elegir(rng, CB.gen.dinero.CENTIMOS);
   var cuantas = Math.round(100 / c);
   return {
     formato: 'opciones4',
     /* SIEMPRE entero + la palabra «céntimos». Nunca «0,50 €». */
-    consigna: '¿Cuántas monedas de ' + c + ' céntimos hacen 1 euro?',
+    consigna: '¿Cuántas monedas de ' + CB.gen.dinero.centimos(c) + ' hacen 1 euro?',
     respuesta: cuantas,
     expr: 'cent' + c,
     diagnostico: false
@@ -8148,10 +8127,28 @@ CB.ui.pintarVeta = function (nivel, mundo) {
    tamaño reales de cada billete. No hay ni una imagen en el proyecto —la
    auditoría no admite un solo fichero binario— así que la pieza se dibuja, igual
    que el reloj de arena, las gemas y el terreno. */
+/* ── UNA PIEZA DE DINERO ────────────────────────────────────────────────────
+   LA CIFRA VA EN SU PROPIO NODO desde 1.20.0, y no suelta dentro de la pieza.
+   Mientras la pieza era un cuadrado de color, un nodo de texto centrado se leía
+   perfectamente; encima de una fotografía de una moneda no se lee nada. El
+   `<span>` es lo que permite al CSS darle una cinta opaca debajo de la imagen en
+   vez de encima de ella. `textContent` de la pieza sigue devolviendo «2 €», así
+   que nada de lo que ya la leía se entera.
+
+   LOS CÉNTIMOS VAN POR data-centimos, no por data-valor, porque los valores
+   chocan —«5» es el billete de 5 € y la moneda de 5 céntimos—. Lo explica entero
+   la cabecera de `15-gen-dinero.js`. */
 CB.ui.pieza = function (etiqueta, v) {
-  var el = CB.ui.crear(etiqueta, CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete',
-                       v + ' €');
-  el.setAttribute('data-valor', String(v));
+  var esCent = CB.gen.dinero.esCentimo(v);
+  var el = CB.ui.crear(etiqueta, CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete');
+  if (esCent) {
+    el.setAttribute('data-centimos', String(CB.gen.dinero.valorCent(v)));
+    el.appendChild(CB.ui.crear('span', 'pieza__cifra',
+                               CB.gen.dinero.valorCent(v) + ' c'));
+  } else {
+    el.setAttribute('data-valor', String(v));
+    el.appendChild(CB.ui.crear('span', 'pieza__cifra', v + ' €'));
+  }
   el.setAttribute('aria-label', CB.gen.dinero.nombre(v));
   return el;
 };
@@ -9130,6 +9127,7 @@ CB.pantallas.SIN_SALIR = ['p-portada', 'p-error'];
 CB.pantallas.pila = [];
 CB.pantallas.actual = null;
 CB.pantallas._entrando = null;      // cerrojo de reentrada, ver CB.pantallas.ir
+CB.pantallas._volviendo = false;    // ir() invocada desde atras(): no apila
 
 /* Handlers que un módulo puede registrar para reaccionar al entrar en su
    pantalla: CB.pantallas.alEntrar['p-mapa'] = function (props) {...} */
@@ -9151,7 +9149,7 @@ CB.pantallas.ir = function (id, props) {
     if (el) el.hidden = (CB.pantallas.IDS[i] !== id);
   }
 
-  if (CB.pantallas.actual && CB.pantallas.actual !== id) {
+  if (CB.pantallas.actual && CB.pantallas.actual !== id && !CB.pantallas._volviendo) {
     CB.pantallas.pila.push(CB.pantallas.actual);
     if (CB.pantallas.pila.length > 12) CB.pantallas.pila.shift();
   }
@@ -9214,40 +9212,55 @@ CB.pantallas.ir = function (id, props) {
   return id;
 };
 
-/* Vuelve a la pantalla anterior; si no hay, al mapa (o a la portada si aún no
-   hay perfil activo). Nunca deja al niño en un callejón sin salida. */
+/* Pantallas de flujo: se sale de ellas hacia DELANTE y no se vuelve nunca.
+   p-fin entra en la lista por lo mismo que las demás: es el final de una
+   expedición terminada, y volver a él desde el mapa muestra el resumen de una
+   partida que ya no existe. */
+CB.pantallas.SIN_VUELTA = ['p-partida', 'p-reparacion', 'p-descanso', 'p-jefe',
+                           'p-error', 'p-fin'];
+
+/* Vuelve a la pantalla anterior; si no hay ninguna utilizable, al mapa (o a la
+   portada, si ya estamos en el mapa o aún no hay perfil). Nunca deja al niño en
+   un callejón sin salida.
+
+   EL «SALIR» DEL MAPA QUE NO HACÍA NADA. Antes se sacaba UNA sola entrada de la
+   pila y, si resultaba ser una pantalla de flujo, se caía al mapa — estando ya
+   en el mapa. Es decir: destino === actual, se repintaba la misma pantalla y el
+   botón parecía muerto. Y no era un caso raro sino EL camino normal: portada →
+   mapa → partida → fin → SALIR deja la pila en [portada, mapa] con el mapa
+   delante, así que el siguiente Salir se sacaba «p-mapa» a sí mismo. Lo mismo
+   pasaba al salir del jefe o de una partida abandonada.
+
+   Ahora se descartan TODAS las entradas que no sirven —las de flujo y la propia
+   pantalla actual, que la pila puede contener porque atras() no apila— y solo
+   cuando la pila se agota se recurre al destino de reserva. */
 CB.pantallas.atras = function () {
-  /* EL MANEJADOR DE SALIDA, QUE AQUÍ NO SE EJECUTABA. ir() sí lo llama (arriba),
-     atras() no lo hacía en ningún punto, y solo hay dos registrados: el de
-     p-reparacion, que apaga los temporizadores de la tarjeta, y el de p-partida,
-     que para el reloj. Es decir, la mitad de las salidas del juego no limpiaban
-     nada, y el síntoma no era un error sino un salvavidas que a los 25 s se
-     ponía a leer los tres pasos de una reparación ENCIMA DE OTRA PANTALLA.
-
-     Va lo PRIMERO de todo, antes de calcular el destino: estas tres líneas leen
-     CB.pantallas.actual y unas líneas más abajo atras() lo reescribe. */
-  if (CB.pantallas.actual && CB.pantallas.alSalir[CB.pantallas.actual]) {
-    try { CB.pantallas.alSalir[CB.pantallas.actual](); } catch (e) { }
+  var destino = null;
+  while (CB.pantallas.pila.length) {
+    var cand = CB.pantallas.pila.pop();
+    if (CB.pantallas.SIN_VUELTA.indexOf(cand) !== -1) continue;
+    if (cand === CB.pantallas.actual) continue;
+    destino = cand;
+    break;
+  }
+  if (!destino) {
+    destino = (!CB.perfil || CB.pantallas.actual === 'p-mapa') ? 'p-portada' : 'p-mapa';
   }
 
-  var anterior = CB.pantallas.pila.pop();
-  var destino = anterior || (CB.perfil ? 'p-mapa' : 'p-portada');
-  /* No se vuelve nunca a una pantalla de flujo: se sale de ellas hacia delante */
-  if (destino === 'p-partida' || destino === 'p-reparacion' ||
-      destino === 'p-descanso' || destino === 'p-jefe' || destino === 'p-error') {
-    destino = CB.perfil ? 'p-mapa' : 'p-portada';
+  /* SE DELEGA EN ir(), que es lo que debió hacerse desde el principio. Aquí
+     estaban copiados a mano el manejador de salida (E59, y llegó dos versiones
+     tarde), el barrido de `hidden` y el aviso al bus; y NO estaban el foco en el
+     <h1>, el aria-labelledby, el role="main" ni el cerrojo de reentrada. O sea
+     que salir con «Salir» dejaba el foco en un botón ya oculto y la pantalla
+     nueva sin landmark, mientras entrar con ir() hacía las dos cosas bien.
+     _volviendo es lo único que atras() necesita de propio: impide que ir() apile
+     la pantalla que estamos abandonando, que convertiría atrás en adelante. */
+  CB.pantallas._volviendo = true;
+  try {
+    return CB.pantallas.ir(destino);
+  } finally {
+    CB.pantallas._volviendo = false;
   }
-  var i;
-  for (i = 0; i < CB.pantallas.IDS.length; i++) {
-    var el = document.getElementById(CB.pantallas.IDS[i]);
-    if (el) el.hidden = (CB.pantallas.IDS[i] !== destino);
-  }
-  CB.pantallas.actual = destino;
-  if (CB.pantallas.alEntrar[destino]) {
-    try { CB.pantallas.alEntrar[destino]({}); } catch (e) { }
-  }
-  CB.bus.emitir('pantalla', destino);
-  return destino;
 };
 
 /* Pantalla de error: se llama desde window.onerror y desde unhandledrejection */
@@ -10558,6 +10571,16 @@ CB.partida.pintarRespuesta = function (item) {
       });
       opciones.push({ valor: item.respuesta, texto: item.termino, codigoError: null });
       opciones = CB.util.barajar(opciones, e.rng);
+    } else if (item.distractoresFijos) {
+      /* EL GENERADOR YA HA ELEGIDO LAS TRES, y antes se llamaba igualmente a
+         CB.distractores.para() para tirar el resultado dos líneas después. Con
+         los euros solo sobraba trabajo; con los céntimos rompe, porque la
+         respuesta es 'c20' y el motor de distractores hace aritmética con ella.
+         Un `else if` en vez de un `if` dentro. */
+      opciones = item.distractoresFijos.slice(0, 3)
+        .map(function (v) { return { valor: v, codigoError: null }; })
+        .concat([{ valor: item.respuesta, codigoError: null }]);
+      opciones = CB.util.barajar(opciones, e.rng);
     } else {
       var d = CB.distractores.para(item, e.rng);
       if (d.formato === 'teclado') {
@@ -10567,12 +10590,6 @@ CB.partida.pintarRespuesta = function (item) {
         return;
       }
       opciones = d.opciones;
-      if (item.distractoresFijos) {
-        opciones = item.distractoresFijos.slice(0, 3)
-          .map(function (v) { return { valor: v, codigoError: null }; })
-          .concat([{ valor: item.respuesta, codigoError: null }]);
-        opciones = CB.util.barajar(opciones, e.rng);
-      }
     }
     presentar('opciones4');
     CB.componentes.opciones4(item, opciones, responder, { bloqueoMs: bloqueo });
@@ -10771,6 +10788,13 @@ CB.partida.responder = function (valor, origen, extra) {
   var correcto;
   if (item.respuestaSigno) correcto = (valor === item.respuestaSigno);
   else if (origen === 'ordenar') correcto = (valor === item.respuesta);
+  /* LA RESPUESTA DE «TOCA LA MONEDA DE 20 CÉNTIMOS» NO ES UN NÚMERO: es 'c20',
+     porque el 20 a secas ya lo tiene el billete de 20 €. Sin esta rama,
+     Number('c20') es NaN, NaN === NaN es false y la pregunta se contestaría mal
+     siempre —tocando la moneda correcta—. Es exactamente la forma de fallo que
+     no rompe nada y que solo se ve jugando. Ver la cabecera de
+     `15-gen-dinero.js`. */
+  else if (typeof item.respuesta === 'string') correcto = (String(valor) === item.respuesta);
   else correcto = (Number(valor) === Number(item.respuesta));
 
   /* Anti-azar. La primera línea de evaluar() garantiza que un acierto rápido
@@ -12223,7 +12247,9 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja7);
 
   cont.appendChild(CB.ui.boton('◀ Salir', 'btn-bloque', function () {
-    CB.pantallas.ir(CB.perfil ? 'p-portada' : 'p-portada');
+    /* Sin ternario: las dos ramas decían 'p-portada'. Al panel se entra por la
+       puerta parental de la portada, y a la portada se vuelve, haya perfil o no. */
+    CB.pantallas.ir('p-portada');
   }));
 };
 
@@ -13756,12 +13782,10 @@ CB.arranque = function () {
 
   CB.texturas.generarTodas();
   CB.sprites.precalentar();
-  /* Las siete piezas de dinero, dibujadas y publicadas como --pieza-*. Va aquí,
-     junto a las texturas, porque es lo mismo: un dibujo que se genera una vez al
-     arrancar y que el CSS consume sin saber de dónde sale. Si esto no llegara a
-     ejecutarse, las piezas se quedan con su color plano y su tamaño, que siguen
-     distinguiéndolas: el dibujo mejora el reconocimiento, no lo sostiene. */
-  CB.sprites.generarDinero();
+  /* Aquí se llamaba a CB.sprites.generarDinero(), que componía las siete piezas
+     en SVG y las publicaba como --pieza-*. Desde 1.20.0 las doce piezas son
+     fotografías declaradas en el propio CSS, así que el arranque no compone
+     nada: llegan como llega la hoja de estilos. */
   CB.ui.iniciarParticulas();
 
   var ap = CB.almacen.ajustesDispositivo();
@@ -13852,6 +13876,7 @@ CB.arranque = function () {
   }
 
   CB.arranque.conectarSonidoBotones(document);
+  CB.arranque.conectarSonidoTeclas(document);
 
   /* Guardado ante cierre y cambio de pestaña */
   window.addEventListener('pagehide', function () {
@@ -13938,17 +13963,74 @@ CB.arranque.esRecarga = function (perfil, ahoraMs) {
   return (ahoraMs - g.guardadaTs) < CB.arranque.MS_RECARGA;
 };
 
-/* ── TODOS LOS BOTONES SUENAN AL PULSARSE ─────────────────────────────────────
-   UN SOLO OYENTE, en el documento y en fase de captura. Hay botones en las
+/* ── UN GESTO, UN SONIDO ──────────────────────────────────────────────────────
+   El clic de «pulsar» se pide AL FINAL del gesto y solo si el gesto ha sido
+   mudo. La regla estaba escrita desde el primer día —«un clic que se añade
+   encima de un sonido que ya dice algo no informa, tapa»— pero se aplicaba con
+   una lista de tres excepciones escrita a mano, y la lista se quedó corta el
+   mismo día que se escribió: la tecla del teclado numérico ya trae su «picar» y
+   el ⌫ su «toc», así que cada cifra escrita sonaba DOS veces. Es otra vez el
+   fallo de familia de este proyecto: una regla buena aplicada en tres sitios de
+   cinco.
+
+   Así que no se enumeran los que callan: se mira si ha sonado algo. CB.audio
+   cuenta las peticiones, aquí se apunta el contador antes del gesto y se
+   compara después. Cualquier componente que gane voz propia mañana queda
+   cubierto sin tocar esta lista, porque ya no hay lista.
+
+   EL «DESPUÉS» ES UN setTimeout(0), y no hay forma de evitarlo: en captura
+   todavía no ha sonado nada, y en burbuja bastaría un stopPropagation() de
+   cualquier manejador para dejar mudo ese botón concreto sin que nada fallara.
+   El temporizador conserva la captura —que es lo que da inmunidad— y aun así
+   decide al final. El precio es un retraso de un fotograma como mucho, que en un
+   sonido de 35 ms no se oye; a cambio, el orden queda bien: primero lo que
+   significa algo, y el clic solo si no había nada que significar.
+
+   Queda UNA excepción, la única que el contador no puede ver, porque su sonido
+   llega en OTRO evento: el botón deshabilitado. Durante los 800 ms de
+   construcción el toque prematuro ya tiene su «toc» de madera en `pointerdown`,
+   que además dice lo contrario —«aún no»—, y taparlo con el «sí» sería
+   exactamente perder la distinción que los dos sonidos existen para hacer.
+
+   No hace falta comprobar el ajuste de silencio: CB.audio.sfx ya lo mira, y
+   repetirlo aquí sería la segunda copia de una regla que tiene dueño. */
+CB.arranque.clicDiferido = function (antes) {
+  setTimeout(function () {
+    if (CB.audio.emitidos !== antes) return;      // el gesto ya ha hablado
+    CB.audio.sfx('pulsar');
+  }, 0);
+};
+
+/* CUALQUIER GESTO ABRE EL AUDIO, no solo JUGAR. El contexto de Web Audio nace
+   suspendido y solo un gesto del usuario lo despierta, y hasta ahora los dos
+   únicos sitios que lo despertaban eran los botones JUGAR y «partida tranquila».
+   Es decir: quien empezaba tocando «Ajustes», «Perfiles» o el panel del adulto
+   —o quien navegaba con el teclado— no oía NADA hasta llegar a la portada, con
+   lo que la promesa de que todo botón suena era falsa justo en los primeros
+   toques de la sesión, que son los que enseñan que el juego responde.
+
+   Va aquí, dentro del manejador, y no en clicDiferido: el temporizador ya está
+   fuera del gesto y para el navegador dejaría de contar como activación. Y se
+   llama siempre, no solo la primera vez, porque iniciar() también reanuda un
+   contexto que el navegador haya suspendido por su cuenta. Es lo mismo que hace
+   CB.musica.iniciar() con reintentar(), por el mismo motivo y desde 1.7.0.
+
+   UN EVENTO SINTÉTICO NO DESPIERTA NADA. El navegador solo abre el audio con un
+   gesto de verdad, así que llamar a iniciar() desde un dispatchEvent no puede
+   funcionar: deja un contexto suspendido que nadie va a reanudar. Y de paso
+   mantiene muda la página de pruebas, que dispara veintitantos clics de mentira
+   y no tiene por qué ponerse a pitar. */
+CB.arranque.despertarAudio = function (ev) {
+  if (ev && ev.isTrusted === false) return false;
+  try { CB.audio.iniciar(); } catch (e) { }
+  return true;
+};
+
+/* UN SOLO OYENTE, en el documento y en fase de captura. Hay botones en las
    diecisiete pantallas y la mitad los crea el JS en tiempo de ejecución —el
    teclado, las opciones, las monedas, los cromos, los ajustes—, así que
-   engancharlos uno a uno sería una lista que hay que acordarse de mantener, y de
-   esas ya se han caído varias en este proyecto. Delegar cubre también los que
-   todavía no existen.
-
-   EN CAPTURA a propósito: si un manejador de más abajo llama a
-   stopPropagation(), un oyente en burbuja no llegaría a enterarse y ese botón
-   concreto se quedaría mudo sin que nada fallara.
+   engancharlos uno a uno sería una lista que hay que acordarse de mantener.
+   Delegar cubre también los que todavía no existen.
 
    ESTÁ FUERA DEL DOMContentLoaded, y eso es lo que la hace comprobable: el
    arranque devuelve pronto cuando no hay #btn-jugar —así es como las páginas de
@@ -13957,19 +14039,7 @@ CB.arranque.esRecarga = function (perfil, ahoraMs) {
    ejecuta EL MISMO código de registro que el juego, y no una imitación.
 
    Mismo cerrojo por atributo que CB.componentes.conectarToc(), y por el mismo
-   motivo: llamarla dos veces dejaría dos oyentes y el clic sonaría doble.
-
-   TRES EXCEPCIONES, y las tres porque ya suena algo:
-
-   · el botón deshabilitado no suena. Durante los 800 ms de construcción el toque
-     prematuro ya tiene su «toc» de madera, que además dice otra cosa: «aún no».
-     Dos sonidos a la vez convertirían esa distinción en ruido.
-   · las monedas y los billetes traen su propio «gema» al cogerse.
-   · el botón de sonido no se oye a sí mismo: sonaría justo el clic que pide que
-     no suene nada.
-
-   No hace falta comprobar el ajuste de silencio: CB.audio.sfx ya lo mira, y
-   repetirlo aquí sería la segunda copia de una regla que tiene dueño. */
+   motivo: llamarla dos veces dejaría dos oyentes y el clic sonaría doble. */
 CB.arranque.conectarSonidoBotones = function (raiz) {
   if (!raiz) return false;
   var marca = raiz.documentElement || raiz;
@@ -13981,9 +14051,71 @@ CB.arranque.conectarSonidoBotones = function (raiz) {
     if (!b || !b.closest) return;
     b = b.closest('button');
     if (!b || b.disabled) return;
-    if (b.classList.contains('moneda') || b.classList.contains('billete')) return;
-    if (b.getAttribute('data-accion') === 'sonido') return;
-    CB.audio.sfx('pulsar');
+    CB.arranque.despertarAudio(ev);
+    CB.arranque.clicDiferido(CB.audio.emitidos);
+  }, true);
+  return true;
+};
+
+/* ── Y LAS TECLAS TAMBIÉN ─────────────────────────────────────────────────────
+   Se puede jugar una partida entera solo con el teclado —es criterio de HECHO de
+   F8, no una comodidad—, y esa partida se jugaba en un silencio que la del dedo
+   ya no tiene. Con el mapa de PLAN §16.5 delante: las cifras del teclado
+   numérico sí sonaban («picar»), porque el sonido lo pone el componente; pero
+   Enter, Escape, las flechas que mueven el foco por la rejilla, el Tab, la L de
+   leer y la P de pista no sonaban nunca, y fuera de las tres pantallas de juego
+   NINGUNA tecla sonaba, porque el manejador de 06-a11y.js devuelve pronto.
+
+   La regla es la misma de arriba —toda tecla suena una vez— y por eso comparte
+   el contador. Lo que cambia son los cuatro casos que NO son un gesto sobre el
+   juego:
+
+   · la autorepetición. Un dedo apoyado en el 7 dispara treinta teclas por
+     segundo: eso no es pulsar treinta veces, y sonaría a ametralladora.
+   · los modificadores solos y los atajos del navegador. Shift no hace nada por
+     su cuenta —y sonaría dos veces en cada mayúscula— y Ctrl+R es del navegador,
+     no del juego.
+   · escribir en un campo. El único que hay es el de la puerta parental, y ahí la
+     confirmación de que la tecla ha entrado es el propio carácter, que se ve. Un
+     clic por letra es ruido, no información.
+   · Enter y Espacio sobre algo activable. El navegador convierte esa tecla en un
+     clic de verdad, así que el oyente de arriba ya se encarga; sin esta salida
+     sonaría dos veces. Con Espacio no vale fiarse del contador: el clic no llega
+     hasta que se SUELTA la tecla, mucho después de que el temporizador haya
+     decidido. */
+CB.arranque.TECLAS_MUDAS = ['Shift', 'Control', 'Alt', 'AltGraph', 'Meta',
+  'CapsLock', 'NumLock', 'ScrollLock', 'ContextMenu', 'Dead', 'Unidentified'];
+
+CB.arranque.esCampo = function (el) {
+  if (!el || !el.tagName) return false;
+  var t = el.tagName;
+  if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return true;
+  return el.isContentEditable === true;
+};
+
+CB.arranque.esActivable = function (el) {
+  if (!el || !el.tagName) return false;
+  var t = el.tagName;
+  if (t === 'BUTTON' || t === 'SUMMARY') return true;
+  return t === 'A' && el.hasAttribute('href');
+};
+
+CB.arranque.conectarSonidoTeclas = function (raiz) {
+  if (!raiz) return false;
+  var marca = raiz.documentElement || raiz;
+  if (marca.getAttribute && marca.getAttribute('data-clic-tecla') === 'si') return false;
+  if (marca.setAttribute) marca.setAttribute('data-clic-tecla', 'si');
+
+  raiz.addEventListener('keydown', function (ev) {
+    if (ev.repeat) return;
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (CB.arranque.TECLAS_MUDAS.indexOf(ev.key) !== -1) return;
+    if (CB.arranque.esCampo(ev.target)) return;
+    if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+      if (CB.arranque.esActivable(raiz.activeElement || document.activeElement)) return;
+    }
+    CB.arranque.despertarAudio(ev);
+    CB.arranque.clicDiferido(CB.audio.emitidos);
   }, true);
   return true;
 };

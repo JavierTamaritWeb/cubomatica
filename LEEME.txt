@@ -1,5 +1,5 @@
 CUBOMATICA — Matematicas de 2.o de Primaria
-Version 1.18.0
+Version 1.21.0
 
 1. Abre la carpeta "dist" y haz doble clic en "index.html". Se abre en el
    navegador. No hay que instalar nada.
@@ -22,4 +22,8 @@ Si algo no suena o no se guarda, abre con doble clic el fichero
 
 La carpeta ocupa unos 43 MB, casi todo musica. Cabe en cualquier memoria USB,
 pero no cabe en un correo. Lo que el navegador carga al abrir el juego son
-319 KB: arranca igual de rapido en un ordenador viejo.
+361 KB: arranca igual de rapido en un ordenador viejo.
+
+8. Las monedas y los billetes que salen en el juego son fotografias de los de
+   verdad, a escala: la moneda de 10 centimos se ve mas pequena que la de 5,
+   como en el bolsillo. Son 64 KB en total y estan en la carpeta "img".

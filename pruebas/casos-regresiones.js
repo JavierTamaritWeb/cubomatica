@@ -153,7 +153,34 @@
      E90 el marcador saltaba de 12 a 15 sin que se viera         AQUÍ
          cambiar: la ganancia se contaba fuera del número
      E91 los botones se pulsaban en silencio: sonaba lo que      AQUÍ
-         pasa, nunca el acto de tocar
+         pasa, nunca el acto de tocar — y luego, con la lista
+         de excepciones corta, cada cifra sonaba DOS veces
+     E92 con el teclado se jugaba mudo, y el audio no se        AQUÍ
+         abría hasta pulsar JUGAR
+     E93 la moneda de 5 céntimos y el billete de 5 € eran el     AQUÍ
+         mismo «5»: misma foto, y la respuesta correcta se
+         corregía con Number('c5'), que es NaN
+     E94 el «Salir» del mapa no hacía nada: atras() sacaba UNA    AQUÍ
+         entrada de la pila, la descartaba por ser de flujo y
+         caía al mapa estando ya en el mapa
+     E95 la .zona-superior centraba Y llevaba scroll: cuando el   AQUÍ
+         enunciado no cabía, el centrado repartía el sobrante a
+         los dos lados y lo de arriba quedaba fuera del alcance
+         de la barra (scrollTop no puede ser negativo)
+     E96 el modo proyección escribía --lado-respuesta a mano y    AQUÍ
+         se saltaba el min() de los dos ejes: en un proyector de
+         1200x700 la fila del OK caía fuera de la pantalla
+     E97 el teclado se desplegaba a 6 columnas por ALTURA sin     AQUÍ
+         mirar la anchura: en 360x640 dos columnas se salían
+     E98 la zona de la respuesta no tenía barra: donde el 3x4     AQUÍ
+         no cabe (320x480, o proyección en un móvil) el OK era
+         inalcanzable y la pregunta no se podía contestar
+     E99 «CUBOMÁTICA» medía 337 px con sus rellenos: en una      AQUÍ
+         ventana de 320 el título salía descabezado por los dos
+         lados
+     E100 los cuatro botones de la barra no caben en 320 px: el   AQUÍ
+         de Sonido —el único que apaga la música— quedaba
+         cortado contra el borde derecho
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -3612,26 +3639,42 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
     'E89 · la retícula deja que el ancho lo mande la pieza');
 
   /* ── Y NINGUNA DENOMINACIÓN SE DIBUJA IGUAL QUE OTRA ──────────────────────
-     Dibujar las opciones como piezas no arregla nada si las siete piezas son el
+     Dibujar las opciones como piezas no arregla nada si las doce piezas son el
      mismo rectángulo: eso es el fallo original con otro traje. Las de verdad se
-     reconocen por el color y por el tamaño antes que por la cifra, y eso es lo
-     que se comprueba aquí — que las siete tengan huella distinta.
+     reconocen por la imagen y por el tamaño antes que por la cifra, y eso es lo
+     que se comprueba aquí — que las doce tengan huella distinta.
+
+     LA HUELLA CAMBIÓ EN 1.20.0 y el motivo importa. Era
+     `backgroundColor|width|boxShadow`, que servía cuando la pieza ERA su color y
+     su bisel. Ahora la pieza es una fotografía: los biseles se han ido —dibujaban
+     un marco cuadrado sobre el canto redondo de la moneda— y dos piezas pueden
+     compartir color de respaldo sin parecerse en nada. Lo que las distingue hoy
+     es la IMAGEN y la CAJA, así que eso es lo que se mide. Una comprobación que
+     sigue midiendo lo que ya no decide nada es una comprobación verde que no
+     mira.
 
      Se lee el estilo CALCULADO, que devuelve la longitud declarada aunque el
      elemento no tenga caja, así que esto vale dentro de la maqueta oculta. */
   var caja = CB.ui.crear('div');
   document.body.appendChild(caja);
-  var huellas = {}, repes = [];
-  [1, 2, 5, 10, 20, 50, 100].forEach(function (v) {
+  var huellas = {}, repes = [], sinDeclarar = [], urls = [];
+  var TODAS = [1, 2, 5, 10, 20, 50, 100].concat(
+    CB.gen.dinero.PIEZAS_CENTIMO.map(CB.gen.dinero.pieza));
+  TODAS.forEach(function (v) {
     var p = CB.ui.pieza('span', v);
     caja.appendChild(p);
     var cs = getComputedStyle(p);
-    var huella = cs.backgroundColor + '|' + cs.width + '|' + cs.boxShadow;
+    var m = /url\(["']?([^"')]+)/.exec(cs.backgroundImage);
+    if (!m) sinDeclarar.push(v + ' → ' + cs.backgroundImage);
+    else urls.push([v, m[1]]);
+    var huella = cs.backgroundImage + '|' + cs.width + '|' + cs.height;
     if (huellas[huella]) repes.push(v + ' igual que ' + huellas[huella]);
     huellas[huella] = v;
   });
+  t.igual(sinDeclarar.length, 0,
+    'E89 · las doce piezas declaran su fotografía', sinDeclarar.join(' · '));
   t.igual(repes.length, 0,
-    'E89 · las siete piezas se dibujan distintas entre sí', repes.join(' · '));
+    'E89 · las doce piezas se dibujan distintas entre sí', repes.join(' · '));
   document.body.removeChild(caja);
 
   /* Y NO SE ROMPE LO DE ANTES: una pregunta normal sigue dando botones. */
@@ -3644,6 +3687,32 @@ CB.pruebas.suite('E89 · reconocer una moneda enseña la moneda', function () {
 
   CB.ui.vaciar(cont);
   if (CB.partida) CB.partida.bloqueado = false;
+
+  /* ── Y QUE EL FICHERO EXISTA, QUE NO ES LO MISMO ──────────────────────────
+     `getComputedStyle` devuelve la url tal cual esté escrita: una ruta mal
+     puesta se lee igual de bien que una buena y `background-image` NUNCA vale
+     `none` por eso —solo vale `none` si la variable no existe—. Es decir: la
+     comprobación de arriba, sola, pasaría en verde con las doce fotos borradas.
+     Lo único que distingue una ruta que llega de una que no es CARGARLA, así que
+     se cargan las doce y se mira `naturalWidth`.
+
+     La suite espera esta promesa (`ejecutor.js` la aguarda). Escrito como un
+     `onload` suelto, cualquier cosa que afirmase dentro llegaría después de que
+     el resumen estuviera impreso, que es la forma clásica de escribir una
+     comprobación que no comprueba. */
+  return Promise.all(urls.map(function (par) {
+    return new Promise(function (listo) {
+      var img = new Image();
+      img.onload = function () { listo(img.naturalWidth > 0 ? null : par[0]); };
+      img.onerror = function () { listo(par[0]); };
+      img.src = par[1];
+    });
+  })).then(function (fallidas) {
+    var rotas = fallidas.filter(function (x) { return x !== null; });
+    t.igual(rotas.length, 0,
+      'E89 · y las doce fotografías se descargan de verdad',
+      'no llegan: ' + rotas.join(', '));
+  });
 });
 
 /* ══ E90 · El marcador cambiaba de golpe ═════════════════════════════════════
@@ -3740,6 +3809,18 @@ CB.pruebas.suite('E90 · la cifra sube, y aterriza donde debe', function () {
 
    Lo que se vigila aquí no es que suene: es CUÁNDO NO tiene que sonar. Un clic
    que se añade encima de un sonido que ya dice algo no informa, tapa.
+
+   Y ESO ES LO QUE PASÓ, con la regla ya escrita en este mismo comentario. La
+   primera versión enumeraba a mano los tres botones que callan —el
+   deshabilitado, la moneda, el de silenciar— y la lista nació corta: la tecla
+   del teclado numérico ya trae su «picar» y el ⌫ su «toc», así que cada cifra
+   que escribía un niño sonaba DOS veces, con el clic tapando justo el sonido que
+   dice algo. Una regla buena aplicada en tres sitios de cinco, que es la familia
+   de fallos de la que este proyecto ya tiene tres (E44, E45, E46).
+
+   Ahora no hay lista: CB.audio cuenta las peticiones y el clic solo suena si el
+   gesto ha sido mudo. La comprobación que lo vigila es la del teclado de verdad,
+   más abajo — no la de un botón inventado.
    ────────────────────────────────────────────────────────────────────────── */
 
 CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function () {
@@ -3782,12 +3863,18 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
       clic.tipo + ' contra ' + toc.tipo);
   }
 
-  /* ── LAS EXCEPCIONES, que es lo que de verdad se puede romper ────────────
+  /* ── LA REGLA, que es lo que de verdad se puede romper ───────────────────
      El oyente vive en el documento, así que se prueba disparando clics de verdad
-     sobre botones de verdad y contando cuántas veces se pide el sonido. */
+     sobre botones de verdad y apuntando qué sonidos se piden.
+
+     SE ENVUELVE CB.audio.sfx, NO SE SUSTITUYE. La regla mira CB.audio.emitidos,
+     y ese contador solo se mueve si la petición llega al de verdad: un espía que
+     se limite a anotar el nombre deja el contador quieto, el clic genérico se
+     cree que el gesto ha sido mudo y suena igual. La suite mediría entonces una
+     conducta que el juego no tiene — y en verde, que es lo caro. */
   var sfxPrevio = CB.audio.sfx;
   var pedidos = [];
-  CB.audio.sfx = function (n) { pedidos.push(n); };
+  CB.audio.sfx = function (n) { pedidos.push(n); return sfxPrevio(n); };
 
   /* SE CONECTA EL MISMO CÓDIGO QUE USA EL JUEGO, no una imitación. El oyente
      vive fuera del DOMContentLoaded justamente para esto: el arranque devuelve
@@ -3803,39 +3890,763 @@ CB.pruebas.suite('E91 · el clic de pulsar suena, y calla donde debe', function 
   var caja = CB.ui.crear('div');
   document.body.appendChild(caja);
 
-  function pulsar(el) { pedidos = []; el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return pedidos; }
+  /* LA DECISIÓN SE TOMA AL FINAL DEL GESTO, en un setTimeout(0). Mirar `pedidos`
+     en la línea siguiente al clic mediría siempre cero, y las ocho
+     comprobaciones de abajo saldrían verdes contra cualquier código: es el mismo
+     error que ya salió caro en E90 con la cuenta del marcador. */
+  function pulsar(el) {
+    pedidos = [];
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    return new Promise(function (listo) {
+      setTimeout(function () { listo(pedidos.join(',')); }, 25);
+    });
+  }
 
   var normal = CB.ui.crear('button', 'btn-bloque', 'Vale');
   caja.appendChild(normal);
-  t.ok(pulsar(normal).indexOf('pulsar') !== -1,
-    'E91 · un botón cualquiera suena al pulsarse');
 
   var apagado = CB.ui.crear('button', 'btn-bloque', 'No');
   apagado.disabled = true;
   caja.appendChild(apagado);
-  t.igual(pulsar(apagado).indexOf('pulsar'), -1,
-    'E91 · un botón deshabilitado no suena: ahí manda el «toc» de construcción');
 
-  var moneda = CB.ui.pieza('button', 2);
-  caja.appendChild(moneda);
-  t.igual(pulsar(moneda).indexOf('pulsar'), -1,
-    'E91 · una moneda no suena dos veces: ya trae su «gema»');
-
-  var silencio = CB.ui.crear('button', 'btn-bloque', 'Sonido');
-  silencio.setAttribute('data-accion', 'sonido');
-  caja.appendChild(silencio);
-  t.igual(pulsar(silencio).indexOf('pulsar'), -1,
-    'E91 · el botón de silenciar no se oye a sí mismo');
-
-  /* Y desde DENTRO de un botón: los botones rotulados tienen un icono y una
-     palabra, así que el objeto del clic casi nunca es el botón. */
+  /* Los botones rotulados llevan un icono y una palabra dentro, así que el
+     objeto del clic casi nunca es el botón. */
   var rotulado = CB.ui.crear('button', 'btn-bloque btn-bloque--rotulado');
   var dentro = CB.ui.crear('span', 'btn-bloque__rotulo', 'Pausa');
   rotulado.appendChild(dentro);
   caja.appendChild(rotulado);
-  t.ok(pulsar(dentro).indexOf('pulsar') !== -1,
-    'E91 · tocar el rótulo de dentro cuenta como tocar el botón');
 
-  CB.audio.sfx = sfxPrevio;
+  var moneda = CB.ui.pieza('button', 2);
+  moneda.addEventListener('click', function () { CB.audio.sfx('gema'); });
+  caja.appendChild(moneda);
+
+  var teclado = CB.ui.crear('div');
+  caja.appendChild(teclado);
+
+  return pulsar(normal).then(function (p) {
+    t.igual(p, 'pulsar', 'E91 · un botón cualquiera suena al pulsarse');
+    return pulsar(apagado);
+  }).then(function (p) {
+    t.igual(p, '',
+      'E91 · un botón deshabilitado no suena: ahí manda el «toc» de construcción');
+    return pulsar(dentro);
+  }).then(function (p) {
+    t.igual(p, 'pulsar', 'E91 · tocar el rótulo de dentro cuenta como tocar el botón');
+    return pulsar(moneda);
+  }).then(function (p) {
+    /* Ya no hay una lista de clases exentas: la moneda calla porque SUENA, no
+       porque esté escrita en una excepción. La diferencia importa el día que
+       alguien añada una pieza nueva. */
+    t.igual(p, 'gema', 'E91 · una moneda no suena dos veces: ya trae su «gema»');
+
+    /* ── EL TECLADO NUMÉRICO DE VERDAD ────────────────────────────────────
+       Aquí estaba el fallo, y por eso no se prueba con un botón inventado que
+       llame a sfx: se monta el componente que usa el juego y se pulsa su tecla.
+       Un banco de pruebas hecho a mano habría estado de acuerdo con el código
+       equivocado, que es exactamente lo que enseñó E42. */
+    CB.componentes.tecladoBloques({ respuesta: 7 }, function () { },
+      { contenedor: teclado, vaciar: false, bloqueoMs: 0 });
+    return new Promise(function (listo) { setTimeout(listo, 30); });
+  }).then(function () {
+    var siete = teclado.querySelector('[data-tecla="7"]');
+    if (!t.ok(!!siete, 'E91 · el teclado numérico de verdad está montado')) return '';
+    return pulsar(siete);
+  }).then(function (p) {
+    t.igual(p, 'picar',
+      'E91 · una cifra suena UNA vez: el «picar» que ya trae, sin clic encima');
+    var borrar = teclado.querySelector('[data-tecla="borrar"]');
+    return borrar ? pulsar(borrar) : '';
+  }).then(function (p) {
+    /* El «toc» dice «aún no» y el clic dice «sí». Sonando a la vez no dicen
+       ninguna de las dos cosas: dicen ruido. */
+    t.igual(p, 'toc', 'E91 · y el ⌫ suena a «toc», no a «toc» y clic a la vez');
+
+    CB.audio.sfx = sfxPrevio;
+    document.body.removeChild(caja);
+    if (CB.partida) CB.partida.bloqueado = false;
+  });
+});
+
+/* ══ E92 · Con el teclado se jugaba en silencio ══════════════════════════════
+
+   Se puede jugar una partida entera solo con el teclado —es criterio de HECHO de
+   F8, no una comodidad— y esa partida se jugaba muda. Las cifras sí sonaban,
+   porque el «picar» lo pone el componente; pero Enter, Escape, el Tab, las
+   flechas que mueven el foco por la rejilla, la L de leer y la P de pista no
+   sonaban nunca, y fuera de las tres pantallas de juego no sonaba NINGUNA tecla,
+   porque el manejador de 06-a11y.js devuelve pronto. Quien juega con el teclado
+   —que casi siempre es quien no puede usar el dedo— tenía la mitad de la
+   confirmación que tiene el resto.
+
+   Lo que se vigila es lo mismo que en E91 y por eso comparten contador: que
+   suene UNA vez. Y aquí hay dos maneras nuevas de sonar dos veces —Enter sobre
+   un botón, que el navegador convierte en un clic de verdad, y el dedo apoyado
+   en una tecla, que dispara treinta por segundo— más una de sonar donde no debe:
+   escribiendo en la puerta parental.
+   ────────────────────────────────────────────────────────────────────────── */
+
+CB.pruebas.suite('E92 · las teclas también suenan, una vez cada una', function () {
+  var t = CB.pruebas;
+
+  var sfxPrevio = CB.audio.sfx;
+  var pedidos = [];
+  CB.audio.sfx = function (n) { pedidos.push(n); return sfxPrevio(n); };
+
+  var conectado = CB.arranque.conectarSonidoTeclas(document);
+  t.ok(conectado || document.documentElement.getAttribute('data-clic-tecla') === 'si',
+    'E92 · el oyente de teclado está conectado al documento');
+  t.igual(CB.arranque.conectarSonidoTeclas(document), false,
+    'E92 · y conectarlo dos veces no deja dos oyentes');
+
+  /* ── CUALQUIER GESTO ABRE EL AUDIO, NO SOLO JUGAR ───────────────────────
+     El contexto de Web Audio nace suspendido y solo lo despierta un gesto del
+     usuario, y los dos únicos sitios que lo despertaban eran los botones JUGAR y
+     «partida tranquila». Quien empezaba tocando «Ajustes» o «Perfiles» —o quien
+     navegaba con el teclado— no oía NADA en los primeros toques de la sesión,
+     que son justamente los que enseñan que el juego responde. Se ve poco porque
+     el camino que más se anda pasa por JUGAR.
+
+     Se sustituye CB.audio.iniciar para contar: abrir un AudioContext de verdad
+     en la suite dejaría el resto de comprobaciones pitando. */
+  var iniciarPrevio = CB.audio.iniciar;
+  var aperturas = 0;
+  CB.audio.iniciar = function () { aperturas++; return null; };
+
+  t.igual(CB.arranque.despertarAudio({ isTrusted: true }), true,
+    'E92 · un gesto de verdad abre el audio');
+  t.igual(aperturas, 1, 'E92 · y lo abre llamando a iniciar(), no por su cuenta');
+  t.igual(CB.arranque.despertarAudio({ isTrusted: false }), false,
+    'E92 · un evento sintético no abre nada: el navegador no lo permitiría');
+  t.igual(aperturas, 1, 'E92 · y no llega a iniciar()');
+  CB.audio.iniciar = iniciarPrevio;
+
+  var caja = CB.ui.crear('div');
+  document.body.appendChild(caja);
+
+  var campo = CB.ui.crear('input');
+  caja.appendChild(campo);
+  var boton = CB.ui.crear('button', 'btn-bloque', 'Vale');
+  caja.appendChild(boton);
+
+  /* Y que el oyente lo LLAME, que es la mitad que se puede caer sin que nada
+     falle: la función podría estar perfecta y no invocarla nadie — eso fue E41
+     entero. Se cuenta a través de CB.arranque, que es como la busca el oyente. */
+  var despertarPrevio = CB.arranque.despertarAudio;
+  var despertados = 0;
+  CB.arranque.despertarAudio = function () { despertados++; return true; };
+
+  function teclear(opciones, destino) {
+    pedidos = [];
+    (destino || document).dispatchEvent(new KeyboardEvent('keydown', {
+      key: opciones.key,
+      bubbles: true,
+      repeat: !!opciones.repeat,
+      ctrlKey: !!opciones.ctrl,
+      altKey: !!opciones.alt,
+      metaKey: !!opciones.meta
+    }));
+    return new Promise(function (listo) {
+      setTimeout(function () { listo(pedidos.join(',')); }, 25);
+    });
+  }
+
+  return teclear({ key: 'ArrowRight' }).then(function (p) {
+    t.igual(p, 'pulsar', 'E92 · una tecla cualquiera suena');
+    t.ok(despertados > 0, 'E92 · y la tecla pasa por despertarAudio antes de sonar');
+    return teclear({ key: 'Escape' });
+  }).then(function (p) {
+    t.igual(p, 'pulsar', 'E92 · y las que no escriben nada también: Escape entra');
+    return teclear({ key: '7', repeat: true });
+  }).then(function (p) {
+    t.igual(p, '',
+      'E92 · el dedo apoyado en una tecla no dispara una ametralladora');
+    return teclear({ key: 'Shift' });
+  }).then(function (p) {
+    t.igual(p, '', 'E92 · un modificador solo no es un gesto: sonaría en cada mayúscula');
+    return teclear({ key: 'r', ctrl: true });
+  }).then(function (p) {
+    t.igual(p, '', 'E92 · Ctrl+R es del navegador, no del juego');
+    return teclear({ key: '4' }, campo);
+  }).then(function (p) {
+    /* La puerta parental es el único campo de texto del juego. Ahí la
+       confirmación de que la tecla ha entrado es el carácter, que se ve. */
+    t.igual(p, '', 'E92 · escribir en un campo no es pulsar un mando');
+
+    /* ── LO QUE YA SUENA, CALLA ───────────────────────────────────────────
+       Es la misma regla de E91 y el mismo contador. No se usa aquí el puente
+       de verdad —CB.a11y.conectarTeclado()— porque no tiene forma de quitarse:
+       registrarlo en la suite dejaría un oyente que responde a todas las teclas
+       que disparen las demás suites. Se imita lo único que importa de él: que
+       durante el gesto suene algo. */
+    var propia = function () { CB.audio.sfx('toc'); };
+    document.addEventListener('keydown', propia);
+    return teclear({ key: '7' }).then(function (q) {
+      document.removeEventListener('keydown', propia);
+      return q;
+    });
+  }).then(function (p) {
+    t.igual(p, 'toc', 'E92 · una tecla con voz propia no lleva clic encima');
+
+    /* ── ENTER SOBRE UN BOTÓN ─────────────────────────────────────────────
+       El navegador lo convierte en un clic de verdad, y de ese ya se encarga el
+       oyente de E91. Sin esta salida, cada Enter del teclado sonaría dos veces:
+       el mismo fallo que se acaba de arreglar, entrando por la otra puerta. */
+    boton.focus();
+    var conFoco = document.activeElement === boton;
+    if (!t.ok(conFoco, 'E92 · el botón de prueba se ha podido enfocar')) return '';
+    return teclear({ key: 'Enter' });
+  }).then(function (p) {
+    t.igual(p, '', 'E92 · Enter sobre un botón calla: ya suena el clic que provoca');
+    return teclear({ key: ' ' });
+  }).then(function (p) {
+    /* Con Espacio no vale fiarse del contador: el clic no llega hasta que se
+       SUELTA la tecla, mucho después de que el temporizador haya decidido. */
+    t.igual(p, '', 'E92 · y el Espacio igual, que además activa al soltarse');
+
+    if (boton.blur) boton.blur();
+    CB.arranque.despertarAudio = despertarPrevio;
+    CB.audio.sfx = sfxPrevio;
+    document.body.removeChild(caja);
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E93 · La moneda de 5 céntimos y el billete de 5 € eran el mismo «5»
+   ══════════════════════════════════════════════════════════════════════════
+   Al meter las monedas de céntimo, lo natural era llamarlas por su número: 5,
+   10, 20, 50. Y ahí está el choque, porque esos cuatro números YA SON los cuatro
+   billetes. Dos consecuencias, y la segunda es la mala:
+
+     · el CSS selecciona la fotografía por ese número, así que «la moneda de 20
+       céntimos» se habría pintado con la foto del billete de 20 €;
+
+     · y la corrección de `40-partida.js` compara con `Number(valor) ===
+       Number(item.respuesta)`, que para dos piezas distintas con el mismo número
+       da CIERTO. Tocar el billete de 5 € habría acertado la pregunta «toca la
+       moneda de 5 céntimos».
+
+   La salida fue nombrarlas 'c5' — y eso abre el fallo simétrico, que es el que
+   de verdad se cazó aquí: `Number('c5')` es NaN, `NaN === NaN` es falso, y
+   entonces la pregunta se falla SIEMPRE, incluso tocando la moneda correcta. Un
+   nivel entero imposible de superar, sin un solo error en consola.
+
+   Por eso este guardián no mira el código: sirve una partida de verdad y le pide
+   a `CB.partida.responder` que corrija, que es el único sitio donde esto se
+   decide. Y comprueba las dos direcciones: que la buena acierta y que la mala
+   falla —una comparación rota en el otro sentido daría todo por bueno—.
+   ────────────────────────────────────────────────────────────────────────── */
+CB.pruebas.suite('E93 · una moneda de céntimo no es el billete del mismo número', function () {
+  var t = CB.pruebas;
+
+  /* ── A · La pieza: distinta foto, distinto atributo, distinto nombre ───── */
+  var caja = CB.ui.crear('div');
+  document.body.appendChild(caja);
+  var cinco = CB.ui.pieza('span', 5);            // el billete de 5 €
+  var cincoC = CB.ui.pieza('span', 'c5');        // la moneda de 5 céntimos
+  caja.appendChild(cinco); caja.appendChild(cincoC);
+
+  t.igual(cinco.className, 'billete', 'E93 · el 5 a secas sigue siendo el billete');
+  t.igual(cincoC.className, 'moneda', 'E93 · y el c5 es una moneda');
+  t.igual(cincoC.getAttribute('data-valor'), null,
+    'E93 · la moneda de céntimo NO lleva data-valor: es el atributo que colisiona');
+  t.igual(cincoC.getAttribute('data-centimos'), '5',
+    'E93 · lleva data-centimos, que es suyo y de nadie más');
+  t.ok(getComputedStyle(cinco).backgroundImage !== getComputedStyle(cincoC).backgroundImage,
+    'E93 · y NO comparten fotografía',
+    getComputedStyle(cincoC).backgroundImage);
+  t.igual(cincoC.getAttribute('aria-label'), 'la moneda de 5 céntimos',
+    'E93 · quien oye la pantalla oye céntimos, no euros');
+  t.igual(CB.ui.pieza('span', 'c1').getAttribute('aria-label'), 'la moneda de 1 céntimo',
+    'E93 · y en singular cuando toca: «1 céntimo», no «1 céntimos»');
   document.body.removeChild(caja);
+
+  /* ── B · El generador: cinco piezas, ninguna repetida, ningún euro ─────── */
+  var vistas = {}, intrusos = [], repetidos = [], s;
+  for (s = 0; s < 40; s++) {
+    var item = CB.gen.dinero.E8(CB.util.mulberry32(s + 1), 1);
+    if (!item.piezasDinero) { intrusos.push('D=1 sin piezas'); continue; }
+    vistas[item.respuesta] = 1;
+    if (!CB.gen.dinero.esCentimo(item.respuesta)) intrusos.push(String(item.respuesta));
+    item.distractoresFijos.forEach(function (d) {
+      if (!CB.gen.dinero.esCentimo(d)) intrusos.push('distractor ' + d);
+      if (d === item.respuesta) repetidos.push(String(d));
+    });
+  }
+  t.igual(intrusos.length, 0,
+    'E93 · en D=1 todo lo que sale es una moneda de céntimo', intrusos.slice(0, 4).join(' · '));
+  t.igual(repetidos.length, 0,
+    'E93 · y ningún distractor es la respuesta', repetidos.join(' · '));
+  t.igual(Object.keys(vistas).length, 5,
+    'E93 · con semillas suficientes salen las cinco, incluida la de 1 céntimo',
+    Object.keys(vistas).join(','));
+
+  /* ── C · LA CORRECCIÓN, DONDE ESTABA EL FALLO ─────────────────────────────
+     Con una partida de verdad, porque `responder()` es el único sitio donde se
+     decide si algo es correcto y no hay forma honesta de preguntárselo aparte.
+     Se toma el ítem que iniciar() ya sirvió —con su nivelId y su destreza— y se
+     le cambia solo la respuesta: fabricar un ítem a mano sería fabricar también
+     la forma que la partida no produce, que es la lección de E42. */
+  var perfilPrevio = CB.perfil;
+  var estadoPrevio = CB.partida.estado;
+  var bloqueoPrevio = CB.partida.bloqueado;
+  CB.perfil = CB.pruebas.perfilNuevo();
+  CB.partida.bloqueado = false;
+
+  var estado = CB.partida.iniciar({ mundoId: 'M1', modo: 'expedicion' });
+  /* Y SE ABRE EL CERROJO DESPUÉS DE INICIAR, no antes: servir el primer ítem
+     monta el componente, y montar() bloquea 800 ms. Puesto antes, `responder()`
+     se sale en su primera línea y las dos comprobaciones de abajo miden un
+     estado que no se ha tocado —verde o rojo por el motivo equivocado—. Es la
+     misma trampa que el `bloqueoMs` de E46. */
+  CB.partida.bloqueado = false;
+  if (t.ok(!!(estado && estado.itemActual), 'E93 · hay partida con un ítem servido')) {
+    estado.itemActual.respuesta = 'c20';
+    estado.itemActual.piezasDinero = true;
+    estado.itemActual.respuestaSigno = null;
+
+    estado.respondido = false;
+    CB.partida.responder('c20', 'opciones', { posicion: 0 });
+    var ultima = estado.respuestas[estado.respuestas.length - 1];
+    t.ok(!!ultima && ultima.correcto === true,
+      'E93 · tocar la moneda de 20 céntimos acierta: Number("c20") es NaN y NaN nunca se iguala',
+      JSON.stringify(ultima));
+
+    estado.respondido = false;
+    CB.partida.responder('c50', 'opciones', { posicion: 1 });
+    var fallada = estado.respuestas[estado.respuestas.length - 1];
+    t.ok(!!fallada && fallada.correcto === false,
+      'E93 · y tocar otra falla: la comparación no da cierto a todo',
+      JSON.stringify(fallada));
+  }
+
+  CB.partida.estado = estadoPrevio;
+  CB.partida.bloqueado = bloqueoPrevio;
+  CB.perfil = perfilPrevio;
+});
+
+
+/* ────────────────────────────────────────────────────────────────────────────
+   E94 · El «Salir» del mapa no hacía nada
+
+   atras() sacaba UNA entrada de la pila; si era una pantalla de flujo (partida,
+   jefe, descanso, reparación, error) la descartaba y caía al destino de
+   reserva, que con perfil activo es el mapa. Estando ya en el mapa, eso es
+   repintar la misma pantalla: el botón parecía muerto.
+
+   Y no era un rincón raro sino el camino normal del juego:
+   portada → mapa → partida → fin → SALIR deja la pila en [p-portada, p-mapa]
+   con «p-mapa» delante, porque atras() no apila. El siguiente Salir se sacaba
+   el mapa a sí mismo. Igual al volver del jefe (42-jefes.js va a p-mapa) o de
+   una expedición abandonada.
+
+   Se comprueba la conducta, no la implementación: dónde se acaba, no cómo.
+   ────────────────────────────────────────────────────────────────────────── */
+CB.pruebas.suite('E94 · Salir siempre lleva a alguna parte distinta', function () {
+  var t = CB.pruebas;
+  var pantallaPrevia = CB.pantallas.actual;
+  var pilaPrevia = CB.pantallas.pila.slice();
+  var perfilPrevio = CB.perfil;
+
+  CB.perfil = CB.perfil || { id: 'e94', nombre: 'E94', ajustes: {}, niveles: {} };
+
+  /* 1. El caso exacto que se rompía: pila con el propio mapa en la cima. */
+  CB.pantallas.pila = ['p-portada', 'p-mapa'];
+  CB.pantallas.actual = 'p-mapa';
+  var destino = CB.pantallas.atras();
+  t.ok(destino !== 'p-mapa', 'E94 · Salir en el mapa no devuelve al mapa', destino);
+  t.igual(destino, 'p-portada', 'E94 · sino a la portada, que es lo que había debajo');
+  t.igual(CB.pantallas.actual, destino, 'E94 · y la pantalla actual es la de destino');
+
+  /* 2. Cima de flujo: se descarta y se sigue buscando, no se abandona. */
+  CB.pantallas.pila = ['p-portada', 'p-mapa', 'p-partida'];
+  CB.pantallas.actual = 'p-fin';
+  t.igual(CB.pantallas.atras(), 'p-mapa', 'E94 · desde el fin se vuelve al mapa');
+
+  /* 3. Pila vacía en el mapa: la reserva NO puede ser el propio mapa. */
+  CB.pantallas.pila = [];
+  CB.pantallas.actual = 'p-mapa';
+  t.igual(CB.pantallas.atras(), 'p-portada',
+    'E94 · con la pila vacía el mapa sale a la portada');
+
+  /* 4. Y desde una pantalla cualquiera con la pila vacía, al mapa. */
+  CB.pantallas.pila = [];
+  CB.pantallas.actual = 'p-glosario';
+  t.igual(CB.pantallas.atras(), 'p-mapa',
+    'E94 · las demás pantallas siguen cayendo al mapa');
+
+  /* 5. atras() no apila: dos Salir seguidos no se quedan dando vueltas entre
+        dos pantallas. Era el motivo de que ir() no pudiera usarse tal cual. */
+  CB.pantallas.pila = ['p-portada', 'p-mapa'];
+  CB.pantallas.actual = 'p-cantera';
+  t.igual(CB.pantallas.atras(), 'p-mapa', 'E94 · de la cantera al mapa');
+  t.igual(CB.pantallas.atras(), 'p-portada', 'E94 · y del mapa a la portada, no de vuelta');
+
+  /* 6. Nunca se vuelve a una pantalla de flujo, aunque la pila esté llena. */
+  CB.pantallas.pila = ['p-jefe', 'p-partida', 'p-descanso'];
+  CB.pantallas.actual = 'p-casa';
+  t.igual(CB.pantallas.atras(), 'p-mapa',
+    'E94 · tres pantallas de flujo en la pila y ninguna es destino');
+
+  /* 7. Salir con ir(): el foco y el landmark, que atras() no ponía. */
+  CB.pantallas.pila = ['p-portada', 'p-mapa'];
+  CB.pantallas.actual = 'p-cantera';
+  CB.pantallas.atras();
+  var sec = document.getElementById('p-mapa');
+  if (sec) {
+    t.ok(sec.getAttribute('role') === 'main',
+      'E94 · la pantalla a la que se sale es la region principal');
+    var h = sec.querySelector('h1');
+    if (h) {
+      /* SE MIRA LA PREPARACIÓN DEL FOCO, NO document.activeElement: una página
+         que el sistema no tiene en primer plano no da el foco a nadie, y la
+         aserción diría «roto» sobre código correcto. Lo que atras() no hacía
+         —y ir() sí— es exactamente esto: dejar el <h1> enfocable y nombrar la
+         región con él. */
+      t.igual(h.getAttribute('tabindex'), '-1',
+        'E94 · el titulo de destino queda enfocable, que es lo que atras() no hacia');
+      t.igual(sec.getAttribute('aria-labelledby'), h.id,
+        'E94 · y la seccion toma su nombre accesible del titulo');
+    }
+  }
+
+  CB.pantallas.pila = pilaPrevia;
+  CB.perfil = perfilPrevio;
+  if (pantallaPrevia) CB.pantallas.ir(pantallaPrevia);
+});
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E95 · Lo que centra y además tiene scroll esconde por arriba
+   ──────────────────────────────────────────────────────────────────────────
+   `.zona-superior` era a la vez caja centrada (`justify-content: center`) y caja
+   con barra (`overflow-y: auto`). Mientras el contenido cabe no pasa nada; en
+   cuanto no cabe —el enunciado largo de un problema más el `.mensaje-resultado`,
+   que tiene un suelo de tres líneas— el centrado reparte el desbordamiento a los
+   DOS lados y lo que sobresale por arriba no se recupera de ninguna manera,
+   porque `scrollTop` no puede ser negativo. El niño ve el enunciado cortado por
+   la primera línea y la barra solo le lleva hacia abajo.
+
+   El remedio es la palabra clave `safe`, que existe justo para esto: centra
+   mientras quepa y se porta como `start` en cuanto desborda.
+
+   ESTO NO SE COMPRUEBA LEYENDO EL CSS. `getComputedStyle` diría «safe center» y
+   quedaría verde aunque el navegador no lo aplicara —y de hecho el mismo defecto
+   volvió a aparecer por el otro eje cuando el reparto en dos columnas alineó el
+   enunciado con `flex-end`, que es otra alineación posicional y recorta igual—.
+   Lo que se mide es la única consecuencia que le importa a quien juega: con la
+   barra arriba del todo, ¿se ve la primera línea?
+   ══════════════════════════════════════════════════════════════════════════ */
+CB.pruebas.suite('E95 · con scroll arriba del todo no falta nada por arriba', function () {
+  var t = CB.pruebas;
+  var caja = document.createElement('div');
+  caja.className = 'zona-juego';
+  /* `flex: none` y el alto por las dos puntas: la caja se cuelga del <body>, que
+     es flex en la página de pruebas, y sin esto se encogía hasta su contenido
+     mínimo —la comprobación de control medía 32 px de hueco y fallaba sobre CSS
+     correcto—. */
+  caja.style.flex = 'none';
+  caja.style.minHeight = '200px'; caja.style.maxHeight = '200px';
+  caja.style.width  = '260px';
+  var sup = document.createElement('div');
+  sup.className = 'zona-superior';
+  var primero = document.createElement('p');
+  primero.className = 'enunciado';
+  primero.textContent = 'Primera línea del enunciado, la que se perdía.';
+  var relleno = document.createElement('p');
+  relleno.className = 'enunciado';
+  relleno.textContent = new Array(60).join('texto largo que no cabe de ninguna manera ');
+  /* Los dos párrafos no se encogen: son hijos de un flex, y con el
+     `flex-shrink` de serie la caja los aplasta en vez de desbordar, que es
+     justo el caso que esta prueba necesita provocar. */
+  primero.style.flex = '0 0 auto'; relleno.style.flex = '0 0 auto';
+  sup.appendChild(primero); sup.appendChild(relleno);
+  caja.appendChild(sup);
+  document.body.appendChild(caja);
+
+  try {
+    t.ok(sup.scrollHeight > sup.clientHeight + 1,
+      'E95 · el caso de prueba desborda de verdad (si no, no prueba nada)',
+      sup.scrollHeight + ' > ' + sup.clientHeight);
+
+    sup.scrollTop = 0;
+    var c = sup.getBoundingClientRect(), p = primero.getBoundingClientRect();
+    /* Un margen de 1 px por el redondeo del subpíxel. El relleno de la caja hace
+       que lo normal sea NEGATIVO —el párrafo empieza por debajo del borde—; lo
+       que no puede pasar es que empiece por encima. */
+    t.ok(p.top >= c.top - 1,
+      'E95 · con la barra arriba del todo, la primera línea se ve',
+      'perdidos ' + Math.round(c.top - p.top) + ' px por arriba');
+    t.ok(p.left >= c.left - 1,
+      'E95 · y tampoco se pierde nada por la izquierda',
+      'perdidos ' + Math.round(c.left - p.left) + ' px');
+
+    /* Y hasta el final: que no falte por arriba no puede lograrse a costa de que
+       falte por abajo. */
+    sup.scrollTop = sup.scrollHeight;
+    var f = relleno.getBoundingClientRect(), c2 = sup.getBoundingClientRect();
+    t.ok(f.bottom <= c2.bottom + 2,
+      'E95 · y bajando del todo se llega al final del texto',
+      'sobran ' + Math.round(f.bottom - c2.bottom) + ' px');
+
+    /* Lo contrario también importa: si CABE, se sigue centrando. Sin esto, el
+       arreglo podría ser «alinear siempre arriba», que arregla el recorte
+       quitando la maquetación. */
+    relleno.textContent = '.';
+    primero.textContent = '9 − 6';
+    caja.style.minHeight = '400px'; caja.style.maxHeight = '400px';
+    sup.scrollTop = 0;
+    t.ok(sup.scrollHeight <= sup.clientHeight + 1,
+      'E95 · el caso de control cabe de verdad',
+      sup.scrollHeight + ' vs ' + sup.clientHeight);
+    var c3 = sup.getBoundingClientRect(), p3 = primero.getBoundingClientRect();
+    t.ok(p3.top > c3.top + 8,
+      'E95 · cuando cabe, el contenido sigue centrado y no pegado arriba',
+      Math.round(p3.top - c3.top) + ' px de aire');
+  } finally {
+    document.body.removeChild(caja);
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Dos columnas desde 1200 px
+   ──────────────────────────────────────────────────────────────────────────
+   Desde `escritorio` el enunciado va a la izquierda y la respuesta a la derecha.
+   La consulta de medios depende de la VENTANA, así que la comprobación no puede
+   forzar el caso: pregunta a `matchMedia` en cuál de los dos está y exige el
+   reparto que le toca. Cada máquina ejecuta una de las dos ramas, y las dos son
+   afirmaciones sobre lo que se ve, no sobre lo que dice la hoja de estilos.
+   ══════════════════════════════════════════════════════════════════════════ */
+CB.pruebas.suite('Maquetación · el reparto cambia a dos columnas en pantalla ancha', function () {
+  var t = CB.pruebas;
+  var caja = document.createElement('div');
+  caja.className = 'zona-juego';
+  caja.style.flex = 'none';
+  caja.style.minHeight = '400px'; caja.style.maxHeight = '400px';
+  var sup = document.createElement('div'); sup.className = 'zona-superior';
+  var inf = document.createElement('div'); inf.className = 'zona-inferior';
+  sup.appendChild(document.createElement('p'));
+  sup.firstChild.className = 'enunciado';
+  sup.firstChild.textContent = '9 − 6';
+  var b = document.createElement('button');
+  b.className = 'btn-bloque'; b.textContent = '3';
+  inf.appendChild(b);
+  caja.appendChild(sup); caja.appendChild(inf);
+  document.body.appendChild(caja);
+
+  try {
+    var ancha = window.matchMedia('(min-width: 1200px)').matches;
+    var rs = sup.getBoundingClientRect(), ri = inf.getBoundingClientRect();
+    if (ancha) {
+      t.ok(ri.left >= rs.right - 1,
+        'Maquetación · en ancho, la respuesta queda a la DERECHA del enunciado',
+        'enunciado hasta ' + Math.round(rs.right) + ', respuesta desde ' + Math.round(ri.left));
+      t.ok(Math.abs(ri.top - rs.top) < 2,
+        'Maquetación · y las dos columnas empiezan a la misma altura');
+      t.ok(rs.width > 0 && ri.width > 0,
+        'Maquetación · ninguna de las dos se queda sin ancho');
+    } else {
+      t.ok(ri.top >= rs.bottom - 1,
+        'Maquetación · en estrecho, la respuesta sigue DEBAJO del enunciado',
+        'enunciado hasta ' + Math.round(rs.bottom) + ', respuesta desde ' + Math.round(ri.top));
+      t.ok(Math.abs(ri.left - rs.left) < 2,
+        'Maquetación · y las dos ocupan la misma columna');
+      t.ok(rs.height > 0 && ri.height > 0,
+        'Maquetación · ninguna de las dos se queda sin alto');
+    }
+    /* En los dos repartos: nunca solapadas. */
+    var solapan = ri.left < rs.right - 1 && ri.top < rs.bottom - 1;
+    t.ok(!solapan, 'Maquetación · enunciado y respuesta nunca se pisan');
+  } finally {
+    document.body.removeChild(caja);
+  }
+});
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E96-E98 · El teclado tiene que caber, y si no cabe, alcanzarse
+   ──────────────────────────────────────────────────────────────────────────
+   Tres fallos de la misma familia, encontrados midiendo la pantalla en quince
+   tamaños en vez de leyendo la hoja de estilos:
+
+   E96  `:root.modo-proyeccion` escribía `--lado-respuesta: 150px` DIRECTAMENTE,
+        que es el resultado del `min()` de los dos ejes. Se saltaba el reparto
+        entero —la anchura escribe --lado-deseado, la altura --lado-techo— y en
+        un proyector de 1200x700 el 3x4 a 150 px no cabía: la fila del OK quedaba
+        fuera de la zona de juego. Además la clase gana por ESPECIFICIDAD, así
+        que ningún `:root { --lado-techo }` posterior podía bajarlo; los tres
+        escalones de altura nombran ahora también la clase.
+
+   E97  La excepción documentada «en 660 px de alto el 3x4 no cabe, se despliega
+        a 6x2» se pedía por altura y no miraba la anchura. Seis columnas de 64 px
+        con sus huecos son 424 px: en un móvil de 360x640 —que entra por altura—
+        dos columnas se salían por la derecha, sin barra que las alcanzara.
+
+   E98  Y donde el teclado no cabe de ninguna manera sin bajar del suelo de 64 px
+        —320x480, que es tamaño soportado— la zona de la respuesta no tenía
+        barra: el OK era inalcanzable. Ahora la tiene, como la del enunciado.
+
+   NINGUNO SE COMPRUEBA LEYENDO EL CSS: los tres estaban escritos «bien» y los
+   tres se veían solo midiendo. Lo que se mide aquí es lo mismo que se midió para
+   encontrarlos.
+   ══════════════════════════════════════════════════════════════════════════ */
+CB.pruebas.suite('E96-E98 · el teclado cabe a lo ancho y se alcanza a lo alto', function () {
+  var t = CB.pruebas;
+  var raiz = document.documentElement;
+  var clasesPrevias = raiz.className;
+
+  /* El teclado de verdad, con las clases que usa el juego, dentro de una zona del
+     ancho de la ventana: lo que se mide es la hoja de estilos, no el componente. */
+  var caja = document.createElement('div');
+  caja.className = 'zona-juego';
+  caja.style.flex = 'none';
+  caja.style.width = window.innerWidth + 'px';
+  var inf = document.createElement('div');
+  inf.className = 'zona-inferior';
+  var visor = document.createElement('div');
+  visor.className = 'visor-respuesta'; visor.textContent = '_';
+  var tec = document.createElement('div');
+  tec.className = 'teclado-bloques';
+  var teclas = ['1','2','3','4','5','6','7','8','9','⌫','0','OK'], k;
+  for (k = 0; k < teclas.length; k++) {
+    var b = document.createElement('button');
+    b.className = 'btn-bloque'; b.type = 'button'; b.textContent = teclas[k];
+    if (teclas[k] === 'OK') b.setAttribute('data-tecla', 'ok');
+    tec.appendChild(b);
+  }
+  inf.appendChild(visor); inf.appendChild(tec);
+  caja.appendChild(inf);
+  document.body.appendChild(caja);
+
+  /* EL LADO SE MIDE EN UNA TECLA, NO EN LA VARIABLE. `--lado-respuesta` vale
+     `min(64px, 64px)`: las propiedades personalizadas no se resuelven en
+     getComputedStyle, así que leerla y pasarla por parseFloat da 0 y la
+     comprobación queda verde contra nada. El botón sí tiene un ancho real. */
+  function ladoReal() { return tec.firstChild.getBoundingClientRect().width; }
+  function techo() {
+    return parseFloat(getComputedStyle(raiz).getPropertyValue('--lado-techo')) || 0;
+  }
+
+  try {
+    /* ── E96 ── El lado nunca se pasa del techo que impone la altura, y el modo
+       proyección —que escribe desde un selector CON CLASE— tampoco. */
+    t.ok(ladoReal() <= techo() + 0.5,
+      'E96 · en modo normal la tecla respeta el techo que pone la altura',
+      ladoReal() + ' > ' + techo());
+    t.ok(ladoReal() >= 64,
+      'E96 · y no baja del suelo de 64 px (WCAG 2.5.8, y un nino de siete anos)',
+      String(ladoReal()));
+    raiz.classList.add('modo-proyeccion');
+    t.ok(ladoReal() <= techo() + 0.5,
+      'E96 · en proyeccion tampoco: la clase no se salta el min() de los dos ejes',
+      ladoReal() + ' > ' + techo());
+    t.ok(ladoReal() >= 64,
+      'E96 · y en proyeccion la tecla no es mas pequena que el suelo',
+      String(ladoReal()));
+    raiz.className = clasesPrevias;
+
+    /* ── E97 ── Ni una tecla fuera por la derecha, en la ventana que sea. */
+    var rc = caja.getBoundingClientRect(), rt = tec.getBoundingClientRect();
+    t.ok(rt.width <= rc.width + 1,
+      'E97 · el teclado no es mas ancho que la zona, sea cual sea la ventana',
+      Math.round(rt.width) + ' px de teclado en ' + Math.round(rc.width) + ' px de zona');
+    var ultima = tec.lastChild.getBoundingClientRect();
+    t.ok(ultima.right <= rc.right + 1,
+      'E97 · y la ultima tecla no se sale por la derecha',
+      'sobran ' + Math.round(ultima.right - rc.right) + ' px');
+
+    /* ── E98 ── Apretando la zona a la mitad de lo que necesita, el OK sigue
+       alcanzable. El alto va en la PROPIA zona: puesto en la caja de fuera no
+       aprieta nada, porque .zona-inferior no se encoge (flex: 0 0 auto). */
+    var altoNecesario = inf.scrollHeight;
+    inf.style.minHeight = Math.round(altoNecesario / 2) + 'px';
+    inf.style.maxHeight = Math.round(altoNecesario / 2) + 'px';
+    t.ok(inf.scrollHeight > inf.clientHeight + 1,
+      'E98 · el caso de prueba aprieta de verdad (si no, no prueba nada)',
+      inf.scrollHeight + ' vs ' + inf.clientHeight);
+    inf.scrollTop = 0;
+    var rv = visor.getBoundingClientRect(), ri0 = inf.getBoundingClientRect();
+    t.ok(rv.top >= ri0.top - 1,
+      'E98 · con la barra arriba, el visor no se pierde por arriba',
+      'perdidos ' + Math.round(ri0.top - rv.top) + ' px');
+    inf.scrollTop = inf.scrollHeight;
+    var rok = tec.lastChild.getBoundingClientRect(), ri1 = inf.getBoundingClientRect();
+    t.ok(rok.bottom <= ri1.bottom + 2,
+      'E98 · y bajando del todo se llega al OK: la pregunta se puede contestar',
+      'quedan ' + Math.round(rok.bottom - ri1.bottom) + ' px fuera');
+  } finally {
+    document.body.removeChild(caja);
+    raiz.className = clasesPrevias;
+  }
+});
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E99-E100 · Lo que no cabe en 320 px se sale sin avisar
+   ──────────────────────────────────────────────────────────────────────────
+   320 px de ancho es tamaño SOPORTADO: el aviso de «gira el aparato» solo salta
+   por debajo de 320×420. Y ahí dos cosas se salían de la pantalla sin provocar
+   barra horizontal ni error ninguno —se recortaban y ya—: el título de la
+   portada, que con la tipografía de píxel y sus dos rellenos mide 337, y el
+   cuarto botón de la barra de herramientas, que es el de Sonido.
+
+   LAS DOS COMPROBACIONES MIDEN EN UNA CAJA DE 320 px, no en la ventana. Una
+   aserción sobre la ventana real solo probaría algo en las máquinas estrechas, y
+   quedaría verde por no aplicar en todas las demás — que es la peor forma de
+   estar verde.
+   ══════════════════════════════════════════════════════════════════════════ */
+CB.pruebas.suite('E99-E100 · en 320 px no se sale nada por los bordes', function () {
+  var t = CB.pruebas;
+  var caja = document.createElement('div');
+  caja.className = 'pantalla pantalla--portada';
+  caja.style.width = '320px';
+  caja.style.position = 'static';
+  caja.hidden = false;
+
+  var h = document.createElement('h1');
+  h.className = 'titulo-juego';
+  h.textContent = 'CUBOMÁTICA';
+  caja.appendChild(h);
+
+  var barra = document.createElement('div');
+  barra.className = 'barra-herramientas';
+  var g1 = document.createElement('div'), g2 = document.createElement('div');
+  g1.className = 'barra-herramientas__grupo'; g2.className = 'barra-herramientas__grupo';
+  ['Pista', '◀ Salir'].forEach(function (r) {
+    var b = document.createElement('button'); b.className = 'btn-bloque'; b.textContent = r; g1.appendChild(b);
+  });
+  ['Pausa', 'Sonido'].forEach(function (r) {
+    var b = document.createElement('button'); b.className = 'btn-bloque'; b.textContent = r; g2.appendChild(b);
+  });
+  barra.appendChild(g1); barra.appendChild(g2);
+  caja.appendChild(barra);
+  document.body.appendChild(caja);
+
+  try {
+    var rc = caja.getBoundingClientRect();
+
+    /* E99 · el título cabe, partiéndose si hace falta. Se comprueba el ANCHO
+       DESBORDADO, no el número de líneas: partirlo es un medio, y lo que no se
+       negocia es que no se salga. */
+    var rh = h.getBoundingClientRect();
+    t.ok(rh.right <= rc.right + 1 && rh.left >= rc.left - 1,
+      'E99 · el titulo de la portada no se sale de una pantalla de 320 px',
+      Math.round(rh.width) + ' px de titulo en ' + Math.round(rc.width));
+    t.ok(h.scrollWidth <= h.clientWidth + 1,
+      'E99 · y no se recorta por dentro: el texto cabe en la caja del titulo',
+      h.scrollWidth + ' vs ' + h.clientWidth);
+
+    /* E100 · los cuatro controles, dentro. El de Sonido es el último. */
+    var botones = barra.querySelectorAll('button'), fuera = [], i;
+    for (i = 0; i < botones.length; i++) {
+      var rb = botones[i].getBoundingClientRect();
+      if (rb.right > rc.right + 1 || rb.left < rc.left - 1) fuera.push(botones[i].textContent);
+    }
+    t.igual(fuera.length, 0,
+      'E100 · los cuatro botones de la barra caben en 320 px', fuera.join(' · '));
+    t.ok(barra.scrollWidth <= barra.clientWidth + 1,
+      'E100 · y la barra no tiene nada escondido a la derecha',
+      barra.scrollWidth + ' vs ' + barra.clientWidth);
+  } finally {
+    document.body.removeChild(caja);
+  }
 });

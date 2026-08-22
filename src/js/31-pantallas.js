@@ -20,6 +20,7 @@ CB.pantallas.SIN_SALIR = ['p-portada', 'p-error'];
 CB.pantallas.pila = [];
 CB.pantallas.actual = null;
 CB.pantallas._entrando = null;      // cerrojo de reentrada, ver CB.pantallas.ir
+CB.pantallas._volviendo = false;    // ir() invocada desde atras(): no apila
 
 /* Handlers que un módulo puede registrar para reaccionar al entrar en su
    pantalla: CB.pantallas.alEntrar['p-mapa'] = function (props) {...} */
@@ -41,7 +42,7 @@ CB.pantallas.ir = function (id, props) {
     if (el) el.hidden = (CB.pantallas.IDS[i] !== id);
   }
 
-  if (CB.pantallas.actual && CB.pantallas.actual !== id) {
+  if (CB.pantallas.actual && CB.pantallas.actual !== id && !CB.pantallas._volviendo) {
     CB.pantallas.pila.push(CB.pantallas.actual);
     if (CB.pantallas.pila.length > 12) CB.pantallas.pila.shift();
   }
@@ -104,40 +105,55 @@ CB.pantallas.ir = function (id, props) {
   return id;
 };
 
-/* Vuelve a la pantalla anterior; si no hay, al mapa (o a la portada si aún no
-   hay perfil activo). Nunca deja al niño en un callejón sin salida. */
+/* Pantallas de flujo: se sale de ellas hacia DELANTE y no se vuelve nunca.
+   p-fin entra en la lista por lo mismo que las demás: es el final de una
+   expedición terminada, y volver a él desde el mapa muestra el resumen de una
+   partida que ya no existe. */
+CB.pantallas.SIN_VUELTA = ['p-partida', 'p-reparacion', 'p-descanso', 'p-jefe',
+                           'p-error', 'p-fin'];
+
+/* Vuelve a la pantalla anterior; si no hay ninguna utilizable, al mapa (o a la
+   portada, si ya estamos en el mapa o aún no hay perfil). Nunca deja al niño en
+   un callejón sin salida.
+
+   EL «SALIR» DEL MAPA QUE NO HACÍA NADA. Antes se sacaba UNA sola entrada de la
+   pila y, si resultaba ser una pantalla de flujo, se caía al mapa — estando ya
+   en el mapa. Es decir: destino === actual, se repintaba la misma pantalla y el
+   botón parecía muerto. Y no era un caso raro sino EL camino normal: portada →
+   mapa → partida → fin → SALIR deja la pila en [portada, mapa] con el mapa
+   delante, así que el siguiente Salir se sacaba «p-mapa» a sí mismo. Lo mismo
+   pasaba al salir del jefe o de una partida abandonada.
+
+   Ahora se descartan TODAS las entradas que no sirven —las de flujo y la propia
+   pantalla actual, que la pila puede contener porque atras() no apila— y solo
+   cuando la pila se agota se recurre al destino de reserva. */
 CB.pantallas.atras = function () {
-  /* EL MANEJADOR DE SALIDA, QUE AQUÍ NO SE EJECUTABA. ir() sí lo llama (arriba),
-     atras() no lo hacía en ningún punto, y solo hay dos registrados: el de
-     p-reparacion, que apaga los temporizadores de la tarjeta, y el de p-partida,
-     que para el reloj. Es decir, la mitad de las salidas del juego no limpiaban
-     nada, y el síntoma no era un error sino un salvavidas que a los 25 s se
-     ponía a leer los tres pasos de una reparación ENCIMA DE OTRA PANTALLA.
-
-     Va lo PRIMERO de todo, antes de calcular el destino: estas tres líneas leen
-     CB.pantallas.actual y unas líneas más abajo atras() lo reescribe. */
-  if (CB.pantallas.actual && CB.pantallas.alSalir[CB.pantallas.actual]) {
-    try { CB.pantallas.alSalir[CB.pantallas.actual](); } catch (e) { }
+  var destino = null;
+  while (CB.pantallas.pila.length) {
+    var cand = CB.pantallas.pila.pop();
+    if (CB.pantallas.SIN_VUELTA.indexOf(cand) !== -1) continue;
+    if (cand === CB.pantallas.actual) continue;
+    destino = cand;
+    break;
+  }
+  if (!destino) {
+    destino = (!CB.perfil || CB.pantallas.actual === 'p-mapa') ? 'p-portada' : 'p-mapa';
   }
 
-  var anterior = CB.pantallas.pila.pop();
-  var destino = anterior || (CB.perfil ? 'p-mapa' : 'p-portada');
-  /* No se vuelve nunca a una pantalla de flujo: se sale de ellas hacia delante */
-  if (destino === 'p-partida' || destino === 'p-reparacion' ||
-      destino === 'p-descanso' || destino === 'p-jefe' || destino === 'p-error') {
-    destino = CB.perfil ? 'p-mapa' : 'p-portada';
+  /* SE DELEGA EN ir(), que es lo que debió hacerse desde el principio. Aquí
+     estaban copiados a mano el manejador de salida (E59, y llegó dos versiones
+     tarde), el barrido de `hidden` y el aviso al bus; y NO estaban el foco en el
+     <h1>, el aria-labelledby, el role="main" ni el cerrojo de reentrada. O sea
+     que salir con «Salir» dejaba el foco en un botón ya oculto y la pantalla
+     nueva sin landmark, mientras entrar con ir() hacía las dos cosas bien.
+     _volviendo es lo único que atras() necesita de propio: impide que ir() apile
+     la pantalla que estamos abandonando, que convertiría atrás en adelante. */
+  CB.pantallas._volviendo = true;
+  try {
+    return CB.pantallas.ir(destino);
+  } finally {
+    CB.pantallas._volviendo = false;
   }
-  var i;
-  for (i = 0; i < CB.pantallas.IDS.length; i++) {
-    var el = document.getElementById(CB.pantallas.IDS[i]);
-    if (el) el.hidden = (CB.pantallas.IDS[i] !== destino);
-  }
-  CB.pantallas.actual = destino;
-  if (CB.pantallas.alEntrar[destino]) {
-    try { CB.pantallas.alEntrar[destino]({}); } catch (e) { }
-  }
-  CB.bus.emitir('pantalla', destino);
-  return destino;
 };
 
 /* Pantalla de error: se llama desde window.onerror y desde unhandledrejection */

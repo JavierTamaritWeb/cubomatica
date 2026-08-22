@@ -37,9 +37,22 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
       totalItems++;
       if (!unicos[item.expr]) { unicos[item.expr] = 1; nUnicos++; }
 
+      /* UNA PIEZA DE DINERO NO ES UN NÚMERO, y los invariantes 1 y 3 son sobre
+         números. «Toca la moneda de 20 céntimos» se contesta con 'c20', no con
+         20, porque el 20 a secas ya es el billete de 20 € — está razonado en la
+         cabecera de `15-gen-dinero.js`—. Meterla en el rango [0,999] daría rojo
+         contra código correcto, y redondearla, NaN.
+         La exención es ESTRECHA a propósito: solo la respuesta, solo si es una
+         cadena, y solo en un ítem que pide dibujar piezas. Cualquier otro
+         generador que devuelva una cadena sigue siendo un fallo. */
+      var esPieza = (item.piezasDinero === true && typeof item.respuesta === 'string');
+
       /* INV 1 — operandos y respuesta en [0, 999] */
-      if (!(item.respuesta >= 0 && item.respuesta <= 999)) {
+      if (!esPieza && !(item.respuesta >= 0 && item.respuesta <= 999)) {
         anota('inv1', id + ' respuesta ' + item.respuesta);
+      }
+      if (esPieza && !CB.gen.dinero.esCentimo(item.respuesta)) {
+        anota('inv1', id + ' respuesta en cadena que no es una pieza: ' + item.respuesta);
       }
       (item.operandos || []).forEach(function (o) {
         if (!(o >= 0 && o <= 999)) anota('inv1', id + ' operando ' + o);
@@ -49,7 +62,7 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
       if (item.operacion === '-' && item.respuesta < 0) anota('inv2', id);
 
       /* INV 3 — sin decimales, sin negativos, sin fracción */
-      if (item.respuesta !== Math.round(item.respuesta)) anota('inv3', id + ' decimal');
+      if (!esPieza && item.respuesta !== Math.round(item.respuesta)) anota('inv3', id + ' decimal');
       var txt = (item.consigna || '') + (item.enunciado || '');
       if (/[,.]\d|\d\/\d|½|¼/.test(txt)) anota('inv3', id + ' notación prohibida: ' + txt);
 
@@ -62,8 +75,21 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
       /* INV 5-bis — formato de la lista cerrada de 7 */
       if (FORMATOS.indexOf(item.formato) === -1) anota('inv5bis', id + ' ' + item.formato);
 
-      /* INV 5 / 5-ter / 6 — distractores */
-      if (item.formato === 'opciones4' && !item.distractoresTexto) {
+      /* INV 5 / 5-ter / 6 — distractores.
+         LOS FIJOS NO PASAN POR EL MOTOR, igual que en `40-partida.js`: cuando el
+         generador ya ha elegido las tres, llamar al motor de distractores medía
+         una lista que la partida no llega a montar nunca. Con los euros solo
+         medía de más; con 'c20' revienta, porque el motor hace aritmética. Se
+         comprueban las fijas por lo que son. */
+      if (item.formato === 'opciones4' && item.distractoresFijos) {
+        conOpciones++;
+        var fijas = item.distractoresFijos.slice(0, 3);
+        if (fijas.length !== 3) anota('inv5', id + ' ' + fijas.length + ' distractores fijos');
+        if (new Set(fijas.concat([item.respuesta])).size !== 4) {
+          anota('inv5', id + ' opciones fijas repetidas');
+        }
+        if (fijas.indexOf(item.respuesta) !== -1) anota('inv5ter', id + ' (fijas)');
+      } else if (item.formato === 'opciones4' && !item.distractoresTexto) {
         var d = CB.distractores.para(item, CB.util.mulberry32(s + 7));
         if (d.formato === 'opciones4') {
           conOpciones++;

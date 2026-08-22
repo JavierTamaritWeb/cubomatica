@@ -427,7 +427,9 @@ CB.adulto.pintar = function () {
   cont.appendChild(caja7);
 
   cont.appendChild(CB.ui.boton('◀ Salir', 'btn-bloque', function () {
-    CB.pantallas.ir(CB.perfil ? 'p-portada' : 'p-portada');
+    /* Sin ternario: las dos ramas decían 'p-portada'. Al panel se entra por la
+       puerta parental de la portada, y a la portada se vuelve, haya perfil o no. */
+    CB.pantallas.ir('p-portada');
   }));
 };
 

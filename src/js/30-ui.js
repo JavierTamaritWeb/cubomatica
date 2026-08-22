@@ -126,10 +126,28 @@ CB.ui.pintarVeta = function (nivel, mundo) {
    tamaño reales de cada billete. No hay ni una imagen en el proyecto —la
    auditoría no admite un solo fichero binario— así que la pieza se dibuja, igual
    que el reloj de arena, las gemas y el terreno. */
+/* ── UNA PIEZA DE DINERO ────────────────────────────────────────────────────
+   LA CIFRA VA EN SU PROPIO NODO desde 1.20.0, y no suelta dentro de la pieza.
+   Mientras la pieza era un cuadrado de color, un nodo de texto centrado se leía
+   perfectamente; encima de una fotografía de una moneda no se lee nada. El
+   `<span>` es lo que permite al CSS darle una cinta opaca debajo de la imagen en
+   vez de encima de ella. `textContent` de la pieza sigue devolviendo «2 €», así
+   que nada de lo que ya la leía se entera.
+
+   LOS CÉNTIMOS VAN POR data-centimos, no por data-valor, porque los valores
+   chocan —«5» es el billete de 5 € y la moneda de 5 céntimos—. Lo explica entero
+   la cabecera de `15-gen-dinero.js`. */
 CB.ui.pieza = function (etiqueta, v) {
-  var el = CB.ui.crear(etiqueta, CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete',
-                       v + ' €');
-  el.setAttribute('data-valor', String(v));
+  var esCent = CB.gen.dinero.esCentimo(v);
+  var el = CB.ui.crear(etiqueta, CB.gen.dinero.esMoneda(v) ? 'moneda' : 'billete');
+  if (esCent) {
+    el.setAttribute('data-centimos', String(CB.gen.dinero.valorCent(v)));
+    el.appendChild(CB.ui.crear('span', 'pieza__cifra',
+                               CB.gen.dinero.valorCent(v) + ' c'));
+  } else {
+    el.setAttribute('data-valor', String(v));
+    el.appendChild(CB.ui.crear('span', 'pieza__cifra', v + ' €'));
+  }
   el.setAttribute('aria-label', CB.gen.dinero.nombre(v));
   return el;
 };

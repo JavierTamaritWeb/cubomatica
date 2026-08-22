@@ -1,11 +1,11 @@
 # Lo que no cubre la licencia MIT
 
-> Cubomática 1.0.0
+> Cubomática 1.20.0
 
 El fichero [`LICENSE`](LICENSE) es MIT a secas, sin una coma añadida, para que
 GitHub y las herramientas automáticas la detecten bien. Cubre el **código**, los
 **estilos**, los **datos de contenido** y la **documentación** de este
-repositorio. Estas tres cosas quedan fuera.
+repositorio. Estas cuatro cosas quedan fuera.
 
 ## 1. La música — `audio/*.mp3`
 
@@ -42,7 +42,26 @@ Se reproduce citando su origen completo.
 Decreto: la norma fija los saberes **por ciclo**, y por eso el campo del
 catálogo se llama `trimestreSugerido` y no `trimestre`.
 
-## 3. Las fuentes de mapa de píxeles
+## 3. Las doce fotografías de dinero — `img/*.webp`
+
+**No están bajo MIT**, y su procedencia **no está verificada**.
+
+Son doce fotografías de monedas y billetes de euro que se usan para que la
+pregunta «toca la moneda de 2 euros» enseñe una moneda de 2 euros. Llegaron al
+proyecto en una carpeta local, sin nota de origen, y preguntado expresamente por
+su procedencia la respuesta fue que **no se sabe**. Se declara así en vez de
+inventar una atribución, con el mismo criterio que se aplicó a la música.
+
+**Su finalidad es didáctica, sin más pretensiones.** Se pintan **de una sola
+cara** y a **~25 % del tamaño real**: no son facsímiles, no son imprimibles a
+tamaño y no sirven para nada que no sea aprender a distinguir denominaciones. Los
+billetes de 20 y 50 llevan además la palabra MUESTRA impresa en el original.
+
+Si reutilizas este proyecto y necesitas certeza sobre estas imágenes, **cámbialas
+por unas cuyo origen conozcas**: son doce ficheros en `img/`, están declarados en
+una lista cerrada y `docs/dinero.md` explica cómo se regeneran.
+
+## 4. Las fuentes de mapa de píxeles
 
 El proyecto **no incluye ningún fichero de fuente**. Se declaran con `local()`
 en `src/scss/_00-fuentes.scss` y se usan únicamente si el sistema ya las tiene

@@ -12,6 +12,266 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.21.0] — 2026-08-22
+
+**Segunda cifra.** La pantalla de la expedición se reparte en dos columnas
+cuando hay sitio, y con la auditoría de maquetación que vino detrás salieron seis
+recortes, todos anteriores a esta versión. El perfil guardado no cambia.
+
+### Desde 1200 px, el enunciado a la izquierda y la respuesta a la derecha
+
+En vertical el reparto arriba/abajo es el bueno: el pulgar llega al tercio de
+abajo y la pregunta queda a la vista por encima. En un portátil, un proyector o
+una pizarra ese mismo reparto deja dos franjas de aire a los lados y obliga a un
+barrido vertical largo entre la pregunta y el teclado, que es justo el recorrido
+que el niño repite en cada ítem.
+
+Puestos en fila caben de un golpe de vista, y el enunciado deja de competir por
+la altura con la última fila del teclado.
+
+Las dos mitades **se arriman al centro** en vez de centrarse cada una en la suya:
+con las dos centradas, en 1440 px el enunciado quedaba a 360 y el teclado a 1080
+—setecientos píxeles de barrido, más de los cuatrocientos que había en vertical—
+y se habría cambiado un recorrido largo por otro más largo.
+
+Va por ANCHURA y desde 1200, siguiendo la regla de los dos ejes: la anchura
+decide cuántas columnas, la altura decide el lado del botón. Por debajo de 1200
+el sitio es de una tableta apaisada, que se sujeta con las dos manos, y ahí el
+alcance del pulgar sigue mandando sobre el barrido de la vista. La cinta, el
+cartel y el cielo no se enteran del cambio: están fuera del flujo.
+
+### Auditoría de maquetación: tres fallos más, todos anteriores a esta versión
+
+Se midió la pantalla de la expedición en quince tamaños de ventana, de 320×420 a
+2560×1440, cruzados con «Letra grande» y «Modo proyección». Los tres fallos que
+salieron estaban en verde en todo lo que se mira hoy, y ninguno se ve leyendo la
+hoja de estilos.
+
+**El modo proyección se saltaba el reparto de los dos ejes (E96).** Escribía
+`--lado-respuesta: 150px` directamente, que es el *resultado* del `min()` entre
+lo que pide la anchura y lo que permite la altura. En un proyector de 1200×700 el
+teclado 3×4 a 150 px no cabe: la fila del OK quedaba fuera de la zona de juego.
+Ahora escribe los dos ejes. Y como `:root.modo-proyeccion` le gana a `:root` por
+**especificidad** —no por orden—, los tres escalones de altura nombran también la
+clase; sin eso, ningún techo posterior podía bajarla. La nota de
+`_01-variables.scss` que decía «gana el orden de origen» vale entre selectores de
+la misma especificidad, y en cuanto uno lleva clase deja de valer.
+
+**Las seis columnas se pedían por altura sin mirar la anchura (E97).** La
+excepción documentada —«en 660 px de alto el 3×4 no cabe, se despliega a 6×2»—
+no comprobaba que hubiera sitio a lo ancho: seis columnas de 64 px con sus huecos
+son 424 px, y en un móvil de 360×640, que entra por altura, dos columnas se
+salían por la derecha sin barra que las alcanzara. Ahora la excepción pide además
+480 px de ancho.
+
+**Y donde el teclado no cabe, ahora se alcanza (E98).** El suelo de 64 px por
+tecla no se negocia, así que hay ventanas soportadas —320×480; el aviso de «gira
+el aparato» solo salta por debajo de 320×420— donde el teclado más su visor no
+caben de ninguna manera. Ahí el OK quedaba casi cien píxeles por debajo del borde
+y no había forma de llegar a él: la pregunta no se podía contestar. La zona de la
+respuesta lleva ahora barra, como la del enunciado, con la misma alineación
+`safe`. Lo mismo pasaba con el modo proyección encendido en cualquier móvil.
+
+Tras el arreglo, los quince tamaños × cinco combinaciones no pierden nada por
+ningún borde, no solapan y no obligan a desplazar la página a lo ancho.
+
+Recorridas después las **diecisiete pantallas** en cinco tamaños, aparecieron dos
+recortes más, los dos en 320 px de ancho —tamaño soportado— y los dos silenciosos,
+porque no provocaban barra horizontal ni error: simplemente se cortaban contra el
+borde.
+
+**El título de la portada salía descabezado (E99).** «CUBOMÁTICA» en la
+tipografía de píxel, más sus dos rellenos, mide 337 px: ocho por cada lado fuera
+de la pantalla. Se arregla dejando que se parta y ajustando el relleno lateral en
+la anchura más estrecha, **no** fijando un tamaño de letra para móviles: el
+tamaño lo mandan «Letra grande» y el modo proyección, y un número escrito a mano
+ahí habría anulado los dos ajustes justo donde más falta hacen.
+
+**El botón de Sonido quedaba cortado (E100).** Los cuatro controles de la barra
+—Pista, Salir, Pausa, Sonido— no caben en una fila de 320 px, y el último se
+salía nueve píxeles. Es el único que apaga la música. La barra pasa a dos filas
+antes que encoger botones por debajo del suelo de 64 px.
+
+También se quitó un ternario sin efecto en el panel del adulto
+(`CB.perfil ? 'p-portada' : 'p-portada'`), que no cambiaba nada pero sugería una
+intención perdida.
+
+### La zona del enunciado escondía las primeras líneas, y no era de ahora
+
+`.zona-superior` era a la vez caja centrada y caja con barra de desplazamiento.
+Mientras el contenido cabe, `justify-content: center` lo centra y no pasa nada;
+en cuanto **no** cabe —un problema con enunciado largo más el mensaje de
+resultado, que tiene un suelo de tres líneas— el centrado reparte el sobrante a
+los dos lados, y lo que se sale por arriba no se puede recuperar de ninguna
+manera, porque `scrollTop` no puede ser negativo. El enunciado se veía cortado
+por la primera línea y la barra solo llevaba hacia abajo.
+
+Se arregla con `safe center`, la palabra clave que existe para esto: centra
+mientras quepa y se porta como `start` en cuanto desborda. Va en **los dos ejes**
+—con `overflow-y: auto` el eje horizontal pasa también a `auto`, así que una fila
+de piezas de dinero más ancha que la columna se recortaba por la izquierda por el
+mismo motivo— y también en la alineación al centro del reparto nuevo, que es otra
+alineación posicional y recortaba igual.
+
+El guardián (E95) **no lee el CSS**: `getComputedStyle` diría «safe center» y
+quedaría verde aunque el navegador no lo aplicase. Mide lo único que le importa a
+quien juega: con la barra arriba del todo, si se ve la primera línea. Y comprueba
+lo contrario, que cuando cabe se sigue centrando, para que el arreglo no pueda
+ser «alinear siempre arriba», que quita el recorte quitando la maquetación.
+
+---
+
+## [1.20.1] — 2026-08-22
+
+**Tercera cifra.** Un botón que no hacía nada. El perfil guardado no cambia.
+
+### El «Salir» del mapa no salía a ninguna parte
+
+`CB.pantallas.atras()` sacaba **una** entrada de la pila; si resultaba ser una
+pantalla de flujo —partida, jefe, descanso, reparación, error— la descartaba y
+caía al destino de reserva, que con perfil activo es el mapa. Estando ya en el
+mapa, eso es repintar la misma pantalla: el botón parecía muerto, sin error en
+consola y sin nada que ver.
+
+No era un rincón raro, era **el camino normal del juego**. Portada → mapa →
+expedición → fin → SALIR deja la pila en `[p-portada, p-mapa]` con el mapa
+delante, porque `atras()` no apila; el siguiente Salir se sacaba el mapa a sí
+mismo. Lo mismo al volver del jefe, que va a `p-mapa` por su cuenta, y al
+abandonar una expedición a medias.
+
+Ahora `atras()` descarta **todas** las entradas que no sirven —las de flujo y la
+propia pantalla actual— y solo cuando la pila se agota recurre a la reserva, que
+para el mapa es la portada y nunca él mismo. `p-fin` entra en la lista de
+pantallas sin vuelta por el mismo motivo que las demás: es el resumen de una
+expedición que ya terminó.
+
+### Y de paso, salir dejaba de ser accesible
+
+`atras()` tenía copiados a mano el barrido de `hidden`, el aviso al bus y —desde
+1.19.0, dos versiones tarde— el manejador de salida. Lo que **no** tenía era el
+foco en el `<h1>`, el `aria-labelledby` de la sección ni el `role="main"`, que
+`ir()` sí pone. Salir con «Salir» dejaba el foco en un botón ya oculto y la
+pantalla nueva sin nombre accesible; entrar con `ir()` hacía las dos cosas bien.
+Ahora `atras()` calcula el destino y **delega en `ir()`**, con un cerrojo
+(`_volviendo`) que impide apilar la pantalla que se abandona: sin él, atrás se
+convierte en adelante y dos «Salir» seguidos se quedan dando vueltas entre dos
+pantallas.
+
+Guardián: **E94** en `pruebas/casos-regresiones.js`, siete comprobaciones sobre
+la conducta —dónde se acaba— y no sobre la implementación.
+
+---
+
+## [1.20.0] — 2026-08-14
+
+**Segunda cifra.** El dinero se ve. El perfil guardado no cambia.
+
+### Las monedas y los billetes eran cuadrados de colores
+
+El saber A.5 del RD 157/2022 pide reconocer las monedas de 1 y 2 euros y los
+billetes. Lo que había para reconocerlas era un cuadrado dorado con un número
+dentro y cinco rectángulos que se distinguían por el ancho. Se puede sacar el
+nivel entero leyendo el número del enunciado y buscando ese número, sin haber
+mirado nunca una moneda — que es exactamente lo que el nivel dice que enseña.
+
+Ahora son **doce fotografías** en `dist/img/`, 64 KB entre todas:
+
+- las cinco monedas de céntimo, las dos de euro y los cinco billetes;
+- **cada una a su tamaño real**, a escala (3,1 px/mm las monedas tomando la de
+  1 € como ancla, 0,85 px/mm los billetes). De ahí sale gratis que el billete
+  crezca con el valor y que la moneda de 10 céntimos sea más pequeña que la de
+  5, que es verdad y es la trampa que tiene el dinero de verdad;
+- la **cifra baja a una cinta propia** debajo de la imagen en vez de ir encima:
+  sobre una fotografía no se lee, y sobre una fotografía tampoco hay contraste
+  que medir. Sigue siendo del DOM, así que sigue creciendo con «Letra grande».
+
+El motivo por el que hasta hoy se dibujaban en SVG —«la auditoría no admite un
+solo binario»— era cierto como regla y falso como restricción técnica: una imagen
+es un subrecurso, igual que la hoja de estilos, y `file://` la abre sin pedir
+nada a la red. Lo que las prohibía era una línea del bloque 4 de `auditar.mjs`.
+Se abre igual que se abrió para la música: **lista cerrada, comprobada en los dos
+sentidos, y cada pieza tiene que estar declarada Y consumida en el CSS**. Todo lo
+demás sigue prohibido.
+
+Las doce entran en el armazón del service worker. La música no: son 64 KB contra
+42 MB, y un juego sin red que se queda mudo sigue siendo el juego.
+
+### Y ya se puede preguntar por los céntimos
+
+La ampliación de céntimos existía desde 1.0.0 y solo sabía preguntar cuántas
+monedas de 20 hacen un euro, que es una división. Con las cinco fotografías, E8
+gana la otra mitad —**reconocer la moneda**— y en el primer nivel es la única que
+sale, porque dividir entre 20 ahí todavía no toca.
+
+### E93 · la moneda de 5 céntimos y el billete de 5 € eran el mismo «5»
+
+Los cuatro valores de céntimo chocan con los cuatro billetes. Con un solo número
+por pieza, «toca la moneda de 20 céntimos» se habría pintado con la foto del
+billete de 20 € y se habría dado por buena tocándolo. Las piezas de céntimo se
+nombran `'c20'`, y eso abre el fallo simétrico: `Number('c20')` es `NaN`, así que
+la pregunta se falla siempre, incluso acertando. Guardián en
+`casos-regresiones.js`, con partida de verdad y comprobado sembrando el fallo.
+
+## [1.19.0] — 2026-07-29
+
+**Segunda cifra.** Suena la tecla, y suena UNA vez. El perfil guardado no cambia.
+
+### Con el teclado se jugaba en silencio
+
+Se puede jugar una partida entera solo con el teclado —es criterio de HECHO de F8, no una
+comodidad—, y esa partida se jugaba muda. Las cifras sí sonaban, porque el «picar» lo pone
+el componente; pero **Enter, Escape, el Tab, las flechas que mueven el foco por la rejilla,
+la L de leer y la P de pista no sonaban nunca**, y fuera de las tres pantallas de juego no
+sonaba ninguna tecla, porque el manejador de teclado devuelve pronto. Quien juega con el
+teclado —que casi siempre es quien no puede usar el dedo— tenía la mitad de la confirmación
+que tiene el resto.
+
+Ahora toda tecla suena, con el mismo clic corto y flojo de los botones. Cuatro cosas no son
+un gesto sobre el juego y siguen calladas: la **autorepetición** (un dedo apoyado dispara
+treinta teclas por segundo, y eso sonaría a ametralladora), los **modificadores solos** y
+los **atajos del navegador**, **escribir en un campo** —el único es la puerta parental, y
+ahí la confirmación es el carácter, que se ve— y **Enter o Espacio sobre algo activable**,
+porque el navegador ya los convierte en un clic de verdad.
+
+### El clic tapaba justo el sonido que decía algo
+
+Buscando dónde colocar el sonido de las teclas apareció que el de los botones, que se
+entregó en 1.18.0, sonaba **dos veces** en el sitio que más se usa: escribir una cifra daba
+el «picar» del teclado *y* el clic encima, y borrar daba el «toc» *y* el clic. La regla
+estaba escrita desde el primer día —«un clic que se añade encima de un sonido que ya dice
+algo no informa, tapa»— pero se aplicaba con una lista de tres excepciones escrita a mano, y
+la lista nació corta. Es la familia de fallos que este proyecto ya conoce: una regla buena
+aplicada en tres sitios de cinco.
+
+Ya no hay lista. `CB.audio` cuenta las peticiones de sonido, y el clic genérico —de botón o
+de tecla— **se pide al final del gesto y solo si el gesto ha sido mudo**. Cualquier
+componente que gane voz propia mañana queda cubierto sin tocar nada. Queda una sola
+excepción escrita, la única que el contador no puede ver porque su sonido llega en otro
+evento: el botón deshabilitado, que durante los 800 ms de construcción ya tiene su «toc» de
+madera, y ese dice lo contrario —«aún no»—.
+
+### Y cualquier gesto abre el audio, no solo JUGAR
+
+El contexto de Web Audio nace suspendido y solo lo despierta un gesto del usuario. Los dos
+únicos sitios que lo despertaban eran los botones **JUGAR** y **CANTERA TRANQUILA**, así que
+quien empezaba tocando «Ajustes», «¿Quién juega?» o el panel del adulto —o quien navegaba
+con el teclado— no oía **nada** en los primeros toques de la sesión, que son justamente los
+que enseñan que el juego responde. Se abre ya con cualquier toque o tecla. Un evento
+sintético no abre nada: el navegador no lo permitiría, y de paso la página de pruebas, que
+dispara veintitantos clics de mentira, sigue muda.
+
+### Comprobado
+
+- **792 comprobaciones**, 0 fallos, en las dos páginas —legible y minificada—. Eran 773.
+- Auditoría en verde, 59 de 59.
+- **E91** deja de enumerar excepciones y pasa a montar el **teclado de verdad** para pulsar
+  su tecla: el fallo estaba ahí, no en un botón inventado. **E92** es nuevo.
+- Los tres guardianes se han validado **volviendo a sembrar el fallo**: con el clic
+  inmediato salen en rojo las cuatro comprobaciones del sonido doble (`"pulsar,picar"`
+  donde se espera `"picar"`); anulando `esActivable` y `esCampo`, las tres del teclado.
+- En el juego real: Tab desde la primera pantalla suena y abre el audio, Enter sobre un
+  botón suena una vez, la cifra da un «picar» y el ⌫ un «toc».
+
 ## [1.18.0] — 2026-07-29
 
 **Segunda cifra.** Dos cosas que se preguntaban y una que se cazó por el camino. El perfil

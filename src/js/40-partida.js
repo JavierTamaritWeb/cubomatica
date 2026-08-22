@@ -502,6 +502,16 @@ CB.partida.pintarRespuesta = function (item) {
       });
       opciones.push({ valor: item.respuesta, texto: item.termino, codigoError: null });
       opciones = CB.util.barajar(opciones, e.rng);
+    } else if (item.distractoresFijos) {
+      /* EL GENERADOR YA HA ELEGIDO LAS TRES, y antes se llamaba igualmente a
+         CB.distractores.para() para tirar el resultado dos líneas después. Con
+         los euros solo sobraba trabajo; con los céntimos rompe, porque la
+         respuesta es 'c20' y el motor de distractores hace aritmética con ella.
+         Un `else if` en vez de un `if` dentro. */
+      opciones = item.distractoresFijos.slice(0, 3)
+        .map(function (v) { return { valor: v, codigoError: null }; })
+        .concat([{ valor: item.respuesta, codigoError: null }]);
+      opciones = CB.util.barajar(opciones, e.rng);
     } else {
       var d = CB.distractores.para(item, e.rng);
       if (d.formato === 'teclado') {
@@ -511,12 +521,6 @@ CB.partida.pintarRespuesta = function (item) {
         return;
       }
       opciones = d.opciones;
-      if (item.distractoresFijos) {
-        opciones = item.distractoresFijos.slice(0, 3)
-          .map(function (v) { return { valor: v, codigoError: null }; })
-          .concat([{ valor: item.respuesta, codigoError: null }]);
-        opciones = CB.util.barajar(opciones, e.rng);
-      }
     }
     presentar('opciones4');
     CB.componentes.opciones4(item, opciones, responder, { bloqueoMs: bloqueo });
@@ -715,6 +719,13 @@ CB.partida.responder = function (valor, origen, extra) {
   var correcto;
   if (item.respuestaSigno) correcto = (valor === item.respuestaSigno);
   else if (origen === 'ordenar') correcto = (valor === item.respuesta);
+  /* LA RESPUESTA DE «TOCA LA MONEDA DE 20 CÉNTIMOS» NO ES UN NÚMERO: es 'c20',
+     porque el 20 a secas ya lo tiene el billete de 20 €. Sin esta rama,
+     Number('c20') es NaN, NaN === NaN es false y la pregunta se contestaría mal
+     siempre —tocando la moneda correcta—. Es exactamente la forma de fallo que
+     no rompe nada y que solo se ve jugando. Ver la cabecera de
+     `15-gen-dinero.js`. */
+  else if (typeof item.respuesta === 'string') correcto = (String(valor) === item.respuesta);
   else correcto = (Number(valor) === Number(item.respuesta));
 
   /* Anti-azar. La primera línea de evaluar() garantiza que un acierto rápido

@@ -259,8 +259,16 @@ async function huellas() {
    cambiante — es decir, exactamente el fallo que la huella venía a evitar. */
 async function sw() {
   const crypto = require('node:crypto');
+  /* LAS DOCE PIEZAS DE DINERO ENTRAN EN EL ARMAZÓN, la música no. La diferencia
+     es el peso: 64 KB las doce contra 42 MB las nueve pistas. Un juego sin red
+     que se queda mudo sigue siendo el juego; uno que en la pregunta «toca la
+     moneda de 2 euros» pinta cuatro rectángulos de color, no.
+     Van en `dist/img/` y NO se compilan desde nada, igual que `dist/audio/`:
+     `docs/dinero.md` guarda los comandos con los que se generaron. */
+  const PIEZAS = ['c1', 'c5', 'c10', 'c20', 'c50', '1', '2', '5', '10', '20', '50', '100'];
   const armazon = ['index.html', 'css/cubomatica.min.css',
-                   'js/cubomatica.min.js', 'manifest.webmanifest'];
+                   'js/cubomatica.min.js', 'manifest.webmanifest']
+    .concat(PIEZAS.map((p) => 'img/pieza-' + p + '.webp'));
 
   /* La versión sale de CB.VERSION con el mismo regex que usa el bloque 5b de la
      auditoría: es una réplica GENERADA, no escrita a mano, así que no puede
@@ -461,4 +469,9 @@ exports.estaticos = estaticos;
 exports.sw = sw;
 exports.build = build;
 exports.dev = dev;
-exports.default = build;
+/* `watch` es el alias explicito para quien invoque Gulp directamente. La tarea
+   predeterminada tambien entra en desarrollo para que `gulp` no construya y se
+   cierre, sino que quede a la espera de cambios. `gulp build` conserva la
+   construccion puntual para CI y entregas. */
+exports.watch = dev;
+exports.default = dev;

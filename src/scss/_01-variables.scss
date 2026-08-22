@@ -59,6 +59,11 @@
   --lado-icono: 64px;
   --bisel: 4px;
 
+  /* La cinta con la cifra que lleva debajo cada moneda y cada billete. Se define
+     a partir del suelo de texto y no como número fijo: con «Letra grande» la
+     cifra pasa a 24px y la cinta a 28, y si no creciera se saldría. */
+  --cinta-pieza: calc(var(--tam-texto-min) + var(--e1));
+
   /* ══ GRUPO 1 — FONDOS DE TEXTO (planos, verificados) ═══════════════════ */
   --bg-texto-panel:   #FFF6E5;   /* crema, NUNCA blanco puro */
   --bg-texto-crema:   #FFF6E5;
@@ -207,6 +212,52 @@
 @media (min-width: 1200px) { :root { --lado-deseado: 112px; } }
 @media (min-width: 1400px) { :root { --lado-deseado: 128px; } }   /* pizarra digital */
 
+/* ── LAS DOCE PIEZAS DE DINERO, QUE AHORA SON FOTOGRAFÍAS ──────────────────
+   Hasta 1.19.0 las monedas y los billetes se DIBUJABAN: `js/03-sprites.js`
+   componía un SVG con el metal, las doce estrellas y un arco, lo publicaba como
+   data: URI en estas mismas variables y el CSS no sabía de dónde venía. El
+   motivo escrito entonces —«la auditoría no admite un solo binario»— era cierto
+   como regla del proyecto y falso como restricción técnica: una imagen es un
+   SUBRECURSO, igual que la hoja de estilos o los nueve MP3, y `file://` la sirve
+   sin pedir nada a la red. Lo que la prohibía era el bloque 4 de la auditoría, y
+   eso es una lista, no una ley.
+
+   Así que se abre la misma puerta que ya tiene la música: una LISTA CERRADA,
+   declarada en `pruebas/auditar.mjs`, comprobada en los dos sentidos. Doce
+   ficheros, ni uno más.
+
+   POR QUÉ MERECE LA PENA. Lo que hay que aprender en el saber A.5 es reconocer
+   una moneda de 2 € cuando la tiene en la mano, y un cuadrado de color con un 2
+   dentro no enseña eso: enseña a leer el 2, que es justo lo que no se pregunta.
+
+   PESAN 64 KB LAS DOCE, y no entran en el presupuesto de arranque porque
+   `index.html` no las referencia: las pide el CSS, y solo cuando sale una pieza
+   en pantalla. Sí entran en el armazón del service worker, para que el juego sin
+   red siga enseñando dinero.
+
+   CADA UNA MIDE LO QUE MIDE DE VERDAD (ver `_03-componentes.scss`): el fichero
+   se genera al DOBLE de su caja CSS, que es lo que necesita una tableta con
+   pantalla de doble densidad y ni un píxel más.
+
+   EL COLOR PLANO SE QUEDA DEBAJO. Si un navegador no entiende WebP —ninguno de
+   los dos aparatos de referencia, pero el fallo hay que preverlo—, la pieza
+   sigue teniendo su `background-color`, su tamaño y su cifra, que ya la
+   distinguen. Misma red de seguridad que las ocho texturas del terreno. */
+:root {
+  --pieza-c1:  url('../img/pieza-c1.webp');
+  --pieza-c5:  url('../img/pieza-c5.webp');
+  --pieza-c10: url('../img/pieza-c10.webp');
+  --pieza-c20: url('../img/pieza-c20.webp');
+  --pieza-c50: url('../img/pieza-c50.webp');
+  --pieza-1:   url('../img/pieza-1.webp');
+  --pieza-2:   url('../img/pieza-2.webp');
+  --pieza-5:   url('../img/pieza-5.webp');
+  --pieza-10:  url('../img/pieza-10.webp');
+  --pieza-20:  url('../img/pieza-20.webp');
+  --pieza-50:  url('../img/pieza-50.webp');
+  --pieza-100: url('../img/pieza-100.webp');
+}
+
 /* ── Ajuste «Letra grande» del panel del adulto ────────────────────────── */
 :root.letra-grande {
   --tam-enunciado:     34px;
@@ -221,7 +272,19 @@
   --tam-texto-min:     32px;
   --tam-numero-opcion: 70px;
   --tam-titulo:        64px;
-  --lado-respuesta:    150px;
+  /* ESCRIBE LOS DOS EJES, NO --lado-respuesta. Escribir el resultado a mano se
+     salta el `min()` que combina anchura y altura, que es justo lo que toda esta
+     parte existe para evitar: en un proyector de 1200×700 el teclado 3×4 a
+     150 px mide más que la zona de juego, y como ahí abajo no hay barra de
+     desplazamiento, la fila del OK se quedaba fuera de la pantalla — sin nada
+     que fallara y sin forma de contestar.
+
+     Subiendo los dos, la pizarra de 1920×1080 sigue dando 150 px (ninguna
+     consulta de altura le pone techo) y el proyector bajo recibe el techo que le
+     corresponde por altura, que es lo que hace que quepa. Un botón de 72 px en
+     una pizarra se ve pequeño; uno de 150 que no se ve no se puede pulsar. */
+  --lado-deseado:      150px;
+  --lado-techo:        150px;
 }
 
 /* ── Alto contraste ────────────────────────────────────────────────────────

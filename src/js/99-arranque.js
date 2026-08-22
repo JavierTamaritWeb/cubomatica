@@ -427,12 +427,10 @@ CB.arranque = function () {
 
   CB.texturas.generarTodas();
   CB.sprites.precalentar();
-  /* Las siete piezas de dinero, dibujadas y publicadas como --pieza-*. Va aquí,
-     junto a las texturas, porque es lo mismo: un dibujo que se genera una vez al
-     arrancar y que el CSS consume sin saber de dónde sale. Si esto no llegara a
-     ejecutarse, las piezas se quedan con su color plano y su tamaño, que siguen
-     distinguiéndolas: el dibujo mejora el reconocimiento, no lo sostiene. */
-  CB.sprites.generarDinero();
+  /* Aquí se llamaba a CB.sprites.generarDinero(), que componía las siete piezas
+     en SVG y las publicaba como --pieza-*. Desde 1.20.0 las doce piezas son
+     fotografías declaradas en el propio CSS, así que el arranque no compone
+     nada: llegan como llega la hoja de estilos. */
   CB.ui.iniciarParticulas();
 
   var ap = CB.almacen.ajustesDispositivo();
@@ -523,6 +521,7 @@ CB.arranque = function () {
   }
 
   CB.arranque.conectarSonidoBotones(document);
+  CB.arranque.conectarSonidoTeclas(document);
 
   /* Guardado ante cierre y cambio de pestaña */
   window.addEventListener('pagehide', function () {
@@ -609,17 +608,74 @@ CB.arranque.esRecarga = function (perfil, ahoraMs) {
   return (ahoraMs - g.guardadaTs) < CB.arranque.MS_RECARGA;
 };
 
-/* ── TODOS LOS BOTONES SUENAN AL PULSARSE ─────────────────────────────────────
-   UN SOLO OYENTE, en el documento y en fase de captura. Hay botones en las
+/* ── UN GESTO, UN SONIDO ──────────────────────────────────────────────────────
+   El clic de «pulsar» se pide AL FINAL del gesto y solo si el gesto ha sido
+   mudo. La regla estaba escrita desde el primer día —«un clic que se añade
+   encima de un sonido que ya dice algo no informa, tapa»— pero se aplicaba con
+   una lista de tres excepciones escrita a mano, y la lista se quedó corta el
+   mismo día que se escribió: la tecla del teclado numérico ya trae su «picar» y
+   el ⌫ su «toc», así que cada cifra escrita sonaba DOS veces. Es otra vez el
+   fallo de familia de este proyecto: una regla buena aplicada en tres sitios de
+   cinco.
+
+   Así que no se enumeran los que callan: se mira si ha sonado algo. CB.audio
+   cuenta las peticiones, aquí se apunta el contador antes del gesto y se
+   compara después. Cualquier componente que gane voz propia mañana queda
+   cubierto sin tocar esta lista, porque ya no hay lista.
+
+   EL «DESPUÉS» ES UN setTimeout(0), y no hay forma de evitarlo: en captura
+   todavía no ha sonado nada, y en burbuja bastaría un stopPropagation() de
+   cualquier manejador para dejar mudo ese botón concreto sin que nada fallara.
+   El temporizador conserva la captura —que es lo que da inmunidad— y aun así
+   decide al final. El precio es un retraso de un fotograma como mucho, que en un
+   sonido de 35 ms no se oye; a cambio, el orden queda bien: primero lo que
+   significa algo, y el clic solo si no había nada que significar.
+
+   Queda UNA excepción, la única que el contador no puede ver, porque su sonido
+   llega en OTRO evento: el botón deshabilitado. Durante los 800 ms de
+   construcción el toque prematuro ya tiene su «toc» de madera en `pointerdown`,
+   que además dice lo contrario —«aún no»—, y taparlo con el «sí» sería
+   exactamente perder la distinción que los dos sonidos existen para hacer.
+
+   No hace falta comprobar el ajuste de silencio: CB.audio.sfx ya lo mira, y
+   repetirlo aquí sería la segunda copia de una regla que tiene dueño. */
+CB.arranque.clicDiferido = function (antes) {
+  setTimeout(function () {
+    if (CB.audio.emitidos !== antes) return;      // el gesto ya ha hablado
+    CB.audio.sfx('pulsar');
+  }, 0);
+};
+
+/* CUALQUIER GESTO ABRE EL AUDIO, no solo JUGAR. El contexto de Web Audio nace
+   suspendido y solo un gesto del usuario lo despierta, y hasta ahora los dos
+   únicos sitios que lo despertaban eran los botones JUGAR y «partida tranquila».
+   Es decir: quien empezaba tocando «Ajustes», «Perfiles» o el panel del adulto
+   —o quien navegaba con el teclado— no oía NADA hasta llegar a la portada, con
+   lo que la promesa de que todo botón suena era falsa justo en los primeros
+   toques de la sesión, que son los que enseñan que el juego responde.
+
+   Va aquí, dentro del manejador, y no en clicDiferido: el temporizador ya está
+   fuera del gesto y para el navegador dejaría de contar como activación. Y se
+   llama siempre, no solo la primera vez, porque iniciar() también reanuda un
+   contexto que el navegador haya suspendido por su cuenta. Es lo mismo que hace
+   CB.musica.iniciar() con reintentar(), por el mismo motivo y desde 1.7.0.
+
+   UN EVENTO SINTÉTICO NO DESPIERTA NADA. El navegador solo abre el audio con un
+   gesto de verdad, así que llamar a iniciar() desde un dispatchEvent no puede
+   funcionar: deja un contexto suspendido que nadie va a reanudar. Y de paso
+   mantiene muda la página de pruebas, que dispara veintitantos clics de mentira
+   y no tiene por qué ponerse a pitar. */
+CB.arranque.despertarAudio = function (ev) {
+  if (ev && ev.isTrusted === false) return false;
+  try { CB.audio.iniciar(); } catch (e) { }
+  return true;
+};
+
+/* UN SOLO OYENTE, en el documento y en fase de captura. Hay botones en las
    diecisiete pantallas y la mitad los crea el JS en tiempo de ejecución —el
    teclado, las opciones, las monedas, los cromos, los ajustes—, así que
-   engancharlos uno a uno sería una lista que hay que acordarse de mantener, y de
-   esas ya se han caído varias en este proyecto. Delegar cubre también los que
-   todavía no existen.
-
-   EN CAPTURA a propósito: si un manejador de más abajo llama a
-   stopPropagation(), un oyente en burbuja no llegaría a enterarse y ese botón
-   concreto se quedaría mudo sin que nada fallara.
+   engancharlos uno a uno sería una lista que hay que acordarse de mantener.
+   Delegar cubre también los que todavía no existen.
 
    ESTÁ FUERA DEL DOMContentLoaded, y eso es lo que la hace comprobable: el
    arranque devuelve pronto cuando no hay #btn-jugar —así es como las páginas de
@@ -628,19 +684,7 @@ CB.arranque.esRecarga = function (perfil, ahoraMs) {
    ejecuta EL MISMO código de registro que el juego, y no una imitación.
 
    Mismo cerrojo por atributo que CB.componentes.conectarToc(), y por el mismo
-   motivo: llamarla dos veces dejaría dos oyentes y el clic sonaría doble.
-
-   TRES EXCEPCIONES, y las tres porque ya suena algo:
-
-   · el botón deshabilitado no suena. Durante los 800 ms de construcción el toque
-     prematuro ya tiene su «toc» de madera, que además dice otra cosa: «aún no».
-     Dos sonidos a la vez convertirían esa distinción en ruido.
-   · las monedas y los billetes traen su propio «gema» al cogerse.
-   · el botón de sonido no se oye a sí mismo: sonaría justo el clic que pide que
-     no suene nada.
-
-   No hace falta comprobar el ajuste de silencio: CB.audio.sfx ya lo mira, y
-   repetirlo aquí sería la segunda copia de una regla que tiene dueño. */
+   motivo: llamarla dos veces dejaría dos oyentes y el clic sonaría doble. */
 CB.arranque.conectarSonidoBotones = function (raiz) {
   if (!raiz) return false;
   var marca = raiz.documentElement || raiz;
@@ -652,9 +696,71 @@ CB.arranque.conectarSonidoBotones = function (raiz) {
     if (!b || !b.closest) return;
     b = b.closest('button');
     if (!b || b.disabled) return;
-    if (b.classList.contains('moneda') || b.classList.contains('billete')) return;
-    if (b.getAttribute('data-accion') === 'sonido') return;
-    CB.audio.sfx('pulsar');
+    CB.arranque.despertarAudio(ev);
+    CB.arranque.clicDiferido(CB.audio.emitidos);
+  }, true);
+  return true;
+};
+
+/* ── Y LAS TECLAS TAMBIÉN ─────────────────────────────────────────────────────
+   Se puede jugar una partida entera solo con el teclado —es criterio de HECHO de
+   F8, no una comodidad—, y esa partida se jugaba en un silencio que la del dedo
+   ya no tiene. Con el mapa de PLAN §16.5 delante: las cifras del teclado
+   numérico sí sonaban («picar»), porque el sonido lo pone el componente; pero
+   Enter, Escape, las flechas que mueven el foco por la rejilla, el Tab, la L de
+   leer y la P de pista no sonaban nunca, y fuera de las tres pantallas de juego
+   NINGUNA tecla sonaba, porque el manejador de 06-a11y.js devuelve pronto.
+
+   La regla es la misma de arriba —toda tecla suena una vez— y por eso comparte
+   el contador. Lo que cambia son los cuatro casos que NO son un gesto sobre el
+   juego:
+
+   · la autorepetición. Un dedo apoyado en el 7 dispara treinta teclas por
+     segundo: eso no es pulsar treinta veces, y sonaría a ametralladora.
+   · los modificadores solos y los atajos del navegador. Shift no hace nada por
+     su cuenta —y sonaría dos veces en cada mayúscula— y Ctrl+R es del navegador,
+     no del juego.
+   · escribir en un campo. El único que hay es el de la puerta parental, y ahí la
+     confirmación de que la tecla ha entrado es el propio carácter, que se ve. Un
+     clic por letra es ruido, no información.
+   · Enter y Espacio sobre algo activable. El navegador convierte esa tecla en un
+     clic de verdad, así que el oyente de arriba ya se encarga; sin esta salida
+     sonaría dos veces. Con Espacio no vale fiarse del contador: el clic no llega
+     hasta que se SUELTA la tecla, mucho después de que el temporizador haya
+     decidido. */
+CB.arranque.TECLAS_MUDAS = ['Shift', 'Control', 'Alt', 'AltGraph', 'Meta',
+  'CapsLock', 'NumLock', 'ScrollLock', 'ContextMenu', 'Dead', 'Unidentified'];
+
+CB.arranque.esCampo = function (el) {
+  if (!el || !el.tagName) return false;
+  var t = el.tagName;
+  if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return true;
+  return el.isContentEditable === true;
+};
+
+CB.arranque.esActivable = function (el) {
+  if (!el || !el.tagName) return false;
+  var t = el.tagName;
+  if (t === 'BUTTON' || t === 'SUMMARY') return true;
+  return t === 'A' && el.hasAttribute('href');
+};
+
+CB.arranque.conectarSonidoTeclas = function (raiz) {
+  if (!raiz) return false;
+  var marca = raiz.documentElement || raiz;
+  if (marca.getAttribute && marca.getAttribute('data-clic-tecla') === 'si') return false;
+  if (marca.setAttribute) marca.setAttribute('data-clic-tecla', 'si');
+
+  raiz.addEventListener('keydown', function (ev) {
+    if (ev.repeat) return;
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (CB.arranque.TECLAS_MUDAS.indexOf(ev.key) !== -1) return;
+    if (CB.arranque.esCampo(ev.target)) return;
+    if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+      if (CB.arranque.esActivable(raiz.activeElement || document.activeElement)) return;
+    }
+    CB.arranque.despertarAudio(ev);
+    CB.arranque.clicDiferido(CB.audio.emitidos);
   }, true);
   return true;
 };

@@ -3346,3 +3346,264 @@ guion. Esa comprobación tiene razón —el día que alguien vuelva a partir el 
 comprobación. 8080 el juego con recarga en vivo; 8081 las pruebas, servidas tal cual. Su
 `snippetOptions.blacklist` habría bastado en teoría; en esta versión apaga la inyección
 entera, y se comprobó antes de confiar en ella.
+
+---
+
+# Ronda 24 — que la tecla suene, y suene una vez (1.19.0)
+
+## D-R24-1 · No hay un sonido nuevo: es el mismo clic
+
+Se pidió que al pulsar una tecla sonara algo. La primera tentación es un efecto propio para
+el teclado, y sería un error: el acto es el mismo —«mi pulsación ha entrado»— y darle dos
+voces distintas obligaría al niño a aprender que significan lo mismo. La tabla se queda en
+**trece efectos**, que sigue siendo contrato.
+
+Distinguir el dedo de la tecla solo tendría sentido si hubiera algo distinto que decir, y no
+lo hay: el juego responde igual a las dos.
+
+## D-R24-2 · La regla es «un gesto, un sonido», y no una lista
+
+El clic de botón entregado en 1.18.0 traía una lista de tres excepciones escrita a mano —el
+botón deshabilitado, la moneda, el de silenciar— y nació corta: la tecla del teclado numérico
+ya trae su «picar» y el ⌫ su «toc», así que **cada cifra que escribía un niño sonaba dos
+veces**, con el clic tapando justo el sonido que dice algo. La regla estaba bien escrita en el
+comentario de su propio guardián; lo que falló fue enumerar a mano dónde se aplica. Es la
+familia de E44-E46, otra vez.
+
+Ahora `CB.audio.emitidos` cuenta las peticiones de sonido y el clic genérico se pide **al
+final del gesto y solo si el gesto ha sido mudo**. La diferencia práctica: un componente que
+gane voz propia mañana queda cubierto sin que nadie se acuerde de venir aquí.
+
+Se cuenta la **petición** y no el sonido, y **antes** de mirar el contexto de audio. Si se
+contara después, en la página de pruebas —donde no hay `AudioContext`— el contador no se
+movería nunca y la regla se comprobaría en el vacío: verde, diciendo nada.
+
+## D-R24-3 · Por qué la decisión se toma en un `setTimeout(0)`
+
+En captura todavía no ha sonado nada, así que ahí no se puede decidir. En burbuja se podría,
+pero bastaría un `stopPropagation()` de cualquier manejador —hoy no hay ninguno; mañana no se
+sabe— para dejar mudo ese botón concreto sin que nada fallara. El temporizador conserva la
+captura, que es lo que da inmunidad, y aun así decide al final.
+
+El precio es un retraso de un fotograma como mucho, inaudible en un sonido de 35 ms. La
+contrapartida es un orden mejor: primero lo que significa algo, y el clic solo si no había
+nada que significar.
+
+Y hay un caso que el contador no puede ver, porque su sonido llega en **otro evento**: el
+botón deshabilitado, cuyo «toc» lo emite `pointerdown`. Esa excepción sigue escrita, y es la
+única.
+
+## D-R24-4 · Las dos excepciones del teclado que no son de sonido
+
+**La autorepetición.** Un dedo apoyado en el 7 dispara treinta teclas por segundo. Eso no es
+pulsar treinta veces y sonaría a ametralladora.
+
+**Enter y Espacio sobre algo activable.** El navegador los convierte en un clic de verdad, del
+que ya se encarga el otro oyente. Con Enter el contador bastaría —el clic llega dentro de la
+misma tarea—, pero con Espacio no: el clic no se dispara hasta que se **suelta** la tecla,
+mucho después de que el temporizador haya decidido. Se tratan igual los dos, porque una regla
+que depende de cuándo despacha el navegador un evento sintético es una regla que se rompe
+sola.
+
+Escribir en un campo tampoco suena. El único que hay es la puerta parental, y ahí la
+confirmación de que la tecla ha entrado es el carácter, que se ve; un clic por letra sería
+ruido. No es una excepción por sonido, es que escribir no es pulsar un mando.
+
+## D-R24-5 · Cualquier gesto abre el audio, y uno sintético no
+
+El contexto de Web Audio nace suspendido y solo lo despierta un gesto del usuario. Lo
+despertaban dos botones: JUGAR y CANTERA TRANQUILA. Quien empezaba por «Ajustes», por «¿Quién
+juega?» o navegando con el teclado no oía **nada** hasta llegar a la portada — con lo que la
+promesa de 1.18.0, «todos los botones suenan», era falsa justo en los primeros toques de la
+sesión, que son los que enseñan que el juego responde. Se abre ya con cualquier toque o tecla,
+igual que `CB.musica.iniciar()` hace con `reintentar()` desde 1.7.0 y por el mismo motivo.
+
+Un evento sintético **no** lo abre. No es una concesión a las pruebas: el navegador no
+concede activación a un `dispatchEvent`, así que llamar ahí a `iniciar()` solo deja un
+contexto suspendido que nadie va a reanudar. Que la suite —que dispara veintitantos clics de
+mentira— siga muda es la consecuencia, no el motivo.
+
+## D-R24-6 · El botón de silenciar ya no necesita estar exento
+
+Estaba en la lista con este argumento: «sonaría justo el clic que pide que no suene nada». Al
+mirarlo con el contador delante resulta que no: el manejador silencia **antes**, el clic
+diferido llega después y sale por un maestro con ganancia 0. Medido en el navegador, no
+deducido. Y en el sentido contrario —al volver a activar el sonido— el clic ahora suena, que
+es exactamente la confirmación que hacía falta.
+
+La moneda tampoco necesita exención: calla porque **suena** su «gema», no porque esté escrita
+en una lista. La diferencia importa el día que alguien añada una pieza nueva.
+
+## D-R25-1 · Las monedas ahora son fotografías, y el binario deja de estar prohibido
+
+Contradice de frente a **D-R23-8** («no hay imágenes, y no es una carencia») y a **D-R23-10**
+(«las monedas dibujadas»). Se anota como contradicción y no como matiz, porque el argumento
+que sostenía las dos era, en parte, falso.
+
+Lo que decían D-R23-8 y el comentario de `03-sprites.js` era: *el proyecto no admite un solo
+fichero binario, porque `dist/` se abre con doble clic desde `file://` y una imagen suelta
+sería una petición de red que ahí no existe.* La primera mitad es verdad —el bloque 4 de la
+auditoría lo prohíbe— y **la segunda no lo es**: una imagen es un SUBRECURSO, igual que
+`<link rel="stylesheet">` o los nueve `<audio>`, y `file://` la sirve sin pedir nada a la red.
+Lo que prohibía las imágenes era una línea de `auditar.mjs` escrita por nosotros, no el
+navegador. Una regla del proyecto puede cambiarse; una restricción del entorno, no. Durante
+dos versiones se confundieron, y la consecuencia fue rediseñar el dinero entero para esquivar
+un obstáculo que no estaba.
+
+**Qué se gana.** El saber A.5 pide *reconocer* las monedas y los billetes. D-R23-10 dio la
+respuesta correcta a la pregunta equivocada: dibujó lo que distingue una pieza de otra —el
+bimetal, el color, el ancho— y con eso se aprende a distinguir SIETE RECTÁNGULOS ENTRE SÍ,
+que no es lo mismo que reconocer una moneda en la mano. La foto sí es lo mismo.
+
+**Con qué condiciones.** Las mismas tres con las que se abrió la puerta a la música, porque
+son las que hacen que esto sea una excepción y no un agujero:
+
+1. lista **cerrada**, escrita en `auditar.mjs`: doce piezas, ni una más;
+2. comprobada **en los dos sentidos** —ni falta ninguna, ni sobra ninguna—;
+3. y cada pieza tiene que estar **declarada Y consumida en el CSS compilado**, porque un
+   fichero que no usa nadie es peso muerto que nadie volverá a mirar.
+
+Todo lo demás sigue prohibido: una fuente, un icono, una captura. Y las ocho texturas del
+terreno **siguen dibujándose en canvas**, donde el argumento sí se sostiene: son ruido de
+16×16 que como fichero pesaría más que el código que lo genera.
+
+**Lo que NO cambia** es lo único que D-R23-10 acertó de pleno: **la cifra no va dentro de la
+imagen**. Un número grabado en el fichero no crece con `letra-grande`, no crece con
+`modo-proyeccion` y no se puede medir en un par de contraste. Lo que sí cambia es dónde cae:
+antes iba ENCIMA del dibujo, que dejaba libre la franja central a propósito; ahora baja a una
+**cinta opaca debajo de la imagen**, porque sobre una fotografía el hueco lo decide el grabado
+del billete y no nosotros. Efecto lateral que conviene ver: los seis pares de contraste de
+`casos-contraste.js` —uno por color de pieza— se convierten en **uno solo**, el de la cinta.
+Menos comprobaciones y más honestas: sobre una foto no hay contraste que medir.
+
+**Tamaños reales, a escala.** 3,1 px/mm las monedas, con la de 1 € como ancla en sus 72 px de
+siempre; 0,85 px/mm los billetes. Sale gratis lo que antes había que inventar: el billete
+crece con el valor, y la moneda de 10 céntimos es MÁS PEQUEÑA que la de 5 —que es verdad, y es
+la trampa que tiene el dinero de verdad—.
+
+**Qué es y qué no es.** No son facsímiles: son fotografías **de una sola cara, a un cuarto del
+tamaño real**, con finalidad didáctica y sin más pretensiones. El billete de 100 € que se nos
+pasó lleva encima los recuadros rojos del diagrama del BCE que señala las medidas de
+seguridad; se advirtió y se pidió usarlo igual, y a 125 px de ancho apenas se ven. La
+procedencia de las once restantes **no está verificada** —quedó anotado en
+`LICENCIAS-TERCEROS.md` y en `docs/dinero.md`, igual que se hizo con la música—.
+
+## D-R25-2 · Una pieza de céntimo no es un número
+
+Al meter las cinco monedas de céntimo, lo natural era llamarlas por su número. Y ahí choca
+todo: 5, 10, 20 y 50 **ya son** los cuatro billetes. Con un número por pieza pasan dos cosas,
+y la segunda es la mala:
+
+- el CSS selecciona la fotografía por ese número, así que «la moneda de 20 céntimos» se
+  pintaría con la foto del billete de 20 €;
+- y `40-partida.js` corrige con `Number(valor) === Number(item.respuesta)`, que para dos
+  piezas distintas del mismo número **da cierto**: tocar el billete de 5 € acertaría la
+  pregunta «toca la moneda de 5 céntimos».
+
+Se nombran `'c5'`, `'c20'`. El precio es que **la respuesta de esas preguntas no es un
+número**, y eso hay que pagarlo en tres sitios, los tres anotados:
+
+1. `40-partida.js` compara cadenas en una rama propia. Sin ella, `Number('c20')` es `NaN`,
+   `NaN === NaN` es falso y la pregunta se falla SIEMPRE, incluso tocando la moneda buena —un
+   nivel imposible de superar sin un solo error en consola—;
+2. `casos-generadores.js` exime al invariante 1 (respuesta en `[0,999]`) y al 3 (sin
+   decimales), con una exención estrecha: solo la respuesta, solo si es cadena, y solo en un
+   ítem que pide dibujar piezas;
+3. y los distractores fijos **dejan de pasar por el motor de distractores**, en la partida y
+   en la prueba. Con los euros solo se calculaba de más; con `'c20'` el motor hace aritmética
+   con una cadena.
+
+La alternativa era un segundo atributo numérico y una unidad implícita, que es la forma de
+tener el mismo choque escondido un nivel más abajo.
+
+
+# Ronda 26 — dos columnas cuando hay sitio, y lo que se vio al medir (1.21.0)
+
+## D-R26-1 · El reparto en dos columnas va por ANCHURA y desde 1200 px
+
+En vertical el reparto arriba/abajo es el correcto y no se toca: el pulgar llega al tercio
+inferior y el enunciado queda a la vista por encima. En una pantalla ancha —portátil,
+proyector, pizarra— ese mismo reparto deja dos franjas de aire a los lados y obliga a un
+barrido vertical largo entre la pregunta y el teclado, que es el recorrido que el niño repite
+en cada uno de los veinte ítems de una expedición.
+
+Va por la anchura porque así lo manda la regla de los dos ejes (`_herramientas.scss`): la
+anchura decide cuántas columnas, la altura decide el lado del botón. Una columna más es
+anchura. Por eso este cambio no toca `--lado` ni ningún tamaño.
+
+Y desde 1200 y no desde 1024: por debajo el aparato es una tableta apaisada, que se sujeta
+con las dos manos, y ahí el alcance del pulgar sigue mandando sobre el barrido de la vista.
+
+**Las dos mitades se arriman al centro**, no se centra cada una en la suya. Centrando cada
+mitad, en 1440 px el enunciado queda a 360 y el teclado a 1080: setecientos píxeles, más que
+los cuatrocientos del reparto vertical. Se habría cambiado un recorrido largo por otro más
+largo, que es la forma más fácil de que un cambio de maquetación parezca una mejora y no lo
+sea.
+
+Solo afecta a `p-partida`. El jefe y la calibración tienen otra maqueta (`.contenido`,
+`#cal-respuesta`) y no comparten estas clases.
+
+## D-R26-2 · Centrar y desplazar a la vez esconde por arriba, y la salida es `safe`
+
+Una caja que centra (`justify-content: center`) y además desborda con barra
+(`overflow-y: auto`) reparte el sobrante a los **dos** lados. Lo que sale por arriba no se
+recupera de ninguna manera, porque `scrollTop` no puede ser negativo. Con el enunciado largo
+de un problema más el mensaje de resultado —que tiene un suelo de tres líneas— el niño veía
+el enunciado cortado por su primera línea y la barra solo le llevaba hacia abajo.
+
+`safe center` es exactamente esto: centra mientras quepa, se porta como `start` en cuanto
+desborda. Se aplica en **los dos ejes**, porque con `overflow-y: auto` el eje horizontal pasa
+también a `auto` y una fila de piezas de dinero más ancha que la columna se recortaba por la
+izquierda por el mismo motivo; y en cualquier otra alineación posicional de esa caja, que es
+por lo que el `flex-end` del reparto nuevo es `safe flex-end`.
+
+Un navegador que no conozca la palabra descarta la declaración entera y se queda en `start`:
+se pierde el centrado, no se pierde contenido. Es la degradación que se quería.
+
+La alternativa era centrar con márgenes automáticos (`margin-block: auto`), que tampoco
+recortan. Se descartó por ser dos declaraciones y un hijo envoltorio donde `safe` es una
+palabra.
+
+## D-R26-3 · Los seis recortes que aparecieron al medir, y por qué ninguno se veía
+
+Con el cambio hecho se midió la pantalla en quince tamaños de ventana, de 320×420 a
+2560×1440, cruzados con «Letra grande» y «Modo proyección». Salieron seis fallos, **todos
+anteriores** a esta versión, todos en verde en la auditoría, en las 824 comprobaciones de
+entonces y en el cruce de clases. Ninguno se ve leyendo la hoja de estilos:
+
+- **E96** — `:root.modo-proyeccion` escribía `--lado-respuesta` a mano, que es el *resultado*
+  del `min()` de los dos ejes. En un proyector de 1200×700 la fila del OK caía fuera. Y como
+  el selector lleva clase, ganaba por **especificidad**: ningún `:root { --lado-techo }`
+  posterior podía bajarlo, así que los tres escalones de altura nombran ahora también la
+  clase. La nota de `_01-variables.scss` que decía «gana el orden de origen» vale entre
+  selectores de la misma especificidad, y solo ahí.
+- **E97** — la excepción documentada del 6×2 se pedía por altura sin mirar la anchura. Seis
+  columnas de 64 px con sus huecos son 424: en 360×640 dos columnas se salían.
+- **E98** — el suelo de 64 px por tecla no se negocia, así que hay ventanas soportadas
+  (320×480) donde el teclado no cabe. Ahí el OK era **inalcanzable** y la pregunta no se podía
+  contestar. La zona de la respuesta lleva ya barra, como la del enunciado.
+- **E99** — «CUBOMÁTICA» mide 337 px con sus rellenos: en 320 salía descabezado. Se arregla
+  dejándolo partirse, **no** fijando un tamaño de letra para móviles: `--tam-titulo` es lo que
+  gobiernan «Letra grande» y el modo proyección, y un literal ahí habría anulado los dos
+  ajustes justo donde más falta hacen.
+- **E100** — los cuatro botones de la barra no caben en 320 px y el de Sonido, el único que
+  apaga la música, quedaba cortado contra el borde. La barra envuelve antes que encoger
+  teclas.
+
+Los seis guardianes (E95-E100) **miden**, no leen CSS. `getComputedStyle` habría dicho
+`safe center` y habría quedado verde aunque el navegador no lo aplicara; y una aserción
+condicionada a la ventana real está verde en toda máquina ancha por no aplicar, que es la
+peor forma de estar verde. Por eso E99 y E100 miden dentro de una caja de 320 px en vez de
+mirar la ventana.
+
+## D-R26-4 · El instrumental también engaña: veinte Chrome con el mismo puerto
+
+Durante parte de esta ronda las mediciones fueron falsas y coherentes. El guion de medida
+lanzaba Chrome con un puerto de depuración fijo y lo mataba sin matar el árbol de procesos:
+quedaban instancias vivas, y las ejecuciones nuevas se conectaban a la **primera** que había
+ganado el puerto, es decir a un navegador con el CSS de hacía tres compilaciones. Las medidas
+salían plausibles y equivocadas, y una corrección ya aplicada parecía no funcionar.
+
+Es la misma familia que la caché de las páginas de prueba, y la misma lección: antes de
+creerse una medida, comprobar que la está tomando el código que se acaba de escribir. El
+guion lleva ahora un puerto por proceso y mata el grupo entero.
