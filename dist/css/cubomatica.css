@@ -2096,6 +2096,24 @@ button:focus:not(:focus-visible) {
   overflow: hidden;
 }
 
+/* LA PORTADA SE RECORRE POR DENTRO. El `overflow: hidden` de arriba es
+   deliberado y se queda: las nubes y el cielo van fuera de flujo y sacarían
+   barras por decorado, no por contenido. Pero entonces lo que no cabe a lo alto
+   no se alcanza de ninguna manera, y a 320x480 —tamaño soportado: el aviso de
+   girar el aparato solo salta por debajo de 320x420— la pila mide 968 px, o sea
+   que la fila de abajo (Ajustes, Ayuda, Creditos) quedaba fuera y sin forma de
+   llegar. La barra la lleva la pila, que es quien tiene el contenido.
+
+   `safe center`, no `center`, y por la razon de E95: una caja que centra Y
+   desborda parte lo que sobra en DOS lados, y lo de arriba no se recupera nunca
+   porque scrollTop no puede ser negativo. Con `safe` centra mientras cabe y se
+   comporta como `start` en cuanto deja de caber. */
+.pantalla--portada .pila-centro {
+  overflow-y: auto;
+  justify-content: safe center;
+  align-items: safe center;
+}
+
 .pantalla--portada .titulo-juego {
   font-family: var(--fuente-pixel);
   font-size: var(--tam-titulo);
@@ -2244,6 +2262,23 @@ button:focus:not(:focus-visible) {
      que el título necesita para caber entero en una línea. */
   .pantalla--portada .titulo-juego {
     padding: var(--e3);
+  }
+  /* Y LA MISMA FAMILIA QUE E99-E100, UN NIVEL MÁS ADENTRO. A 320 px una línea
+     dentro de un panel se queda en unos 145 px —diez caracteres de esta
+     tipografía—, así que «expedición», «guardianes» o «Cubomática» no caben, y
+     una palabra que no cabe NO se parte sola: se sale, sin barra horizontal y
+     sin error, exactamente igual que se salía el título de la portada. Se
+     permite partirla solo aquí, solo cuando no cabe, y la lista devuelve la
+     mitad de su sangría, que son otros 16 px de texto. */
+  .contenido p,
+  .contenido li,
+  .contenido h2,
+  .texto-lectura {
+    overflow-wrap: break-word;
+  }
+  .contenido ul,
+  .contenido ol {
+    padding-left: var(--e3);
   }
 }
 @media (min-width: 480px) {

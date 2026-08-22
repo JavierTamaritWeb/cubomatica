@@ -226,7 +226,7 @@ juzgar(nLegal >= 1, 'el aviso de no afiliacion sobrevive a la minificacion',
    lineas: el HTML minificado es una sola linea y `grep -c` daria 1. */
 const dh = readFileSync(join(DIST, 'index.html'), 'utf8');
 const cuenta = (re) => (dh.match(re) || []).length;
-juzgar(cuenta(/<section id="p-/g) === 17, 'dist/index.html conserva las 17 pantallas',
+juzgar(cuenta(/<section id="p-/g) === 18, 'dist/index.html conserva las 18 pantallas',
   'dist/index.html tiene ' + cuenta(/<section id="p-/g) + ' pantallas');
 juzgar(cuenta(/<script src=/g) === 1 && cuenta(/rel="stylesheet"/g) === 1,
   'dist/index.html carga un solo guion y una sola hoja',

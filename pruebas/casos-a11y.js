@@ -4,7 +4,7 @@
    El proyecto ya verificaba contraste (casos-contraste.js), glifos
    (casos-fuente.js) y que el límite de tiempo sea desactivable
    (casos-reloj.js). Lo que no miraba nadie era la NAVEGACIÓN: si el orden de
-   tabulación se sale de la pantalla, si las diecisiete secciones tienen nombre,
+   tabulación se sale de la pantalla, si las dieciocho secciones tienen nombre,
    si hay una manera de saltarse la barra de herramientas.
 
    Esto es material escolar sujeto a EN 301 549 / WCAG 2.2 AA. No es una
@@ -63,10 +63,10 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
     positivos.length + ' encontrados');
 
   /* ── 3. El Tab no se va a una pantalla que no se ve ─────────────────────
-     Diecisiete <section> apiladas en el MISMO documento, dieciséis ocultas. El
+     Dieciocho <section> apiladas en el MISMO documento, diecisiete ocultas. El
      atributo `hidden` sí saca del orden de tabulación, pero basta un
      `display: block` en algún sitio, o un nodo enfocable colgado fuera de una
-     sección, para que Tab salte a una pantalla invisible. Con diecisiete
+     sección, para que Tab salte a una pantalla invisible. Con dieciocho
      apiladas eso no es hipotético.
 
      Se comprueba estructuralmente y no por render, para que valga también en la
@@ -94,12 +94,12 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
     });
   });
   t.ok(fugas.length === 0,
-    'estando en cualquier pantalla, el Tab no alcanza nada de las otras dieciséis',
+    'estando en cualquier pantalla, el Tab no alcanza nada de las otras diecisiete',
     fugas.slice(0, 5).join(' · '));
 
-  /* ── 4. Las diecisiete son regiones con nombre ──────────────────────────
+  /* ── 4. Las dieciocho son regiones con nombre ──────────────────────────
      Una <section> SIN nombre accesible no cuenta como landmark y no aparece en
-     la lista de regiones del lector de pantalla. Eran diecisiete secciones que
+     la lista de regiones del lector de pantalla. Eran dieciocho secciones que
      para un lector no existían como tales. */
   var sinNombre = [], sinMain = [];
   CB.pantallas.IDS.forEach(function (id) {
@@ -111,7 +111,7 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
     var etiqueta = idEtiqueta ? document.getElementById(idEtiqueta) : null;
     if (!etiqueta || !etiqueta.textContent.trim()) sinNombre.push(id);
     if (s.getAttribute('role') !== 'main') sinMain.push(id);
-    /* Y solo UNA lleva role=main: diecisiete «main» a la vez no es incorrecto,
+    /* Y solo UNA lleva role=main: dieciocho «main» a la vez no es incorrecto,
        es que deja de significar nada. */
     var otras = CB.pantallas.IDS.filter(function (o) {
       var e = document.getElementById(o);
@@ -120,7 +120,7 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
     if (otras.length) sinMain.push(id + ' comparte main con ' + otras.join(','));
   });
   t.ok(sinNombre.length === 0,
-    'las 16 pantallas navegables tienen nombre accesible, tomado de su <h1>',
+    'las 17 pantallas navegables tienen nombre accesible, tomado de su <h1>',
     sinNombre.join(', '));
   t.ok(sinMain.length === 0,
     'y en cada momento hay exactamente una con role="main": la visible',

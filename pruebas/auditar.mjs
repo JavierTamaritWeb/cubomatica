@@ -457,7 +457,30 @@ juzgar(enHtml.length === M.guiones.length,
   'src/index.html carga ' + enHtml.length + ' guiones y el manifiesto declara ' + M.guiones.length);
 
 const nSec = (html.match(/<section id="p-/g) || []).length;
-juzgar(nSec === 17, '17 <section> de pantalla', 'hay ' + nSec + ' secciones, deben ser 17');
+juzgar(nSec === 18, '18 <section> de pantalla', 'hay ' + nSec + ' secciones, deben ser 18');
+
+/* ── E101 · La AYUDA se comprueba aqui, no en el navegador ────────────────
+   La pantalla de ayuda es maqueta estatica: no hay ningun alEntrar que la
+   pinte, asi que la pagina de pruebas solo veria su maqueta REDUCIDA y estaria
+   comprobando el mock contra si mismo. Quien tiene delante el fichero de verdad
+   es esta auditoria. Se vigilan tres cosas y las tres se rompen en silencio:
+   que la pantalla exista, que se pueda llegar a ella desde algun boton, y que
+   los cuatro mundos que nombra sean los cuatro mundos que declara el catalogo
+   —renombrar un mundo en js/17-catalogo.js y dejar el nombre viejo en la ayuda
+   no da error, solo deja al nino leyendo un mapa que ya no existe. */
+const secAyuda = (html.match(/<section id="p-ayuda"[\s\S]*?<\/section>/) || [])[0] || '';
+juzgar(!!secAyuda && /<h1>/.test(secAyuda) && /data-salir/.test(secAyuda),
+  'E101 · la pantalla de ayuda existe, con su <h1> y su salida',
+  'falta la seccion p-ayuda, su encabezado o su boton de salir');
+juzgar((html.match(/data-ir="p-ayuda"/g) || []).length >= 1,
+  'E101 · se puede llegar a la ayuda desde algun boton',
+  'ningun boton lleva a p-ayuda: la pantalla seria inalcanzable');
+const mundosCat = [...leer(D('src/js/17-catalogo.js'))
+  .matchAll(/\{ id: 'M\d+', nombre: '([^']+)'/g)].map((m) => m[1]);
+const sinNombrar = mundosCat.filter((n) => !secAyuda.includes(n));
+juzgar(mundosCat.length === 4 && !sinNombrar.length,
+  'E101 · la ayuda nombra los cuatro mundos tal y como los declara el catalogo',
+  'la ayuda no nombra: ' + sinNombrar.join(', '));
 
 const ausentes = enHtml.filter((f) => !existsSync(D('src', f)));
 juzgar(!ausentes.length, 'todos los guiones referenciados existen',

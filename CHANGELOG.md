@@ -12,6 +12,57 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.22.0] — 2026-08-22
+
+**Segunda cifra.** Una pantalla nueva, la decimoctava: **Ayuda**. El perfil
+guardado no cambia.
+
+### Corregido
+
+- **A 320 px una palabra larga no se partía: se salía de su panel** (E102). Sin
+  barra, sin error y sin nada que se pusiera rojo, igual que E99-E100 un nivel
+  más afuera. «expedición», «guardianes» o «Cubomática» no caben en los ~145 px
+  que deja una línea dentro de un panel a ese ancho. Se permite partir la
+  palabra —solo por debajo de 480 px, solo cuando no cabe— y la lista devuelve
+  la mitad de su sangría.
+- **La fila de abajo de la portada era inalcanzable a 320×480** (E103), y lo era
+  desde antes de que este botón la hiciera de cuatro. `.pantalla--portada` es
+  `overflow: hidden` a propósito —las nubes y el cielo van fuera de flujo y
+  sacarían barras por decorado—, así que lo que no cabía a lo alto no se
+  alcanzaba de ninguna forma. La barra la lleva ahora `.pila-centro`, con la
+  alineación `safe` de E95 en los dos ejes.
+- Los dos guardianes **miden dentro de un `<iframe>` de 320 px**, no en una caja
+  de 320 px: el arreglo vive en `@media (max-width: 479px)` y una media query se
+  evalúa contra el viewport, así que el truco de E99-E100 habría medido el
+  estado roto creyendo que medía el arreglado. El marco va `position: fixed`
+  porque `body` es un flex y un iframe suelto es un ítem flexible cuyo alto se
+  reasigna —midió 150 px—, y antes de medir nada se comprueba que el marco mide
+  320 y que la hoja se aplicó dentro.
+
+### Añadido
+
+- **Pantalla de Ayuda (`p-ayuda`)**, con botón propio en la portada y en el mapa.
+  Cuenta el juego entero —qué es, cómo se responde, las tres luces, el reloj de
+  arena, las gemas, los cuatro botones de la barra, qué pasa al fallar, los
+  cuatro mundos y sus guardianes, el descanso, el álbum, el diccionario, los
+  perfiles, los ajustes, la cantera tranquila, las teclas y la llave del panel
+  de personas adultas— **escrito para quien juega**: frases cortas, palabras de
+  2.º de Primaria y una idea por línea. Lo que hasta ahora solo estaba en
+  `README.md`, que un niño de siete años no abre.
+- El juego pasa de **17 a 18 pantallas**. El número es contrato en cinco sitios
+  —`CB.pantallas.IDS`, `CB.musica.PANTALLAS`, `casos-carga.js`, `casos-a11y.js`
+  y el bloque 5 de `auditar.mjs`— y los cinco se han cambiado a la vez y a
+  propósito.
+- **E101**: la ayuda es maqueta estática, así que la vigila la **auditoría** y no
+  la página de pruebas, que solo vería su maqueta reducida comprobándose contra
+  sí misma. Comprueba que la pantalla exista con su `<h1>` y su salida, que
+  algún botón lleve a ella, y que los cuatro mundos que nombra sean exactamente
+  los que declara `js/17-catalogo.js`: renombrar un mundo y dejar el nombre
+  viejo en la ayuda no da ningún error, solo deja al niño leyendo un mapa que ya
+  no existe.
+
+---
+
 ## [1.21.0] — 2026-08-22
 
 **Segunda cifra.** La pantalla de la expedición se reparte en dos columnas

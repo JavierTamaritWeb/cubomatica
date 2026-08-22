@@ -55,9 +55,9 @@ CB.musica.PISTAS = {
   victoria:      { fichero: 'victoria.mp3',       gan: 0.624, entra: 0,    sale: 105.5 }
 };
 
-/* Qué suena en cada una de las 17 pantallas.
+/* Qué suena en cada una de las 18 pantallas.
    null  = silencio deliberado.
-   La ausencia de una pantalla en esta tabla NO ocurre: están las 17, para que
+   La ausencia de una pantalla en esta tabla NO ocurre: están las 18, para que
    añadir una pantalla nueva y olvidarse de la música sea un fallo de prueba y
    no un silencio que nadie note. 'p-partida' se resuelve por el mundo.
 
@@ -74,6 +74,7 @@ CB.musica.PANTALLAS = {
   'p-mapa':        'temaPrincipal',
   'p-ajustes':     'temaPrincipal',
   'p-creditos':    'temaPrincipal',
+  'p-ayuda':       'temaPrincipal',
   'p-cantera':     'cantera',
   'p-casa':        'cantera',
   'p-glosario':    'cantera',

@@ -1,6 +1,6 @@
-/* casos-carga.js — el bundle, 17 secciones y los espacios de nombre de CB */
+/* casos-carga.js — el bundle, 18 secciones y los espacios de nombre de CB */
 
-CB.pruebas.suite('Carga: contrato del bundle y las 17 pantallas', function () {
+CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
   var t = CB.pruebas;
 
   /* AQUÍ VIVÍA «el juego carga exactamente 44 scripts».
@@ -27,11 +27,11 @@ CB.pruebas.suite('Carga: contrato del bundle y las 17 pantallas', function () {
     'y ese guion es el bundle de dist/, no las fuentes sueltas',
     delJuego.length ? delJuego[0].src : 'ninguno');
 
-  t.igual(CB.pantallas.IDS.length, 17, 'hay 17 ids de pantalla declarados');
+  t.igual(CB.pantallas.IDS.length, 18, 'hay 18 ids de pantalla declarados');
   var faltan = CB.pantallas.IDS.filter(function (id) {
     return !document.getElementById(id);
   });
-  t.ok(faltan.length === 0, 'las 17 <section> existen en el documento', faltan.join(', '));
+  t.ok(faltan.length === 0, 'las 18 <section> existen en el documento', faltan.join(', '));
 
   var espacios = ['util', 'LEGAL', 'almacen', 'texturas', 'sprites', 'audio', 'voz',
     'a11y', 'gen', 'catalogo', 'MUNDOS', 'ERRORES', 'distractores', 'diagnosticar',
@@ -57,14 +57,14 @@ CB.pruebas.suite('Carga: contrato del bundle y las 17 pantallas', function () {
   t.ok(/^\d+\.\d+\.\d+$/.test(CB.VERSION || ''),
     'CB.VERSION existe y tiene formato x.y.z', String(CB.VERSION));
 
-  /* ── ENTRAR EN CADA UNA DE LAS 17 PANTALLAS ─────────────────────────────
+  /* ── ENTRAR EN CADA UNA DE LAS 18 PANTALLAS ─────────────────────────────
      No había ninguna prueba que ENTRARA en las pantallas: se comprobaba que las
      <section> existieran, que es comprobar la maqueta. Con eso, el panel del
      adulto llevaba desde el principio mandando al usuario a la pantalla de
      error —su handler de alEntrar navegaba a su propia pantalla y desbordaba la
      pila— y las 294 comprobaciones seguían en verde.
 
-     Aquí se entra de verdad en las 17 y se exige que ninguna falle y que cada
+     Aquí se entra de verdad en las 18 y se exige que ninguna falle y que cada
      una deje CB.pantallas.actual en su sitio. */
   var fallos = [];
   var pantallaPrevia = CB.pantallas.actual;
@@ -88,7 +88,7 @@ CB.pruebas.suite('Carga: contrato del bundle y las 17 pantallas', function () {
 
   CB.pantallas.fallo = falloOriginal;
   t.ok(fallos.length === 0,
-    'se puede ENTRAR en las 16 pantallas navegables sin que ninguna falle',
+    'se puede ENTRAR en las 17 pantallas navegables sin que ninguna falle',
     fallos.join(' · '));
 
   /* Y el cerrojo de reentrada que impide que vuelva a pasar */
@@ -119,7 +119,7 @@ CB.pruebas.suite('Carga: contrato del bundle y las 17 pantallas', function () {
     if (h1.length !== 1) malEncabezado.push(id + ': ' + h1.length + ' h1');
   });
   t.ok(malEncabezado.length === 0,
-    'las 17 pantallas declaran exactamente un <h1> en su maqueta',
+    'las 18 pantallas declaran exactamente un <h1> en su maqueta',
     malEncabezado.join(', '));
 
   /* ── Exportar SIN importar es un botón que promete y no cumple ──────────

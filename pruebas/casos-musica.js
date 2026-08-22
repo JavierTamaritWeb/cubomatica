@@ -83,7 +83,7 @@ CB.pruebas.suite('Música: tablas, volúmenes y bucles', function () {
     return !(id in CB.musica.PANTALLAS);
   });
   t.ok(sinEntrada.length === 0,
-    'las 17 pantallas están en CB.musica.PANTALLAS', sinEntrada.join(', '));
+    'las 18 pantallas están en CB.musica.PANTALLAS', sinEntrada.join(', '));
 
   var sobran = Object.keys(CB.musica.PANTALLAS).filter(function (id) {
     return CB.pantallas.IDS.indexOf(id) === -1;

@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 1.21.0**
+**Versión 1.22.0**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.
@@ -29,6 +29,10 @@ honesta para volver mañana.
 - **Responder al azar no puntúa**, pero tampoco apaga una luz ni acusa al niño de nada.
 - Al fallar, primero aparece una pista; solo al segundo fallo aparece la tarjeta de
   reparación, que enseña el procedimiento paso a paso.
+- **El botón «Ayuda»** —en la portada y en el mapa— explica el juego entero con
+  palabras de 2.º: cómo se responde, las luces, el reloj, las gemas, los cuatro
+  botones de la barra, los mundos y sus guardianes, los ajustes y las teclas.
+  Está escrito para que lo lea el niño, no la familia.
 
 ## Contenido
 

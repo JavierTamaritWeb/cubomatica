@@ -1306,7 +1306,7 @@ CB.bus = new CB.util.EventoSimple();
    o capacidad— sin romper nada; la tercera, cuando solo se corrigen fallos. La primera sube el día que cambie
    el formato del perfil guardado, porque eso obliga a una migración en
    `01-almacen.js` y es lo único que puede romperle el progreso a un niño. */
-CB.VERSION = '1.21.0';
+CB.VERSION = '1.22.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -2886,9 +2886,9 @@ CB.musica.PISTAS = {
   victoria:      { fichero: 'victoria.mp3',       gan: 0.624, entra: 0,    sale: 105.5 }
 };
 
-/* Qué suena en cada una de las 17 pantallas.
+/* Qué suena en cada una de las 18 pantallas.
    null  = silencio deliberado.
-   La ausencia de una pantalla en esta tabla NO ocurre: están las 17, para que
+   La ausencia de una pantalla en esta tabla NO ocurre: están las 18, para que
    añadir una pantalla nueva y olvidarse de la música sea un fallo de prueba y
    no un silencio que nadie note. 'p-partida' se resuelve por el mundo.
 
@@ -2905,6 +2905,7 @@ CB.musica.PANTALLAS = {
   'p-mapa':        'temaPrincipal',
   'p-ajustes':     'temaPrincipal',
   'p-creditos':    'temaPrincipal',
+  'p-ayuda':       'temaPrincipal',
   'p-cantera':     'cantera',
   'p-casa':        'cantera',
   'p-glosario':    'cantera',
@@ -9106,7 +9107,7 @@ CB.ui.reloj.ocultarCartel = function () {
 };
 
 /* ============================================================================
-   31-pantallas.js — Navegación entre las 17 <section hidden> (PLAN §14.3)
+   31-pantallas.js — Navegación entre las 18 <section hidden> (PLAN §14.3)
    ----------------------------------------------------------------------------
    Toca el DOM: pertenece a la serie 30- y está por tanto FUERA de la regla de
    frontera de §14.4.
@@ -9118,7 +9119,7 @@ CB.pantallas = CB.pantallas || {};
 CB.pantallas.IDS = [
   'p-portada', 'p-perfiles', 'p-calibracion', 'p-mapa', 'p-cantera', 'p-partida',
   'p-reparacion', 'p-descanso', 'p-jefe', 'p-fin', 'p-casa', 'p-glosario',
-  'p-ajustes', 'p-adulto', 'p-informe', 'p-creditos', 'p-error'
+  'p-ajustes', 'p-adulto', 'p-informe', 'p-creditos', 'p-ayuda', 'p-error'
 ];
 
 /* Pantallas sin botón Salir visible (§14.3) */
@@ -9186,13 +9187,13 @@ CB.pantallas.ir = function (id, props) {
       h.setAttribute('tabindex', '-1');
 
       /* UNA <section> SIN NOMBRE ACCESIBLE NO ES UNA REGIÓN.
-         Las diecisiete lo eran solo de nombre: un lector de pantalla no las
+         Las dieciocho lo eran solo de nombre: un lector de pantalla no las
          lista, porque la especificación exige que una section tenga nombre para
          contar como landmark. Se lo damos apuntando a su propio <h1>, que ya
          existe y ya está garantizado —casos-carga.js exige exactamente uno por
          pantalla— así que no hay ningún texto nuevo que traducir ni mantener.
 
-         Y `role="main"` va SOLO en la visible. Diecisiete «main» a la vez no es
+         Y `role="main"` va SOLO en la visible. Dieciocho «main» a la vez no es
          que sea incorrecto: es que deja de significar nada, que es peor. */
       if (!h.id) h.id = id + '-titulo';
       seccion.setAttribute('aria-labelledby', h.id);

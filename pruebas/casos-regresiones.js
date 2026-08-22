@@ -48,7 +48,7 @@
          ganando el orden del fichero en vez de la restricción
      E31 «Gira el dispositivo» se disparaba a 319px, y a zoom 400%   auditar.sh
          el viewport es 320 justos: un píxel de margen
-     E32 Las 17 <section> no tenían nombre accesible: para un       casos-a11y.js
+     E32 Las <section> no tenían nombre accesible: para un       casos-a11y.js
          lector de pantalla no existían como regiones
      E33 Lo urgente y lo festivo compartían región viva, así que    casos-a11y.js
          «quedan diez segundos» se leía detrás de la cola
@@ -181,6 +181,15 @@
      E100 los cuatro botones de la barra no caben en 320 px: el   AQUÍ
          de Sonido —el único que apaga la música— quedaba
          cortado contra el borde derecho
+     E101 la pantalla de Ayuda es maqueta estática: la página de  auditar.mjs
+         pruebas solo ve su maqueta reducida, así que quien la
+         comprueba es la auditoría, que lee el fichero de verdad
+     E102 a 320 px una palabra larga dentro de un panel no se    AQUÍ
+         partía: se salía de la caja, sin barra ni error. Se mide
+         en un <iframe>, porque la media query mira el viewport
+     E103 la portada es `overflow: hidden`: a 320x480 la fila de  AQUÍ
+         abajo —Ajustes, Ayuda, Créditos— caía fuera y no había
+         forma de llegar. La barra la lleva ahora la pila
 
    E40-E46 son la ronda décima, y tienen una cosa en común que conviene no
    perder: los siete estaban en VERDE. La auditoría daba 56 comprobaciones
@@ -4649,4 +4658,204 @@ CB.pruebas.suite('E99-E100 · en 320 px no se sale nada por los bordes', functio
   } finally {
     document.body.removeChild(caja);
   }
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E102 · Una palabra que no cabe NO se parte sola: se sale
+   ──────────────────────────────────────────────────────────────────────────
+   La misma familia que E99-E100, un nivel más adentro. A 320 px una línea
+   dentro de `.contenido > .panel-bloque` se queda en unos 145 px —cosa de diez
+   caracteres de esta tipografía—, así que «expedición», «guardianes» o
+   «Cubomática» no caben en la caja. Y una palabra que no cabe no se parte por
+   su cuenta: sobresale, sin barra horizontal, sin error y sin que nada se ponga
+   rojo. Salió mirando la pantalla de Ayuda, que es casi toda texto en paneles,
+   pero la regla que lo arregla es del proyecto entero.
+
+   SE MIDE DENTRO DE UN <iframe> DE 320 px, Y ESO NO ES UN CAPRICHO. El arreglo
+   vive en `@media (max-width: 479px)`, y una media query se evalúa contra el
+   VIEWPORT, no contra la caja: el truco de E99-E100 —un div de 320 px en esta
+   misma página— deja la regla apagada y mide el estado roto creyendo que mide
+   el arreglado. Un iframe sí tiene viewport propio.
+
+   La hoja que se carga es la de ESTA página (la legible o la minificada, según
+   dónde se corra), y antes de medir nada se comprueba que de verdad se aplicó:
+   una hoja que no cargue dejaría el texto sin estilo, todo cabría, y la
+   comprobación saldría verde por no haber medido nada.
+   ══════════════════════════════════════════════════════════════════════════ */
+CB.pruebas.suite('E102 · a 320 px una palabra larga se parte, no se sale', function () {
+  var t = CB.pruebas;
+  var enlace = document.querySelector('link[rel="stylesheet"]');
+  var hoja = enlace ? enlace.getAttribute('href') : '';
+  if (!t.ok(!!hoja, 'E102 · la página declara su hoja de estilo')) return;
+
+  /* Las palabras son las de verdad, las más largas que el juego escribe dentro
+     de un panel. Cambiarlas por «xxxxxxxxxxxx» probaría un caso que no existe. */
+  var cuerpo =
+    '<section class="pantalla pantalla--scroll"><div class="contenido">' +
+    '<div class="panel-bloque"><h2>Cubomática</h2>' +
+    '<p class="texto-lectura">Al final de cada mundo hay un guardián.</p>' +
+    '<ul class="texto-lectura"><li>Salir: deja la expedición.</li>' +
+    '<li>La Pradera de los Números</li></ul>' +
+    '</div></div></section>';
+
+  return new Promise(function (listo) {
+    var marco = document.createElement('iframe');
+    marco.title = 'medida de 320 px';
+    /* FUERA DEL FLUJO Y FUERA DE PANTALLA. `body` de esta página es un flex, y
+       un iframe suelto dentro es un ítem flexible: el alto que se le pide lo
+       machaca el reparto del contenedor y el marco acaba midiendo cualquier
+       cosa. Con `position: fixed` manda el tamaño que se pide, y por eso se
+       comprueba dentro —innerWidth— antes de medir nada. */
+    marco.style.cssText =
+      'position:fixed;left:-2000px;top:0;width:320px;height:480px;border:0;display:block';
+    marco.srcdoc = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">' +
+      '<link rel="stylesheet" href="' + hoja + '"></head><body>' + cuerpo + '</body></html>';
+
+    var acabado = false;
+    function terminar(motivo) {
+      if (acabado) return;
+      acabado = true;
+      if (motivo) t.ok(false, 'E102 · el marco de 320 px se ha podido montar', motivo);
+      try { document.body.removeChild(marco); } catch (e) { }
+      listo();
+    }
+
+    marco.onload = function () {
+      if (acabado) return;
+      var d = marco.contentDocument;
+      var panel = d.querySelector('.panel-bloque');
+      if (!panel) return terminar('no hay panel dentro del marco');
+
+      /* Que la hoja se aplicó de verdad: sin ella el panel no tiene relleno y
+         todo cabe, o sea que todo saldría verde sin haber medido nada. */
+      var relleno = parseFloat(marco.contentWindow.getComputedStyle(panel).paddingLeft) || 0;
+      if (!t.ok(relleno > 0 && marco.contentWindow.innerWidth === 320,
+        'E102 · el marco mide 320 px y la hoja del juego se ha aplicado dentro',
+        marco.contentWindow.innerWidth + ' px, relleno ' + relleno)) return terminar();
+
+      var fuera = [];
+      [].slice.call(d.querySelectorAll('.contenido *')).forEach(function (el) {
+        if (el.clientWidth && el.scrollWidth > el.clientWidth + 1) {
+          fuera.push(el.tagName + ' «' + el.textContent.trim().slice(0, 20) + '» ' +
+                     el.scrollWidth + '>' + el.clientWidth);
+        }
+      });
+      t.igual(fuera.length, 0,
+        'E102 · a 320 px nada de un panel de texto se sale de su caja',
+        fuera.slice(0, 3).join(' · '));
+
+      /* Y el converso: el arreglo es partir la palabra, no encoger la letra.
+         Si alguien lo «arregla» con un font-size literal, «Letra grande» y el
+         modo proyección dejan de mandar justo en la pantalla más estrecha, que
+         es la lección que dejó E99. */
+      var h2 = d.querySelector('h2');
+      t.ok(marco.contentWindow.getComputedStyle(h2).overflowWrap === 'break-word',
+        'E102 · y se arregla partiendo la palabra, no tocando el tamaño de letra',
+        marco.contentWindow.getComputedStyle(h2).overflowWrap);
+
+      terminar();
+    };
+
+    document.body.appendChild(marco);
+    setTimeout(function () { terminar('el marco no ha cargado en 4 s'); }, 4000);
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   E103 · La portada no se podía recorrer, y lo de abajo no existía
+   ──────────────────────────────────────────────────────────────────────────
+   `.pantalla--portada` es `overflow: hidden`, y con razón: las nubes y el cielo
+   van fuera de flujo y sacarían barras por el decorado. El efecto colateral era
+   que lo que no cabía a lo alto no se alcanzaba de ninguna forma. A 320×480
+   —tamaño soportado, el aviso de girar el aparato solo salta por debajo de
+   320×420— la pila del centro mide unos 968 px: la fila de abajo entera
+   (Ajustes, Ayuda, Créditos) caía fuera, sin barra, sin recorte visible y sin
+   nada que se pusiera rojo. Se veía al añadir el cuarto botón, pero el tercero
+   ya estaba fuera desde antes.
+
+   La barra la lleva ahora la pila, que es quien tiene el contenido, con la
+   alineación `safe` de E95: centrar Y desbordar reparte lo que sobra a los DOS
+   lados, y lo de arriba no se recupera nunca porque scrollTop no puede ser
+   negativo. Se comprueban las dos mitades —se llega abajo, y arriba no se corta
+   nada— porque arreglar una rompiendo la otra es exactamente lo que pasó en
+   E95.
+   ══════════════════════════════════════════════════════════════════════════ */
+CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la portada', function () {
+  var t = CB.pruebas;
+  var enlace = document.querySelector('link[rel="stylesheet"]');
+  var hoja = enlace ? enlace.getAttribute('href') : '';
+  if (!t.ok(!!hoja, 'E103 · la página declara su hoja de estilo')) return;
+
+  var cuerpo =
+    '<section class="pantalla pantalla--portada"><div class="pila-centro">' +
+    '<h1 class="titulo-juego">CUBOMÁTICA</h1>' +
+    '<p class="lema">«las Matemáticas son muy divertidas»</p>' +
+    '<button class="btn-bloque btn-bloque--primario btn-bloque--grande">JUGAR</button>' +
+    '<button class="btn-bloque btn-bloque--medio">CANTERA TRANQUILA</button>' +
+    '<div class="fila fila--centro">' +
+    '<button class="btn-bloque">¿Quién juega?</button>' +
+    '<button class="btn-bloque">Ajustes</button>' +
+    '<button class="btn-bloque">Ayuda</button>' +
+    '<button class="btn-bloque" id="ultimo">Créditos</button>' +
+    '</div></div></section>';
+
+  return new Promise(function (listo) {
+    var marco = document.createElement('iframe');
+    marco.title = 'portada de 320×480';
+    /* Con !important y a mano: la hoja del juego estila los iframes de esta
+       página, y un marco de 150 px de alto —el defecto de HTML— mediría otra
+       cosa y se pondría verde por no aplicar. Por eso el tamaño se comprueba
+       dentro antes de medir nada. */
+    marco.style.cssText =
+      'position:fixed;left:-2000px;top:0;width:320px;height:480px;border:0;display:block';
+    marco.srcdoc = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">' +
+      '<link rel="stylesheet" href="' + hoja + '"></head><body>' + cuerpo + '</body></html>';
+
+    var acabado = false;
+    function terminar(motivo) {
+      if (acabado) return;
+      acabado = true;
+      if (motivo) t.ok(false, 'E103 · el marco de 320×480 se ha podido montar', motivo);
+      try { document.body.removeChild(marco); } catch (e) { }
+      listo();
+    }
+
+    marco.onload = function () {
+      if (acabado) return;
+      var w = marco.contentWindow, d = marco.contentDocument;
+      var pila = d.querySelector('.pila-centro');
+      var ultimo = d.getElementById('ultimo');
+      var titulo = d.querySelector('.titulo-juego');
+      if (!pila || !ultimo) return terminar('no está la pila dentro del marco');
+
+      var cs = w.getComputedStyle(pila);
+      if (!t.ok(cs.overflowY === 'auto' && w.innerWidth === 320 && w.innerHeight === 480,
+        'E103 · el marco mide 320×480 y la pila de la portada lleva barra',
+        w.innerWidth + '×' + w.innerHeight + ', overflow-y: ' + cs.overflowY)) return terminar();
+
+      /* Que de verdad hay más contenido que hueco: si cupiera todo, las dos
+         comprobaciones de abajo pasarían sin haber medido nada. */
+      if (!t.ok(pila.scrollHeight > pila.clientHeight + 1,
+        'E103 · a este tamaño la portada NO cabe entera: hay algo que alcanzar',
+        pila.scrollHeight + ' contra ' + pila.clientHeight)) return terminar();
+
+      /* Arriba, con la barra a cero: el título no puede quedar por encima del
+         borde, que es lo que hace `center` al desbordar (E95). */
+      pila.scrollTop = 0;
+      t.ok(titulo.getBoundingClientRect().top >= pila.getBoundingClientRect().top - 1,
+        'E103 · con la barra arriba del todo, el título se ve entero',
+        Math.round(titulo.getBoundingClientRect().top - pila.getBoundingClientRect().top) + ' px');
+
+      /* Y abajo: el último botón de la fila entra entero en la caja. */
+      pila.scrollTop = pila.scrollHeight;
+      t.ok(ultimo.getBoundingClientRect().bottom <= pila.getBoundingClientRect().bottom + 1,
+        'E103 · bajando la barra se llega al último botón de la fila, entero',
+        Math.round(ultimo.getBoundingClientRect().bottom - pila.getBoundingClientRect().bottom) + ' px de más');
+
+      terminar();
+    };
+
+    document.body.appendChild(marco);
+    setTimeout(function () { terminar('el marco no ha cargado en 4 s'); }, 4000);
+  });
 });

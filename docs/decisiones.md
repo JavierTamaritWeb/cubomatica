@@ -155,7 +155,7 @@ las 22:00 en horario peninsular de verano). `diasEntre()` compara a mediodía lo
 
 ---
 
-## Documento 4 — Las 17 pantallas y sus ids (PLAN §14.3)
+## Documento 4 — Las 18 pantallas y sus ids (PLAN §14.3)
 
 | # | id | Título | Condición de entrada |
 |---|---|---|---|
@@ -175,7 +175,8 @@ las 22:00 en horario peninsular de verano). `diasEntre()` compara a mediodía lo
 | 14 | `p-adulto` | Personas adultas | Tras la puerta parental |
 | 15 | `p-informe` | Informe | Desde `p-adulto`. `class="imprimible"` |
 | 16 | `p-creditos` | Créditos | Desde la portada |
-| 17 | `p-error` | Se ha soltado un bloque | `window.onerror` / `unhandledrejection` |
+| 17 | `p-ayuda` | Ayuda | Desde la portada o el mapa. Maqueta estática, sin `alEntrar` |
+| 18 | `p-error` | Se ha soltado un bloque | `window.onerror` / `unhandledrejection` |
 
 El botón **Salir** es visible en todas salvo `p-portada` y `p-error`.
 

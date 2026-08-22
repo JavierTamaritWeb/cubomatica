@@ -1,5 +1,5 @@
 /* ============================================================================
-   31-pantallas.js — Navegación entre las 17 <section hidden> (PLAN §14.3)
+   31-pantallas.js — Navegación entre las 18 <section hidden> (PLAN §14.3)
    ----------------------------------------------------------------------------
    Toca el DOM: pertenece a la serie 30- y está por tanto FUERA de la regla de
    frontera de §14.4.
@@ -11,7 +11,7 @@ CB.pantallas = CB.pantallas || {};
 CB.pantallas.IDS = [
   'p-portada', 'p-perfiles', 'p-calibracion', 'p-mapa', 'p-cantera', 'p-partida',
   'p-reparacion', 'p-descanso', 'p-jefe', 'p-fin', 'p-casa', 'p-glosario',
-  'p-ajustes', 'p-adulto', 'p-informe', 'p-creditos', 'p-error'
+  'p-ajustes', 'p-adulto', 'p-informe', 'p-creditos', 'p-ayuda', 'p-error'
 ];
 
 /* Pantallas sin botón Salir visible (§14.3) */
@@ -79,13 +79,13 @@ CB.pantallas.ir = function (id, props) {
       h.setAttribute('tabindex', '-1');
 
       /* UNA <section> SIN NOMBRE ACCESIBLE NO ES UNA REGIÓN.
-         Las diecisiete lo eran solo de nombre: un lector de pantalla no las
+         Las dieciocho lo eran solo de nombre: un lector de pantalla no las
          lista, porque la especificación exige que una section tenga nombre para
          contar como landmark. Se lo damos apuntando a su propio <h1>, que ya
          existe y ya está garantizado —casos-carga.js exige exactamente uno por
          pantalla— así que no hay ningún texto nuevo que traducir ni mantener.
 
-         Y `role="main"` va SOLO en la visible. Diecisiete «main» a la vez no es
+         Y `role="main"` va SOLO en la visible. Dieciocho «main» a la vez no es
          que sea incorrecto: es que deja de significar nada, que es peor. */
       if (!h.id) h.id = id + '-titulo';
       seccion.setAttribute('aria-labelledby', h.id);
