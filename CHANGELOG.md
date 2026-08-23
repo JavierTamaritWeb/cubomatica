@@ -12,6 +12,48 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.23.6] — 2026-08-23
+
+**Tercera cifra.** Contraste del panel adulto, en los dos modos. Sin cambios en
+el formato del perfil guardado ni en la API pública `CB.*`.
+
+### Corregido
+
+- **Las notas que explican por qué un ajuste está desactivado no se leían.**
+  «El Real Decreto 157/2022 sitúa la construcción de las tablas en el segundo
+  ciclo», y otras cinco, salían a 1,5:1 sobre el blanco de su caja. `.texto--menor`
+  consume `var(--texto-sec, var(--texto-sec-claro))` —el contenedor declara, el
+  bloque consume, como en 1.23.0— y el panel adulto no declaraba la variable, así
+  que caía al respaldo, que es el color pensado para fondo OSCURO. Ahora
+  `.pantalla--documento` declara su `--texto-sec` junto al fondo que ya declaraba:
+  quien pone el fondo pone la tinta (WCAG 1.4.3).
+- **En «Alto contraste» el panel adulto era blanco sobre blanco.** 70 nodos a
+  1:1, invisibles; las filas de la tabla a 1,13 y las cabeceras a 1,19. El modo
+  reescribe la tinta a blanco y `--bg-texto-panel` a negro, pero no tocaba las
+  superficies claras fijas. `--blanco` no podía apagarse —es la luz de todos los
+  biseles y de las nubes—, así que la superficie de las cajas se separa en
+  `--bg-caja`, y la paleta de alto contraste apaga también `--crema-fila` y
+  `--peligro-suave`. Las cabeceras de tabla y la marca del glosario declaran su
+  propia tinta sobre el ámbar, como ya hacía `.adulto__aviso`.
+
+### Pruebas
+
+- **E112** no mide variables: monta la caja de ajustes con el módulo que la
+  construye, la cuelga de `#p-adulto` —porque es el contenedor quien declara la
+  variable— y mide el color calculado de cada nodo contra el fondo que de verdad
+  tiene debajo, con y sin alto contraste. La tabla de `PARES` no era falsa: medía
+  las parejas que el diseño pretende, y el fallo fue una pareja que nadie declaró.
+  Verificado sembrando el defecto: 18 nodos en rojo antes del arreglo.
+
+### Pendiente
+
+- Las vetas **activas** (`nuevo`, `aprendiendo`) quedan en 3,4:1 y 1,55:1 en alto
+  contraste, por la misma causa: superficie de bioma clara y tinta que pasa a
+  blanca. Separar «color de bioma» de «superficie de pieza» toca los biseles de
+  todo el juego y las 54 capturas de `retrato-pantallas.mjs`, y merece su propia
+  versión. Los estados **bloqueados** se dejan como están: son componentes
+  inactivos, que WCAG 1.4.3 exime, y su gris es el lenguaje de «cerrado».
+
 ## [1.23.5] — 2026-08-23
 
 **Tercera cifra.** Accesibilidad de formularios, controles y foco visible, sin

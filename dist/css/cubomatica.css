@@ -101,6 +101,7 @@
   --deco-oro-cla: #F5D45C;
   --blanco: #FFFFFF;
   --negro: #000000;
+  --bg-caja: #FFFFFF;
   --gris-hueso: #E8E4DE;
   --gris-carbon: #33302B;
   --gris-piedra: #7A766F;
@@ -210,6 +211,9 @@
   --ok-texto: #FFFFFF;
   --mal-fondo: #000000;
   --mal-texto: #FFFFFF;
+  --bg-caja: #000000;
+  --crema-fila: #1A1A1A;
+  --peligro-suave: #000000;
 }
 
 @media (prefers-contrast: more) {
@@ -232,6 +236,9 @@
     --ok-texto: #FFFFFF;
     --mal-fondo: #000000;
     --mal-texto: #FFFFFF;
+    --bg-caja: #000000;
+    --crema-fila: #1A1A1A;
+    --peligro-suave: #000000;
   }
 }
 *, *::before, *::after {
@@ -1813,6 +1820,7 @@ button:disabled {
   font-family: var(--fuente-pixel);
   font-size: 13px;
   background: var(--bg-texto-aviso);
+  color: var(--texto-aviso);
   padding: 2px var(--e1);
 }
 
@@ -2634,6 +2642,7 @@ button:disabled {
   letter-spacing: normal;
   word-spacing: normal;
   overflow-y: auto;
+  --texto-sec: var(--texto-secundario);
 }
 
 .pantalla--documento :is(h1, h2, h3) {
@@ -2660,7 +2669,7 @@ button:disabled {
 }
 
 .adulto__caja {
-  background: var(--blanco);
+  background: var(--bg-caja);
   padding: var(--e3);
   box-shadow: inset 2px 2px 0 0 var(--deco-piedra);
   margin-bottom: var(--e3);
@@ -2689,6 +2698,7 @@ button:disabled {
 
 .adulto__tabla th {
   background: var(--bg-texto-aviso);
+  color: var(--texto-aviso);
   font-weight: bold;
 }
 
@@ -2776,7 +2786,7 @@ button:disabled {
 .adulto__campo {
   font-size: 20px;
   padding: var(--e2);
-  background: var(--blanco);
+  background: var(--bg-caja);
   color: var(--texto-principal);
   box-shadow: inset 2px 2px 0 0 var(--deco-piedra);
   min-height: 48px;

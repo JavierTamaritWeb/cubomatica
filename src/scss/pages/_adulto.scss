@@ -9,6 +9,10 @@
   letter-spacing: normal;
   word-spacing: normal;
   overflow-y: auto;
+
+  // Quien declara el fondo declara la tinta: sin esto .texto--menor caia al
+  // respaldo claro, pensado para fondo oscuro, y quedaba en 1,5:1 (E112).
+  --texto-sec: var(--texto-secundario);
 }
 .pantalla--documento :is(h1, h2, h3) {
   font-family: var(--fuente-lectura);
@@ -21,7 +25,7 @@
 .pantalla--documento :is(p, li) { max-width: 68ch; }
 
 .adulto__caja {
-  background: var(--blanco);
+  background: var(--bg-caja);
   padding: var(--e3);
   box-shadow: inset 2px 2px 0 0 var(--deco-piedra);
   margin-bottom: var(--e3);
@@ -41,7 +45,7 @@
   text-align: left;
   vertical-align: top;
 }
-.adulto__tabla th { background: var(--bg-texto-aviso); font-weight: bold; }
+.adulto__tabla th { background: var(--bg-texto-aviso); color: var(--texto-aviso); font-weight: bold; }
 .adulto__tabla tr:nth-child(even) td { background: var(--crema-fila); }
 
 // Símbolo y texto mantienen el significado sin depender del color.
@@ -79,7 +83,7 @@
 .adulto__puerta { display: flex; flex-direction: column; gap: var(--e3); max-width: 480px; }
 .adulto__campo {
   font-size: 20px; padding: var(--e2);
-  background: var(--blanco); color: var(--texto-principal);
+  background: var(--bg-caja); color: var(--texto-principal);
   box-shadow: inset 2px 2px 0 0 var(--deco-piedra);
   min-height: 48px; width: 100%;
 }

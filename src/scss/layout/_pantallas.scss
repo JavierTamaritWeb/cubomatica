@@ -272,7 +272,7 @@
 .termino-glosario[data-bloqueado="si"] { background: var(--deco-piedra); }
 .termino-glosario__marca {
   font-family: var(--fuente-pixel); font-size: 13px;
-  background: var(--bg-texto-aviso); padding: 2px var(--e1);
+  background: var(--bg-texto-aviso); color: var(--texto-aviso); padding: 2px var(--e1);
 }
 
 .lista-ajustes { display: flex; flex-direction: column; gap: var(--e3); width: 100%; max-width: 560px; }

@@ -220,3 +220,108 @@ CB.pruebas.suite('Contraste: el teclado bloqueado también se lee', function () 
   t.ok(peorAC >= 4.5, 'E63 · en alto contraste el bloqueado sigue por encima de 4,5:1',
     peorAC.toFixed(2) + ':1');
 });
+
+/* E112 · Un respaldo pensado para fondo oscuro, aplicado sobre fondo claro */
+
+/* Los PARES de arriba miden las parejas que el diseño PRETENDE. El fallo de
+   1.23.6 fue una pareja que nadie declaró: .texto--menor consume
+   var(--texto-sec, var(--texto-sec-claro)), y en un contenedor claro que no
+   declaraba la variable caía al respaldo —pensado para fondo oscuro— y quedaba
+   en 1,5:1. Ninguna pareja de la tabla era falsa; faltaba la que ocurría de
+   hecho. Por eso esta suite no mide variables: mide el color calculado de los
+   nodos reales contra el fondo que de verdad tienen debajo. */
+CB.pruebas.suite('E112 · el texto del panel adulto se lee en los dos modos', function () {
+  const t = CB.pruebas;
+
+  function rgbAHex(s) {
+    const m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(s || '');
+    if (!m) return null;
+    function dos(n) { const h = Number(n).toString(16); return h.length === 1 ? '0' + h : h; }
+    return '#' + dos(m[1]) + dos(m[2]) + dos(m[3]);
+  }
+  function lum(h) {
+    const r = parseInt(h.substr(1, 2), 16) / 255, g = parseInt(h.substr(3, 2), 16) / 255,
+        b = parseInt(h.substr(5, 2), 16) / 255;
+    function c(x) { return (x <= 0.03928) ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }
+    return 0.2126 * c(r) + 0.7152 * c(g) + 0.0722 * c(b);
+  }
+  function ratio(a, b) {
+    const la = lum(a), lb = lum(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+  /* Un texto casi nunca pinta su propio fondo: el que cuenta es el del primer
+     antepasado que pinta alguno. Medir contra el del propio nodo daba siempre
+     transparente, que es como no medir. */
+  function fondoDe(n) {
+    let x = n;
+    while (x && x.nodeType === 1) {
+      const c = getComputedStyle(x).backgroundColor;
+      if (c && c.indexOf('rgba(0, 0, 0, 0)') === -1 && c !== 'transparent') {
+        const h = rgbAHex(c);
+        if (h) return h;
+      }
+      x = x.parentElement;
+    }
+    return null;
+  }
+  function textoPropio(n) {
+    let s = '', i;
+    for (i = 0; i < n.childNodes.length; i++) {
+      if (n.childNodes[i].nodeType === 3) s += n.childNodes[i].textContent;
+    }
+    return s.trim();
+  }
+
+  /* La caja la construye el módulo, no esta prueba: así sus clases son las que
+     tendrá en el panel de verdad. Y cuelga de #p-adulto porque es
+     .pantalla--documento quien declara --texto-sec; medirla suelta, fuera de su
+     contenedor, mediría justamente lo que no falla. */
+  const pantalla = document.getElementById('p-adulto');
+  const montada = !!pantalla && pantalla.classList.contains('pantalla--documento');
+  if (!t.ok(montada, 'E112 · el panel adulto está montado como documento')) return;
+
+  const perfilPrevio = CB.perfil;
+  CB.perfil = CB.pruebas.perfilNuevo();
+  const ocultaAntes = pantalla.hidden;
+  pantalla.hidden = false;
+  const caja = CB.adulto.cajaAjustes(CB.perfil);
+  pantalla.appendChild(caja);
+
+  const nodos = [].slice.call(caja.querySelectorAll('*')).filter(function (n) {
+    return textoPropio(n) !== '';
+  });
+  t.ok(nodos.length >= 8,
+    'E112 · la caja de ajustes trae texto que medir', nodos.length + ' nodos');
+
+  const raiz = document.documentElement;
+  const teniaAC = raiz.classList.contains('alto-contraste');
+  const flojos = [], sinMedir = [];
+
+  ['sin alto contraste', 'con alto contraste'].forEach(function (modo) {
+    if (modo === 'con alto contraste') raiz.classList.add('alto-contraste');
+    else raiz.classList.remove('alto-contraste');
+    nodos.forEach(function (n) {
+      const c = rgbAHex(getComputedStyle(n).color), f = fondoDe(n);
+      if (!c || !f) { sinMedir.push(modo + ' · ' + textoPropio(n).slice(0, 18)); return; }
+      const r = ratio(c, f);
+      if (r < 4.5) {
+        flojos.push(modo + ' · ' + textoPropio(n).slice(0, 18) + ' ' +
+                    c + ' sobre ' + f + ' = ' + r.toFixed(2));
+      }
+    });
+  });
+
+  if (!teniaAC) raiz.classList.remove('alto-contraste');
+  else raiz.classList.add('alto-contraste');
+  pantalla.removeChild(caja);
+  pantalla.hidden = ocultaAntes;
+  CB.perfil = perfilPrevio;
+
+  /* Que no se pueda medir es un fallo, no un permiso para saltarse la prueba. */
+  t.igual(sinMedir.length, 0,
+    'E112 · se ha podido medir el color de todos los nodos',
+    sinMedir.slice(0, 4).join(' · '));
+  t.igual(flojos.length, 0,
+    'E112 · todo el texto de la caja llega a 4,5:1 en los dos modos',
+    flojos.slice(0, 4).join(' · '));
+});

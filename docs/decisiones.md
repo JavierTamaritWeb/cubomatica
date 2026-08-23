@@ -3792,3 +3792,57 @@ La suite se mira a sí misma con el mismo rasero (E111): el resumen es
 `aria-valuenow` real en vez de una anchura que solo se ve, y
 `comprobar-doble-clic.html` carga el bundle minificado que necesitaba para poder
 preguntar por `CB.offline`.
+
+---
+
+## D-1.23.6 — El respaldo de una variable es una decisión de diseño, no una red
+
+`.texto--menor` se escribió en 1.23.0 como `color: var(--texto-sec,
+var(--texto-sec-claro))`. La primera mitad es el patrón bueno: el contenedor
+declara y el bloque consume, de modo que el bloque no cambia por quien lo
+contiene. La segunda mitad —el respaldo— pasó desapercibida como si fuera una
+red de seguridad, y no lo es: es el color que se aplica siempre que nadie
+declare nada, o sea, **el caso por defecto**. Y el elegido era el claro, que
+solo funciona sobre fondo oscuro. Cualquier contenedor claro que no declarase la
+variable quedaba en 1,5:1 sin que fallara nada. Le pasó al panel adulto: seis
+notas —las que explican por qué una tabla de multiplicar está desactivada— y el
+error de la puerta parental.
+
+La lección es la misma que en 1.23.5 con `@supports`: **cuando algo tiene un
+caso por defecto y un caso declarado, el que hay que acertar es el por defecto**.
+El arreglo no toca `.texto--menor`; hace que `.pantalla--documento` declare
+`--texto-sec` en la misma regla donde ya declaraba su fondo. Quien pone el
+fondo pone la tinta.
+
+El segundo fallo salió al comprobar el primero en «Alto contraste», y era peor:
+el panel entero, blanco sobre blanco, setenta nodos a 1:1. El modo de alto
+contraste está construido como una **paleta**, un mixin que reescribe variables
+en `:root` — decisión buena, porque no hay reglas nuevas que mantener— pero la
+paleta cambiaba las tintas y no las superficies. `--texto-principal` pasaba a
+blanco mientras `.adulto__caja` seguía pintada con `--blanco`.
+
+Lo interesante es por qué no se arregla apagando `--blanco`: esa variable no es
+una superficie, es **luz** — la cara iluminada de todos los biseles voxel y el
+color de las nubes. Ponerla negra en alto contraste habría borrado el relieve de
+todo el juego. Que un mismo valor sirviera de luz y de superficie es lo que
+escondía el fallo, así que la superficie se separa en `--bg-caja` y la paleta ya
+puede apagarla. Con ella van `--crema-fila` y `--peligro-suave`, que solo se usan
+como fondo. En cambio `--bg-texto-aviso` se queda ámbar en los dos modos: es un
+papel propio, y lo que hacía falta era que quienes lo usan declarasen su tinta
+—`.adulto__aviso` ya lo hacía; la cabecera de tabla y la marca del glosario, no.
+
+E112 no se añadió a la tabla de `PARES`, y esa es la parte que conviene recordar.
+Los quince pares medían combinaciones **previstas**: `--texto-sec-claro` contra
+`--bg-pantalla`, que es oscuro, y pasaba. Ninguno era falso. Lo que ocurría en el
+DOM era una pareja que nadie había declarado, y una tabla de parejas previstas no
+puede contener la que nadie previó. Por eso E112 monta la caja con el módulo que
+la construye, la cuelga de `#p-adulto` —fuera de su contenedor mediría justo lo
+que no falla— y mide el color calculado contra el fondo real, en los dos modos.
+Se comprobó sembrando el defecto: 18 nodos en rojo.
+
+Queda pendiente, y declarado: las vetas **activas** siguen flojas en alto
+contraste (3,4:1 y 1,55:1), porque su superficie es el color del bioma y la tinta
+pasa a blanca. Separar «color de bioma» de «superficie de pieza» toca los biseles
+de todo el juego y las 54 capturas de `retrato-pantallas.mjs`. Las vetas
+**bloqueadas** no se tocan: WCAG 1.4.3 exime a los componentes inactivos, y su
+gris es precisamente el lenguaje de «cerrado».

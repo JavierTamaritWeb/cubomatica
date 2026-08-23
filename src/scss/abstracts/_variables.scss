@@ -127,6 +127,10 @@ $animados:
 
   --blanco: #FFFFFF;
   --negro:  #000000;
+
+  // Superficie de las cajas del documento. NO es --blanco: esa es la luz del
+  // bisel y la nube, y alto contraste no puede apagarla sin borrar el relieve.
+  --bg-caja: #FFFFFF;
   --gris-hueso:   #E8E4DE;
   --gris-carbon:  #33302B;
   --gris-piedra:  #7A766F;
@@ -211,6 +215,12 @@ $animados:
   --ok-texto:         #FFFFFF;
   --mal-fondo:        #000000;
   --mal-texto:        #FFFFFF;
+
+  // Superficies claras fijas. Sin esto la tinta pasa a blanca y el fondo se
+  // queda claro: el panel adulto entero era blanco sobre blanco (E112).
+  --bg-caja:          #000000;
+  --crema-fila:       #1A1A1A;
+  --peligro-suave:    #000000;
 }
 
 :root.alto-contraste { @include alto-contraste; }
