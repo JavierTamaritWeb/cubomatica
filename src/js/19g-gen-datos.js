@@ -48,7 +48,7 @@ CB.gen.datos.G1 = function (rng, D) {
     visual: { tipo: 'barras', filas: g.filas },
     respuesta: g.valores[i],
     datosGrafico: g.valores.slice(),
-    expr: 'g1_' + g.valores.join('-') + '_' + i,
+    expr: 'g1_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + i,
     diagnostico: true
   };
 };
@@ -63,7 +63,7 @@ CB.gen.datos.G2 = function (rng, D) {
     visual: { tipo: 'barras', filas: g.filas },
     respuesta: g.valores[i],
     datosGrafico: g.valores.slice(),
-    expr: 'g2_' + g.valores.join('-') + '_' + i,
+    expr: 'g2_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + i,
     diagnostico: true
   };
 };
@@ -85,7 +85,7 @@ CB.gen.datos.G3 = function (rng, D) {
     respuesta: g.nombres[mejor],
     respuestaFraccion: true,
     distractoresFijos: g.nombres.filter(function (n, j) { return j !== mejor; }),
-    expr: 'g3_' + g.valores.join('-') + (buscaMax ? 'M' : 'm'),
+    expr: 'g3_' + g.nombres.join('-') + '_' + g.valores.join('-') + (buscaMax ? 'M' : 'm'),
     diagnostico: false
   };
 };
@@ -103,7 +103,7 @@ CB.gen.datos.G4 = function (rng, D) {
     operacion: '+', operandos: [g.valores[a], g.valores[b]],
     respuesta: g.valores[a] + g.valores[b],
     datosGrafico: g.valores.slice(),
-    expr: 'g4_' + g.valores.join('-') + '_' + a + b,
+    expr: 'g4_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + a + b,
     diagnostico: true
   };
 };
@@ -119,10 +119,10 @@ CB.gen.datos.G5 = function (rng, D) {
     consigna: 'Mira el gráfico. ¿Cuántos ' + g.nombres[a] + ' hay MÁS que ' +
               g.nombres[b] + '?',
     visual: { tipo: 'barras', filas: g.filas },
-    operacion: '−', operandos: [g.valores[a], g.valores[b]],
+    operacion: '-' /* ASCII: los consumidores comparan con '-', el − es solo de pintura */, operandos: [g.valores[a], g.valores[b]],
     respuesta: g.valores[a] - g.valores[b],
     datosGrafico: g.valores.slice(),
-    expr: 'g5_' + g.valores.join('-') + '_' + a + b,
+    expr: 'g5_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + a + b,
     diagnostico: true
   };
 };
@@ -140,7 +140,7 @@ CB.gen.datos.G6 = function (rng, D) {
     operacion: '×', operandos: [g.valores[i], escala],
     respuesta: g.valores[i] * escala,
     tablasCompletas: true,
-    expr: 'g6_' + escala + '_' + g.valores.join('-') + '_' + i,
+    expr: 'g6_' + escala + '_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + i,
     diagnostico: true
   };
 };
@@ -155,7 +155,7 @@ CB.gen.datos.G7 = function (rng, D) {
     visual: { tipo: 'barras', filas: g.filas },
     respuesta: total,
     datosGrafico: g.valores.slice(),
-    expr: 'g7_' + g.valores.join('-'),
+    expr: 'g7_' + g.nombres.join('-') + '_' + g.valores.join('-'),
     diagnostico: false
   };
 };
@@ -242,7 +242,7 @@ CB.gen.datos.G10 = function (rng, D) {
     formato: 'teclado',
     consigna: 'Las temperaturas de cuatro días: ' + enLista(lista) +
               ' grados. ¿Cuál es el rango: el mayor menos el menor?',
-    operacion: '−', operandos: [max, min],
+    operacion: '-' /* ASCII: los consumidores comparan con '-', el − es solo de pintura */, operandos: [max, min],
     respuesta: max - min,
     maxDato: max,
     expr: 'g10_' + lista.join('-'),
@@ -309,7 +309,7 @@ CB.gen.datos.G12 = function (rng, D) {
     formato: 'teclado',
     consigna: 'Estos son los datos: ' + enLista(lista) +
               '. ¿Cuál es el RANGO?',
-    operacion: '−', operandos: [max, min],
+    operacion: '-' /* ASCII: los consumidores comparan con '-', el − es solo de pintura */, operandos: [max, min],
     respuesta: max - min,
     maxDato: max,
     expr: 'g12c_' + lista.join('-'),
@@ -420,7 +420,7 @@ CB.gen.azar.A3 = function (rng, D) {
     respuesta: b.colores[mejor],
     respuestaFraccion: true,
     distractoresFijos: b.colores.filter(function (c, j) { return j !== mejor; }),
-    expr: 'a3_' + b.cuentas.join('-') + '_' + mejor,
+    expr: 'a3_' + b.colores.join('') + '_' + b.cuentas.join('-') + '_' + mejor,
     diagnostico: false
   };
 };
@@ -437,7 +437,7 @@ CB.gen.azar.A4 = function (rng, D) {
     respuesta: b.colores[peor],
     respuestaFraccion: true,
     distractoresFijos: b.colores.filter(function (c, j) { return j !== peor; }),
-    expr: 'a4_' + b.cuentas.join('-') + '_' + peor,
+    expr: 'a4_' + b.colores.join('') + '_' + b.cuentas.join('-') + '_' + peor,
     diagnostico: false
   };
 };

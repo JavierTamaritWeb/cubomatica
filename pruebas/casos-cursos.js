@@ -461,7 +461,9 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
     for (s = 0; s < 50; s++) {
       const rng = CB.util.mulberry32(s * 131 + 7);
       const a3 = CB.gen.azar.A3(rng, 2);
-      const tr = a3.expr.match(/^a3_(\d+)-(\d+)-(\d+)_(\d)$/);
+      /* Desde 3.4.5 el expr codifica tambien los colores (la respuesta ES un
+         color y dos bolsas con los mismos recuentos compartian identidad). */
+      const tr = a3.expr.match(/^a3_[a-z]+_(\d+)-(\d+)-(\d+)_(\d)$/);
       if (!tr) { malA3++; continue; }
       const cuentas = [+tr[1], +tr[2], +tr[3]];
       const mejor = +tr[4];

@@ -4317,6 +4317,38 @@ Tres cosas que conviene no olvidar:
    VERDE; la que lo cazó fue la de la regla. Escribir solo la conductual habría
    sido otra comprobación que aprueba por no medir.
 
+## D-3.4.5 — Auditoría severa: identidad, paridad del jefe y minas desarmadas
+
+**Decisiones tomadas al arreglar, no derivables del código:**
+
+1. **La identidad del ítem es (respuesta, consigna, orden) — no el enunciado ni
+   la decoración.** El expr debe determinar la pregunta impresa y su respuesta
+   (INV13). El enunciado de los problemas (nombres del vocabulario sobre la
+   misma matemática) y los nombres decorativos de los visuales que la consigna
+   no menciona quedan FUERA a propósito: que el anti-repetición trate «María
+   tiene 9 caramelos» y «Hugo tiene 9 cromos» como el mismo ítem es lo deseado.
+2. **`reglaSimple` (§13.2 del PLAN) se retira en vez de cablearse.** Leía
+   `ventanaSimple`, un campo que ningún productor escribió jamás, y nadie la
+   llamaba: el mecanismo que documentaba no existió nunca. Cablearla exigiría
+   añadir un campo nuevo al estado por nivel del perfil sin ninguna necesidad
+   demostrada. Si §13.2 se quiere de verdad, es una decisión nueva.
+3. **«No puntuar la velocidad en los problemas» = multiplicador fijo de Fácil
+   (M_SIN_PRISA), solo con `item.subtipo`.** No es un castigo ni un regalo: es
+   exactamente la semántica de «la velocidad no se mide» que ya tiene Fácil, y
+   los 30 casos exactos de §11.7 no activan el ajuste, así que A3 sigue
+   significando lo mismo.
+4. **El tope de distractores del jefe escala con RANGO_CURSO**, igual que el de
+   `18-distractores` escala con `rangoNivel` desde 3.1.0: mismo defecto, misma
+   solución, segunda vez. La lección sigue siendo que un literal de la era de
+   un solo curso no avisa cuando el catálogo crece.
+5. **Deuda declarada (sin código):** el límite parental de sesión y el registro
+   de tiempo de pantalla no cubren los combates de jefe (asimetría por omisión,
+   no por decisión — pendiente de decidir si el combate cuenta); las familias
+   F (fracciones) y H (tiempo) no tienen ningún error simulable, así que sus
+   distractores son siempre de relleno ±k (diseñar sus errores es trabajo de
+   contenido); el validador de lectura fácil aplica los límites de 2.º a los
+   seis cursos (los límites por ciclo de D-3.1.0 siguen pendientes).
+
 ## D-3.4.4 · Las tablas que no crecieron con el catálogo
 
 **Fecha**: 2026-08-23. **Origen**: el usuario pulsó «Pista» y no recibió

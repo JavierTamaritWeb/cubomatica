@@ -11,7 +11,7 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
 
   const fallos = {
     inv1: 0, inv2: 0, inv3: 0, inv4: 0, inv5: 0, inv5bis: 0, inv5ter: 0,
-    inv6: 0, inv11: 0, inv12: 0, nulos: 0
+    inv6: 0, inv11: 0, inv12: 0, inv13: 0, inv14: 0, nulos: 0
   };
   const ejemplos = {};
   const FORMATOS = ['opciones4', 'teclado', 'signo', 'balanza', 'ordenar', 'monedas', 'datos'];
@@ -40,7 +40,28 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
       });
       if (!item) { anota('nulos', id + ' devuelve null'); break; }
       totalItems++;
-      if (!unicos[item.expr]) { unicos[item.expr] = 1; nUnicos++; }
+      /* INV 14 — `operacion` es una lista cerrada ASCII (+ - × ÷ %): tres
+         items de 19g emitian el − de PINTAR (U+2212) y todos los consumidores
+         comparan con '-', asi que cualquier rama futura por operacion los
+         habria saltado en silencio. */
+      if (item.operacion != null &&
+          ['+', '-', '\u00d7', '\u00f7', '%'].indexOf(item.operacion) === -1) {
+        anota('inv14', id + ' operacion "' + item.operacion + '"');
+      }
+      /* INV 13 (E147) — el expr es la IDENTIDAD del item: mismo expr implica
+         misma respuesta, misma consigna y mismo orden. El enunciado de los
+         problemas y los nombres decorativos de los visuales quedan fuera a
+         proposito: son ropa del vocabulario sobre la misma matematica, y que
+         el anti-repeticion los trate como el mismo item es lo deseado. En
+         3.4.5 este invariante cazo trece niveles (serie() no codificaba
+         cuantos terminos, G1-G7 no codificaban las categorias, A3/A4 no
+         codificaban los colores y B9 confundia cuadrado con rombo). */
+      const huella = String(item.respuesta) + '\u00a7' + (item.consigna || '') +
+        '\u00a7' + JSON.stringify(item.orden || null);
+      if (!unicos[item.expr]) { unicos[item.expr] = huella; nUnicos++; }
+      else if (unicos[item.expr] !== huella) {
+        anota('inv13', id + ' expr "' + item.expr + '" con dos contenidos');
+      }
 
       /* Las exenciones son ESTRECHAS a propósito: solo la respuesta, solo si
          es una cadena, y solo en los dos ítems que lo declaran — la pieza de
@@ -158,6 +179,8 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
   t.ok(fallos.inv6 === 0, 'INV 6 · distractores plausibles salvo los intencionados', ejemplos.inv6);
   t.ok(fallos.inv11 === 0, 'INV 11 · restas nucleares con una sola llevada y sin cero prestado', ejemplos.inv11);
   t.ok(fallos.inv12 === 0, 'INV 12 · variedad suficiente en todos los niveles', ejemplos.inv12);
+  t.ok(fallos.inv13 === 0, 'INV 13 · E147: mismo expr, mismo contenido (respuesta, consigna, orden)', ejemplos.inv13);
+  t.ok(fallos.inv14 === 0, 'INV 14 · operación de la lista cerrada, siempre en ASCII', ejemplos.inv14);
 
   /* Derivado del catálogo (margen 2), no un 90 a mano que se quede viejo. */
   t.ok(totalItems >= porNivel * (CB.catalogo.ids().length - 2),

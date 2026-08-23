@@ -35,7 +35,10 @@ CB.puntuacion.calcular = function (item, rtMs, estado) {
   if (!isFinite(rtMs) || rtMs < 0) rtMs = tI;
 
   let mT;
-  if (estado.modoTiempo === 'facil') {
+  if (estado.modoTiempo === 'facil' || estado.sinVelocidad) {
+    /* sinVelocidad: el ajuste del adulto «No puntuar la velocidad en los
+       problemas» (dislexia, afasia). El multiplicador fijo de Facil, no un
+       castigo: leer despacio no es responder despacio. */
     mT = CB.puntuacion.M_SIN_PRISA;
   } else {
     /* El modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta regla, un modo con el doble de reloj regalaba multiplicadores altos por respuestas lentas y era el que más puntuaba. */

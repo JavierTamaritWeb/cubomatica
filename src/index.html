@@ -293,7 +293,15 @@
     <div id="jefe-enunciado" class="panel-bloque enunciado"></div>
     <div id="jefe-opciones" class="jefe__opciones"></div>
     <p id="jefe-aviso" class="texto texto--menor">Aquí no se apagan luces. Aquí solo se cavan bloques.</p>
-    <button class="btn-bloque" data-salir>◀ Salir</button>
+    <!-- La misma barra que la calibración: el combate era la única pantalla con
+         sonido propio y sin botón de silencio (la regla del botón que faltaba,
+         otra vez en el tercer sitio de tres). -->
+    <div class="barra-herramientas">
+      <div class="barra-herramientas__grupo">
+        <button class="btn-bloque btn-bloque--rotulado" data-accion="sonido" aria-label="Silenciar" aria-pressed="false"><span class="btn-bloque__ico" aria-hidden="true">🔈</span><span class="btn-bloque__rotulo">Sonido</span></button>
+        <button class="btn-bloque" data-salir>◀ Salir</button>
+      </div>
+    </div>
     <!-- La pantalla del jefe tiene su propia cinta. CB.ui.cinta.nodoDe()
          resuelve la de la pantalla visible en cada llamada. -->
     <div class="cinta" aria-hidden="true" hidden><span class="cinta__texto"></span></div>

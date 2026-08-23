@@ -467,6 +467,12 @@ CB.pantallas.alEntrar['p-creditos'] = function () { CB.creditos(); };
 CB.pantallas.alSalir['p-reparacion'] = function () { CB.ui.limpiarReparacion(); };
 
 CB.pantallas.alSalir['p-partida'] = function () { CB.ui.reloj.parar(); };
+CB.pantallas.alSalir['p-jefe'] = function () {
+  /* El turno pendiente comprueba CB.jefes.estado === e: anularlo aqui lo
+     desarma. Salir del combate por «◀ Salir» dejaba el estado vivo y el
+     siguiente turno pintaba (y ponia altavoz) sobre la pantalla oculta. */
+  if (CB.jefes) CB.jefes.estado = null;
+};
 
 /* Arranque */
 CB.arranque = function () {

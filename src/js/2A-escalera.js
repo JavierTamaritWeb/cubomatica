@@ -3,13 +3,28 @@
 var CB = CB || {};
 CB.escalera = CB.escalera || {};
 
+/* La UNICA fuente de accion/apagaLuz/rompeRacha por escalon: siguienteEscalon
+   la consume. Hasta 3.4.5 esta tabla vivia muerta y ademas MENTIA en los
+   escalones 3-5 (decia apagaLuz:false donde la funcion devolvia true): una
+   tabla que nadie lee no avisa cuando se queda vieja. */
 CB.escalera.ESCALONES = {
-  1: { accion: 'pista',        apagaLuz: false, rompeRacha: false },
-  2: { accion: 'reparacion',   apagaLuz: true,  rompeRacha: true  },
-  3: { accion: 'bajarD_opciones', apagaLuz: false, rompeRacha: false },
-  4: { accion: 'prerrequisito',   apagaLuz: false, rompeRacha: false },
-  5: { accion: 'enPausa',         apagaLuz: false, rompeRacha: false }
+  1: { accion: 'pista',           apagaLuz: false, rompeRacha: false },
+  2: { accion: 'reparacion',      apagaLuz: true,  rompeRacha: true  },
+  3: { accion: 'bajarD_opciones', apagaLuz: true,  rompeRacha: true  },
+  4: { accion: 'prerrequisito',   apagaLuz: true,  rompeRacha: true  },
+  5: { accion: 'enPausa',         apagaLuz: true,  rompeRacha: true  }
 };
+
+/* Miembro del espacio de nombres, no funcion de nivel superior: las de nivel
+   superior aterrizan en window y casos-carga pina la lista exacta de doce. */
+CB.escalera.escalonDe = function (n, extras) {
+  const base = CB.escalera.ESCALONES[n];
+  const r = { escalon: n, accion: base.accion,
+              apagaLuz: base.apagaLuz, rompeRacha: base.rompeRacha };
+  let k;
+  for (k in extras) r[k] = extras[k];
+  return r;
+}
 
 /**
  * @param fallosConcepto nº de fallos del MISMO concepto en esta partida
@@ -18,28 +33,23 @@ CB.escalera.ESCALONES = {
 CB.escalera.siguienteEscalon = function (fallosConcepto, fallosItem) {
   /* Escalones 1 y 2: dentro del propio ítem. */
   if (fallosItem === 1) {
-    return { escalon: 1, accion: 'pista', apagaLuz: false, rompeRacha: false,
-             texto: 'Rocarr te enseña por dónde va.' };
+    return CB.escalera.escalonDe(1, { texto: 'Rocarr te enseña por dónde va.' });
   }
   if (fallosItem >= 2 && fallosConcepto < 2) {
-    return { escalon: 2, accion: 'reparacion', apagaLuz: true, rompeRacha: true,
-             texto: 'Vamos a verlo paso a paso.' };
+    return CB.escalera.escalonDe(2, { texto: 'Vamos a verlo paso a paso.' });
   }
 
   /* Escalones 3, 4 y 5: acumulados por CONCEPTO a lo largo de la partida. */
   if (fallosConcepto === 2) {
-    return { escalon: 3, accion: 'bajarD_opciones', apagaLuz: true, rompeRacha: true,
-             D: 1, formato: 'opciones4',
-             texto: 'El siguiente de este tipo será más fácil.' };
+    return CB.escalera.escalonDe(3, { D: 1, formato: 'opciones4',
+                        texto: 'El siguiente de este tipo será más fácil.' });
   }
   if (fallosConcepto === 3) {
-    return { escalon: 4, accion: 'prerrequisito', apagaLuz: true, rompeRacha: true,
-             texto: 'Volvemos un paso atrás para coger carrerilla.' };
+    return CB.escalera.escalonDe(4, { texto: 'Volvemos un paso atrás para coger carrerilla.' });
   }
-  return { escalon: 5, accion: 'enPausa', apagaLuz: true, rompeRacha: true,
-           silencioso: true,
-           notaAdulto: 'Conviene trabajarlo con material manipulativo antes de ' +
-                       'volver a la pantalla.' };
+  return CB.escalera.escalonDe(5, { silencioso: true,
+                      notaAdulto: 'Conviene trabajarlo con material manipulativo antes de ' +
+                                  'volver a la pantalla.' });
 };
 
 /* Aplica el escalón 5: retira el concepto de la sesión, sin avisar al niño. */

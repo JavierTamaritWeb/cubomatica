@@ -62,14 +62,17 @@ CB.jefes.iniciar = function (mundoId) {
   const def = CB.jefes.DEFINICION[mundo.jefe];
   const perfil = CB.perfil;
 
+  /* NAVEGAR ANTES de crear el estado: ir() dispara alSalir incluso cuando el
+     destino es la misma pantalla, y la limpieza de alSalir['p-jefe'] anularia
+     el estado recien creado (re-entrar al combate desde p-jefe lo colgaba). */
+  CB.pantallas.ir('p-jefe');
+
   CB.jefes.estado = {
     mundo: mundo, jefe: mundo.jefe, def: def,
     bloques: CB.jefes.BLOQUES, turno: 0, sinFallos: true,
     respondido: false,
     rng: CB.util.mulberry32(CB.util.hash32(perfil.id + mundoId + CB.util.hoyISO()))
   };
-
-  CB.pantallas.ir('p-jefe');
   const n = document.getElementById('jefe-nombre');
   if (n) n.textContent = mundo.jefe;
   const c = document.getElementById('jefe-criatura');
@@ -124,6 +127,10 @@ CB.jefes.turno = function () {
      escribirlo cuatro veces y olvidarlo en la quinta que se añada: aquí lo
      heredan todas. Lee lo que hay pintado, que es justo lo que el niño ve. */
   CB.ui.ponerAltavoz(enun, enun ? enun.textContent : '');
+  /* El anuncio de la pregunta, como en la partida y la calibración: sin él,
+     un lector de pantalla oía «Ese bloque cae» sin haber oído qué se preguntó
+     (la SIMETRÍA arregló el resultado y dejó muda la pregunta). */
+  if (enun) CB.a11y.anunciar(enun.textContent);
 };
 
 /* Cada jefe tiene su mecánica, y cada mecánica pinta su propia pregunta. */
@@ -178,13 +185,26 @@ CB.jefes.prepararRamas = function (e, opc) {
   const R = CB.jefes.rangos();
   const objetivo = CB.util.ent(e.rng, Math.min(10, R.objetivoRamas - 5), R.objetivoRamas);
   let ramas = [], i, a, b;
+  const vistas = {};
   for (i = 0; i < 4; i++) {
-    if (i === 0) { a = CB.util.ent(e.rng, 1, objetivo); b = objetivo - a; }
-    else {
-      a = CB.util.ent(e.rng, 1, R.objetivoRamas);
-      b = CB.util.ent(e.rng, 1, R.sumandoRamas);
-      if (a + b === objetivo) b += 1;
+    if (i === 0) {
+      /* a < objetivo para que b nunca sea 0: una rama «15 + 0» no es suma. */
+      a = CB.util.ent(e.rng, 1, Math.max(1, objetivo - 1));
+      b = objetivo - a;
+    } else {
+      /* Sin este bucle dos ramas podian ser el MISMO rotulo («7 + 12» dos
+         veces), una valida y otra no a ojos del niño. Acotado: 12 intentos
+         y despues se separa a mano. */
+      let intentos = 0;
+      do {
+        a = CB.util.ent(e.rng, 1, R.objetivoRamas);
+        b = CB.util.ent(e.rng, 1, R.sumandoRamas);
+        if (a + b === objetivo) b += 1;
+        intentos++;
+      } while (vistas[a + '+' + b] && intentos < 12);
+      while (vistas[a + '+' + b] || a + b === objetivo) b += 1;
     }
+    vistas[a + '+' + b] = true;
     ramas.push({ a: a, b: b, valor: a + b });
   }
   ramas = CB.util.barajar(ramas, e.rng);
@@ -194,6 +214,7 @@ CB.jefes.prepararRamas = function (e, opc) {
     });
     opc.appendChild(b2);
   });
+  CB.jefes.montarOpciones(opc);
   return objetivo;
 };
 
@@ -201,9 +222,15 @@ CB.jefes.prepararRamas = function (e, opc) {
 CB.jefes.opciones = function (cont, correcta, distractores) {
   const e = CB.jefes.estado;
   const lista = [{ v: correcta, ok: true }];
+  /* El tope escala con el curso, como en 18-distractores (3.1.0): clavado en
+     999, el distractor a+b de reflejo —el error de sumar en vez de restar—
+     se descartaba SIEMPRE en 5.º-6.º (reflejoMax 600/900) y se sustituía por
+     un correcta±1 sin valor diagnóstico. */
+  const R = CB.jefes.rangos();
+  const tope = Math.max(999, R.reflejoMax * 2, R.matrizMax * (R.matrizMax + 1));
 
   function anadir(v) {
-    if (v === correcta || !(v >= 0) || v > 999) return false;
+    if (v === correcta || !(v >= 0) || v > tope) return false;
     if (lista.some(function (x) { return x.v === v; })) return false;
     lista.push({ v: v, ok: false });
     return true;
@@ -223,6 +250,16 @@ CB.jefes.opciones = function (cont, correcta, distractores) {
       CB.jefes.responder(o.ok);
     }));
   });
+  CB.jefes.montarOpciones(cont);
+};
+
+/* El jefe era el único pintor que construía botones sin pasar por
+   CB.componentes.montar: sin cerrojo de construcción, sin foco, sin «toc» y
+   sin flechas — las cuatro reglas de §3.5 apagadas justo en el combate. */
+CB.jefes.montarOpciones = function (cont) {
+  CB.componentes.conectarToc(cont);
+  CB.a11y.conectarFlechas(cont, 2);
+  CB.componentes.montar(cont);
 };
 
 /* Y no era solo el atajo. */
@@ -297,6 +334,13 @@ CB.jefes.terminar = function (porBloques) {
   enun.appendChild(CB.ui.crear('h2', null, '¡' + e.jefe + ' abre el paso!'));
   enun.appendChild(CB.ui.crear('p', 'texto texto--lectura',
     'Has ganado ' + gemas + ' gemas y el mundo queda cerrado con una victoria.'));
+  /* El logro tambien se VE: aplicarLogros ya aprendio que «sin esta linea el
+     nombre del logro solo lo oia un lector de pantalla» — la misma regla,
+     aplicada al tercer pintor. */
+  for (i = 0; i < nuevos.length; i++) {
+    enun.appendChild(CB.ui.crear('p', 'texto texto--menor',
+      '🏅 Logro: ' + nuevos[i].nombre));
+  }
   opc.appendChild(CB.ui.boton('Volver al mapa', 'btn-bloque--primario btn-bloque--medio',
     function () { CB.pantallas.ir('p-mapa'); }));
 

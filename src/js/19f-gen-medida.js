@@ -127,7 +127,8 @@ CB.gen.medida.B9 = function (rng, D) {
               ' cm. ¿Cuál es su perímetro?',
     operacion: '×', operandos: [figura[1], n],
     respuesta: figura[1] * n,
-    expr: 'b9_' + figura[1] + '_' + n,
+    /* cuadrado y rombo comparten lados=4: la figura entra en la identidad (E147) */
+    expr: 'b9_' + figura[0].split(' ')[1].charAt(0) + figura[1] + '_' + n,
     diagnostico: true,
     tablasCompletas: true
   };

@@ -1,5 +1,5 @@
 CUBOMATICA — Matematicas de 2.o de Primaria
-Version 3.4.4
+Version 3.4.5
 
 1. Abre la carpeta "dist" y haz doble clic en "index.html". Se abre en el
    navegador. No hay que instalar nada.

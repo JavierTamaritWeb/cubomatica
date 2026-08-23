@@ -140,3 +140,13 @@ CB.memoria.hanPasado48h = function (estado, hoyISO) {
   if (!estado || !estado.ultimoRepasoISO) return true;
   return CB.util.diasEntre(estado.ultimoRepasoISO, hoyISO) >= 2;
 };
+
+/* El predicado COMPLETO del logro «Veta restaurada», con la regla de las 48 h
+   dentro: 40-partida lo consume y E149 lo mide. repasoAntesISO es la marca
+   ANTERIOR al repaso de hoy — repasado() pisa ultimoRepasoISO antes de que
+   nadie pregunte, y esa es exactamente la trampa que dejo la regla sin
+   escribir desde su nacimiento hasta 3.4.5. */
+CB.memoria.vetaConLuz = function (estadoAntes, estadoDespues, repasoAntesISO, hoyISO) {
+  return CB.memoria.vetaRestaurada(estadoAntes, estadoDespues, hoyISO) &&
+         CB.memoria.hanPasado48h({ ultimoRepasoISO: repasoAntesISO }, hoyISO);
+};

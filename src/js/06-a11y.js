@@ -84,6 +84,11 @@ CB.a11y.conectarTeclado = function () {
 /* Movimiento del foco por una rejilla con las flechas. */
 CB.a11y.conectarFlechas = function (contenedor, columnas) {
   if (!contenedor) return;
+  /* Idempotente, como conectarToc: la partida conecta nodos recien creados,
+     pero el jefe reutiliza #jefe-opciones en cada turno y sin este cerrojo
+     acumularia un oyente por turno (cada flecha saltaria N botones). */
+  if (contenedor.getAttribute('data-flechas') === 'si') return;
+  contenedor.setAttribute('data-flechas', 'si');
   contenedor.addEventListener('keydown', function (ev) {
     const teclas = ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'];
     if (teclas.indexOf(ev.key) === -1) return;

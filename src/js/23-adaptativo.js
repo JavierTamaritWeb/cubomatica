@@ -144,18 +144,10 @@ CB.adaptativo.precision1er = function (d) {
   return (d.aciertosPrimerIntento || 0) / d.n;
 };
 
-/* Regla simple de respaldo (§13.2) */
-CB.adaptativo.reglaSimple = function (nivelEstado) {
-  const v = nivelEstado.ventanaSimple || [];
-  const n = v.length;
-  let i, seguidos = 0;
-  for (i = n - 1; i >= 0; i--) { if (v[i] === 1) seguidos++; else break; }
-  if (seguidos >= 3) return +1;
-  let fallos = 0;
-  for (i = n - 1; i >= 0 && i >= n - 2; i--) if (v[i] === 0) fallos++;
-  if (fallos >= 2) return -1;
-  return 0;
-};
+/* La «regla simple de respaldo» (§13.2) se retiro en 3.4.5: leia
+   nivelEstado.ventanaSimple, un campo que NINGUN productor escribia, asi que
+   solo podia devolver 0 — y ademas no la llamaba nadie. Una funcion muerta que
+   documenta un mecanismo inexistente es peor que su ausencia (D-3.4.5). */
 
 /* Dificultad interna D del nivel (§8.2) */
 CB.adaptativo.actualizarD = function (nivelEstado, correcto, primerIntento) {

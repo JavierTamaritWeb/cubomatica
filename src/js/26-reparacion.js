@@ -46,6 +46,10 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'problemas_cambio':
     case 'problemas_combinacion': return 'barrasComparativas';
     case 'dinero':             return 'monedas';
+    /* Explicito, no por el default: la ausencia de un caso no se ve (la
+       leccion de MENSAJES.PISTAS). Los dos codigos de V son diagnostico:false,
+       pero la tarjeta puede abrirse igualmente por el escalon 2. */
+    case 'vocabulario':        return 'barrasComparativas';
     default:                   return 'rectaNumerica';
   }
 };

@@ -302,7 +302,11 @@ CB.ui.matriz = function (filas, columnas) {
   rej.style.gap = '4px';
   let i;
   const total = filas * columnas;
-  for (i = 0; i < total && i < 120; i++) {
+  /* 144 = 12 × 12, el mayor producto que declara CB.jefes.RANGO_CURSO. El
+     tope anterior (120) era de la era de un solo curso: en 5.º-6.º la matriz
+     de 12 × 12 se dibujaba con 120 bloques y la respuesta correcta era 144 —
+     el aria-label decia la verdad y el dibujo mentia. */
+  for (i = 0; i < total && i < 144; i++) {
     const b = CB.ui.crear('span');
     b.style.width = '20px'; b.style.height = '20px';
     b.style.background = 'var(--deco-cristal)';

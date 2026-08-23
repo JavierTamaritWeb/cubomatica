@@ -47,7 +47,7 @@ CB.catalogo.TABLAS = {
   ['N18','Leer y escribir hasta 20','numeracion',0,20,0,1,'teclado','A.2.b',['6.1'],['N17'],20,false,null],
   ['N19','Mayor o menor hasta 20','numeracion',0,20,0,1,'balanza','A.4.b',['5.1','6.1'],['N17'],120,false,null],
   ['N20','Leer y escribir hasta 59','numeracion',0,59,0,2,'teclado','A.2.b',['6.1'],['N18'],39,false,null],
-  ['N21','Series de 1 en 1 y de 2 en 2','numeracion',0,59,0,2,'ordenar','A.4.a',['3.1'],['N18'],140,false,null],
+  ['N21','Series de 1 en 1 y de 2 en 2','numeracion',0,59,0,2,'ordenar','A.4.a',['3.1'],['N18'],277,false,null],
   ['N22','El anterior y el posterior','numeracion',0,99,0,3,'teclado','A.2.b',['1.2'],['N20'],150,false,null],
 
   /* Sumas: 5 */
@@ -76,7 +76,7 @@ CB.catalogo.TABLAS = {
   ['B1','Medir con bloques','medida',0,10,0,2,'teclado','B1.a',['5.2','1.2'],['N17'],6,false,null],
   ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null],
   /* Datos y azar (3.3.0): 2 */
-  ['G1','El gráfico de los juguetes','datos',0,9,0,2,'teclado','E1.a',['1.2','5.2'],['N17'],1052,false,null],
+  ['G1','El gráfico de los juguetes','datos',0,9,0,2,'teclado','E1.a',['1.2','5.2'],['N17'],6693,false,null],
   ['A1','Seguro o imposible','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['N17'],19,false,null],
   /* Álgebra y espacio (3.4.0): 4 */
   ['U1','Seguir la serie','patrones',0,20,0,2,'teclado','D1.a',['3.1','5.1'],['N18'],27,false,null],
@@ -92,13 +92,13 @@ CB.catalogo.TABLAS = {
   ['N2','Leer y escribir hasta 99','numeracion',0,99,0,1,'teclado','A.2.b',['6.1'],['N1'],90,false,null],
   ['N3','Decenas y unidades','valor_posicional',0,99,0,1,'opciones4','A.4.a',['1.2','6.1'],['N1'],178,false,null],
   ['N4','Mayor, menor, igual','numeracion',0,99,0,1,'balanza','A.4.b',['5.1','6.1'],['N1'],300,false,null],
-  ['N5','Series de 2 en 2 y de 10 en 10','numeracion',0,99,0,1,'ordenar','A.4.a',['3.1'],['N1'],160,false,null],
+  ['N5','Series de 2 en 2 y de 10 en 10','numeracion',0,99,0,1,'ordenar','A.4.a',['3.1'],['N1'],324,false,null],
   ['N6','Pares e impares','numeracion',0,99,0,1,'opciones4','A.4.b',['3.1'],['N1'],99,false,null],
   ['N7','La recta numérica','numeracion',0,199,0,1,'ordenar','A.2.b',['1.2'],['N2'],400,false,null],
   ['N8','Números hasta 199','numeracion',0,199,0,1,'teclado','A.2.b',['6.1'],['N2'],100,false,null],
   ['N9','La centena: C, D y U','valor_posicional',0,599,0,2,'opciones4','A.4.a',['1.2','6.1'],['N3','N8'],500,false,null],
   ['N10','Comparar y ordenar hasta 599','numeracion',0,599,0,2,'balanza','A.4.b',['5.1'],['N4','N8'],600,false,null],
-  ['N11','Series de 5 en 5 y de 100 en 100','numeracion',0,599,0,2,'ordenar','A.4.a',['3.1'],['N5','N9'],200,false,null],
+  ['N11','Series de 5 en 5 y de 100 en 100','numeracion',0,599,0,2,'ordenar','A.4.a',['3.1'],['N5','N9'],382,false,null],
   ['N12','Descomponer C + D + U','valor_posicional',0,599,0,2,'teclado','A.2.b',['1.2','6.2'],['N9'],499,false,null,'A.2.c'],
   ['N13','Aproximar a la decena','numeracion',0,599,0,2,'opciones4','A.2.a',['2.1'],['N3'],540,false,null],
   ['N14','Ordinales hasta el 20.º','numeracion',1,20,0,2,'opciones4','A.4.b',['6.1'],['N1'],160,false,null],
@@ -197,8 +197,8 @@ CB.catalogo.TABLAS = {
   ['B3','¿Con qué se mide?','medida',0,0,0,3,'opciones4','B1.a',['5.2','6.1'],['E1'],4,false,null],
   ['H2','En punto y y media','tiempo',0,12,0,3,'opciones4','B1.b',['5.2','6.1'],['H1'],16,false,null],
   /* Datos y azar (3.3.0): 3 */
-  ['G2','Leer el gráfico de barras','datos',0,12,0,2,'teclado','E1.a',['1.2','6.1'],['G1'],5939,false,null],
-  ['G3','El que más y el que menos','datos',0,12,0,3,'opciones4','E1.a',['1.1','5.1'],['G2'],5184,false,null],
+  ['G2','Leer el gráfico de barras','datos',0,12,0,2,'teclado','E1.a',['1.2','6.1'],['G1'],6986,false,null],
+  ['G3','El que más y el que menos','datos',0,12,0,3,'opciones4','E1.a',['1.1','5.1'],['G2'],6979,false,null],
   ['A2','La bolsa de las bolas','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['A1'],484,false,null],
   /* Álgebra y espacio (3.4.0): 4 */
   ['U2','La serie que baja','patrones',0,99,0,2,'teclado','D1.a',['3.1','5.1'],['U1','N5'],217,false,null],
@@ -251,9 +251,9 @@ CB.catalogo.TABLAS = {
   ['B6','El perímetro','medida',0,100,0,3,'teclado','B2.c',['1.2','2.1'],['M13','B4'],44,false,null],
   ['H3','Los cuartos','tiempo',0,12,0,2,'opciones4','B2.b',['5.2','6.1'],['H2'],33,false,null],
   /* Datos y azar (3.3.0): 3 */
-  ['G4','Los votos de la clase','datos',0,24,0,1,'teclado','E2.a',['1.2','2.1'],['G2','S18'],6361,false,null],
-  ['G5','¿Cuántos más?','datos',0,12,0,2,'teclado','E2.a',['1.1','2.1'],['G4','R16'],6409,false,null],
-  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],352,false,null],
+  ['G4','Los votos de la clase','datos',0,24,0,1,'teclado','E2.a',['1.2','2.1'],['G2','S18'],6995,false,null],
+  ['G5','¿Cuántos más?','datos',0,12,0,2,'teclado','E2.a',['1.1','2.1'],['G4','R16'],6995,false,null],
+  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],4364,false,null],
   /* Álgebra y espacio (3.4.0): 4 */
   ['U3','La serie y su salto','patrones',0,999,0,1,'teclado','D2.a',['3.1','5.1'],['U2'],4560,false,null],
   ['X3','El hueco de multiplicar','algebra',0,100,0,2,'teclado','D2.b',['2.1','3.1'],['X2','M13'],44,false,null],
@@ -300,12 +300,12 @@ CB.catalogo.TABLAS = {
   /* Medida y tiempo (3.2.0): 4 */
   ['B7','Kilómetros y metros','medida',0,9000,0,1,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
   ['B8','Litros y mililitros','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B5'],11,false,null],
-  ['B9','Perímetros de figuras','medida',0,120,0,2,'teclado','B2.c',['2.1','3.1'],['B6'],32,false,null],
+  ['B9','Perímetros de figuras','medida',0,120,0,2,'teclado','B2.c',['2.1','3.1'],['B6'],48,false,null],
   ['H4','El reloj de minutos','tiempo',0,12,0,3,'opciones4','B2.b',['5.2','6.1'],['H3'],92,false,null],
   /* Datos y azar (3.3.0): 3 */
-  ['G6','El pictograma','datos',0,80,0,1,'teclado','E2.a',['1.2','5.1'],['G4','M13'],1933,false,null],
-  ['G7','La encuesta entera','datos',0,48,0,2,'teclado','E2.a',['1.1','2.1'],['G4'],3604,false,null],
-  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],352,false,null],
+  ['G6','El pictograma','datos',0,80,0,1,'teclado','E2.a',['1.2','5.1'],['G4','M13'],6822,false,null],
+  ['G7','La encuesta entera','datos',0,48,0,2,'teclado','E2.a',['1.1','2.1'],['G4'],6936,false,null],
+  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],4348,false,null],
   /* Álgebra y espacio (3.4.0): 4 */
   ['U4','El robot de la cuadrícula','patrones',0,10,0,1,'teclado','D2.c',['1.1','2.1'],['U3','K2'],154,false,null],
   ['X4','El hueco con dos operaciones','algebra',0,180,0,2,'teclado','D2.b',['2.1','6.2'],['X3'],2441,false,null],

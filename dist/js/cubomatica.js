@@ -1525,7 +1525,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.4.4';
+CB.VERSION = '3.4.5';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -2819,8 +2819,13 @@ CB.voz.textoDeItem = function (item) {
 };
 
 CB.voz.leerOGuiar = function (texto, alResaltar, alTerminar) {
-  if (CB.voz.disponible()) {
-    return { modo: 'voz', ms: CB.voz.leer(texto, alTerminar) ? 0 : 0 };
+  /* activa entra en la condicion: con «Leer en voz alta: No» y una voz española
+     instalada, leer() se negaba por dentro y la guia no llegaba — el altavoz
+     era un boton pintado que no hacia nada. La lectura guiada no es sonido:
+     sigue siendo legitima con la voz apagada. */
+  if (CB.voz.activa && CB.voz.disponible()) {
+    CB.voz.leer(texto, alTerminar);
+    return { modo: 'voz', ms: 0 };
   }
   return { modo: 'guiada', ms: CB.voz.lecturaGuiada(texto, alResaltar, alTerminar) };
 };
@@ -2920,6 +2925,11 @@ CB.a11y.conectarTeclado = function () {
 /* Movimiento del foco por una rejilla con las flechas. */
 CB.a11y.conectarFlechas = function (contenedor, columnas) {
   if (!contenedor) return;
+  /* Idempotente, como conectarToc: la partida conecta nodos recien creados,
+     pero el jefe reutiliza #jefe-opciones en cada turno y sin este cerrojo
+     acumularia un oyente por turno (cada flecha saltaria N botones). */
+  if (contenedor.getAttribute('data-flechas') === 'si') return;
+  contenedor.setAttribute('data-flechas', 'si');
   contenedor.addEventListener('keydown', function (ev) {
     const teclas = ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'];
     if (teclas.indexOf(ev.key) === -1) return;
@@ -3521,7 +3531,9 @@ function serie(rng, D, saltos, max) {
     orden: orden,
     piezas: CB.util.barajar(orden, rng),
     respuesta: orden[orden.length - 1],
-    expr: 'serie' + salto + '_' + inicio + (asc ? 'a' : 'd'),
+    /* cuantos varia con D y el ultimo termino es la respuesta: sin el,
+       dos items distintos compartian identidad (E147). */
+    expr: 'serie' + salto + '_' + inicio + (asc ? 'a' : 'd') + cuantos,
     diagnostico: false
   };
 }
@@ -7083,7 +7095,8 @@ CB.gen.medida.B9 = function (rng, D) {
               ' cm. ¿Cuál es su perímetro?',
     operacion: '×', operandos: [figura[1], n],
     respuesta: figura[1] * n,
-    expr: 'b9_' + figura[1] + '_' + n,
+    /* cuadrado y rombo comparten lados=4: la figura entra en la identidad (E147) */
+    expr: 'b9_' + figura[0].split(' ')[1].charAt(0) + figura[1] + '_' + n,
     diagnostico: true,
     tablasCompletas: true
   };
@@ -7392,7 +7405,7 @@ CB.gen.datos.G1 = function (rng, D) {
     visual: { tipo: 'barras', filas: g.filas },
     respuesta: g.valores[i],
     datosGrafico: g.valores.slice(),
-    expr: 'g1_' + g.valores.join('-') + '_' + i,
+    expr: 'g1_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + i,
     diagnostico: true
   };
 };
@@ -7407,7 +7420,7 @@ CB.gen.datos.G2 = function (rng, D) {
     visual: { tipo: 'barras', filas: g.filas },
     respuesta: g.valores[i],
     datosGrafico: g.valores.slice(),
-    expr: 'g2_' + g.valores.join('-') + '_' + i,
+    expr: 'g2_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + i,
     diagnostico: true
   };
 };
@@ -7429,7 +7442,7 @@ CB.gen.datos.G3 = function (rng, D) {
     respuesta: g.nombres[mejor],
     respuestaFraccion: true,
     distractoresFijos: g.nombres.filter(function (n, j) { return j !== mejor; }),
-    expr: 'g3_' + g.valores.join('-') + (buscaMax ? 'M' : 'm'),
+    expr: 'g3_' + g.nombres.join('-') + '_' + g.valores.join('-') + (buscaMax ? 'M' : 'm'),
     diagnostico: false
   };
 };
@@ -7447,7 +7460,7 @@ CB.gen.datos.G4 = function (rng, D) {
     operacion: '+', operandos: [g.valores[a], g.valores[b]],
     respuesta: g.valores[a] + g.valores[b],
     datosGrafico: g.valores.slice(),
-    expr: 'g4_' + g.valores.join('-') + '_' + a + b,
+    expr: 'g4_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + a + b,
     diagnostico: true
   };
 };
@@ -7463,10 +7476,10 @@ CB.gen.datos.G5 = function (rng, D) {
     consigna: 'Mira el gráfico. ¿Cuántos ' + g.nombres[a] + ' hay MÁS que ' +
               g.nombres[b] + '?',
     visual: { tipo: 'barras', filas: g.filas },
-    operacion: '−', operandos: [g.valores[a], g.valores[b]],
+    operacion: '-' /* ASCII: los consumidores comparan con '-', el − es solo de pintura */, operandos: [g.valores[a], g.valores[b]],
     respuesta: g.valores[a] - g.valores[b],
     datosGrafico: g.valores.slice(),
-    expr: 'g5_' + g.valores.join('-') + '_' + a + b,
+    expr: 'g5_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + a + b,
     diagnostico: true
   };
 };
@@ -7484,7 +7497,7 @@ CB.gen.datos.G6 = function (rng, D) {
     operacion: '×', operandos: [g.valores[i], escala],
     respuesta: g.valores[i] * escala,
     tablasCompletas: true,
-    expr: 'g6_' + escala + '_' + g.valores.join('-') + '_' + i,
+    expr: 'g6_' + escala + '_' + g.nombres.join('-') + '_' + g.valores.join('-') + '_' + i,
     diagnostico: true
   };
 };
@@ -7499,7 +7512,7 @@ CB.gen.datos.G7 = function (rng, D) {
     visual: { tipo: 'barras', filas: g.filas },
     respuesta: total,
     datosGrafico: g.valores.slice(),
-    expr: 'g7_' + g.valores.join('-'),
+    expr: 'g7_' + g.nombres.join('-') + '_' + g.valores.join('-'),
     diagnostico: false
   };
 };
@@ -7586,7 +7599,7 @@ CB.gen.datos.G10 = function (rng, D) {
     formato: 'teclado',
     consigna: 'Las temperaturas de cuatro días: ' + enLista(lista) +
               ' grados. ¿Cuál es el rango: el mayor menos el menor?',
-    operacion: '−', operandos: [max, min],
+    operacion: '-' /* ASCII: los consumidores comparan con '-', el − es solo de pintura */, operandos: [max, min],
     respuesta: max - min,
     maxDato: max,
     expr: 'g10_' + lista.join('-'),
@@ -7653,7 +7666,7 @@ CB.gen.datos.G12 = function (rng, D) {
     formato: 'teclado',
     consigna: 'Estos son los datos: ' + enLista(lista) +
               '. ¿Cuál es el RANGO?',
-    operacion: '−', operandos: [max, min],
+    operacion: '-' /* ASCII: los consumidores comparan con '-', el − es solo de pintura */, operandos: [max, min],
     respuesta: max - min,
     maxDato: max,
     expr: 'g12c_' + lista.join('-'),
@@ -7764,7 +7777,7 @@ CB.gen.azar.A3 = function (rng, D) {
     respuesta: b.colores[mejor],
     respuestaFraccion: true,
     distractoresFijos: b.colores.filter(function (c, j) { return j !== mejor; }),
-    expr: 'a3_' + b.cuentas.join('-') + '_' + mejor,
+    expr: 'a3_' + b.colores.join('') + '_' + b.cuentas.join('-') + '_' + mejor,
     diagnostico: false
   };
 };
@@ -7781,7 +7794,7 @@ CB.gen.azar.A4 = function (rng, D) {
     respuesta: b.colores[peor],
     respuestaFraccion: true,
     distractoresFijos: b.colores.filter(function (c, j) { return j !== peor; }),
-    expr: 'a4_' + b.cuentas.join('-') + '_' + peor,
+    expr: 'a4_' + b.colores.join('') + '_' + b.cuentas.join('-') + '_' + peor,
     diagnostico: false
   };
 };
@@ -8640,7 +8653,7 @@ CB.catalogo.TABLAS = {
   ['N18','Leer y escribir hasta 20','numeracion',0,20,0,1,'teclado','A.2.b',['6.1'],['N17'],20,false,null],
   ['N19','Mayor o menor hasta 20','numeracion',0,20,0,1,'balanza','A.4.b',['5.1','6.1'],['N17'],120,false,null],
   ['N20','Leer y escribir hasta 59','numeracion',0,59,0,2,'teclado','A.2.b',['6.1'],['N18'],39,false,null],
-  ['N21','Series de 1 en 1 y de 2 en 2','numeracion',0,59,0,2,'ordenar','A.4.a',['3.1'],['N18'],140,false,null],
+  ['N21','Series de 1 en 1 y de 2 en 2','numeracion',0,59,0,2,'ordenar','A.4.a',['3.1'],['N18'],277,false,null],
   ['N22','El anterior y el posterior','numeracion',0,99,0,3,'teclado','A.2.b',['1.2'],['N20'],150,false,null],
 
   /* Sumas: 5 */
@@ -8669,7 +8682,7 @@ CB.catalogo.TABLAS = {
   ['B1','Medir con bloques','medida',0,10,0,2,'teclado','B1.a',['5.2','1.2'],['N17'],6,false,null],
   ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null],
   /* Datos y azar (3.3.0): 2 */
-  ['G1','El gráfico de los juguetes','datos',0,9,0,2,'teclado','E1.a',['1.2','5.2'],['N17'],1052,false,null],
+  ['G1','El gráfico de los juguetes','datos',0,9,0,2,'teclado','E1.a',['1.2','5.2'],['N17'],6693,false,null],
   ['A1','Seguro o imposible','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['N17'],19,false,null],
   /* Álgebra y espacio (3.4.0): 4 */
   ['U1','Seguir la serie','patrones',0,20,0,2,'teclado','D1.a',['3.1','5.1'],['N18'],27,false,null],
@@ -8685,13 +8698,13 @@ CB.catalogo.TABLAS = {
   ['N2','Leer y escribir hasta 99','numeracion',0,99,0,1,'teclado','A.2.b',['6.1'],['N1'],90,false,null],
   ['N3','Decenas y unidades','valor_posicional',0,99,0,1,'opciones4','A.4.a',['1.2','6.1'],['N1'],178,false,null],
   ['N4','Mayor, menor, igual','numeracion',0,99,0,1,'balanza','A.4.b',['5.1','6.1'],['N1'],300,false,null],
-  ['N5','Series de 2 en 2 y de 10 en 10','numeracion',0,99,0,1,'ordenar','A.4.a',['3.1'],['N1'],160,false,null],
+  ['N5','Series de 2 en 2 y de 10 en 10','numeracion',0,99,0,1,'ordenar','A.4.a',['3.1'],['N1'],324,false,null],
   ['N6','Pares e impares','numeracion',0,99,0,1,'opciones4','A.4.b',['3.1'],['N1'],99,false,null],
   ['N7','La recta numérica','numeracion',0,199,0,1,'ordenar','A.2.b',['1.2'],['N2'],400,false,null],
   ['N8','Números hasta 199','numeracion',0,199,0,1,'teclado','A.2.b',['6.1'],['N2'],100,false,null],
   ['N9','La centena: C, D y U','valor_posicional',0,599,0,2,'opciones4','A.4.a',['1.2','6.1'],['N3','N8'],500,false,null],
   ['N10','Comparar y ordenar hasta 599','numeracion',0,599,0,2,'balanza','A.4.b',['5.1'],['N4','N8'],600,false,null],
-  ['N11','Series de 5 en 5 y de 100 en 100','numeracion',0,599,0,2,'ordenar','A.4.a',['3.1'],['N5','N9'],200,false,null],
+  ['N11','Series de 5 en 5 y de 100 en 100','numeracion',0,599,0,2,'ordenar','A.4.a',['3.1'],['N5','N9'],382,false,null],
   ['N12','Descomponer C + D + U','valor_posicional',0,599,0,2,'teclado','A.2.b',['1.2','6.2'],['N9'],499,false,null,'A.2.c'],
   ['N13','Aproximar a la decena','numeracion',0,599,0,2,'opciones4','A.2.a',['2.1'],['N3'],540,false,null],
   ['N14','Ordinales hasta el 20.º','numeracion',1,20,0,2,'opciones4','A.4.b',['6.1'],['N1'],160,false,null],
@@ -8790,8 +8803,8 @@ CB.catalogo.TABLAS = {
   ['B3','¿Con qué se mide?','medida',0,0,0,3,'opciones4','B1.a',['5.2','6.1'],['E1'],4,false,null],
   ['H2','En punto y y media','tiempo',0,12,0,3,'opciones4','B1.b',['5.2','6.1'],['H1'],16,false,null],
   /* Datos y azar (3.3.0): 3 */
-  ['G2','Leer el gráfico de barras','datos',0,12,0,2,'teclado','E1.a',['1.2','6.1'],['G1'],5939,false,null],
-  ['G3','El que más y el que menos','datos',0,12,0,3,'opciones4','E1.a',['1.1','5.1'],['G2'],5184,false,null],
+  ['G2','Leer el gráfico de barras','datos',0,12,0,2,'teclado','E1.a',['1.2','6.1'],['G1'],6986,false,null],
+  ['G3','El que más y el que menos','datos',0,12,0,3,'opciones4','E1.a',['1.1','5.1'],['G2'],6979,false,null],
   ['A2','La bolsa de las bolas','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['A1'],484,false,null],
   /* Álgebra y espacio (3.4.0): 4 */
   ['U2','La serie que baja','patrones',0,99,0,2,'teclado','D1.a',['3.1','5.1'],['U1','N5'],217,false,null],
@@ -8844,9 +8857,9 @@ CB.catalogo.TABLAS = {
   ['B6','El perímetro','medida',0,100,0,3,'teclado','B2.c',['1.2','2.1'],['M13','B4'],44,false,null],
   ['H3','Los cuartos','tiempo',0,12,0,2,'opciones4','B2.b',['5.2','6.1'],['H2'],33,false,null],
   /* Datos y azar (3.3.0): 3 */
-  ['G4','Los votos de la clase','datos',0,24,0,1,'teclado','E2.a',['1.2','2.1'],['G2','S18'],6361,false,null],
-  ['G5','¿Cuántos más?','datos',0,12,0,2,'teclado','E2.a',['1.1','2.1'],['G4','R16'],6409,false,null],
-  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],352,false,null],
+  ['G4','Los votos de la clase','datos',0,24,0,1,'teclado','E2.a',['1.2','2.1'],['G2','S18'],6995,false,null],
+  ['G5','¿Cuántos más?','datos',0,12,0,2,'teclado','E2.a',['1.1','2.1'],['G4','R16'],6995,false,null],
+  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],4364,false,null],
   /* Álgebra y espacio (3.4.0): 4 */
   ['U3','La serie y su salto','patrones',0,999,0,1,'teclado','D2.a',['3.1','5.1'],['U2'],4560,false,null],
   ['X3','El hueco de multiplicar','algebra',0,100,0,2,'teclado','D2.b',['2.1','3.1'],['X2','M13'],44,false,null],
@@ -8893,12 +8906,12 @@ CB.catalogo.TABLAS = {
   /* Medida y tiempo (3.2.0): 4 */
   ['B7','Kilómetros y metros','medida',0,9000,0,1,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
   ['B8','Litros y mililitros','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B5'],11,false,null],
-  ['B9','Perímetros de figuras','medida',0,120,0,2,'teclado','B2.c',['2.1','3.1'],['B6'],32,false,null],
+  ['B9','Perímetros de figuras','medida',0,120,0,2,'teclado','B2.c',['2.1','3.1'],['B6'],48,false,null],
   ['H4','El reloj de minutos','tiempo',0,12,0,3,'opciones4','B2.b',['5.2','6.1'],['H3'],92,false,null],
   /* Datos y azar (3.3.0): 3 */
-  ['G6','El pictograma','datos',0,80,0,1,'teclado','E2.a',['1.2','5.1'],['G4','M13'],1933,false,null],
-  ['G7','La encuesta entera','datos',0,48,0,2,'teclado','E2.a',['1.1','2.1'],['G4'],3604,false,null],
-  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],352,false,null],
+  ['G6','El pictograma','datos',0,80,0,1,'teclado','E2.a',['1.2','5.1'],['G4','M13'],6822,false,null],
+  ['G7','La encuesta entera','datos',0,48,0,2,'teclado','E2.a',['1.1','2.1'],['G4'],6936,false,null],
+  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],4348,false,null],
   /* Álgebra y espacio (3.4.0): 4 */
   ['U4','El robot de la cuadrícula','patrones',0,10,0,1,'teclado','D2.c',['1.1','2.1'],['U3','K2'],154,false,null],
   ['X4','El hueco con dos operaciones','algebra',0,180,0,2,'teclado','D2.b',['2.1','6.2'],['X3'],2441,false,null],
@@ -9676,7 +9689,6 @@ CB.ERRORES = {
     pista: 'Lee la frase entera antes de decidir.', reparacion: 'rectaNumerica' }
 };
 
-CB.ERRORES_IDS = Object.keys(CB.ERRORES);
 
 /* Los distractores */
 CB.distractores = CB.distractores || {};
@@ -10024,7 +10036,7 @@ CB.ERRORES['E-X-SUMA-LOS-DOS'] = {
 CB.ERRORES['E-J-OLVIDA-UN-ANGULO'] = {
   familia: 'J', diagnostico: true,
   pista: 'A 180 hay que quitarle LOS DOS ángulos que ya conoces, no uno.',
-  reparacion: 'rectaNumerica',
+  reparacion: 'matrizFilasColumnas',
   simular: function (item) {
     if (typeof item.anguloA !== 'number') return null;
     const resto = 180 - item.anguloA;
@@ -10036,7 +10048,7 @@ CB.ERRORES['E-K-DIRECCION-CONTRARIA'] = {
   familia: 'K', diagnostico: true,
   pista: 'Moverse a la derecha o hacia arriba SUMA casillas; quitar es ir ' +
          'hacia el otro lado.',
-  reparacion: 'rectaNumerica',
+  reparacion: 'matrizFilasColumnas',
   simular: function (item) {
     if (typeof item.coordenadaInicial !== 'number' ||
         typeof item.desplazamiento !== 'number') return null;
@@ -10048,8 +10060,13 @@ CB.ERRORES['E-K-DIRECCION-CONTRARIA'] = {
 CB.ERRORES['E-K-FILA-POR-COLUMNA'] = {
   familia: 'K', diagnostico: false,
   pista: 'Primero la columna, después la fila. La fila 1 es la de abajo.',
-  reparacion: 'rectaNumerica'
+  reparacion: 'matrizFilasColumnas'
 };
+
+/* AL FINAL DEL FICHERO a proposito: hasta 3.4.5 esta linea corria en la 266,
+   antes de las 23 altas de 3.1.0-3.4.0, y congelaba 24 de los 47 codigos.
+   Nadie la leia aun — era una mina, no un daño. E152 la compara con CB.ERRORES. */
+CB.ERRORES_IDS = Object.keys(CB.ERRORES);
 
 /* 20-puntuacion.js — Requisitos 6 y 7 del usuario */
 
@@ -10088,7 +10105,10 @@ CB.puntuacion.calcular = function (item, rtMs, estado) {
   if (!isFinite(rtMs) || rtMs < 0) rtMs = tI;
 
   let mT;
-  if (estado.modoTiempo === 'facil') {
+  if (estado.modoTiempo === 'facil' || estado.sinVelocidad) {
+    /* sinVelocidad: el ajuste del adulto «No puntuar la velocidad en los
+       problemas» (dislexia, afasia). El multiplicador fijo de Facil, no un
+       castigo: leer despacio no es responder despacio. */
     mT = CB.puntuacion.M_SIN_PRISA;
   } else {
     /* El modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta regla, un modo con el doble de reloj regalaba multiplicadores altos por respuestas lentas y era el que más puntuaba. */
@@ -10638,18 +10658,10 @@ CB.adaptativo.precision1er = function (d) {
   return (d.aciertosPrimerIntento || 0) / d.n;
 };
 
-/* Regla simple de respaldo (§13.2) */
-CB.adaptativo.reglaSimple = function (nivelEstado) {
-  const v = nivelEstado.ventanaSimple || [];
-  const n = v.length;
-  let i, seguidos = 0;
-  for (i = n - 1; i >= 0; i--) { if (v[i] === 1) seguidos++; else break; }
-  if (seguidos >= 3) return +1;
-  let fallos = 0;
-  for (i = n - 1; i >= 0 && i >= n - 2; i--) if (v[i] === 0) fallos++;
-  if (fallos >= 2) return -1;
-  return 0;
-};
+/* La «regla simple de respaldo» (§13.2) se retiro en 3.4.5: leia
+   nivelEstado.ventanaSimple, un campo que NINGUN productor escribia, asi que
+   solo podia devolver 0 — y ademas no la llamaba nadie. Una funcion muerta que
+   documenta un mecanismo inexistente es peor que su ausencia (D-3.4.5). */
 
 /* Dificultad interna D del nivel (§8.2) */
 CB.adaptativo.actualizarD = function (nivelEstado, correcto, primerIntento) {
@@ -11108,6 +11120,10 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'problemas_cambio':
     case 'problemas_combinacion': return 'barrasComparativas';
     case 'dinero':             return 'monedas';
+    /* Explicito, no por el default: la ausencia de un caso no se ve (la
+       leccion de MENSAJES.PISTAS). Los dos codigos de V son diagnostico:false,
+       pero la tarjeta puede abrirse igualmente por el escalon 2. */
+    case 'vocabulario':        return 'barrasComparativas';
     default:                   return 'rectaNumerica';
   }
 };
@@ -11311,8 +11327,11 @@ CB.leitner.proximoRepaso = function (estado, hoyISO) {
 };
 
 CB.leitner.venceHoy = function (estado, hoyISO) {
-  if (!estado || !estado.proximoRepaso) return true;
-  return CB.util.diasEntre(estado.proximoRepaso, hoyISO) >= 0;
+  /* proximoRepasoISO: el unico nombre que escriben 28-memoria y 23-adaptativo.
+     Con el nombre viejo (proximoRepaso) la guarda saltaba siempre y todo
+     «vencia hoy» — inerte mientras nadie la llamaba, mina si alguien la llama. */
+  if (!estado || !estado.proximoRepasoISO) return true;
+  return CB.util.diasEntre(estado.proximoRepasoISO, hoyISO) >= 0;
 };
 
 /* Reinserción intra-partida */
@@ -11483,6 +11502,16 @@ CB.memoria.vetaRestaurada = function (estadoAntes, estadoDespues, hoyISO) {
 CB.memoria.hanPasado48h = function (estado, hoyISO) {
   if (!estado || !estado.ultimoRepasoISO) return true;
   return CB.util.diasEntre(estado.ultimoRepasoISO, hoyISO) >= 2;
+};
+
+/* El predicado COMPLETO del logro «Veta restaurada», con la regla de las 48 h
+   dentro: 40-partida lo consume y E149 lo mide. repasoAntesISO es la marca
+   ANTERIOR al repaso de hoy — repasado() pisa ultimoRepasoISO antes de que
+   nadie pregunte, y esa es exactamente la trampa que dejo la regla sin
+   escribir desde su nacimiento hasta 3.4.5. */
+CB.memoria.vetaConLuz = function (estadoAntes, estadoDespues, repasoAntesISO, hoyISO) {
+  return CB.memoria.vetaRestaurada(estadoAntes, estadoDespues, hoyISO) &&
+         CB.memoria.hanPasado48h({ ultimoRepasoISO: repasoAntesISO }, hoyISO);
 };
 
 /* 29-grafo.js — DAG de prerrequisitos de los 92 niveles */
@@ -11661,13 +11690,28 @@ CB.grafo.ampliacionesComoPrerrequisito = function () {
 var CB = CB || {};
 CB.escalera = CB.escalera || {};
 
+/* La UNICA fuente de accion/apagaLuz/rompeRacha por escalon: siguienteEscalon
+   la consume. Hasta 3.4.5 esta tabla vivia muerta y ademas MENTIA en los
+   escalones 3-5 (decia apagaLuz:false donde la funcion devolvia true): una
+   tabla que nadie lee no avisa cuando se queda vieja. */
 CB.escalera.ESCALONES = {
-  1: { accion: 'pista',        apagaLuz: false, rompeRacha: false },
-  2: { accion: 'reparacion',   apagaLuz: true,  rompeRacha: true  },
-  3: { accion: 'bajarD_opciones', apagaLuz: false, rompeRacha: false },
-  4: { accion: 'prerrequisito',   apagaLuz: false, rompeRacha: false },
-  5: { accion: 'enPausa',         apagaLuz: false, rompeRacha: false }
+  1: { accion: 'pista',           apagaLuz: false, rompeRacha: false },
+  2: { accion: 'reparacion',      apagaLuz: true,  rompeRacha: true  },
+  3: { accion: 'bajarD_opciones', apagaLuz: true,  rompeRacha: true  },
+  4: { accion: 'prerrequisito',   apagaLuz: true,  rompeRacha: true  },
+  5: { accion: 'enPausa',         apagaLuz: true,  rompeRacha: true  }
 };
+
+/* Miembro del espacio de nombres, no funcion de nivel superior: las de nivel
+   superior aterrizan en window y casos-carga pina la lista exacta de doce. */
+CB.escalera.escalonDe = function (n, extras) {
+  const base = CB.escalera.ESCALONES[n];
+  const r = { escalon: n, accion: base.accion,
+              apagaLuz: base.apagaLuz, rompeRacha: base.rompeRacha };
+  let k;
+  for (k in extras) r[k] = extras[k];
+  return r;
+}
 
 /**
  * @param fallosConcepto nº de fallos del MISMO concepto en esta partida
@@ -11676,28 +11720,23 @@ CB.escalera.ESCALONES = {
 CB.escalera.siguienteEscalon = function (fallosConcepto, fallosItem) {
   /* Escalones 1 y 2: dentro del propio ítem. */
   if (fallosItem === 1) {
-    return { escalon: 1, accion: 'pista', apagaLuz: false, rompeRacha: false,
-             texto: 'Rocarr te enseña por dónde va.' };
+    return CB.escalera.escalonDe(1, { texto: 'Rocarr te enseña por dónde va.' });
   }
   if (fallosItem >= 2 && fallosConcepto < 2) {
-    return { escalon: 2, accion: 'reparacion', apagaLuz: true, rompeRacha: true,
-             texto: 'Vamos a verlo paso a paso.' };
+    return CB.escalera.escalonDe(2, { texto: 'Vamos a verlo paso a paso.' });
   }
 
   /* Escalones 3, 4 y 5: acumulados por CONCEPTO a lo largo de la partida. */
   if (fallosConcepto === 2) {
-    return { escalon: 3, accion: 'bajarD_opciones', apagaLuz: true, rompeRacha: true,
-             D: 1, formato: 'opciones4',
-             texto: 'El siguiente de este tipo será más fácil.' };
+    return CB.escalera.escalonDe(3, { D: 1, formato: 'opciones4',
+                        texto: 'El siguiente de este tipo será más fácil.' });
   }
   if (fallosConcepto === 3) {
-    return { escalon: 4, accion: 'prerrequisito', apagaLuz: true, rompeRacha: true,
-             texto: 'Volvemos un paso atrás para coger carrerilla.' };
+    return CB.escalera.escalonDe(4, { texto: 'Volvemos un paso atrás para coger carrerilla.' });
   }
-  return { escalon: 5, accion: 'enPausa', apagaLuz: true, rompeRacha: true,
-           silencioso: true,
-           notaAdulto: 'Conviene trabajarlo con material manipulativo antes de ' +
-                       'volver a la pantalla.' };
+  return CB.escalera.escalonDe(5, { silencioso: true,
+                      notaAdulto: 'Conviene trabajarlo con material manipulativo antes de ' +
+                                  'volver a la pantalla.' });
 };
 
 /* Aplica el escalón 5: retira el concepto de la sesión, sin avisar al niño. */
@@ -12162,7 +12201,11 @@ CB.ui.matriz = function (filas, columnas) {
   rej.style.gap = '4px';
   let i;
   const total = filas * columnas;
-  for (i = 0; i < total && i < 120; i++) {
+  /* 144 = 12 × 12, el mayor producto que declara CB.jefes.RANGO_CURSO. El
+     tope anterior (120) era de la era de un solo curso: en 5.º-6.º la matriz
+     de 12 × 12 se dibujaba con 120 bloques y la respuesta correcta era 144 —
+     el aria-label decia la verdad y el dibujo mentia. */
+  for (i = 0; i < total && i < 144; i++) {
     const b = CB.ui.crear('span');
     b.style.width = '20px'; b.style.height = '20px';
     b.style.background = 'var(--deco-cristal)';
@@ -13196,6 +13239,12 @@ CB.pantallas.ir = function (id, props) {
     if (CB.pantallas.pila.length > 12) CB.pantallas.pila.shift();
   }
   CB.pantallas.actual = id;
+
+  /* El componente activo muere con su pantalla: sin esto, las teclas numericas
+     en p-jefe seguian tecleando sobre el teclado OCULTO del ultimo item de la
+     partida (CB.componentes.actual se asignaba en siete sitios y no se
+     anulaba en ninguno). */
+  if (CB.componentes) CB.componentes.actual = null;
 
   if (CB.pantallas.alEntrar[id] && CB.pantallas._entrando !== id) {
     const previo = CB.pantallas._entrando;
@@ -14389,6 +14438,11 @@ CB.partida.servirItem = function () {
   item.esBloqueRaro = (e.rng() < CB.modos.probCromo(e.modoTiempo));
 
   e.itemActual = item;
+  /* Bits 2 y 4 del registro (§15.3): hasta 3.4.5 se leian de `extra`, que
+     ningun componente escribia — el CSV del adulto decia «0 pistas, 0 audio»
+     para siempre. El productor es el estado, y se estrena con cada item. */
+  e.usoPistaItem = false;
+  e.usoAudioItem = false;
   e.intento = 1;
   e.lecturaHecha = false;
 
@@ -14643,7 +14697,11 @@ CB.partida.responder = function (valor, origen, extra) {
   const az = CB.antiazar.evaluar(item, rt, correcto, histo, perfil);
 
   const punt = CB.puntuacion.calcular(item, rt, {
-    correcto: correcto, azar: az.azar, intento: e.intento, modoTiempo: e.modoTiempo
+    correcto: correcto, azar: az.azar, intento: e.intento, modoTiempo: e.modoTiempo,
+    /* El ajuste del adulto existia desde 3.0.0 y no lo leia nadie: el conmutador
+       cambiaba el perfil y la puntuacion seguia midiendo velocidad lectora. */
+    sinVelocidad: !!(item.subtipo && CB.perfil && CB.perfil.ajustes &&
+                     CB.perfil.ajustes.noPuntuarVelocidadProblemas)
   });
 
   e.respuestas.push({ itemId: item.itemId, rt: rt, correcto: correcto,
@@ -14793,8 +14851,15 @@ CB.partida.trasFallo = function (item, nivel, extra) {
   CB.leitner.programarReinsercion(e.colaRepaso, item.nivelId, e.indice, e.rng);
 
   const diag = CB.diagnosticar(item, Number(item.valorDado));
-  CB.ui.mostrarReparacion(item, diag.hipotesis, function () {
+  CB.ui.mostrarReparacion(item, diag.hipotesis, function (completada) {
     if (CB.partida.estado !== e || e.itemActual !== item) return;
+    /* 30-ui SIEMPRE envio este booleano y este callback lo tiraba (declaraba
+       cero parametros), asi que el bit 32 no se escribia jamas y el panel del
+       adulto decia «0 % de explicaciones seguidas» a perpetuidad. La fila ya
+       esta registrada —el registro corre en responder(), antes de la
+       tarjeta—, de modo que se completa a posteriori, con el itemId como
+       cerrojo. */
+    if (completada) CB.partida.marcarReparacionCompletada(item);
     const r = CB.vidas.fallo(e.luces, 2, e.modo);
     if (r.apagada) {
       e.lucesApagadas++;
@@ -14883,6 +14948,16 @@ CB.partida.trasAzar = function (item, punt) {
   }, 2600);
 };
 
+/* La explicacion se siguio hasta el final: el bit 32 se escribe A POSTERIORI
+   sobre la fila ya registrada (responder() registra antes de abrir la tarjeta),
+   con el itemId como cerrojo para no marcar una fila ajena. */
+CB.partida.marcarReparacionCompletada = function (item) {
+  const filas = CB.perfil && CB.perfil.respuestas;
+  if (filas && filas.length && filas[filas.length - 1][1] === item.itemId) {
+    filas[filas.length - 1][7] |= 32;
+  }
+};
+
 /* Registro en el perfil */
 CB.partida.registrarRespuesta = function (item, rt, correcto, az, extra) {
   const e = CB.partida.estado, perfil = CB.perfil;
@@ -14891,8 +14966,8 @@ CB.partida.registrarRespuesta = function (item, rt, correcto, az, extra) {
      bytes, que es lo que hace viable el modo aula con 30 perfiles. */
   let flags = 0;
   if (e.intento === 2) flags |= 1;
-  if (extra.usoPista) flags |= 2;
-  if (extra.usoAudio) flags |= 4;
+  if (extra.usoPista || e.usoPistaItem) flags |= 2;
+  if (extra.usoAudio || e.usoAudioItem) flags |= 4;
   if (az.azar) flags |= 8;
   if (item.repaso) flags |= 16;
   if (extra.reparacionCompletada) flags |= 32;
@@ -14919,6 +14994,9 @@ CB.partida.actualizarDestreza = function (item, nivel, correcto) {
 
   let d = perfil.destrezas[item.destreza];
   const estadoAntes = d ? d.estado : 'nuevo';
+  /* ANTES de repasado(), que escribe ultimoRepasoISO = hoy y dejaria la
+     condicion de 48 h en falso perpetuo. */
+  const repasoAntesISO = d ? d.ultimoRepasoISO : null;
 
   CB.adaptativo.registrar(item.destreza, {
     correcto: correcto, intento: e.intento, rtMs: e.respuestas.length
@@ -14939,8 +15017,11 @@ CB.partida.actualizarDestreza = function (item, nivel, correcto) {
   CB.adaptativo.actualizarD(estadoNivel, correcto, e.intento === 1);
 
   /* «Veta restaurada» concede luz, pero solo si han pasado ≥48 h desde el
-     último repaso: sin esa condición el logro se farmearía en bucle. */
-  if (CB.memoria.vetaRestaurada(estadoAntes, estadoDespues, hoy) && correcto) {
+     último repaso. La condicion estuvo documentada aqui y en 28-memoria desde
+     su nacimiento y NO ESTABA ESCRITA en ningun sitio: hanPasado48h existia y
+     nadie la llamaba (la familia de marcarLectura). Acotaba el daño el tope de
+     2 luces por partida, no la regla. */
+  if (correcto && CB.memoria.vetaConLuz(estadoAntes, estadoDespues, repasoAntesISO, hoy)) {
     if (e.destrezasMejoradas.indexOf(item.destreza) === -1) {
       e.destrezasMejoradas.push(item.destreza);
     }
@@ -15451,7 +15532,9 @@ CB.partida.nombreDestreza = function (slug) {
 CB.partida.accionLeerSuave = function () {
   const e = CB.partida.estado;
   if (!e || !e.itemActual) return;
+  e.usoAudioItem = true;
   const texto = CB.voz.textoDeItem(e.itemActual);
+  CB.voz.cancelar();
   CB.partida.pararCronometro();
   CB.voz.leerOGuiar(texto, CB.ui.resaltarPalabra, function () {
     CB.ui.resaltarLinea(-1);
@@ -15464,20 +15547,36 @@ CB.partida.accionLeer = function () {
 
   /* La calibración NO crea estado de partida (no tiene cronómetro, ni luces, ni puntuación: no debe parecer un test). */
   if (!e || !e.itemActual) {
+    /* Cada pantalla resalta en SU contenedor: sin pasarlo, lecturaGuiada caia
+       en #item-enunciado —el nodo OCULTO de la partida— y la lectura guiada de
+       la calibracion y del jefe no resaltaba nada. */
     if (CB.pantallas.actual === 'p-calibracion' &&
         CB.calibracion && CB.calibracion.consignaActual) {
+      const cajaCal = document.getElementById('cal-enunciado');
+      CB.voz.cancelar();
       CB.voz.leerOGuiar(CB.voz.textoDeItem({ consigna: CB.calibracion.consignaActual }),
-                        CB.ui.resaltarPalabra, function () {
-        CB.ui.resaltarLinea(-1);
-      });
+                        function (i, palabra) { CB.ui.resaltarPalabra(i, palabra, cajaCal); },
+                        function () { CB.ui.resaltarLinea(-1, cajaCal); });
+    } else if (CB.pantallas.actual === 'p-jefe') {
+      /* La tecla L (06-a11y) sirve p-jefe desde siempre, pero esta funcion no
+         tenia rama para el: el atajo era un boton muerto. */
+      const cajaJefe = document.getElementById('jefe-enunciado');
+      if (cajaJefe && cajaJefe.textContent) {
+        CB.voz.cancelar();
+        CB.voz.leerOGuiar(CB.voz.textoDeItem({ consigna: cajaJefe.textContent }),
+                          function (i, palabra) { CB.ui.resaltarPalabra(i, palabra, cajaJefe); },
+                          function () { CB.ui.resaltarLinea(-1, cajaJefe); });
+      }
     }
     return;
   }
 
+  e.usoAudioItem = true;
   const texto = CB.voz.textoDeItem(e.itemActual);
   /* Pulsar el altavoz salta el bloqueo de 800 ms: el niño ya ha invertido
      tiempo en el ítem, no está respondiendo al tuntún (§3.5). */
   CB.partida.bloqueado = false;
+  CB.voz.cancelar();
   CB.partida.pararCronometro();
   CB.voz.leerOGuiar(texto, CB.ui.resaltarPalabra, function () {
     CB.ui.resaltarLinea(-1);
@@ -15488,6 +15587,7 @@ CB.partida.accionLeer = function () {
 CB.partida.accionPista = function () {
   const e = CB.partida.estado;
   if (!e || !e.itemActual) return;
+  e.usoPistaItem = true;
   const pistas = CB.datos.MENSAJES.PISTAS[e.itemActual.destreza];
   /* La pista está SIEMPRE disponible y NO cuesta ninguna luz (§3.2). */
   CB.ui.mensaje(pistas ? pistas[1] : 'Léelo otra vez con calma.', 'animo');
@@ -15888,8 +15988,12 @@ CB.adulto.crearSeccionOffline = function () {
   });
 
   const fila = CB.ui.crear('div', 'fila');
+  /* La rama 'cancelado' del resultado existia desde 1.x y ningun boton la
+     alcanzaba: CB.offline.cancelarDescarga era una funcion muerta. */
+  let cancelar = null;
   const descargar = CB.ui.boton('Descargar la música (42 MB)', 'btn-adulto', function () {
     descargar.disabled = true;
+    if (cancelar) cancelar.hidden = false;
     estado.textContent = 'Descargando… 0 de 9';
     CB.offline.descargarMusica(
       function (intentadas, total) {
@@ -15897,6 +16001,7 @@ CB.adulto.crearSeccionOffline = function () {
       },
       function (resultado) {
         descargar.disabled = false;
+        if (cancelar) cancelar.hidden = true;
         const hechas = resultado.hechas || 0;
         if (resultado.ok) {
           estado.textContent = 'Listo: las ' + hechas + ' pistas están guardadas.';
@@ -15915,6 +16020,11 @@ CB.adulto.crearSeccionOffline = function () {
       });
   });
   fila.appendChild(descargar);
+  cancelar = CB.ui.boton('Cancelar la descarga', 'btn-adulto', function () {
+    CB.offline.cancelarDescarga();
+  });
+  cancelar.hidden = true;
+  fila.appendChild(cancelar);
   fila.appendChild(CB.ui.boton('Borrar lo guardado y recargar',
     'btn-adulto btn-adulto--peligro', function () {
       CB.offline.olvidarTodo(function () { location.reload(); });
@@ -16460,14 +16570,17 @@ CB.jefes.iniciar = function (mundoId) {
   const def = CB.jefes.DEFINICION[mundo.jefe];
   const perfil = CB.perfil;
 
+  /* NAVEGAR ANTES de crear el estado: ir() dispara alSalir incluso cuando el
+     destino es la misma pantalla, y la limpieza de alSalir['p-jefe'] anularia
+     el estado recien creado (re-entrar al combate desde p-jefe lo colgaba). */
+  CB.pantallas.ir('p-jefe');
+
   CB.jefes.estado = {
     mundo: mundo, jefe: mundo.jefe, def: def,
     bloques: CB.jefes.BLOQUES, turno: 0, sinFallos: true,
     respondido: false,
     rng: CB.util.mulberry32(CB.util.hash32(perfil.id + mundoId + CB.util.hoyISO()))
   };
-
-  CB.pantallas.ir('p-jefe');
   const n = document.getElementById('jefe-nombre');
   if (n) n.textContent = mundo.jefe;
   const c = document.getElementById('jefe-criatura');
@@ -16522,6 +16635,10 @@ CB.jefes.turno = function () {
      escribirlo cuatro veces y olvidarlo en la quinta que se añada: aquí lo
      heredan todas. Lee lo que hay pintado, que es justo lo que el niño ve. */
   CB.ui.ponerAltavoz(enun, enun ? enun.textContent : '');
+  /* El anuncio de la pregunta, como en la partida y la calibración: sin él,
+     un lector de pantalla oía «Ese bloque cae» sin haber oído qué se preguntó
+     (la SIMETRÍA arregló el resultado y dejó muda la pregunta). */
+  if (enun) CB.a11y.anunciar(enun.textContent);
 };
 
 /* Cada jefe tiene su mecánica, y cada mecánica pinta su propia pregunta. */
@@ -16576,13 +16693,26 @@ CB.jefes.prepararRamas = function (e, opc) {
   const R = CB.jefes.rangos();
   const objetivo = CB.util.ent(e.rng, Math.min(10, R.objetivoRamas - 5), R.objetivoRamas);
   let ramas = [], i, a, b;
+  const vistas = {};
   for (i = 0; i < 4; i++) {
-    if (i === 0) { a = CB.util.ent(e.rng, 1, objetivo); b = objetivo - a; }
-    else {
-      a = CB.util.ent(e.rng, 1, R.objetivoRamas);
-      b = CB.util.ent(e.rng, 1, R.sumandoRamas);
-      if (a + b === objetivo) b += 1;
+    if (i === 0) {
+      /* a < objetivo para que b nunca sea 0: una rama «15 + 0» no es suma. */
+      a = CB.util.ent(e.rng, 1, Math.max(1, objetivo - 1));
+      b = objetivo - a;
+    } else {
+      /* Sin este bucle dos ramas podian ser el MISMO rotulo («7 + 12» dos
+         veces), una valida y otra no a ojos del niño. Acotado: 12 intentos
+         y despues se separa a mano. */
+      let intentos = 0;
+      do {
+        a = CB.util.ent(e.rng, 1, R.objetivoRamas);
+        b = CB.util.ent(e.rng, 1, R.sumandoRamas);
+        if (a + b === objetivo) b += 1;
+        intentos++;
+      } while (vistas[a + '+' + b] && intentos < 12);
+      while (vistas[a + '+' + b] || a + b === objetivo) b += 1;
     }
+    vistas[a + '+' + b] = true;
     ramas.push({ a: a, b: b, valor: a + b });
   }
   ramas = CB.util.barajar(ramas, e.rng);
@@ -16592,6 +16722,7 @@ CB.jefes.prepararRamas = function (e, opc) {
     });
     opc.appendChild(b2);
   });
+  CB.jefes.montarOpciones(opc);
   return objetivo;
 };
 
@@ -16599,9 +16730,15 @@ CB.jefes.prepararRamas = function (e, opc) {
 CB.jefes.opciones = function (cont, correcta, distractores) {
   const e = CB.jefes.estado;
   const lista = [{ v: correcta, ok: true }];
+  /* El tope escala con el curso, como en 18-distractores (3.1.0): clavado en
+     999, el distractor a+b de reflejo —el error de sumar en vez de restar—
+     se descartaba SIEMPRE en 5.º-6.º (reflejoMax 600/900) y se sustituía por
+     un correcta±1 sin valor diagnóstico. */
+  const R = CB.jefes.rangos();
+  const tope = Math.max(999, R.reflejoMax * 2, R.matrizMax * (R.matrizMax + 1));
 
   function anadir(v) {
-    if (v === correcta || !(v >= 0) || v > 999) return false;
+    if (v === correcta || !(v >= 0) || v > tope) return false;
     if (lista.some(function (x) { return x.v === v; })) return false;
     lista.push({ v: v, ok: false });
     return true;
@@ -16621,6 +16758,16 @@ CB.jefes.opciones = function (cont, correcta, distractores) {
       CB.jefes.responder(o.ok);
     }));
   });
+  CB.jefes.montarOpciones(cont);
+};
+
+/* El jefe era el único pintor que construía botones sin pasar por
+   CB.componentes.montar: sin cerrojo de construcción, sin foco, sin «toc» y
+   sin flechas — las cuatro reglas de §3.5 apagadas justo en el combate. */
+CB.jefes.montarOpciones = function (cont) {
+  CB.componentes.conectarToc(cont);
+  CB.a11y.conectarFlechas(cont, 2);
+  CB.componentes.montar(cont);
 };
 
 /* Y no era solo el atajo. */
@@ -16695,6 +16842,13 @@ CB.jefes.terminar = function (porBloques) {
   enun.appendChild(CB.ui.crear('h2', null, '¡' + e.jefe + ' abre el paso!'));
   enun.appendChild(CB.ui.crear('p', 'texto texto--lectura',
     'Has ganado ' + gemas + ' gemas y el mundo queda cerrado con una victoria.'));
+  /* El logro tambien se VE: aplicarLogros ya aprendio que «sin esta linea el
+     nombre del logro solo lo oia un lector de pantalla» — la misma regla,
+     aplicada al tercer pintor. */
+  for (i = 0; i < nuevos.length; i++) {
+    enun.appendChild(CB.ui.crear('p', 'texto texto--menor',
+      '🏅 Logro: ' + nuevos[i].nombre));
+  }
   opc.appendChild(CB.ui.boton('Volver al mapa', 'btn-bloque--primario btn-bloque--medio',
     function () { CB.pantallas.ir('p-mapa'); }));
 
@@ -17634,6 +17788,12 @@ CB.pantallas.alEntrar['p-creditos'] = function () { CB.creditos(); };
 CB.pantallas.alSalir['p-reparacion'] = function () { CB.ui.limpiarReparacion(); };
 
 CB.pantallas.alSalir['p-partida'] = function () { CB.ui.reloj.parar(); };
+CB.pantallas.alSalir['p-jefe'] = function () {
+  /* El turno pendiente comprueba CB.jefes.estado === e: anularlo aqui lo
+     desarma. Salir del combate por «◀ Salir» dejaba el estado vivo y el
+     siguiente turno pintaba (y ponia altavoz) sobre la pantalla oculta. */
+  if (CB.jefes) CB.jefes.estado = null;
+};
 
 /* Arranque */
 CB.arranque = function () {

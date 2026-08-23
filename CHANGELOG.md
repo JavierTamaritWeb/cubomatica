@@ -12,6 +12,58 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.4.5] — 2026-08-23
+
+Una auditoría severa con cuatro frentes: identidad de los ítems, paridad del
+jefe, contadores que mentían al adulto y minas desarmadas.
+
+### Corregido
+- **La identidad del ítem (`expr`) no codificaba todo su contenido en trece
+  niveles** (E147/INV13). `serie()` no codificaba cuántos términos (que dependen
+  de D, y el último ES la respuesta) — N5, N11, N21; G1–G7 no codificaban los
+  nombres de las categorías (en G3 la respuesta es un nombre); A3/A4 no
+  codificaban los colores (la respuesta es un color); B9 confundía cuadrado con
+  rombo (ambos con 4 lados). Trece cardinalidades re-medidas (10.000 tiradas).
+  El enunciado de los problemas y la decoración de los visuales quedan fuera
+  a propósito: compartir identidad ahí es lo deseado.
+- **El jefe era el tercer sitio de tres, cinco veces** (E148): no anunciaba su
+  pregunta a un lector de pantalla (solo el resultado); construía botones sin el
+  cerrojo de 800 ms, sin foco, sin «toc» y sin flechas; su tope de distractores
+  seguía en el 999 de 2.º (en 5.º-6.º el distractor a+b de reflejo se descartaba
+  siempre); la matriz de Brasita se truncaba en 120 bloques cuando 12 × 12 son
+  144 (el aria decía la verdad y el dibujo mentía); y dos ramas de Tronquete
+  podían compartir rótulo, o valer «15 + 0». Además: barra de sonido en el
+  combate (única pantalla sin silencio), la tecla L ya lee la pregunta del jefe,
+  el logro de jefe se VE además de oírse, y salir del combate desarma el turno
+  pendiente.
+- **Tres contadores del panel adulto mentían desde siempre** (E153/E154): los
+  bits de pista y audio no tenían productor (el CSV decía «0 pistas, 0 audio» a
+  perpetuidad); el booleano de «explicación seguida hasta el final» se enviaba
+  y el receptor lo tiraba (0 % eterno); y el ajuste «No puntuar la velocidad en
+  los problemas» existía desde 3.0.0 sin que lo leyera nadie — ahora aplica el
+  multiplicador fijo de Fácil, solo en problemas y solo si el adulto lo pide.
+- **La regla de las 48 h del logro «Veta restaurada» estaba documentada en dos
+  sitios y escrita en ninguno** (E149): `hanPasado48h` existía y nadie la
+  llamaba (la familia de `marcarLectura`). El predicado completo vive ahora en
+  `CB.memoria.vetaConLuz`, capturando la marca de tiempo ANTES de que
+  `repasado()` la pise.
+- **Minas desarmadas**: `ERRORES_IDS` se congelaba con 24 de 47 códigos (se
+  calculaba antes de las altas de 3.1.0–3.4.0) — al final del fichero y con
+  guardián E152; `venceHoy` leía `proximoRepaso` cuando los productores
+  escriben `proximoRepasoISO` (E155); la tabla `ESCALONES` mentía en 3 de sus
+  5 filas y nadie la leía — ahora es la única fuente y `siguienteEscalon` la
+  consume (E151); `reglaSimple` (§13.2) leía un campo sin productor y solo
+  podía devolver 0 — retirada (D-3.4.5); tres ítems de 19g emitían
+  `operacion: '−'` (U+2212) cuando todos los consumidores comparan con el
+  ASCII `'-'` (INV14); los códigos J/K declaraban una tarjeta de reparación
+  que el niño nunca ve; `explicadorDe` cubría 25 de 26 destrezas.
+- **El altavoz «nunca no hace nada» — ahora es verdad** (E150): con «Leer en
+  voz alta: No» y una voz española instalada, el botón no hacía nada; ahora
+  guía la lectura (resaltar no es sonido). La lectura guiada de la calibración
+  resaltaba sobre el nodo oculto de la partida; cada pantalla resalta ya en su
+  contenedor. Y la descarga de música tiene el botón «Cancelar» cuya rama de
+  resultado existía desde 1.x sin que ningún botón la alcanzara.
+
 ## [3.4.4] — 2026-08-23
 
 **El botón «Pista» no daba ninguna pista en 127 de los 308 niveles, y el jefe

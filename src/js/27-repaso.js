@@ -27,8 +27,11 @@ CB.leitner.proximoRepaso = function (estado, hoyISO) {
 };
 
 CB.leitner.venceHoy = function (estado, hoyISO) {
-  if (!estado || !estado.proximoRepaso) return true;
-  return CB.util.diasEntre(estado.proximoRepaso, hoyISO) >= 0;
+  /* proximoRepasoISO: el unico nombre que escriben 28-memoria y 23-adaptativo.
+     Con el nombre viejo (proximoRepaso) la guarda saltaba siempre y todo
+     «vencia hoy» — inerte mientras nadie la llamaba, mina si alguien la llama. */
+  if (!estado || !estado.proximoRepasoISO) return true;
+  return CB.util.diasEntre(estado.proximoRepasoISO, hoyISO) >= 0;
 };
 
 /* Reinserción intra-partida */

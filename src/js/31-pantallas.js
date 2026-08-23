@@ -50,6 +50,12 @@ CB.pantallas.ir = function (id, props) {
   }
   CB.pantallas.actual = id;
 
+  /* El componente activo muere con su pantalla: sin esto, las teclas numericas
+     en p-jefe seguian tecleando sobre el teclado OCULTO del ultimo item de la
+     partida (CB.componentes.actual se asignaba en siete sitios y no se
+     anulaba en ninguno). */
+  if (CB.componentes) CB.componentes.actual = null;
+
   if (CB.pantallas.alEntrar[id] && CB.pantallas._entrando !== id) {
     const previo = CB.pantallas._entrando;
     CB.pantallas._entrando = id;

@@ -3894,3 +3894,175 @@ CB.pruebas.suite('E144 · los cuatro mundos caben en una fila desde 1024 px', fu
       JSON.stringify(b));
   });
 });
+
+/* ═══ 3.4.5 · Lo que encontró la auditoría severa ═══════════════════════════
+   Cada guardián se sembró con su defecto antes de fiarse de él (doctrina). */
+
+CB.pruebas.suite('E148 · el jefe hereda las reglas comunes del montaje', function () {
+  const t = CB.pruebas;
+
+  /* Un estado mínimo de combate con rng inyectado y curso 6: el más alto,
+     porque es donde el tope viejo (999) descartaba el distractor a+b. */
+  const perfilPrevio = CB.perfil;
+  CB.perfil = { curso: 6, ajustes: {}, mundos: {}, gemas: 0 };
+  const cont = document.createElement('div');
+  document.body.appendChild(cont);
+  CB.jefes.estado = { rng: CB.util.mulberry32(7), respondido: false,
+                      def: CB.jefes.DEFINICION.Cristalina };
+
+  /* (a) tope por curso: con reflejoMax 900, un distractor de 1700 sobrevive.
+     Sembrado: con el 999 antiguo, la lista lo descartaba y rellenaba ±1. */
+  CB.jefes.opciones(cont, 850, [1700, 400, 851]);
+  const valores = [].slice.call(cont.querySelectorAll('button'))
+    .map(function (b) { return Number(b.textContent); });
+  t.ok(valores.indexOf(1700) !== -1,
+    'E148 · el distractor a+b de reflejo sobrevive en 6.º (tope por curso, no 999)',
+    'valores: ' + valores.join(','));
+
+  /* (b) las cuatro reglas de §3.5: cerrojo de construcción, toc y flechas. */
+  const botones = [].slice.call(cont.querySelectorAll('button'));
+  t.ok(botones.length === 4 && botones.every(function (b) { return b.disabled; }),
+    'E148 · los botones del jefe nacen bloqueados (cerrojo §3.5)');
+  t.igual(cont.getAttribute('data-toc'), 'si', 'E148 · el «toc» del toque prematuro está conectado');
+  t.igual(cont.getAttribute('data-flechas'), 'si', 'E148 · las flechas del teclado están conectadas');
+
+  /* (c) conectarFlechas es idempotente: el jefe reutiliza su contenedor. */
+  const oyentesAntes = cont.getAttribute('data-flechas');
+  CB.a11y.conectarFlechas(cont, 2);
+  t.igual(oyentesAntes, 'si', 'E148 · reconectar flechas sobre el mismo nodo no acumula oyentes');
+
+  /* (d) ramas: sin «+ 0» y sin dos rótulos iguales, en 60 semillas. */
+  let malCero = 0, malDobles = 0, s;
+  for (s = 0; s < 60; s++) {
+    const opc = document.createElement('div');
+    CB.jefes.estado = { rng: CB.util.mulberry32(s * 13 + 1), respondido: false,
+                        def: CB.jefes.DEFINICION.Tronquete };
+    CB.jefes.prepararRamas(CB.jefes.estado, opc);
+    const rotulos = [].slice.call(opc.querySelectorAll('button'))
+      .map(function (b) { return b.textContent; });
+    if (rotulos.some(function (r) { return /\+ 0$/.test(r); })) malCero++;
+    if (new Set(rotulos).size !== rotulos.length) malDobles++;
+  }
+  t.igual(malCero, 0, 'E148 · ninguna rama es «a + 0» en 60 semillas');
+  t.igual(malDobles, 0, 'E148 · ninguna pareja de ramas comparte rótulo en 60 semillas');
+
+  /* (e) la matriz pinta lo que dice: 12 × 12 son 144 bloques, no 120. */
+  const m = CB.ui.matriz(12, 12);
+  t.igual(m.querySelectorAll('span').length, 144,
+    'E148 · la matriz de 12 × 12 pinta 144 bloques (el aria decía 144 y el dibujo 120)');
+  let peorMatriz = 0, cursoK;
+  for (cursoK in CB.jefes.RANGO_CURSO) {
+    const mm = CB.jefes.RANGO_CURSO[cursoK].matrizMax;
+    if (mm * mm > peorMatriz) peorMatriz = mm * mm;
+  }
+  t.ok(peorMatriz <= 144, 'E148 · ningún curso declara una matriz mayor que la que se puede pintar', peorMatriz);
+
+  CB.jefes.estado = null;
+  document.body.removeChild(cont);
+  CB.perfil = perfilPrevio;
+});
+
+CB.pruebas.suite('E149 · la veta con luz exige 48 h desde el último repaso', function () {
+  const t = CB.pruebas;
+  const hoy = CB.util.hoyISO();
+  const hace3 = CB.util.sumarDias(hoy, -3);
+
+  t.ok(CB.memoria.vetaConLuz('oxidada', 'afianzada', hace3, hoy),
+    'E149 · restaurar una veta oxidada tras 3 días concede la luz');
+  t.ok(!CB.memoria.vetaConLuz('oxidada', 'afianzada', hoy, hoy),
+    'E149 · repasada HOY no concede: es la condición anti-farmeo que estuvo documentada y sin escribir');
+  t.ok(!CB.memoria.vetaConLuz('afianzada', 'dominada', hace3, hoy),
+    'E149 · solo cuenta la que estaba oxidada');
+  t.ok(CB.memoria.vetaConLuz('oxidada', 'dominada', null, hoy),
+    'E149 · sin marca previa (primera vez) sí concede');
+});
+
+CB.pruebas.suite('E150 · el altavoz nunca no hace nada', function () {
+  const t = CB.pruebas;
+  const activaPrevia = CB.voz.activa;
+  CB.voz.activa = false;
+  const r = CB.voz.leerOGuiar('tres por cuatro', function () { }, function () { });
+  t.igual(r.modo, 'guiada',
+    'E150 · con «Leer en voz alta: No» el botón guía la lectura en vez de callar');
+  CB.voz.cancelar();
+  CB.voz.activa = activaPrevia;
+});
+
+CB.pruebas.suite('E151 · la escalera tiene una sola fuente y no miente', function () {
+  const t = CB.pruebas;
+  const casos = [
+    [1, 1], [0, 2],          // escalones 1 y 2 (fallosConcepto, fallosItem)
+    [2, 2], [3, 2], [4, 2]   // escalones 3, 4 y 5
+  ];
+  let acordes = 0;
+  casos.forEach(function (c) {
+    const r = CB.escalera.siguienteEscalon(c[0], c[1]);
+    const fila = CB.escalera.ESCALONES[r.escalon];
+    if (fila && fila.accion === r.accion &&
+        fila.apagaLuz === r.apagaLuz && fila.rompeRacha === r.rompeRacha) acordes++;
+  });
+  t.igual(acordes, 5,
+    'E151 · los cinco escalones que devuelve la función coinciden con la tabla ' +
+    '(la tabla decía apagaLuz:false en 3 de 5 y nadie la leía)');
+  t.igual(Object.keys(CB.escalera.ESCALONES).length, 5, 'E151 · y la tabla tiene exactamente 5 filas');
+});
+
+CB.pruebas.suite('E152 · ERRORES_IDS cubre el catálogo entero de errores', function () {
+  const t = CB.pruebas;
+  const reales = Object.keys(CB.ERRORES);
+  t.igual(CB.ERRORES_IDS.length, reales.length,
+    'E152 · ERRORES_IDS tiene los ' + reales.length + ' códigos (se congelaba en 24 de 47)');
+  t.ok(reales.every(function (k) { return CB.ERRORES_IDS.indexOf(k) !== -1; }),
+    'E152 · y son exactamente los mismos, en los dos sentidos');
+});
+
+CB.pruebas.suite('E153 · pista, audio y reparación dejan huella en el registro', function () {
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil, estadoPrevio = CB.partida.estado;
+  CB.perfil = { respuestas: [], problemas: {}, ajustes: {} };
+  CB.partida.estado = { intento: 1, usoPistaItem: true, usoAudioItem: true,
+                        respuestas: [], modoTiempo: 'normal' };
+  const item = { itemId: 'X#prueba@1.1', beta: 500, D: 2, valorDado: 7, formato: 'teclado' };
+
+  CB.partida.registrarRespuesta(item, 1200, true, { azar: false }, {});
+  const fila = CB.perfil.respuestas[0];
+  t.ok((fila[7] & 2) === 2, 'E153 · el uso de la pista enciende el bit 2 (antes: 0 para siempre)');
+  t.ok((fila[7] & 4) === 4, 'E153 · el uso del altavoz enciende el bit 4 (antes: 0 para siempre)');
+
+  t.ok((fila[7] & 32) === 0, 'E153 · el bit 32 no se enciende solo');
+  CB.partida.marcarReparacionCompletada(item);
+  t.ok((fila[7] & 32) === 32,
+    'E153 · seguir la explicación hasta el final enciende el bit 32 sobre la fila ya registrada');
+  CB.partida.marcarReparacionCompletada({ itemId: 'OTRO' });
+  t.igual(CB.perfil.respuestas.length, 1, 'E153 · con otro itemId el cerrojo no toca nada');
+
+  CB.perfil = perfilPrevio;
+  CB.partida.estado = estadoPrevio;
+});
+
+CB.pruebas.suite('E154 · la velocidad no se puntúa en los problemas si el adulto lo pide', function () {
+  const t = CB.pruebas;
+  const itemProblema = { puntosBase: 100, tIdeal: 8000, tLimite: 24000, subtipo: 'CAMBIO_1' };
+  const lentoSin = CB.puntuacion.calcular(itemProblema, 23000,
+    { correcto: true, intento: 1, modoTiempo: 'normal', sinVelocidad: true });
+  const lentoCon = CB.puntuacion.calcular(itemProblema, 23000,
+    { correcto: true, intento: 1, modoTiempo: 'normal' });
+  t.igual(lentoSin.desglose.mT, CB.puntuacion.M_SIN_PRISA,
+    'E154 · con el ajuste, el multiplicador es el fijo de Fácil: leer despacio no resta');
+  t.ok(lentoCon.desglose.mT < lentoSin.desglose.mT,
+    'E154 · sin el ajuste, la respuesta lenta sigue puntuando menos (nada cambió para el resto)');
+  const rapido = CB.puntuacion.calcular(itemProblema, 1000,
+    { correcto: true, intento: 1, modoTiempo: 'normal', sinVelocidad: true });
+  t.igual(rapido.desglose.mT, CB.puntuacion.M_SIN_PRISA,
+    'E154 · y responder rápido tampoco lo sube: la velocidad deja de medirse del todo');
+});
+
+CB.pruebas.suite('E155 · venceHoy lee el campo que los productores escriben', function () {
+  const t = CB.pruebas;
+  const hoy = CB.util.hoyISO();
+  t.ok(!CB.leitner.venceHoy({ proximoRepasoISO: CB.util.sumarDias(hoy, 5) }, hoy),
+    'E155 · un repaso citado para dentro de 5 días NO vence hoy (con el campo viejo vencía siempre)');
+  t.ok(CB.leitner.venceHoy({ proximoRepasoISO: CB.util.sumarDias(hoy, -1) }, hoy),
+    'E155 · uno citado para ayer sí vence');
+  t.ok(CB.leitner.venceHoy(null, hoy), 'E155 · sin estado, vence (primera vez)');
+});

@@ -146,7 +146,9 @@ function serie(rng, D, saltos, max) {
     orden: orden,
     piezas: CB.util.barajar(orden, rng),
     respuesta: orden[orden.length - 1],
-    expr: 'serie' + salto + '_' + inicio + (asc ? 'a' : 'd'),
+    /* cuantos varia con D y el ultimo termino es la respuesta: sin el,
+       dos items distintos compartian identidad (E147). */
+    expr: 'serie' + salto + '_' + inicio + (asc ? 'a' : 'd') + cuantos,
     diagnostico: false
   };
 }

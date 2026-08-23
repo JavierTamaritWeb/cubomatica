@@ -125,8 +125,13 @@ CB.voz.textoDeItem = function (item) {
 };
 
 CB.voz.leerOGuiar = function (texto, alResaltar, alTerminar) {
-  if (CB.voz.disponible()) {
-    return { modo: 'voz', ms: CB.voz.leer(texto, alTerminar) ? 0 : 0 };
+  /* activa entra en la condicion: con «Leer en voz alta: No» y una voz española
+     instalada, leer() se negaba por dentro y la guia no llegaba — el altavoz
+     era un boton pintado que no hacia nada. La lectura guiada no es sonido:
+     sigue siendo legitima con la voz apagada. */
+  if (CB.voz.activa && CB.voz.disponible()) {
+    CB.voz.leer(texto, alTerminar);
+    return { modo: 'voz', ms: 0 };
   }
   return { modo: 'guiada', ms: CB.voz.lecturaGuiada(texto, alResaltar, alTerminar) };
 };

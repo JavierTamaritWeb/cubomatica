@@ -304,8 +304,12 @@ CB.adulto.crearSeccionOffline = function () {
   });
 
   const fila = CB.ui.crear('div', 'fila');
+  /* La rama 'cancelado' del resultado existia desde 1.x y ningun boton la
+     alcanzaba: CB.offline.cancelarDescarga era una funcion muerta. */
+  let cancelar = null;
   const descargar = CB.ui.boton('Descargar la música (42 MB)', 'btn-adulto', function () {
     descargar.disabled = true;
+    if (cancelar) cancelar.hidden = false;
     estado.textContent = 'Descargando… 0 de 9';
     CB.offline.descargarMusica(
       function (intentadas, total) {
@@ -313,6 +317,7 @@ CB.adulto.crearSeccionOffline = function () {
       },
       function (resultado) {
         descargar.disabled = false;
+        if (cancelar) cancelar.hidden = true;
         const hechas = resultado.hechas || 0;
         if (resultado.ok) {
           estado.textContent = 'Listo: las ' + hechas + ' pistas están guardadas.';
@@ -331,6 +336,11 @@ CB.adulto.crearSeccionOffline = function () {
       });
   });
   fila.appendChild(descargar);
+  cancelar = CB.ui.boton('Cancelar la descarga', 'btn-adulto', function () {
+    CB.offline.cancelarDescarga();
+  });
+  cancelar.hidden = true;
+  fila.appendChild(cancelar);
   fila.appendChild(CB.ui.boton('Borrar lo guardado y recargar',
     'btn-adulto btn-adulto--peligro', function () {
       CB.offline.olvidarTodo(function () { location.reload(); });

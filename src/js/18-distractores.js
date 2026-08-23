@@ -263,7 +263,6 @@ CB.ERRORES = {
     pista: 'Lee la frase entera antes de decidir.', reparacion: 'rectaNumerica' }
 };
 
-CB.ERRORES_IDS = Object.keys(CB.ERRORES);
 
 /* Los distractores */
 CB.distractores = CB.distractores || {};
@@ -611,7 +610,7 @@ CB.ERRORES['E-X-SUMA-LOS-DOS'] = {
 CB.ERRORES['E-J-OLVIDA-UN-ANGULO'] = {
   familia: 'J', diagnostico: true,
   pista: 'A 180 hay que quitarle LOS DOS ángulos que ya conoces, no uno.',
-  reparacion: 'rectaNumerica',
+  reparacion: 'matrizFilasColumnas',
   simular: function (item) {
     if (typeof item.anguloA !== 'number') return null;
     const resto = 180 - item.anguloA;
@@ -623,7 +622,7 @@ CB.ERRORES['E-K-DIRECCION-CONTRARIA'] = {
   familia: 'K', diagnostico: true,
   pista: 'Moverse a la derecha o hacia arriba SUMA casillas; quitar es ir ' +
          'hacia el otro lado.',
-  reparacion: 'rectaNumerica',
+  reparacion: 'matrizFilasColumnas',
   simular: function (item) {
     if (typeof item.coordenadaInicial !== 'number' ||
         typeof item.desplazamiento !== 'number') return null;
@@ -635,5 +634,10 @@ CB.ERRORES['E-K-DIRECCION-CONTRARIA'] = {
 CB.ERRORES['E-K-FILA-POR-COLUMNA'] = {
   familia: 'K', diagnostico: false,
   pista: 'Primero la columna, después la fila. La fila 1 es la de abajo.',
-  reparacion: 'rectaNumerica'
+  reparacion: 'matrizFilasColumnas'
 };
+
+/* AL FINAL DEL FICHERO a proposito: hasta 3.4.5 esta linea corria en la 266,
+   antes de las 23 altas de 3.1.0-3.4.0, y congelaba 24 de los 47 codigos.
+   Nadie la leia aun — era una mina, no un daño. E152 la compara con CB.ERRORES. */
+CB.ERRORES_IDS = Object.keys(CB.ERRORES);

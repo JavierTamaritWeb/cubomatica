@@ -384,6 +384,11 @@ CB.partida.servirItem = function () {
   item.esBloqueRaro = (e.rng() < CB.modos.probCromo(e.modoTiempo));
 
   e.itemActual = item;
+  /* Bits 2 y 4 del registro (§15.3): hasta 3.4.5 se leian de `extra`, que
+     ningun componente escribia — el CSV del adulto decia «0 pistas, 0 audio»
+     para siempre. El productor es el estado, y se estrena con cada item. */
+  e.usoPistaItem = false;
+  e.usoAudioItem = false;
   e.intento = 1;
   e.lecturaHecha = false;
 
@@ -638,7 +643,11 @@ CB.partida.responder = function (valor, origen, extra) {
   const az = CB.antiazar.evaluar(item, rt, correcto, histo, perfil);
 
   const punt = CB.puntuacion.calcular(item, rt, {
-    correcto: correcto, azar: az.azar, intento: e.intento, modoTiempo: e.modoTiempo
+    correcto: correcto, azar: az.azar, intento: e.intento, modoTiempo: e.modoTiempo,
+    /* El ajuste del adulto existia desde 3.0.0 y no lo leia nadie: el conmutador
+       cambiaba el perfil y la puntuacion seguia midiendo velocidad lectora. */
+    sinVelocidad: !!(item.subtipo && CB.perfil && CB.perfil.ajustes &&
+                     CB.perfil.ajustes.noPuntuarVelocidadProblemas)
   });
 
   e.respuestas.push({ itemId: item.itemId, rt: rt, correcto: correcto,
@@ -788,8 +797,15 @@ CB.partida.trasFallo = function (item, nivel, extra) {
   CB.leitner.programarReinsercion(e.colaRepaso, item.nivelId, e.indice, e.rng);
 
   const diag = CB.diagnosticar(item, Number(item.valorDado));
-  CB.ui.mostrarReparacion(item, diag.hipotesis, function () {
+  CB.ui.mostrarReparacion(item, diag.hipotesis, function (completada) {
     if (CB.partida.estado !== e || e.itemActual !== item) return;
+    /* 30-ui SIEMPRE envio este booleano y este callback lo tiraba (declaraba
+       cero parametros), asi que el bit 32 no se escribia jamas y el panel del
+       adulto decia «0 % de explicaciones seguidas» a perpetuidad. La fila ya
+       esta registrada —el registro corre en responder(), antes de la
+       tarjeta—, de modo que se completa a posteriori, con el itemId como
+       cerrojo. */
+    if (completada) CB.partida.marcarReparacionCompletada(item);
     const r = CB.vidas.fallo(e.luces, 2, e.modo);
     if (r.apagada) {
       e.lucesApagadas++;
@@ -878,6 +894,16 @@ CB.partida.trasAzar = function (item, punt) {
   }, 2600);
 };
 
+/* La explicacion se siguio hasta el final: el bit 32 se escribe A POSTERIORI
+   sobre la fila ya registrada (responder() registra antes de abrir la tarjeta),
+   con el itemId como cerrojo para no marcar una fila ajena. */
+CB.partida.marcarReparacionCompletada = function (item) {
+  const filas = CB.perfil && CB.perfil.respuestas;
+  if (filas && filas.length && filas[filas.length - 1][1] === item.itemId) {
+    filas[filas.length - 1][7] |= 32;
+  }
+};
+
 /* Registro en el perfil */
 CB.partida.registrarRespuesta = function (item, rt, correcto, az, extra) {
   const e = CB.partida.estado, perfil = CB.perfil;
@@ -886,8 +912,8 @@ CB.partida.registrarRespuesta = function (item, rt, correcto, az, extra) {
      bytes, que es lo que hace viable el modo aula con 30 perfiles. */
   let flags = 0;
   if (e.intento === 2) flags |= 1;
-  if (extra.usoPista) flags |= 2;
-  if (extra.usoAudio) flags |= 4;
+  if (extra.usoPista || e.usoPistaItem) flags |= 2;
+  if (extra.usoAudio || e.usoAudioItem) flags |= 4;
   if (az.azar) flags |= 8;
   if (item.repaso) flags |= 16;
   if (extra.reparacionCompletada) flags |= 32;
@@ -914,6 +940,9 @@ CB.partida.actualizarDestreza = function (item, nivel, correcto) {
 
   let d = perfil.destrezas[item.destreza];
   const estadoAntes = d ? d.estado : 'nuevo';
+  /* ANTES de repasado(), que escribe ultimoRepasoISO = hoy y dejaria la
+     condicion de 48 h en falso perpetuo. */
+  const repasoAntesISO = d ? d.ultimoRepasoISO : null;
 
   CB.adaptativo.registrar(item.destreza, {
     correcto: correcto, intento: e.intento, rtMs: e.respuestas.length
@@ -934,8 +963,11 @@ CB.partida.actualizarDestreza = function (item, nivel, correcto) {
   CB.adaptativo.actualizarD(estadoNivel, correcto, e.intento === 1);
 
   /* «Veta restaurada» concede luz, pero solo si han pasado ≥48 h desde el
-     último repaso: sin esa condición el logro se farmearía en bucle. */
-  if (CB.memoria.vetaRestaurada(estadoAntes, estadoDespues, hoy) && correcto) {
+     último repaso. La condicion estuvo documentada aqui y en 28-memoria desde
+     su nacimiento y NO ESTABA ESCRITA en ningun sitio: hanPasado48h existia y
+     nadie la llamaba (la familia de marcarLectura). Acotaba el daño el tope de
+     2 luces por partida, no la regla. */
+  if (correcto && CB.memoria.vetaConLuz(estadoAntes, estadoDespues, repasoAntesISO, hoy)) {
     if (e.destrezasMejoradas.indexOf(item.destreza) === -1) {
       e.destrezasMejoradas.push(item.destreza);
     }
@@ -1446,7 +1478,9 @@ CB.partida.nombreDestreza = function (slug) {
 CB.partida.accionLeerSuave = function () {
   const e = CB.partida.estado;
   if (!e || !e.itemActual) return;
+  e.usoAudioItem = true;
   const texto = CB.voz.textoDeItem(e.itemActual);
+  CB.voz.cancelar();
   CB.partida.pararCronometro();
   CB.voz.leerOGuiar(texto, CB.ui.resaltarPalabra, function () {
     CB.ui.resaltarLinea(-1);
@@ -1459,20 +1493,36 @@ CB.partida.accionLeer = function () {
 
   /* La calibración NO crea estado de partida (no tiene cronómetro, ni luces, ni puntuación: no debe parecer un test). */
   if (!e || !e.itemActual) {
+    /* Cada pantalla resalta en SU contenedor: sin pasarlo, lecturaGuiada caia
+       en #item-enunciado —el nodo OCULTO de la partida— y la lectura guiada de
+       la calibracion y del jefe no resaltaba nada. */
     if (CB.pantallas.actual === 'p-calibracion' &&
         CB.calibracion && CB.calibracion.consignaActual) {
+      const cajaCal = document.getElementById('cal-enunciado');
+      CB.voz.cancelar();
       CB.voz.leerOGuiar(CB.voz.textoDeItem({ consigna: CB.calibracion.consignaActual }),
-                        CB.ui.resaltarPalabra, function () {
-        CB.ui.resaltarLinea(-1);
-      });
+                        function (i, palabra) { CB.ui.resaltarPalabra(i, palabra, cajaCal); },
+                        function () { CB.ui.resaltarLinea(-1, cajaCal); });
+    } else if (CB.pantallas.actual === 'p-jefe') {
+      /* La tecla L (06-a11y) sirve p-jefe desde siempre, pero esta funcion no
+         tenia rama para el: el atajo era un boton muerto. */
+      const cajaJefe = document.getElementById('jefe-enunciado');
+      if (cajaJefe && cajaJefe.textContent) {
+        CB.voz.cancelar();
+        CB.voz.leerOGuiar(CB.voz.textoDeItem({ consigna: cajaJefe.textContent }),
+                          function (i, palabra) { CB.ui.resaltarPalabra(i, palabra, cajaJefe); },
+                          function () { CB.ui.resaltarLinea(-1, cajaJefe); });
+      }
     }
     return;
   }
 
+  e.usoAudioItem = true;
   const texto = CB.voz.textoDeItem(e.itemActual);
   /* Pulsar el altavoz salta el bloqueo de 800 ms: el niño ya ha invertido
      tiempo en el ítem, no está respondiendo al tuntún (§3.5). */
   CB.partida.bloqueado = false;
+  CB.voz.cancelar();
   CB.partida.pararCronometro();
   CB.voz.leerOGuiar(texto, CB.ui.resaltarPalabra, function () {
     CB.ui.resaltarLinea(-1);
@@ -1483,6 +1533,7 @@ CB.partida.accionLeer = function () {
 CB.partida.accionPista = function () {
   const e = CB.partida.estado;
   if (!e || !e.itemActual) return;
+  e.usoPistaItem = true;
   const pistas = CB.datos.MENSAJES.PISTAS[e.itemActual.destreza];
   /* La pista está SIEMPRE disponible y NO cuesta ninguna luz (§3.2). */
   CB.ui.mensaje(pistas ? pistas[1] : 'Léelo otra vez con calma.', 'animo');
