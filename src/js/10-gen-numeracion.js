@@ -290,3 +290,59 @@ CB.gen.numeracion.N14 = function (rng, D) {
     diagnostico: false
   };
 };
+
+/* ——— Curso 1.º (3.0.0): N17…N22, sobre las mismas ayudas ——— */
+
+/* N17 Contar hasta 12 */
+CB.gen.numeracion.N17 = function (rng, D) {
+  const n = tramo(2, 12, D, rng);
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuántos bloques hay?',
+    visual: { tipo: 'conteo', n: n },
+    respuesta: n,
+    expr: 'contar' + n,
+    diagnostico: false
+  };
+};
+
+/* N18 Leer y escribir hasta 20 */
+CB.gen.numeracion.N18 = function (rng, D) {
+  const n = tramo(1, 20, D, rng);
+  return {
+    formato: 'teclado',
+    consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabras(n),
+    respuesta: n, expr: 'leer' + n, diagnostico: true
+  };
+};
+
+/* N19 Mayor o menor hasta 20 */
+CB.gen.numeracion.N19 = function (rng, D) { return comparacion(rng, D, 20); };
+
+/* N20 Leer y escribir hasta 59 */
+CB.gen.numeracion.N20 = function (rng, D) {
+  const n = tramo(21, 59, D, rng);
+  return {
+    formato: 'teclado',
+    consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabras(n),
+    respuesta: n, expr: 'leer' + n, diagnostico: true
+  };
+};
+
+/* N21 Series de 1 en 1 y de 2 en 2 */
+CB.gen.numeracion.N21 = function (rng, D) { return serie(rng, D, [1, 2], 59); };
+
+/* N22 El anterior y el posterior */
+CB.gen.numeracion.N22 = function (rng, D) {
+  const n = tramo(1, 98, D, rng);
+  const pidePosterior = rng() < 0.5;
+  return {
+    formato: 'teclado',
+    consigna: pidePosterior
+      ? '¿Qué número va justo después del ' + n + '?'
+      : '¿Qué número va justo antes del ' + n + '?',
+    respuesta: pidePosterior ? n + 1 : n - 1,
+    expr: (pidePosterior ? 'pos' : 'ant') + n,
+    diagnostico: false
+  };
+};

@@ -12,6 +12,66 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.0.0] — 2026-08-23
+
+**Primera cifra por su única razón: cambia el formato del perfil guardado.**
+`VERSION_ESQUEMA` pasa a 4: el perfil gana `curso` y `cursosCompletados` en la
+raíz, y la migración estampa curso 2 a todo perfil anterior (es el único curso
+que el juego había tenido nunca). Ningún niño pierde progreso ni récords.
+
+### Añadido — Fase 0 de los cursos 1.º-6.º
+
+- **El curso de Primaria como eje del juego.** El catálogo pasa de una tabla a
+  `CB.catalogo.TABLAS`, una tabla POR CURSO con el mismo formato de fila; cada
+  nivel lleva `nivel.curso`. Hoy hay dos cursos con contenido: 1.º (21 niveles
+  nuevos, N17-N22 · S17-S21 · R15-R18 · P21-P24 · E9-E10, sobre los generadores
+  existentes con rangos bajos) y 2.º (los 92 originales, fila a fila intactos).
+  Total: **113 niveles**. Los cursos 3.º-6.º llegan por fases (sentido numérico
+  primero; después medida, estocástico, algebraico y espacial).
+- **El curso se elige al crear el perfil** («¿En qué curso de Primaria está?»,
+  con un botón por curso disponible) **y después solo lo cambia el adulto** en
+  su panel, tras la puerta parental. La caja de ajustes del adulto aprende
+  `raiz:true` para los datos que viven en la raíz del perfil y no en
+  `perfil.ajustes` (E131).
+- **La mezcla 80/20** (`construirGuion`): en torno al 80 % del guion es del
+  curso del perfil y el 20 % de cursos anteriores — repaso barajado con el
+  resto, nunca «las fáciles primero». La selección del repaso prefiere
+  destrezas vencidas por la curva de olvido, luego niveles no superados, luego
+  azar; en 1.º la cuota es cero. Guardián E128: proporción medida sobre 50
+  semillas.
+- **Promoción con felicitación** (E129): al dominar todos los niveles nucleares
+  del curso (la definición de siempre: n≥3 y ≥60 %), el cartel grande anuncia
+  «¡Pasas a X.º!», el perfil sube de curso él solo y `cursosCompletados` impide
+  que vuelva a dispararse. Dominar el último curso disponible es maestría, no
+  un salto a un curso vacío.
+- **Techo numérico por curso**: `techoTrimestre` se convierte en
+  `techoCurso[curso][trimestre]` (2.º intacto: 199/599/999; 1.º: 20/59/99), con
+  el alias viejo apuntando a la fila de 2.º. Única lectura de producción:
+  `CB.partida.techoDe(perfil)`.
+- **Calibración por curso**: los 4 ítems fijos pasan a `CB.calibracion.BANCOS`
+  (el banco de 2.º es el original; 1.º trae el suyo).
+- **Jefes escalados por curso** (`CB.jefes.RANGO_CURSO`): las
+  cuatro mecánicas leen sus rangos de una tabla por curso; la temática nueva
+  por curso queda pospuesta y anotada.
+- **La vitrina de premios**, en «Mi álbum»: diplomas de curso, guardianes
+  vencidos, récords por modo y los 10 logros de la v1, leídos del perfil — la
+  vitrina no inventa datos. Lo no ganado se enseña cerrado, como los cromos:
+  una vitrina con huecos dice «esto se puede ganar» (E136).
+- La ayuda explica el curso, el repaso, la promoción y la vitrina (E126);
+  guardianes E126-E136 en `pruebas/auditar.mjs` y el nuevo
+  `pruebas/casos-cursos.js`.
+
+### Estructural
+
+- **Las betas de 2.º no se mueven ni un punto.** La interpolación de `betaBase`
+  pasa a familia×curso con desplazamiento por curso (`BETA_CURSO`, 2.º a 0):
+  añadir niveles ya no recalcula las betas de los demás cursos. E127 congela
+  las 92 literalmente.
+- Un prerrequisito de un curso anterior al del perfil se da por satisfecho
+  (E134); el contenido de cursos posteriores está bloqueado hasta llegar a él.
+- El progreso de mundo se mide sobre los nucleares del curso activo: añadir
+  1.º no hizo bajar la fracción de ningún perfil de 2.º.
+
 ## [2.0.0] — 2026-08-23
 
 **Primera cifra**, y por la única razón que la sube: **cambia el formato del

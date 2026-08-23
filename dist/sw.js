@@ -1,7 +1,7 @@
 /* sw.plantilla.js — el service worker. Gulp sustituye los tres __MARCADORES__. */
 
-const VERSION = '2.0.0';
-const HUELLA  = '506636a9';
+const VERSION = '3.0.0';
+const HUELLA  = '1c52898d';
 const ARMAZON = ["index.html","css/cubomatica.min.css","js/cubomatica.min.js","manifest.webmanifest","img/pieza-c1.webp","img/pieza-c5.webp","img/pieza-c10.webp","img/pieza-c20.webp","img/pieza-c50.webp","img/pieza-1.webp","img/pieza-2.webp","img/pieza-5.webp","img/pieza-10.webp","img/pieza-20.webp","img/pieza-50.webp","img/pieza-100.webp"];
 
 const MAYOR = VERSION.split('.')[0];

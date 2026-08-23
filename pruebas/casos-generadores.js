@@ -130,7 +130,9 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
   t.ok(fallos.inv11 === 0, 'INV 11 · restas nucleares con una sola llevada y sin cero prestado', ejemplos.inv11);
   t.ok(fallos.inv12 === 0, 'INV 12 · variedad suficiente en todos los niveles', ejemplos.inv12);
 
-  t.ok(totalItems >= porNivel * 90, 'se han generado ' + totalItems + ' ítems');
+  /* Derivado del catálogo (margen 2), no un 90 a mano que se quede viejo. */
+  t.ok(totalItems >= porNivel * (CB.catalogo.ids().length - 2),
+    'se han generado ' + totalItems + ' ítems');
   t.ok(conOpciones > 0, 'se han verificado ' + conOpciones + ' juegos de 4 opciones');
 
   /* Contraejemplo explícito de F2: con el flag apagado, ningún ítem puede ser un

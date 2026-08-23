@@ -76,7 +76,23 @@ CB.CURRICULO = {
     F: { nombre: 'Sentido socioafectivo', cubierto: true, modo: 'transversal' }
   },
 
-  /* Techo numérico por trimestre. DECISIÓN PROPIA del proyecto */
+  /* Techo numérico por CURSO y trimestre. DECISIÓN PROPIA del proyecto: el RD
+     fija los saberes por ciclo, no por curso, y esta secuenciación es nuestra
+     (igual que la de trimestreSugerido). La fila de 2.º es la tabla original
+     de 1.23.x, intacta. Las filas 3-6 existen ya para que la Fase 1 no tenga
+     que tocar este fichero dos veces; sin contenido de esos cursos no se leen. */
+  techoCurso: {
+    1: { 1: 20,      2: 59,      3: 99 },
+    2: { 1: 199,     2: 599,     3: 999 },
+    3: { 1: 999,     2: 9999,    3: 99999 },
+    4: { 1: 99999,   2: 499999,  3: 999999 },
+    5: { 1: 999999,  2: 9999999, 3: 9999999 },
+    6: { 1: 9999999, 2: 9999999, 3: 9999999 }
+  },
+
+  /* Alias de compatibilidad: el techo «a secas» es el de 2.º, el único curso
+     que existía hasta la 3.0.0. Solo debe quedarle un lector: las pruebas
+     viejas; producción lee techoCurso[perfil.curso]. */
   techoTrimestre: { 1: 199, 2: 599, 3: 999 },
 
   /* Calendario escolar por defecto, para deducir el trimestre sin */

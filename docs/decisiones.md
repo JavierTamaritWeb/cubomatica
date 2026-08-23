@@ -3953,3 +3953,62 @@ dígitos donde `.reloj__cifra` medía dos. A 320 px eso no lanza ningún error �
 cifra empuja la fila del HUD y se recorta contra el borde—, que es exactamente la
 familia de E99-E100. El ancho se calcula ahora contra el modo más largo de la
 tabla y lo comprueba E125.
+
+---
+
+## D-3.0.0 · Los cursos de Primaria, la mezcla 80/20 y la promoción (Fase 0)
+
+Se pidió que el juego cubriera de 1.º a 6.º de Primaria, con tres reglas: el
+alumno juega en su curso; en torno a un 20 % de las preguntas son de cursos
+anteriores, **barajadas** con las demás (confianza sin regalar las fáciles al
+principio); y al dominar todo el curso, una felicitación grande anuncia el paso
+al siguiente y el perfil sube solo. Esta entrega es la **Fase 0**: la
+infraestructura entera más el contenido de 1.º (21 niveles sobre los
+generadores existentes). El sentido numérico de 3.º-6.º, y después medida,
+estocástico, algebraico y espacial, llegan por fases (el plan completo está en
+`docs/plan-cursos.md` si se materializa, y en el plan aprobado de la sesión).
+
+Las decisiones que hay que conocer antes de tocar esto:
+
+- **El catálogo es una tabla POR CURSO** (`CB.catalogo.TABLAS`), no una columna
+  nueva: el campo opcional 14 (`saberSecundario`) hace peligroso añadir
+  columnas, y las 92 filas de 2.º quedan literalmente intactas. El parser
+  estampa `nivel.curso` desde la clave.
+- **La beta se interpola por familia×curso, con `BETA_CURSO` (2.º = 0).** La
+  interpolación vieja repartía el rango de la familia sobre el TOTAL de filas:
+  añadir un nivel recalculaba las betas de todos los demás y desplazaba el
+  emparejamiento adaptativo de todos los perfiles guardados, sin que nada
+  fallara. E127 congela las 92 betas de 2.º literalmente; si un cambio legítimo
+  debe moverlas, se cambia ese guardián a propósito y se anota aquí.
+- **El curso vive en la raíz del perfil** (`perfil.curso`, esquema v4), no en
+  `ajustes`: los ajustes se copian al crear el siguiente perfil y el hermano
+  pequeño heredaría el curso del mayor. `cursosCompletados` es el cerrojo de la
+  promoción: una vez por curso, aunque el adulto baje y vuelva a subir.
+- **Se declara al crear el perfil y solo el adulto lo cambia después.** El curso
+  se DECLARA (dato administrativo); el trimestre se sigue DEDUCIENDO en la
+  calibración (§7.2). No son la misma clase de dato y por eso no se preguntan
+  en el mismo sitio.
+- **La cuota del 20 % se cobra en el relleno del guion, ítem a ítem**, y el
+  barajado final de siempre la reparte: no hay «bloque de repaso» al principio.
+  El repaso prefiere destrezas vencidas por la curva de olvido, luego niveles
+  no superados, luego azar. En 1.º la cuota es cero. E128 mide la proporción
+  agregada sobre 50 semillas: [10 %, 30 %].
+- **Un prerrequisito de un curso anterior se da por satisfecho** (quien entra
+  en 4.º no ha «superado» nada de 3.º dentro del juego); un nivel de un curso
+  posterior está bloqueado. Ambas reglas viven en `CB.grafo.estado`, así que
+  frontera, cantera y desbloqueados las heredan de una vez.
+- **El progreso de mundo se mide sobre los nucleares del curso activo**: sin
+  ese filtro, añadir los 21 niveles de 1.º habría bajado de golpe la fracción
+  de todos los perfiles de 2.º, con el mismo mapa de repente menos completo.
+- **Si el curso siguiente no tiene contenido todavía, dominar el actual es
+  maestría, no promoción**: el perfil no salta a un curso vacío. Consecuencia
+  asumida: quien domine 2.º antes de que exista 3.º queda anotado en
+  `cursosCompletados` y NO será promovido automáticamente cuando 3.º llegue;
+  el adulto lo sube a mano. Es preferible a re-celebrar o a auto-promociones
+  retroactivas sorpresa.
+- **Los jefes escalan por rangos, no por temática** (`CB.jefes.RANGO_CURSO`).
+  Pendiente declarado: mecánicas temáticas por curso (división en los jefes de
+  4.º, etc.) — que esta línea no deje que se convierta en mentira silenciosa.
+- **La vitrina de premios lee el perfil, no inventa datos** (`CB.casa.premios`):
+  diplomas de curso, guardianes, récords por modo y logros v1. Lo no ganado se
+  enseña cerrado, como los cromos (E136).

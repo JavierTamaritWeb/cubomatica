@@ -12,7 +12,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     return false;
   });
   t.ok(malSaber.length === 0,
-    'CU1 · los 92 niveles declaran un saber que existe en CB.CURRICULO.saberes',
+    'CU1 · los ' + niveles.length + ' niveles declaran un saber que existe en CB.CURRICULO.saberes',
     malSaber.map(function (n) { return n.id + ':' + n.curriculo.saber; }).join(', '));
 
   /* CU2 — los criterios declarados EXISTEN */
@@ -77,7 +77,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     return CB.adaptativo.SLUGS.indexOf(n.destreza) === -1;
   });
   t.ok(malSlug.length === 0,
-    'CU6 · los 92 niveles apuntan a uno de los 13 slugs de destreza',
+    'CU6 · los ' + niveles.length + ' niveles apuntan a uno de los 13 slugs de destreza',
     malSlug.map(function (n) { return n.id + ':' + n.destreza; }).join(', '));
 
   /* CU7 — la unión de los mundos es EXACTAMENTE los 92 ids */
@@ -90,7 +90,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   });
   const huerfanos = CB.catalogo.ids().filter(function (id) { return union.indexOf(id) === -1; });
   const fantasmas = union.filter(function (id) { return !CB.catalogo.get(id); });
-  t.igual(union.length, 92, 'CU7a · los mundos suman 92 niveles');
+  t.igual(union.length, 113, 'CU7a · los mundos suman 113 niveles (92 de 2.º + 21 de 1.º)');
   t.ok(repes.length === 0, 'CU7b · ningún nivel aparece en dos mundos', repes.join(', '));
   t.ok(huerfanos.length === 0, 'CU7c · ningún nivel se queda fuera de los mundos',
        huerfanos.join(', '));
@@ -124,18 +124,26 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   t.ok(incoherentes.length === 0,
     'simular() y diagnostico:false son mutuamente excluyentes', incoherentes.join(', '));
 
-  /* Rangos y contenidos concretos de 2.º */
-  const techos = CB.CURRICULO.techoTrimestre;
-  t.ok(techos[1] === 199 && techos[2] === 599 && techos[3] === 999,
-    'el techo por trimestre es 199 / 599 / 999 (§6.6)');
+  /* Rangos: el techo es ahora POR CURSO y trimestre (3.0.0) */
+  const techosCurso = CB.CURRICULO.techoCurso;
+  t.ok(techosCurso[2][1] === 199 && techosCurso[2][2] === 599 && techosCurso[2][3] === 999,
+    'el techo de 2.º sigue siendo 199 / 599 / 999 (§6.6)');
+  t.ok(techosCurso[1][1] === 20 && techosCurso[1][2] === 59 && techosCurso[1][3] === 99,
+    'el techo de 1.º es 20 / 59 / 99');
+  t.ok(CB.CURRICULO.techoTrimestre[1] === techosCurso[2][1] &&
+       CB.CURRICULO.techoTrimestre[2] === techosCurso[2][2] &&
+       CB.CURRICULO.techoTrimestre[3] === techosCurso[2][3],
+    'el alias techoTrimestre coincide con la fila de 2.º');
 
   const fueraDeTecho = niveles.filter(function (n) {
-    return n.rango[1] > techos[n.trimestreSugerido];
+    const fila = techosCurso[n.curso] || techosCurso[2];
+    return n.rango[1] > fila[n.trimestreSugerido];
   });
   t.ok(fueraDeTecho.length === 0,
-    'ningún nivel excede el techo numérico de su trimestre sugerido',
+    'ningún nivel excede el techo numérico de su curso y trimestre sugerido',
     fueraDeTecho.map(function (n) {
-      return n.id + ' (' + n.rango[1] + ' > ' + techos[n.trimestreSugerido] + ')';
+      return n.id + ' (' + n.rango[1] + ' > techo de ' + n.curso + '.º T' +
+             n.trimestreSugerido + ')';
     }).join(', '));
 
   /* La multiplicación: M1-M8 nucleares de T3, M9-M10 ampliación */
@@ -172,13 +180,19 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     t.ok(!!CB.catalogo.get(par[0]), 'incluido: ' + par[1] + ' (' + par[0] + ')');
   });
 
-  /* Reparto declarado */
+  /* Reparto declarado, por letra y por curso */
   const cuenta = {};
   niveles.forEach(function (n) { cuenta[n.letra] = (cuenta[n.letra] || 0) + 1; });
-  t.ok(cuenta.N === 16 && cuenta.S === 16 && cuenta.R === 14 && cuenta.M === 10 &&
-       cuenta.P === 20 && cuenta.E === 8 && cuenta.V === 8,
-    'reparto 16 N · 16 S · 14 R · 10 M · 20 P · 8 E · 8 V = 92',
+  t.ok(cuenta.N === 22 && cuenta.S === 21 && cuenta.R === 18 && cuenta.M === 10 &&
+       cuenta.P === 24 && cuenta.E === 10 && cuenta.V === 8,
+    'reparto 22 N · 21 S · 18 R · 10 M · 24 P · 10 E · 8 V = 113',
     JSON.stringify(cuenta));
+
+  const porCurso = {};
+  niveles.forEach(function (n) { porCurso[n.curso] = (porCurso[n.curso] || 0) + 1; });
+  t.ok(porCurso[1] === 21 && porCurso[2] === 92,
+    'por curso: 21 niveles de 1.º y los 92 originales de 2.º',
+    JSON.stringify(porCurso));
 
   /* La cita de la norma es completa dondequiera que aparezca */
   t.ok(CB.LEGAL.NORMA.indexOf('157/2022') !== -1 &&

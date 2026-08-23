@@ -76,7 +76,23 @@ CB.CURRICULO = {
     F: { nombre: 'Sentido socioafectivo', cubierto: true, modo: 'transversal' }
   },
 
-  /* Techo numérico por trimestre. DECISIÓN PROPIA del proyecto */
+  /* Techo numérico por CURSO y trimestre. DECISIÓN PROPIA del proyecto: el RD
+     fija los saberes por ciclo, no por curso, y esta secuenciación es nuestra
+     (igual que la de trimestreSugerido). La fila de 2.º es la tabla original
+     de 1.23.x, intacta. Las filas 3-6 existen ya para que la Fase 1 no tenga
+     que tocar este fichero dos veces; sin contenido de esos cursos no se leen. */
+  techoCurso: {
+    1: { 1: 20,      2: 59,      3: 99 },
+    2: { 1: 199,     2: 599,     3: 999 },
+    3: { 1: 999,     2: 9999,    3: 99999 },
+    4: { 1: 99999,   2: 499999,  3: 999999 },
+    5: { 1: 999999,  2: 9999999, 3: 9999999 },
+    6: { 1: 9999999, 2: 9999999, 3: 9999999 }
+  },
+
+  /* Alias de compatibilidad: el techo «a secas» es el de 2.º, el único curso
+     que existía hasta la 3.0.0. Solo debe quedarle un lector: las pruebas
+     viejas; producción lee techoCurso[perfil.curso]. */
   techoTrimestre: { 1: 199, 2: 599, 3: 999 },
 
   /* Calendario escolar por defecto, para deducir el trimestre sin */
@@ -1165,7 +1181,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '2.0.0';
+CB.VERSION = '3.0.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -1208,7 +1224,7 @@ CB.LEGAL = {
 var CB = CB || {};
 CB.almacen = CB.almacen || {};
 
-CB.almacen.VERSION_ESQUEMA = 3;
+CB.almacen.VERSION_ESQUEMA = 4;
 CB.almacen.PREFIJO = 'cubomatica.';
 CB.almacen.memoria = {};          // respaldo si localStorage está bloqueado
 CB.almacen.sinDisco = false;
@@ -1372,6 +1388,12 @@ CB.almacen.perfilNuevo = function (id, mote, avatar, hoyISO, ajustesPrevios) {
     id: id, mote: mote, avatar: avatar, colorBloque: '#5AA02C',
     creadoISO: hoyISO,
     trimestreDeducido: 1,
+    /* En la RAÍZ y no en ajustes: los ajustes se copian al crear el siguiente
+       perfil, y el hermano pequeño heredaría el curso del mayor. Quien lo crea
+       lo estampa después con lo elegido en p-perfiles; 2 es el curso del
+       catálogo original y el de todos los perfiles anteriores a la v4. */
+    curso: 2,
+    cursosCompletados: [],
     calibrado: false,
     grupo: null,
     ajustes: ajustesPrevios || {
@@ -1496,6 +1518,14 @@ CB.almacen.migrar = function (perfil) {
       perfil.mejorPuntuacion = mp;
 
       perfil.version = 3;
+    }
+
+    if (perfil.version < 4) {
+      /* El curso llega en 3.0.0. Todo perfil anterior es, por definición, de
+         2.º: es el único curso que el juego ha tenido nunca. */
+      if (perfil.curso == null) perfil.curso = 2;
+      if (!perfil.cursosCompletados) perfil.cursosCompletados = [];
+      perfil.version = 4;
     }
 
     CB.almacen.recortarFechasFuturas(perfil);
@@ -1641,6 +1671,7 @@ CB.almacen.podar = function (perfil, opciones) {
 /* Exportar e importar CON VALIDACIÓN */
 CB.almacen.CAMPOS_PERMITIDOS = [
   'version', 'id', 'mote', 'avatar', 'colorBloque', 'creadoISO', 'trimestreDeducido',
+  'curso', 'cursosCompletados',
   'calibrado', 'grupo', 'ajustes', 'gemas', 'puntosTotales', 'mejorPuntuacion',
   'vidasReserva', 'componentesVistos', 'destrezas', 'niveles', 'problemas',
   'errores', 'items', 'mundos', 'logros', 'cromos', 'glosario', 'mensajes',
@@ -1670,6 +1701,15 @@ CB.almacen.validarImportado = function (crudo, motesValidos) {
   }
   if (!/^#[0-9A-Fa-f]{6}$/.test(String(limpio.colorBloque))) limpio.colorBloque = '#5AA02C';
   limpio.avatar = CB.util.clamp(parseInt(limpio.avatar, 10) || 0, 0, 15);
+  /* El curso, como el avatar: un entero acotado, nunca texto libre. */
+  limpio.curso = CB.util.clamp(parseInt(limpio.curso, 10) || 2, 1, 6);
+  if (Object.prototype.toString.call(limpio.cursosCompletados) !== '[object Array]') {
+    limpio.cursosCompletados = [];
+  } else {
+    limpio.cursosCompletados = limpio.cursosCompletados.filter(function (c) {
+      return c === Math.round(c) && c >= 1 && c <= 6;
+    });
+  }
   if (!limpio.id || !/^[A-Za-z0-9-]{1,32}$/.test(String(limpio.id))) {
     limpio.id = 'p-' + CB.util.hash32(String(limpio.mote) + limpio.avatar).toString(16);
   }
@@ -3258,6 +3298,62 @@ CB.gen.numeracion.N14 = function (rng, D) {
   };
 };
 
+/* ——— Curso 1.º (3.0.0): N17…N22, sobre las mismas ayudas ——— */
+
+/* N17 Contar hasta 12 */
+CB.gen.numeracion.N17 = function (rng, D) {
+  const n = tramo(2, 12, D, rng);
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuántos bloques hay?',
+    visual: { tipo: 'conteo', n: n },
+    respuesta: n,
+    expr: 'contar' + n,
+    diagnostico: false
+  };
+};
+
+/* N18 Leer y escribir hasta 20 */
+CB.gen.numeracion.N18 = function (rng, D) {
+  const n = tramo(1, 20, D, rng);
+  return {
+    formato: 'teclado',
+    consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabras(n),
+    respuesta: n, expr: 'leer' + n, diagnostico: true
+  };
+};
+
+/* N19 Mayor o menor hasta 20 */
+CB.gen.numeracion.N19 = function (rng, D) { return comparacion(rng, D, 20); };
+
+/* N20 Leer y escribir hasta 59 */
+CB.gen.numeracion.N20 = function (rng, D) {
+  const n = tramo(21, 59, D, rng);
+  return {
+    formato: 'teclado',
+    consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabras(n),
+    respuesta: n, expr: 'leer' + n, diagnostico: true
+  };
+};
+
+/* N21 Series de 1 en 1 y de 2 en 2 */
+CB.gen.numeracion.N21 = function (rng, D) { return serie(rng, D, [1, 2], 59); };
+
+/* N22 El anterior y el posterior */
+CB.gen.numeracion.N22 = function (rng, D) {
+  const n = tramo(1, 98, D, rng);
+  const pidePosterior = rng() < 0.5;
+  return {
+    formato: 'teclado',
+    consigna: pidePosterior
+      ? '¿Qué número va justo después del ' + n + '?'
+      : '¿Qué número va justo antes del ' + n + '?',
+    respuesta: pidePosterior ? n + 1 : n - 1,
+    expr: (pidePosterior ? 'pos' : 'ant') + n,
+    diagnostico: false
+  };
+};
+
 /* 11-gen-sumas.js — S1…S16 */
 
 var CB = CB || {};
@@ -3467,6 +3563,48 @@ CB.gen.sumas.S16 = function (rng, D) {
   };
 };
 
+/* ——— Curso 1.º (3.0.0): S17…S21 ——— */
+
+/* S17 Sumar 1, 2 y 3 */
+CB.gen.sumas.S17 = function (rng, D) {
+  const a = CB.util.ent(rng, 0, (D === 1) ? 5 : 10);
+  const b = CB.util.ent(rng, 1, 3);
+  return itemSuma({ a: a, b: b, r: a + b });
+};
+
+/* S18 Sumar sin pasar de 20, sin llevada por construcción */
+CB.gen.sumas.S18 = function (rng, D) {
+  const a = CB.util.ent(rng, 0, (D === 1) ? 10 : 19);
+  const b = CB.util.ent(rng, 0, Math.min(9 - (a % 10), 20 - a));
+  return itemSuma({ a: a, b: b, r: a + b });
+};
+
+/* S19 Sumar decenas enteras hasta 50 */
+CB.gen.sumas.S19 = function (rng, D) {
+  const a = CB.util.ent(rng, 1, (D === 1) ? 2 : 4) * 10;
+  const b = CB.util.ent(rng, 1, Math.max(1, (50 - a) / 10)) * 10;
+  const it = itemSuma({ a: a, b: b, r: a + b });
+  it.formato = 'opciones4';
+  return it;
+};
+
+/* S20 Sumas de dos cifras sin llevar: mezcla DU+U y DU+DU */
+CB.gen.sumas.S20 = function (rng, D) {
+  const cifrasB = (rng() < 0.5) ? 1 : 2;
+  return itemSuma(CB.gen.sumas.intentar(rng, [false, false], 2, cifrasB, 99));
+};
+
+/* S21 Pasar de 10: la primera llevada (a + b entre 11 y 18) */
+CB.gen.sumas.S21 = function (rng, D) {
+  let a, b, k = 0;
+  do {
+    k++;
+    a = CB.util.ent(rng, 2, 9); b = CB.util.ent(rng, 2, 9);
+  } while (a + b < 11 && k < 40);
+  if (a + b < 11) { a = 8; b = 5; }
+  return itemSuma({ a: a, b: b, r: a + b });
+};
+
 /* 12-gen-restas.js — R1…R14 */
 
 var CB = CB || {};
@@ -3624,6 +3762,37 @@ CB.gen.restas.R14 = function (rng, D) {
     return itemResta({ a: a, b: s.b, r: s.a });
   }
   return itemResta({ a: 504, b: 267, r: 237 });
+};
+
+/* ——— Curso 1.º (3.0.0): R15…R18 ——— */
+
+/* R15 Quitar 1, 2 y 3 */
+CB.gen.restas.R15 = function (rng, D) {
+  const a = CB.util.ent(rng, (D === 1) ? 3 : 4, 10);
+  const b = CB.util.ent(rng, 1, Math.min(3, a));
+  return itemResta({ a: a, b: b, r: a - b });
+};
+
+/* R16 Restar sin pasar de 20, sin préstamo por construcción */
+CB.gen.restas.R16 = function (rng, D) {
+  const a = CB.util.ent(rng, 5, 20);
+  const b = CB.util.ent(rng, 0, a % 10);
+  return itemResta({ a: a, b: b, r: a - b });
+};
+
+/* R17 Restar decenas enteras hasta 50 */
+CB.gen.restas.R17 = function (rng, D) {
+  const a = CB.util.ent(rng, 2, 5) * 10;
+  const b = CB.util.ent(rng, 1, a / 10 - 1) * 10;
+  const it = itemResta({ a: a, b: b, r: a - b });
+  it.formato = 'opciones4';
+  return it;
+};
+
+/* R18 Restas de dos cifras sin llevar: mezcla DU−U y DU−DU */
+CB.gen.restas.R18 = function (rng, D) {
+  const cifrasB = (rng() < 0.5) ? 1 : 2;
+  return itemResta(CB.gen.restas.construir(rng, [false, false], 2, cifrasB, 99));
 };
 
 /* 13-gen-multiplicacion.js — M1…M10 */
@@ -4419,7 +4588,10 @@ CB.gen.problemas.SUBTIPO_DE_NIVEL = {
   P5: 'COMPARACION_1', P6: 'COMPARACION_2', P7: 'CAMBIO_3', P8: 'CAMBIO_4',
   P9: 'COMPARACION_3', P10: 'COMPARACION_4', P11: 'IGUALACION_1', P12: 'IGUALACION_2',
   P13: 'CAMBIO_5', P14: 'CAMBIO_6', P15: 'COMPARACION_5', P16: 'COMPARACION_6',
-  P17: 'IGUALACION_3', P18: 'IGUALACION_4', P19: 'IGUALACION_5', P20: 'IGUALACION_6'
+  P17: 'IGUALACION_3', P18: 'IGUALACION_4', P19: 'IGUALACION_5', P20: 'IGUALACION_6',
+  /* Curso 1.º (3.0.0): las mismas cuatro estructuras nucleares. El curso no
+     cambia la plantilla, cambia el techo numérico que la partida pasa en ctx. */
+  P21: 'CAMBIO_1', P22: 'CAMBIO_2', P23: 'COMBINACION_1', P24: 'COMBINACION_2'
 };
 
 /* Los generadores P1..P20 que consume el catálogo. */
@@ -4663,6 +4835,45 @@ CB.gen.dinero.E8equivalencia = function (rng, D) {
   };
 };
 
+/* ——— Curso 1.º (3.0.0): E9…E10 ——— */
+
+/* E9 Contar monedas de 1 y 2 € hasta 10 € */
+CB.gen.dinero.E9 = function (rng, D) {
+  const n = CB.util.ent(rng, 2, (D === 1) ? 4 : 6);
+  const piezas = [];
+  let total = 0, i, v;
+  for (i = 0; i < n; i++) {
+    v = CB.util.elegir(rng, CB.gen.dinero.MONEDAS);
+    if (total + v > 10) break;
+    piezas.push(v); total += v;
+  }
+  if (!piezas.length) { piezas.push(1); total = 1; }
+  return {
+    formato: 'monedas',
+    consigna: '¿Cuántos euros hay en total?',
+    piezas: piezas,
+    respuesta: total,
+    expr: 'contarP' + piezas.join('_'),
+    diagnostico: true,
+    contexto: { soloMonedas: true }
+  };
+};
+
+/* E10 Pagar justo hasta 20 € */
+CB.gen.dinero.E10 = function (rng, D) {
+  const precio = CB.util.ent(rng, 2, (D === 1) ? 9 : 20);
+  return {
+    formato: 'monedas',
+    consigna: 'Paga justo ' + CB.gen.dinero.euros(precio) + '.',
+    modo: 'pagar',
+    objetivo: precio,
+    disponibles: CB.gen.dinero.MONEDAS.concat([5, 10]),
+    respuesta: precio,
+    expr: 'pagarP' + precio,
+    diagnostico: true
+  };
+};
+
 /* 16-gen-vocabulario.js — V1…V8 (Diccionario de Bloques) */
 
 var CB = CB || {};
@@ -4781,7 +4992,49 @@ CB.catalogo.FAMILIAS = {
   V: { puntosBase: 70,  tIdeal: 7000,  tLimite: 20000, beta: [320, 920] }
 };
 
-CB.catalogo.TABLA = [
+/* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
+   formato de fila de siempre; el parser recorre los cursos en orden y estampa
+   nivel.curso desde la clave. Las 92 filas de 2.º no se tocan: el campo
+   opcional 14 (saberSecundario) hace peligroso añadir columnas, y la beta se
+   interpola por familia×curso justo para que las de 2.º no se muevan. */
+CB.catalogo.TABLAS = {
+  /* ——— 1.º de Primaria (3.0.0): 21 niveles sobre los generadores existentes
+     con rangos bajos. Techos de curso: 20 / 59 / 99 por trimestre. ——— */
+  1: [
+  /* Numeración: 6 */
+  ['N17','Contar hasta 12','numeracion',0,12,0,1,'opciones4','A.1',['1.1','5.1'],[],11,false,null],
+  ['N18','Leer y escribir hasta 20','numeracion',0,20,0,1,'teclado','A.2.b',['6.1'],['N17'],20,false,null],
+  ['N19','Mayor o menor hasta 20','numeracion',0,20,0,1,'balanza','A.4.b',['5.1','6.1'],['N17'],120,false,null],
+  ['N20','Leer y escribir hasta 59','numeracion',0,59,0,2,'teclado','A.2.b',['6.1'],['N18'],39,false,null],
+  ['N21','Series de 1 en 1 y de 2 en 2','numeracion',0,59,0,2,'ordenar','A.4.a',['3.1'],['N18'],140,false,null],
+  ['N22','El anterior y el posterior','numeracion',0,99,0,3,'teclado','A.2.b',['1.2'],['N20'],150,false,null],
+
+  /* Sumas: 5 */
+  ['S17','Sumar 1, 2 y 3','suma_sin_llevar',0,13,0,1,'teclado','A.3.b',['2.1'],[],30,false,null],
+  ['S18','Sumar sin pasar de 20','suma_sin_llevar',0,20,0,2,'teclado','A.3.b',['2.1'],['S17'],90,false,null],
+  ['S19','Sumar decenas enteras','suma_sin_llevar',0,50,0,2,'opciones4','A.3.a',['3.1'],['S18'],10,false,null],
+  ['S20','Sumas de dos cifras sin llevar','suma_sin_llevar',0,99,0,3,'teclado','A.3.b',['2.1'],['S18'],800,false,null],
+  ['S21','Pasar de 10: la primera llevada','suma_llevada',0,18,1,3,'teclado','A.3.b',['2.1','6.2'],['S18'],30,false,null],
+
+  /* Restas: 4 */
+  ['R15','Quitar 1, 2 y 3','resta_sin_llevar',0,10,0,1,'teclado','A.3.b',['2.1'],[],20,false,null],
+  ['R16','Restar sin pasar de 20','resta_sin_llevar',0,20,0,2,'teclado','A.3.b',['2.1'],['R15'],80,false,null],
+  ['R17','Restar decenas enteras','resta_sin_llevar',0,50,0,2,'opciones4','A.3.a',['3.1'],['R16'],10,false,null],
+  ['R18','Restas de dos cifras sin llevar','resta_sin_llevar',0,99,0,3,'teclado','A.3.b',['2.1'],['R16'],800,false,null],
+
+  /* Problemas: 4 */
+  ['P21','Cambio: gano y cuento','problemas_cambio',0,20,0,2,'teclado','A.3.b',['1.1','2.1','2.2'],['S17'],600,false,null],
+  ['P22','Cambio: pierdo y cuento','problemas_cambio',0,20,0,2,'teclado','A.3.b',['1.1','2.1','2.2'],['R15'],600,false,null],
+  ['P23','Combinación: juntar todo','problemas_combinacion',0,59,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['S18'],600,false,null],
+  ['P24','Combinación: la otra parte','problemas_combinacion',0,59,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P23'],600,false,null],
+
+  /* Dinero: 2 */
+  ['E9','Contar monedas hasta 10 euros','dinero',0,10,0,2,'monedas','A.5',['2.1','5.2'],['S17'],40,false,null],
+  ['E10','Pagar justo hasta 20 euros','dinero',0,20,0,3,'monedas','A.5',['2.1','2.2'],['E9'],19,false,null]
+  ],
+
+  /* ——— 2.º de Primaria: los 92 originales. ——— */
+  2: [
   /* Numeración: 16 */
   ['N1','Contar y recontar','numeracion',0,99,0,1,'opciones4','A.1',['1.1','5.1'],[],22,false,null,'A.2.c'],
   ['N2','Leer y escribir hasta 99','numeracion',0,99,0,1,'teclado','A.2.b',['6.1'],['N1'],90,false,null],
@@ -4887,7 +5140,8 @@ CB.catalogo.TABLA = [
   ['V6','Las palabras del dinero','vocabulario',0,0,0,3,'opciones4','A.5',['6.1','5.2'],['E1'],6,false,null],
   ['V7','Veces, doble y mitad','vocabulario',0,0,0,3,'opciones4','A.3.a',['6.1'],['M1'],6,false,null],
   ['V8','Las palabras de los problemas','vocabulario',0,0,0,3,'opciones4','A.3.b',['6.1','1.1'],['P1'],6,false,null]
-];
+  ]
+};
 
 /* Los 4 niveles con dato sobrante (§9.4): solo en 3.er trimestre y NUNCA en la
    primera partida del niño. */
@@ -4905,24 +5159,53 @@ CB.catalogo.CATEGORIA_MULT = {
 CB.catalogo._porId = {};
 CB.catalogo._ids = [];
 
+/* Desplazamiento de beta por curso. La interpolación se hace DENTRO de cada
+   familia×curso y luego se suma este offset: con 2.º a 0 y posiciones
+   intactas, las 92 betas originales quedan byte a byte como estaban, que es lo
+   que protege el emparejamiento adaptativo de los perfiles ya guardados
+   (guardián E127, con el volcado literal de las 92). */
+CB.catalogo.BETA_CURSO = { 1: -160, 2: 0, 3: 150, 4: 300, 5: 450, 6: 600 };
+
+/* Fracción del rango de beta de la familia que ocupa cada curso. Sin esto,
+   los 5 niveles de sumas de 1.º se repartían el MISMO rango que los 16 de
+   2.º y «8 + 5» (S21) salía con β960: catalogado más difícil que una llevada
+   de tres cifras. Un curso con pocos niveles ocupa un tramo corto. 2.º queda
+   en 1 — sus 92 betas no se mueven (E127). */
+CB.catalogo.ANCHO_BETA_CURSO = { 1: 0.4, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1 };
+
+CB.catalogo.CURSOS = [];
+
 (function () {
   const familiaDe = { N: 'numeracion', S: 'sumas', R: 'restas', M: 'multiplicacion',
                     P: 'problemas', E: 'dinero', V: 'vocabulario' };
+
+  const cursos = [];
+  let c;
+  for (c in CB.catalogo.TABLAS) {
+    if (Object.prototype.hasOwnProperty.call(CB.catalogo.TABLAS, c)) cursos.push(Number(c));
+  }
+  cursos.sort(function (a, b) { return a - b; });
+  CB.catalogo.CURSOS = cursos;
+
+  cursos.forEach(function (curso) {
+  const tabla = CB.catalogo.TABLAS[curso];
   const contadorFamilia = {};
 
-  CB.catalogo.TABLA.forEach(function (fila) {
+  tabla.forEach(function (fila) {
     const id = fila[0];
     const letra = id.charAt(0);
     const fam = CB.catalogo.FAMILIAS[letra];
     contadorFamilia[letra] = (contadorFamilia[letra] || 0) + 1;
 
-    /* betaBase repartida por la familia: los primeros niveles en la parte baja
-       del rango, los últimos en la alta. */
-    const total = CB.catalogo.TABLA.filter(function (f) {
+    /* betaBase repartida por la familia DEL CURSO: los primeros niveles en la
+       parte baja del rango, los últimos en la alta. */
+    const total = tabla.filter(function (f) {
       return f[0].charAt(0) === letra;
     }).length;
     const pos = (total > 1) ? (contadorFamilia[letra] - 1) / (total - 1) : 0;
-    const beta = Math.round(fam.beta[0] + pos * (fam.beta[1] - fam.beta[0]));
+    const ancho = CB.catalogo.ANCHO_BETA_CURSO[curso] || 1;
+    const beta = Math.round(fam.beta[0] + pos * ancho * (fam.beta[1] - fam.beta[0])) +
+                 (CB.catalogo.BETA_CURSO[curso] || 0);
 
     const tI = fam.tIdeal;
     let tL = fam.tLimite;
@@ -4930,6 +5213,7 @@ CB.catalogo._ids = [];
 
     const nivel = {
       id: id,
+      curso: curso,
       nombre: fila[1],
       familia: familiaDe[letra],
       letra: letra,
@@ -4981,6 +5265,7 @@ CB.catalogo._ids = [];
     CB.catalogo._porId[id] = nivel;
     CB.catalogo._ids.push(id);
   });
+  });
 })();
 
 /* API */
@@ -5007,14 +5292,55 @@ CB.catalogo.desbloqueados = function (perfil) {
   return CB.grafo.desbloqueados(perfil).map(function (id) { return CB.catalogo.get(id); });
 };
 
-/* candidatos() NUNCA devuelve []. */
+/* El curso activo de un perfil. 2 por defecto: es el curso del catálogo
+   original y el que la migración v4 estampa a todos los perfiles anteriores. */
+CB.catalogo.cursoDe = function (perfil) {
+  return (perfil && perfil.curso) || 2;
+};
+
+CB.catalogo.nivelesDeCurso = function (curso) {
+  return CB.catalogo.todos().filter(function (n) { return n.curso === curso; });
+};
+
+CB.catalogo.nuclearesDeCurso = function (curso) {
+  return CB.catalogo.nivelesDeCurso(curso).filter(function (n) { return !n.ampliacion; });
+};
+
+CB.catalogo.slugsDeCurso = function (curso) {
+  const vistos = {}, out = [];
+  CB.catalogo.nivelesDeCurso(curso).forEach(function (n) {
+    if (!vistos[n.destreza]) { vistos[n.destreza] = true; out.push(n.destreza); }
+  });
+  return out;
+};
+
+/* Los cursos que se pueden ELEGIR: los que tienen contenido nuclear. Los
+   selectores de UI (creación de perfil, panel del adulto) se alimentan de aquí
+   y crecen solos cuando una fase añade la tabla de un curso nuevo. */
+CB.catalogo.cursosDisponibles = function () {
+  return CB.catalogo.CURSOS.filter(function (c) {
+    return CB.catalogo.nuclearesDeCurso(c).length > 0;
+  });
+};
+
+/* candidatos() NUNCA devuelve []. Solo sirve niveles del curso del perfil o de
+   cursos anteriores (el contenido de cursos superiores no existe para el
+   niño), y PREFIERE el curso del perfil: el emparejador adaptativo empareja
+   dentro del curso, y el repaso de cursos anteriores es trabajo de la cuota
+   del guion, no de esta función. Sin esa preferencia, el niño sintético de
+   casos-motor.js bajaba del 75 % de acierto: le caían niveles de 1.º en la
+   banda que su curso ya cubría. */
 CB.catalogo.candidatos = function (slug, banda, perfil) {
-  const abiertos = CB.catalogo.porDestreza(slug).filter(function (n) {
+  const cursoTope = CB.catalogo.cursoDe(perfil);
+  let abiertos = CB.catalogo.porDestreza(slug).filter(function (n) {
+    if (n.curso > cursoTope) return false;
     if (CB.grafo.estado(n.id, perfil) !== 'abierta') return false;
     const e = perfil && perfil.niveles ? perfil.niveles[n.id] : null;
     if (e && e.enPausa) return false;                  // escalón 5 de la escalera
     return true;
   });
+  const delCurso = abiertos.filter(function (n) { return n.curso === cursoTope; });
+  if (delCurso.length) abiertos = delCurso;
 
   const min = banda[0], max = banda[1];
   let i, sel;
@@ -5040,14 +5366,22 @@ CB.catalogo.candidatos = function (slug, banda, perfil) {
     return [abiertos[0]];
   }
 
-  /* 4) la destreza no tiene ningún nivel abierto: se cae a la frontera global */
+  /* 4) la destreza no tiene ningún nivel abierto: se cae a la frontera global,
+     prefiriendo también aquí el curso del perfil. */
   const frontera = CB.grafo.frontera(perfil);
-  if (frontera.length) return [CB.catalogo.get(frontera[0])];
+  const fronteraDelCurso = frontera.filter(function (id) {
+    const n = CB.catalogo.get(id);
+    return n && n.curso === cursoTope;
+  });
+  const filaFrontera = fronteraDelCurso.length ? fronteraDelCurso : frontera;
+  if (filaFrontera.length) return [CB.catalogo.get(filaFrontera[0])];
 
   /* 5) solo posible si el perfil no tiene NINGÚN nivel abierto, situación
      imposible: el catálogo declara ≥1 nivel con prerrequisitos:[] por bloque.
-     Aun así, se devuelve algo antes que dejar la partida sin ítems. */
-  return [CB.catalogo.get('S1')];
+     Aun así, se devuelve algo antes que dejar la partida sin ítems — y del
+     curso del niño, no S1 a secas: para un perfil de 1.º, S1 es de 2.º. */
+  const primero = CB.catalogo.nuclearesDeCurso(cursoTope)[0];
+  return [primero || CB.catalogo.get('S1')];
 };
 
 /* Los 4 mundos (§5.2). Tabla CERRADA */
@@ -5057,7 +5391,8 @@ CB.MUNDOS = [
     niveles: ['N1','N2','N3','N4','N5','N6','N7','N8',
               'S1','S2','S3','S4','S5','S6','S7',
               'R1','R2','R3','R4','R5',
-              'P1','P2','E1','E2'] },
+              'P1','P2','E1','E2',
+              'N17','N18','S17','R15','P21'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -5065,20 +5400,23 @@ CB.MUNDOS = [
               'S8','S9','S10','S11','S12','S13',
               'R6','R7','R8','R9','R10',
               'P3','P4','P5','P6','P7','P8',
-              'E3','E4','V1','V2'] },
+              'E3','E4','V1','V2',
+              'N19','N20','S18','R16','E9'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
     niveles: ['N14','S14','R11','R12',
               'P9','P10','P11','P12','P13','P14','P15','P16',
-              'E5','E6','V3','V4','V5','V6'] },
+              'E5','E6','V3','V4','V5','V6',
+              'N21','S19','R17','P22','E10'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
     niveles: ['N15','N16','S15','S16','R13','R14',
               'P17','P18','P19','P20','E7','E8',
               'M1','M2','M3','M4','M5','M6','M7','M8','M9','M10',
-              'V7','V8'] }
+              'V7','V8',
+              'N22','S20','S21','R18','P23','P24'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {
@@ -5097,18 +5435,25 @@ CB.catalogo.getMundo = function (id) {
 
 /* Niveles NUCLEARES de un mundo: los que no son ampliación. Un mundo se
    desbloquea al completar el 60 % de los nucleares del anterior (§5.3): no el
-   100 %, porque bloquear por perfección es un muro. */
-CB.catalogo.nuclearesDe = function (mundoId) {
+   100 %, porque bloquear por perfección es un muro.
+   El 2.º parámetro es opcional: con él, solo los nucleares de ESE curso. */
+CB.catalogo.nuclearesDe = function (mundoId, curso) {
   const m = CB.catalogo.getMundo(mundoId);
   if (!m) return [];
   return m.niveles.filter(function (id) {
     const n = CB.catalogo.get(id);
-    return n && !n.ampliacion;
+    if (!n || n.ampliacion) return false;
+    if (curso != null && n.curso !== curso) return false;
+    return true;
   });
 };
 
+/* El progreso de un mundo se mide SOLO sobre los nucleares del curso activo.
+   Sin este filtro, al añadir los niveles de 1.º a los cuatro mundos la
+   fracción de todos los perfiles de 2.º habría bajado de golpe — el mismo
+   mapa, de repente menos completo, sin que el niño hubiera hecho nada. */
 CB.catalogo.progresoMundo = function (mundoId, perfil) {
-  const nucleares = CB.catalogo.nuclearesDe(mundoId);
+  const nucleares = CB.catalogo.nuclearesDe(mundoId, CB.catalogo.cursoDe(perfil));
   let hechos = 0, i;
   for (i = 0; i < nucleares.length; i++) {
     if (CB.grafo.superado(nucleares[i], perfil)) hechos++;
@@ -6967,6 +7312,12 @@ CB.grafo.estado = function (nivelId, perfil) {
   const pre = nivel.prerrequisitos || [];
   let i;
 
+  /* El contenido de un curso POSTERIOR al del perfil no existe todavía para
+     ese niño: bloqueado aquí, y con ello fuera de desbloqueados(), de la
+     frontera y de la cantera de una sola vez. */
+  const cursoPerfil = CB.catalogo.cursoDe(perfil);
+  if (nivel.curso > cursoPerfil) return 'bloqueado';
+
   /* Los niveles de ampliación siguen sus prerrequisitos, pero además exigen que
      el adulto haya activado su flag. Nunca bloquean nada nuclear (CU5). */
   if (nivel.ampliacion && nivel.flagAdulto) {
@@ -6974,10 +7325,29 @@ CB.grafo.estado = function (nivelId, perfil) {
     if (!aj[nivel.flagAdulto]) return 'bloqueado';
   }
 
+  /* Un prerrequisito de un CURSO ANTERIOR al del perfil se da por satisfecho:
+     quien entra en 4.º no ha «superado» nada de 3.º dentro del juego, y sin
+     esta regla no desbloquearía ni un nivel. Las lagunas reales las cubren la
+     calibración, la escalera y el 20 % de repaso de cursos anteriores. */
   for (i = 0; i < pre.length; i++) {
+    const nivelPre = CB.catalogo.get(pre[i]);
+    if (nivelPre && nivelPre.curso < cursoPerfil) continue;
     if (!CB.grafo.superado(pre[i], perfil)) return 'bloqueado';
   }
   return 'abierta';
+};
+
+/* Un curso está DOMINADO cuando todos sus niveles nucleares están superados
+   con la definición de siempre (n≥3 y ≥60 %). Es lo que dispara la promoción
+   al curso siguiente, con su felicitación, al final de la partida (E129). */
+CB.grafo.cursoDominado = function (perfil, curso) {
+  const nucleares = CB.catalogo.nuclearesDeCurso(curso);
+  if (!nucleares.length) return false;
+  let i;
+  for (i = 0; i < nucleares.length; i++) {
+    if (!CB.grafo.superado(nucleares[i].id, perfil)) return false;
+  }
+  return true;
 };
 
 CB.grafo.desbloqueados = function (perfil) {
@@ -9091,6 +9461,37 @@ CB.partida.rtMedianaDe = function (nivel, perfil) {
 /* Sin él, en la primera partida de la vida del niño solo hay cuatro niveles abiertos (los que no tienen prerrequisitos) y el relleno por presupuesto de tiempo produce un guion de 20 ítems con 12 del mismo nivel: monótono y, de hecho, la… */
 CB.partida.MAX_REPETICIONES = 3;
 
+/* Un nivel de curso anterior para la cuota de repaso del guion, por
+   preferencia: destreza vencida por la curva de olvido > nivel aún no
+   superado > azar. `cabe` viene del guion: respeta su tope de repeticiones. */
+CB.partida.elegirRepasoInferior = function (perfil, bolsaInferior, cabe, rng) {
+  const abiertos = bolsaInferior.filter(function (id) {
+    const n = CB.catalogo.get(id);
+    return n && !n.ampliacion && cabe(id) &&
+           CB.grafo.estado(id, perfil) === 'abierta';
+  });
+  if (!abiertos.length) return null;
+  const vencidas = CB.memoria.vencidosHoy(perfil, CB.util.hoyISO());
+  let lista = abiertos.filter(function (id) {
+    return vencidas.indexOf(CB.catalogo.get(id).destreza) !== -1;
+  });
+  if (!lista.length) {
+    lista = abiertos.filter(function (id) { return !CB.grafo.superado(id, perfil); });
+  }
+  if (!lista.length) lista = abiertos;
+  return CB.catalogo.get(CB.util.elegir(rng, lista));
+};
+
+/* El techo numérico que la partida pasa al generador: el del CURSO del perfil
+   y su trimestre deducido. Un ítem de repaso de 1.º dentro de una partida de
+   2.º sigue siendo de 1.º porque su generador manda; un problema de 2.º nunca
+   debe encogerse por culpa de la fila de al lado. */
+CB.partida.techoDe = function (perfil) {
+  const fila = CB.CURRICULO.techoCurso[CB.catalogo.cursoDe(perfil)] ||
+               CB.CURRICULO.techoCurso[2];
+  return fila[perfil.trimestreDeducido || 1] || 99;
+};
+
 CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   const guion = [];
   let segundos = 0, intentos = 0;
@@ -9098,26 +9499,63 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   const destrezas = CB.util.barajar(CB.adaptativo.SLUGS, rng);
   const nivelesMundo = mundo ? mundo.niveles : CB.catalogo.ids();
 
+  /* La mezcla 80/20 (3.0.0): el 80 % del guion es del curso del perfil y en
+     torno al 20 % de cursos ANTERIORES — repaso que da confianza. El barajado
+     final de siempre reparte los dos montones: nunca «las fáciles primero». */
+  const cursoActivo = CB.catalogo.cursoDe(perfil);
+  function cursoDeNivel(id) {
+    const n = CB.catalogo.get(id);
+    return n ? n.curso : cursoActivo;
+  }
+  const bolsaCurso = nivelesMundo.filter(function (id) {
+    return cursoDeNivel(id) === cursoActivo;
+  });
+  const bolsaInferior = nivelesMundo.filter(function (id) {
+    return cursoDeNivel(id) < cursoActivo;
+  });
+  let deInferior = 0;
+
   function cabe(id) {
     return (veces[id] || 0) < CB.partida.MAX_REPETICIONES;
   }
   function anotar(id) {
     veces[id] = (veces[id] || 0) + 1;
     guion.push(id);
+    if (cursoDeNivel(id) < cursoActivo) deInferior++;
     segundos += CB.partida.rtMedianaDe(CB.catalogo.get(id), perfil);
   }
 
   function candidatoDe(slug) {
     const banda = CB.adaptativo.elegirBeta(slug, perfil);
-    let lista = CB.catalogo.candidatos(slug, banda, perfil).filter(function (n) {
-      return nivelesMundo.indexOf(n.id) !== -1 && cabe(n.id);
+    const todos = CB.catalogo.candidatos(slug, banda, perfil);
+    /* Tres anillos: el curso activo dentro del mundo, el mundo entero, el
+       catálogo. Los anillos de reserva solo admiten cursos anteriores mientras
+       la cuota del 20 % lo pida: sin este cerrojo, un perfil de 2.º recién
+       creado —con casi todo 2.º aún bloqueado y todo 1.º abierto de golpe—
+       recibía un guion con el 80 % de repaso, la proporción EXACTAMENTE al
+       revés de la pedida. */
+    function admisible(n) {
+      return cabe(n.id) && (n.curso === cursoActivo || cuotaInferiorPendiente());
+    }
+    let lista = todos.filter(function (n) {
+      return bolsaCurso.indexOf(n.id) !== -1 && cabe(n.id);
     });
     if (!lista.length) {
-      lista = CB.catalogo.candidatos(slug, banda, perfil).filter(function (n) {
-        return cabe(n.id);
+      lista = todos.filter(function (n) {
+        return nivelesMundo.indexOf(n.id) !== -1 && admisible(n);
       });
     }
+    if (!lista.length) lista = todos.filter(admisible);
     return CB.util.elegir(rng, lista);
+  }
+
+  function candidatoInferior() {
+    return CB.partida.elegirRepasoInferior(perfil, bolsaInferior, cabe, rng);
+  }
+
+  function cuotaInferiorPendiente() {
+    return cursoActivo > 1 && bolsaInferior.length > 0 &&
+           deInferior < Math.floor(0.2 * (guion.length + 1));
   }
 
   /* 1) Vencidos por la curva de olvido primero: la razón honesta de volver. */
@@ -9150,19 +9588,29 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
       });
       if (!deLaLetra.length) return;
       if (guion.some(function (id) { return CB.catalogo.get(id).letra === letra; })) return;
-      const elegido = CB.util.elegir(rng, deLaLetra);
+      /* Con nivel del curso activo disponible, la cuota por letra no se paga
+         con repaso: el repaso tiene su propia cuota. */
+      const delCurso = deLaLetra.filter(function (id) {
+        return CB.catalogo.get(id).curso === cursoActivo;
+      });
+      const elegido = CB.util.elegir(rng, delCurso.length ? delCurso : deLaLetra);
       if (elegido && guion.length < CB.partida.MAX_ITEMS) anotar(elegido);
     })(letras[i]);
   }
 
   /* 4) Se rellena hasta agotar el presupuesto de tiempo, respetando el tope de
         repeticiones. Si se agotan los niveles abiertos, se para: más vale una
-        partida corta que veinte veces la misma pregunta. */
+        partida corta que veinte veces la misma pregunta. La cuota del 20 % se
+        cobra aquí, ítem a ítem, ANTES de tirar del curso activo. */
   intentos = 0;
   let seguidosSinSuerte = 0;
   while (segundos < CB.partida.OBJETIVO_S && guion.length < CB.partida.MAX_ITEMS &&
          intentos < 200 && seguidosSinSuerte < destrezas.length * 2) {
     intentos++;
+    if (cuotaInferiorPendiente()) {
+      n = candidatoInferior();
+      if (n) { anotar(n.id); seguidosSinSuerte = 0; continue; }
+    }
     const slug = destrezas[intentos % destrezas.length];
     n = candidatoDe(slug);
     if (!n) { seguidosSinSuerte++; continue; }
@@ -9179,7 +9627,17 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
     if (n) { anotar(n.id); continue; }
     const abiertos = CB.grafo.desbloqueados(perfil);
     if (!abiertos.length) break;
-    guion.push(CB.util.elegir(rng, abiertos));
+    const abiertosDelCurso = abiertos.filter(function (id) {
+      return CB.catalogo.get(id).curso === cursoActivo;
+    });
+    guion.push(CB.util.elegir(rng, abiertosDelCurso.length ? abiertosDelCurso : abiertos));
+  }
+
+  /* Garantía de la mezcla: con curso > 1 y una partida entera, al menos UN
+     ítem de repaso de cursos anteriores, aunque el relleno no lo haya pedido. */
+  if (cursoActivo > 1 && deInferior === 0 && guion.length >= CB.partida.MIN_ITEMS) {
+    n = candidatoInferior();
+    if (n) anotar(n.id);
   }
 
   return CB.util.barajar(guion, rng).slice(0, CB.partida.MAX_ITEMS);
@@ -9331,7 +9789,7 @@ CB.partida.servirItem = function () {
     const rngItem = CB.util.mulberry32(e.semilla + e.indice * 7919 + k * 104729);
     item = nivel.generar(rngItem, estadoNivel.D || 2, {
       ajustes: perfil.ajustes,
-      techo: CB.CURRICULO.techoTrimestre[perfil.trimestreDeducido || 1] || 99,
+      techo: CB.partida.techoDe(perfil),
       bolsas: perfil.bolsasProblemas,
       datoSobrante: nivel.datoSobrante &&
                     (perfil.trimestreDeducido === 3) &&
@@ -10214,12 +10672,41 @@ CB.partida.finalizar = function (motivo) {
       mundoNuevo = m;
     }
   });
+
+  /* PROMOCIÓN DE CURSO (3.0.0, E129). Con todos los nucleares del curso
+     superados, el perfil sube de curso él solo y la felicitación se lleva el
+     cartel grande. cursosCompletados es el cerrojo: una vez por curso, aunque
+     el adulto baje y vuelva a subir. Si el curso siguiente aún no tiene
+     contenido (fases pendientes), se celebra la maestría y no se sube a un
+     curso vacío. */
+  const cursoNuevo = CB.partida.comprobarPromocion(perfil);
+
   perfil.partidaEnCurso = null;
   CB.almacen.podar(perfil, {});
   CB.almacen.guardarPerfil(perfil);
 
-  CB.partida.pintarFin(motivo, bono, { logros: logrosFin, mundoNuevo: mundoNuevo, esRecord: esRecord });
+  CB.partida.pintarFin(motivo, bono, { logros: logrosFin, mundoNuevo: mundoNuevo,
+                                       esRecord: esRecord, cursoNuevo: cursoNuevo });
   CB.partida.estado = null;
+};
+
+/* Devuelve el curso al que se ha promocionado, 'maestria' si se ha dominado el
+   último curso disponible, o null si no ha pasado nada. Muta el perfil pero NO
+   guarda: se guarda en finalizar, junto con todo lo demás. */
+CB.partida.comprobarPromocion = function (perfil) {
+  const curso = CB.catalogo.cursoDe(perfil);
+  if (!perfil.cursosCompletados) perfil.cursosCompletados = [];
+  if (perfil.cursosCompletados.indexOf(curso) !== -1) return null;
+  if (!CB.grafo.cursoDominado(perfil, curso)) return null;
+
+  perfil.cursosCompletados.push(curso);
+  const disponibles = CB.catalogo.cursosDisponibles();
+  const siguiente = curso + 1;
+  if (curso < 6 && disponibles.indexOf(siguiente) !== -1) {
+    perfil.curso = siguiente;
+    return siguiente;
+  }
+  return 'maestria';
 };
 
 CB.partida.desbloquearMundos = function () {
@@ -10299,6 +10786,14 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
       dijo.push('Tu mejor expedición');
     }
 
+    if (hitos.cursoNuevo) {
+      const frase = (hitos.cursoNuevo === 'maestria')
+        ? '¡Has dominado todo el contenido de tu curso!'
+        : '¡Curso completado! Pasas a ' + hitos.cursoNuevo + '.º de Primaria.';
+      lista.appendChild(CB.ui.crear('p', null, frase));
+      dijo.push(frase);
+    }
+
     caja.hidden = !dijo.length;
   }
 
@@ -10321,7 +10816,14 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
      existirían para un lector de pantalla. Una sola cadena: dos anuncios en el
      mismo turno se tapan. */
   if (dijo.length) CB.a11y.anunciar(dijo.join('. ') + '.');
-  if (hitos.mundoNuevo) CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
+  /* Una celebración a la vez, y la promoción de curso gana a todas: es el
+     momento más raro del juego — como mucho cinco veces en la vida de un
+     perfil — y el espectáculo es inversamente proporcional a la frecuencia. */
+  if (hitos.cursoNuevo === 'maestria') {
+    CB.ui.festejo.mostrar('logro', '¡Curso dominado!');
+  } else if (hitos.cursoNuevo) {
+    CB.ui.festejo.mostrar('logro', '¡Pasas a ' + hitos.cursoNuevo + '.º!');
+  } else if (hitos.mundoNuevo) CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
   else if (hitos.esRecord) CB.ui.festejo.mostrar('logro', '¡Tu récord!');
 
   /* 3.º Momento socioafectivo: 1,5 s DESPUÉS, y solo si la partida duró ≥3 min.
@@ -10952,8 +11454,19 @@ CB.adulto.NOMBRE_SUBTIPO = {
   IGUALACION_6: 'Igualar · referente, quitar'
 };
 
-/* Ajustes pedagógicos (viven en perfil.ajustes, §15.2) */
+/* Ajustes pedagógicos (viven en perfil.ajustes, §15.2 — salvo los marcados
+   raiz:true, que leen y escriben la raíz del perfil: el curso no es una
+   preferencia, es la misma clase de dato que trimestreDeducido). */
 CB.adulto.AJUSTES = [
+  { k: 'curso', t: 'Curso de Primaria', tipo: 'opciones', raiz: true,
+    nota: 'Manda qué contenidos se sirven. La partida mezcla además en torno a ' +
+          'un 20 % de repaso de cursos anteriores. Al dominar todo el curso, ' +
+          'el juego lo sube solo y lo celebra.',
+    ops: function () {
+      return CB.catalogo.cursosDisponibles().map(function (c) {
+        return [c, c + '.º'];
+      });
+    } },
   { k: 'modoTiempo', t: 'Modo de juego', tipo: 'opciones',
     /* Los rótulos son de CB.modos.TABLA: estaban escritos a mano aquí y en
        99-arranque.js a la vez, y renombrar uno dejaba el otro mintiendo. */
@@ -10981,6 +11494,12 @@ CB.adulto.cajaAjustes = function (perfil) {
   const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Ajustes'));
 
+  /* raiz:true → el dato vive en perfil[k], no en perfil.ajustes[k] (E131). */
+  function lee(a) { return a.raiz ? perfil[a.k] : perfil.ajustes[a.k]; }
+  function pon(a, v) {
+    if (a.raiz) perfil[a.k] = v; else perfil.ajustes[a.k] = v;
+  }
+
   CB.adulto.AJUSTES.forEach(function (a) {
     const fila = CB.ui.crear('div', 'metrica');
     const izq = CB.ui.crear('span');
@@ -10991,17 +11510,17 @@ CB.adulto.cajaAjustes = function (perfil) {
     fila.appendChild(izq);
 
     if (a.tipo === 'bool') {
-      const b = CB.ui.boton(perfil.ajustes[a.k] ? 'Sí' : 'No', 'btn-adulto', function () {
-        perfil.ajustes[a.k] = !perfil.ajustes[a.k];
-        b.textContent = perfil.ajustes[a.k] ? 'Sí' : 'No';
-        b.setAttribute('aria-pressed', perfil.ajustes[a.k] ? 'true' : 'false');
+      const b = CB.ui.boton(lee(a) ? 'Sí' : 'No', 'btn-adulto', function () {
+        pon(a, !lee(a));
+        b.textContent = lee(a) ? 'Sí' : 'No';
+        b.setAttribute('aria-pressed', lee(a) ? 'true' : 'false');
         CB.a11y.aplicarAjustes(perfil.ajustes, CB.almacen.ajustesDispositivo());
         CB.almacen.guardarPerfil(perfil);
       });
       b.className = 'btn-adulto';
       b.id = 'adulto-ajuste-' + a.k + '-control';
       b.setAttribute('aria-labelledby', rotulo.id + ' ' + b.id);
-      b.setAttribute('aria-pressed', perfil.ajustes[a.k] ? 'true' : 'false');
+      b.setAttribute('aria-pressed', lee(a) ? 'true' : 'false');
       fila.appendChild(b);
     } else {
       const sel = CB.ui.crear('span');
@@ -11015,10 +11534,10 @@ CB.adulto.cajaAjustes = function (perfil) {
         b2.type = 'button';
         b2.id = 'adulto-ajuste-' + a.k + '-opcion-' + indice;
         b2.setAttribute('aria-labelledby', rotulo.id + ' ' + b2.id);
-        b2.setAttribute('aria-pressed', perfil.ajustes[a.k] === op[0] ? 'true' : 'false');
-        if (perfil.ajustes[a.k] === op[0]) b2.style.fontWeight = 'bold';
+        b2.setAttribute('aria-pressed', lee(a) === op[0] ? 'true' : 'false');
+        if (lee(a) === op[0]) b2.style.fontWeight = 'bold';
         b2.addEventListener('click', function () {
-          perfil.ajustes[a.k] = op[0];
+          pon(a, op[0]);
           CB.almacen.guardarPerfil(perfil);
           CB.adulto.pintar();
         });
@@ -11288,6 +11807,23 @@ CB.jefes = CB.jefes || {};
 CB.jefes.TOPE_TURNOS = 20;
 CB.jefes.BLOQUES = 8;
 
+/* Rangos de cada mecánica POR CURSO (3.0.0). El jefe no usa el catálogo ni el
+   adaptativo: escribe su aritmética a mano, y sin esta tabla un perfil de 1.º
+   pelearía con los números de 2.º. La fila de 2.º son los literales que
+   siempre tuvieron las cuatro mecánicas. La temática por curso (división en
+   los jefes de 4.º, etc.) queda pospuesta y anotada en docs/decisiones.md. */
+CB.jefes.RANGO_CURSO = {
+  1: { objetivoRamas: 15, sumandoRamas: 12, nenufar: 12, saltos: [1, 2],
+       reflejoMax: 10, tablas: [2], matrizMax: 5 },
+  2: { objetivoRamas: 60, sumandoRamas: 40, nenufar: 40, saltos: [2, 5, 10],
+       reflejoMax: 40, tablas: [2, 5, 10], matrizMax: 10 }
+};
+
+CB.jefes.rangos = function () {
+  const c = CB.catalogo.cursoDe(CB.perfil);
+  return CB.jefes.RANGO_CURSO[c] || CB.jefes.RANGO_CURSO[2];
+};
+
 CB.jefes.DEFINICION = {
   Tronquete: {
     mundo: 'M1', icono: '🌳',
@@ -11383,10 +11919,12 @@ CB.jefes.turno = function () {
     return;
   }
 
+  const R = CB.jefes.rangos();
+
   if (m === 'nenufares') {
     /* Hay que ANTICIPAR dónde caerá: es una serie, no una operación suelta. */
-    const salto = CB.util.elegir(e.rng, [2, 5, 10]);
-    const inicio = CB.util.ent(e.rng, salto, 40);
+    const salto = CB.util.elegir(e.rng, R.saltos);
+    const inicio = CB.util.ent(e.rng, salto, R.nenufar);
     const serie = [inicio, inicio + salto, inicio + salto * 2];
     const destino = inicio + salto * 3;
     enun.appendChild(CB.ui.crear('p', 'enunciado',
@@ -11397,7 +11935,8 @@ CB.jefes.turno = function () {
 
   if (m === 'reflejo') {
     /* Hay que ELEGIR LOS DATOS correctos antes de operar. */
-    const a = CB.util.ent(e.rng, 5, 40), b = CB.util.ent(e.rng, 1, a);
+    const a = CB.util.ent(e.rng, Math.min(5, R.reflejoMax - 1), R.reflejoMax);
+    const b = CB.util.ent(e.rng, 1, a);
     const sobra = CB.util.ent(e.rng, 1, 9);
     enun.appendChild(CB.ui.crear('p', 'enunciado',
       'Cristalina refleja: ' + a + ', ' + b + ' y ' + sobra + '.'));
@@ -11408,8 +11947,8 @@ CB.jefes.turno = function () {
   }
 
   /* restaurar: la multiplicación como matriz a la que le falta una pieza */
-  const f = CB.util.elegir(e.rng, [2, 5, 10]);
-  const g = CB.util.ent(e.rng, 2, 10);
+  const f = CB.util.elegir(e.rng, R.tablas);
+  const g = CB.util.ent(e.rng, 2, R.matrizMax);
   enun.appendChild(CB.ui.crear('p', 'enunciado',
     'Brasita ha apagado la matriz de ' + f + ' × ' + g + '.'));
   enun.appendChild(CB.ui.matriz(f, g));
@@ -11418,13 +11957,14 @@ CB.jefes.turno = function () {
 };
 
 CB.jefes.prepararRamas = function (e, opc) {
-  const objetivo = CB.util.ent(e.rng, 10, 60);
+  const R = CB.jefes.rangos();
+  const objetivo = CB.util.ent(e.rng, Math.min(10, R.objetivoRamas - 5), R.objetivoRamas);
   let ramas = [], i, a, b;
   for (i = 0; i < 4; i++) {
     if (i === 0) { a = CB.util.ent(e.rng, 1, objetivo); b = objetivo - a; }
     else {
-      a = CB.util.ent(e.rng, 1, 60);
-      b = CB.util.ent(e.rng, 1, 40);
+      a = CB.util.ent(e.rng, 1, R.objetivoRamas);
+      b = CB.util.ent(e.rng, 1, R.sumandoRamas);
       if (a + b === objetivo) b += 1;
     }
     ramas.push({ a: a, b: b, valor: a + b });
@@ -11771,6 +12311,85 @@ CB.casa.pintar = function () {
       : 'Cromo por descubrir');
     cont.appendChild(c);
   });
+
+  CB.casa.pintarVitrina(perfil);
+};
+
+/* La VITRINA DE PREMIOS (3.0.0): lo ganado jugando, todo junto y en la casa
+   del minero. No inventa datos: lee lo que ya guarda el perfil — diplomas de
+   curso (cursosCompletados), guardianes vencidos (mundos[..].jefe), récords
+   por modo (mejorPuntuacion) y los logros de la versión 1. Los premios que
+   faltan se enseñan cerrados, como los cromos: una vitrina con huecos dice
+   «esto se puede ganar»; una vitrina que los oculta no dice nada. */
+CB.casa.premios = function (perfil) {
+  const lista = [];
+
+  CB.catalogo.cursosDisponibles().forEach(function (c) {
+    const tiene = (perfil.cursosCompletados || []).indexOf(c) !== -1;
+    lista.push({
+      icono: '📜', tiene: tiene,
+      nombre: 'Diploma de ' + c + '.º',
+      desc: tiene ? 'Todo el curso dominado.' : 'Domina todas las vetas de ' + c + '.º.'
+    });
+  });
+
+  CB.MUNDOS.forEach(function (m) {
+    const em = perfil.mundos[m.id];
+    const tiene = !!(em && em.jefe);
+    lista.push({
+      icono: m.jefeIcono, tiene: tiene,
+      nombre: tiene ? (m.jefe + ' vencido') : 'Guardián por vencer',
+      desc: tiene ? ('El guardián de ' + m.nombre + '.') : ''
+    });
+  });
+
+  CB.modos.ORDEN.forEach(function (modo) {
+    const v = perfil.mejorPuntuacion[modo] || 0;
+    lista.push({
+      icono: '🏆', tiene: v > 0,
+      nombre: 'Récord en ' + CB.modos.etiqueta(modo),
+      desc: v > 0 ? (v + ' puntos.') : ''
+    });
+  });
+
+  CB.logros.LISTA.filter(function (l) { return l.version === 1; }).forEach(function (l) {
+    const tiene = CB.logros.yaTiene(perfil, l.id);
+    lista.push({ icono: '⭐', tiene: tiene,
+                 nombre: tiene ? l.nombre : '???',
+                 desc: tiene ? l.desc : '' });
+  });
+
+  return lista;
+};
+
+CB.casa.pintarVitrina = function (perfil) {
+  const cont = document.getElementById('vitrina-premios');
+  if (!cont) return;
+  CB.ui.vaciar(cont);
+
+  const premios = CB.casa.premios(perfil);
+  const ganados = premios.filter(function (p) { return p.tiene; }).length;
+
+  const resumen = document.getElementById('vitrina-resumen');
+  if (resumen) {
+    resumen.textContent = ganados + ' de ' + premios.length + ' premios en la vitrina.';
+  }
+
+  premios.forEach(function (p) {
+    const c = CB.ui.crear('div', 'cromo' + (p.tiene ? '' : ' cromo--bloqueado'));
+    const icono = CB.ui.crear('div', 'criatura', p.tiene ? p.icono : '?');
+    icono.style.width = 'auto'; icono.style.height = '64px'; icono.style.fontSize = '40px';
+    c.appendChild(icono);
+    c.appendChild(CB.ui.crear('div', null, p.nombre));
+    if (p.tiene && p.desc) {
+      c.appendChild(CB.ui.crear('div', 'texto texto--menor', p.desc));
+    }
+    c.setAttribute('role', 'img');
+    c.setAttribute('aria-label', p.tiene
+      ? (p.nombre + (p.desc ? ': ' + p.desc : ''))
+      : 'Premio por ganar' + (p.desc ? ': ' + p.desc : ''));
+    cont.appendChild(c);
+  });
 };
 
 /* Diccionario de Bloques */
@@ -11944,22 +12563,36 @@ window.addEventListener('unhandledrejection', function (ev) {
   try { CB.pantallas.fallo(ev.reason || { message: 'promesa rechazada' }); } catch (e) { }
 });
 
-/* Calibración jugable: 4 ítems, sin cronómetro, sin luces, sin nota */
+/* Calibración jugable: 4 ítems POR CURSO, sin cronómetro, sin luces, sin nota.
+   El banco de 2.º es el original; cada curso nuevo trae el suyo con su fase de
+   contenido. ITEMS apunta al banco del perfil activo desde iniciar(). */
 CB.calibracion = {
-  ITEMS: [
-    { consigna: 'Toca el número más grande.', opciones: [34, 43], respuesta: 43,
-      destreza: 'valor_posicional' },
-    { consigna: '23 + 14', respuesta: 37, destreza: 'suma_sin_llevar', teclado: true },
-    { consigna: '47 − 12', respuesta: 35, destreza: 'resta_sin_llevar', teclado: true },
-    { consigna: '28 + 15', respuesta: 43, destreza: 'suma_llevada', teclado: true }
-  ],
+  BANCOS: {
+    1: [
+      { consigna: 'Toca el número más grande.', opciones: [7, 9], respuesta: 9,
+        destreza: 'numeracion' },
+      { consigna: '3 + 2', respuesta: 5, destreza: 'suma_sin_llevar', teclado: true },
+      { consigna: '8 − 3', respuesta: 5, destreza: 'resta_sin_llevar', teclado: true },
+      { consigna: '6 + 4', respuesta: 10, destreza: 'suma_sin_llevar', teclado: true }
+    ],
+    2: [
+      { consigna: 'Toca el número más grande.', opciones: [34, 43], respuesta: 43,
+        destreza: 'valor_posicional' },
+      { consigna: '23 + 14', respuesta: 37, destreza: 'suma_sin_llevar', teclado: true },
+      { consigna: '47 − 12', respuesta: 35, destreza: 'resta_sin_llevar', teclado: true },
+      { consigna: '28 + 15', respuesta: 43, destreza: 'suma_llevada', teclado: true }
+    ]
+  },
   indice: 0,
   aciertos: 0
 };
+CB.calibracion.ITEMS = CB.calibracion.BANCOS[2];
 
 CB.calibracion.iniciar = function () {
   CB.calibracion.indice = 0;
   CB.calibracion.aciertos = 0;
+  CB.calibracion.ITEMS =
+    CB.calibracion.BANCOS[CB.catalogo.cursoDe(CB.perfil)] || CB.calibracion.BANCOS[2];
   CB.pantallas.ir('p-calibracion');
   CB.calibracion.servir();
 };
@@ -12092,7 +12725,40 @@ CB.perfiles.pintar = function () {
   }
 };
 
+/* Paso previo a crear: «¿En qué curso está?». El curso se DECLARA una vez —
+   es un dato administrativo que quien crea el perfil sabe con certeza —, y
+   después solo el panel del adulto puede cambiarlo; el trimestre, en cambio,
+   se sigue DEDUCIENDO en la calibración (§7.2). Los cursos ofrecidos salen de
+   cursosDisponibles(): cuando una fase añada 3.º-6.º, aparecerán solos. */
 CB.perfiles.crear = function () {
+  const cont = document.getElementById('lista-perfiles');
+  const btnNuevo = document.getElementById('btn-nuevo-perfil');
+  if (!cont) { CB.perfiles.crearConCurso(2); return; }
+
+  CB.ui.vaciar(cont);
+  if (btnNuevo) btnNuevo.hidden = true;
+
+  const pregunta = CB.ui.crear('p', 'texto', '¿En qué curso de Primaria está?');
+  pregunta.id = 'pregunta-curso';
+  cont.appendChild(pregunta);
+
+  const fila = CB.ui.crear('div', 'fila fila--centro');
+  fila.setAttribute('role', 'group');
+  fila.setAttribute('aria-labelledby', 'pregunta-curso');
+  CB.catalogo.cursosDisponibles().forEach(function (c) {
+    fila.appendChild(CB.ui.boton(c + '.º', 'btn-bloque--primario', function () {
+      CB.perfiles.crearConCurso(c);
+    }));
+  });
+  cont.appendChild(fila);
+
+  cont.appendChild(CB.ui.boton('◀ Volver', '', function () {
+    CB.perfiles.pintar();
+  }));
+  CB.a11y.anunciar('¿En qué curso de Primaria está?');
+};
+
+CB.perfiles.crearConCurso = function (curso) {
   const idx = CB.almacen.indice();
   const hoy = CB.util.hoyISO();
   const semilla = CB.util.hash32(hoy + idx.length + (CB.almacen.bytesUsados() || 0));
@@ -12117,6 +12783,7 @@ CB.perfiles.crear = function () {
   }
 
   const perfil = CB.almacen.perfilNuevo(id, mote, avatar, hoy, previos);
+  perfil.curso = CB.util.clamp(curso || 2, 1, 6);
   CB.almacen.guardarPerfil(perfil);
   CB.almacen.fijarUltimoPerfil(id);
   CB.perfiles.activar(id);

@@ -2,7 +2,7 @@
 
 # Música — trazabilidad y decisiones
 
-> Cubomática 2.0.0
+> Cubomática 3.0.0
 
 ## 1. Origen de los ficheros
 

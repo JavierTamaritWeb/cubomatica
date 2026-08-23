@@ -225,3 +225,42 @@ CB.gen.dinero.E8equivalencia = function (rng, D) {
     diagnostico: false
   };
 };
+
+/* ——— Curso 1.º (3.0.0): E9…E10 ——— */
+
+/* E9 Contar monedas de 1 y 2 € hasta 10 € */
+CB.gen.dinero.E9 = function (rng, D) {
+  const n = CB.util.ent(rng, 2, (D === 1) ? 4 : 6);
+  const piezas = [];
+  let total = 0, i, v;
+  for (i = 0; i < n; i++) {
+    v = CB.util.elegir(rng, CB.gen.dinero.MONEDAS);
+    if (total + v > 10) break;
+    piezas.push(v); total += v;
+  }
+  if (!piezas.length) { piezas.push(1); total = 1; }
+  return {
+    formato: 'monedas',
+    consigna: '¿Cuántos euros hay en total?',
+    piezas: piezas,
+    respuesta: total,
+    expr: 'contarP' + piezas.join('_'),
+    diagnostico: true,
+    contexto: { soloMonedas: true }
+  };
+};
+
+/* E10 Pagar justo hasta 20 € */
+CB.gen.dinero.E10 = function (rng, D) {
+  const precio = CB.util.ent(rng, 2, (D === 1) ? 9 : 20);
+  return {
+    formato: 'monedas',
+    consigna: 'Paga justo ' + CB.gen.dinero.euros(precio) + '.',
+    modo: 'pagar',
+    objetivo: precio,
+    disponibles: CB.gen.dinero.MONEDAS.concat([5, 10]),
+    respuesta: precio,
+    expr: 'pagarP' + precio,
+    diagnostico: true
+  };
+};

@@ -85,7 +85,8 @@ CB.pruebas.suite('Modos: Fácil, Normal y Experto', function () {
     historial: [], destrezas: {}, niveles: {}
   };
   const mig = CB.almacen.migrar(v2);
-  t.igual(mig.version, 3, 'E120 · el perfil sale con la versión de esquema 3');
+  t.igual(mig.version, CB.almacen.VERSION_ESQUEMA,
+    'E120 · el perfil sale con la versión de esquema vigente (v4 desde 3.0.0)');
   t.igual(mig.ajustes.modoTiempo, 'normal', 'E120 · y con el modo renombrado');
   t.igual(mig.ajustes.sinLimiteTiempo, false,
     'E120 · y con el ajuste de accesibilidad declarado, no ausente');

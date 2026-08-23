@@ -454,8 +454,19 @@ CB.adulto.NOMBRE_SUBTIPO = {
   IGUALACION_6: 'Igualar · referente, quitar'
 };
 
-/* Ajustes pedagógicos (viven en perfil.ajustes, §15.2) */
+/* Ajustes pedagógicos (viven en perfil.ajustes, §15.2 — salvo los marcados
+   raiz:true, que leen y escriben la raíz del perfil: el curso no es una
+   preferencia, es la misma clase de dato que trimestreDeducido). */
 CB.adulto.AJUSTES = [
+  { k: 'curso', t: 'Curso de Primaria', tipo: 'opciones', raiz: true,
+    nota: 'Manda qué contenidos se sirven. La partida mezcla además en torno a ' +
+          'un 20 % de repaso de cursos anteriores. Al dominar todo el curso, ' +
+          'el juego lo sube solo y lo celebra.',
+    ops: function () {
+      return CB.catalogo.cursosDisponibles().map(function (c) {
+        return [c, c + '.º'];
+      });
+    } },
   { k: 'modoTiempo', t: 'Modo de juego', tipo: 'opciones',
     /* Los rótulos son de CB.modos.TABLA: estaban escritos a mano aquí y en
        99-arranque.js a la vez, y renombrar uno dejaba el otro mintiendo. */
@@ -483,6 +494,12 @@ CB.adulto.cajaAjustes = function (perfil) {
   const caja = CB.ui.crear('div', 'adulto__caja');
   caja.appendChild(CB.ui.crear('h2', null, 'Ajustes'));
 
+  /* raiz:true → el dato vive en perfil[k], no en perfil.ajustes[k] (E131). */
+  function lee(a) { return a.raiz ? perfil[a.k] : perfil.ajustes[a.k]; }
+  function pon(a, v) {
+    if (a.raiz) perfil[a.k] = v; else perfil.ajustes[a.k] = v;
+  }
+
   CB.adulto.AJUSTES.forEach(function (a) {
     const fila = CB.ui.crear('div', 'metrica');
     const izq = CB.ui.crear('span');
@@ -493,17 +510,17 @@ CB.adulto.cajaAjustes = function (perfil) {
     fila.appendChild(izq);
 
     if (a.tipo === 'bool') {
-      const b = CB.ui.boton(perfil.ajustes[a.k] ? 'Sí' : 'No', 'btn-adulto', function () {
-        perfil.ajustes[a.k] = !perfil.ajustes[a.k];
-        b.textContent = perfil.ajustes[a.k] ? 'Sí' : 'No';
-        b.setAttribute('aria-pressed', perfil.ajustes[a.k] ? 'true' : 'false');
+      const b = CB.ui.boton(lee(a) ? 'Sí' : 'No', 'btn-adulto', function () {
+        pon(a, !lee(a));
+        b.textContent = lee(a) ? 'Sí' : 'No';
+        b.setAttribute('aria-pressed', lee(a) ? 'true' : 'false');
         CB.a11y.aplicarAjustes(perfil.ajustes, CB.almacen.ajustesDispositivo());
         CB.almacen.guardarPerfil(perfil);
       });
       b.className = 'btn-adulto';
       b.id = 'adulto-ajuste-' + a.k + '-control';
       b.setAttribute('aria-labelledby', rotulo.id + ' ' + b.id);
-      b.setAttribute('aria-pressed', perfil.ajustes[a.k] ? 'true' : 'false');
+      b.setAttribute('aria-pressed', lee(a) ? 'true' : 'false');
       fila.appendChild(b);
     } else {
       const sel = CB.ui.crear('span');
@@ -517,10 +534,10 @@ CB.adulto.cajaAjustes = function (perfil) {
         b2.type = 'button';
         b2.id = 'adulto-ajuste-' + a.k + '-opcion-' + indice;
         b2.setAttribute('aria-labelledby', rotulo.id + ' ' + b2.id);
-        b2.setAttribute('aria-pressed', perfil.ajustes[a.k] === op[0] ? 'true' : 'false');
-        if (perfil.ajustes[a.k] === op[0]) b2.style.fontWeight = 'bold';
+        b2.setAttribute('aria-pressed', lee(a) === op[0] ? 'true' : 'false');
+        if (lee(a) === op[0]) b2.style.fontWeight = 'bold';
         b2.addEventListener('click', function () {
-          perfil.ajustes[a.k] = op[0];
+          pon(a, op[0]);
           CB.almacen.guardarPerfil(perfil);
           CB.adulto.pintar();
         });

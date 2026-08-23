@@ -156,3 +156,34 @@ CB.gen.restas.R14 = function (rng, D) {
   }
   return itemResta({ a: 504, b: 267, r: 237 });
 };
+
+/* ——— Curso 1.º (3.0.0): R15…R18 ——— */
+
+/* R15 Quitar 1, 2 y 3 */
+CB.gen.restas.R15 = function (rng, D) {
+  const a = CB.util.ent(rng, (D === 1) ? 3 : 4, 10);
+  const b = CB.util.ent(rng, 1, Math.min(3, a));
+  return itemResta({ a: a, b: b, r: a - b });
+};
+
+/* R16 Restar sin pasar de 20, sin préstamo por construcción */
+CB.gen.restas.R16 = function (rng, D) {
+  const a = CB.util.ent(rng, 5, 20);
+  const b = CB.util.ent(rng, 0, a % 10);
+  return itemResta({ a: a, b: b, r: a - b });
+};
+
+/* R17 Restar decenas enteras hasta 50 */
+CB.gen.restas.R17 = function (rng, D) {
+  const a = CB.util.ent(rng, 2, 5) * 10;
+  const b = CB.util.ent(rng, 1, a / 10 - 1) * 10;
+  const it = itemResta({ a: a, b: b, r: a - b });
+  it.formato = 'opciones4';
+  return it;
+};
+
+/* R18 Restas de dos cifras sin llevar: mezcla DU−U y DU−DU */
+CB.gen.restas.R18 = function (rng, D) {
+  const cifrasB = (rng() < 0.5) ? 1 : 2;
+  return itemResta(CB.gen.restas.construir(rng, [false, false], 2, cifrasB, 99));
+};

@@ -6,6 +6,23 @@ CB.jefes = CB.jefes || {};
 CB.jefes.TOPE_TURNOS = 20;
 CB.jefes.BLOQUES = 8;
 
+/* Rangos de cada mecánica POR CURSO (3.0.0). El jefe no usa el catálogo ni el
+   adaptativo: escribe su aritmética a mano, y sin esta tabla un perfil de 1.º
+   pelearía con los números de 2.º. La fila de 2.º son los literales que
+   siempre tuvieron las cuatro mecánicas. La temática por curso (división en
+   los jefes de 4.º, etc.) queda pospuesta y anotada en docs/decisiones.md. */
+CB.jefes.RANGO_CURSO = {
+  1: { objetivoRamas: 15, sumandoRamas: 12, nenufar: 12, saltos: [1, 2],
+       reflejoMax: 10, tablas: [2], matrizMax: 5 },
+  2: { objetivoRamas: 60, sumandoRamas: 40, nenufar: 40, saltos: [2, 5, 10],
+       reflejoMax: 40, tablas: [2, 5, 10], matrizMax: 10 }
+};
+
+CB.jefes.rangos = function () {
+  const c = CB.catalogo.cursoDe(CB.perfil);
+  return CB.jefes.RANGO_CURSO[c] || CB.jefes.RANGO_CURSO[2];
+};
+
 CB.jefes.DEFINICION = {
   Tronquete: {
     mundo: 'M1', icono: '🌳',
@@ -101,10 +118,12 @@ CB.jefes.turno = function () {
     return;
   }
 
+  const R = CB.jefes.rangos();
+
   if (m === 'nenufares') {
     /* Hay que ANTICIPAR dónde caerá: es una serie, no una operación suelta. */
-    const salto = CB.util.elegir(e.rng, [2, 5, 10]);
-    const inicio = CB.util.ent(e.rng, salto, 40);
+    const salto = CB.util.elegir(e.rng, R.saltos);
+    const inicio = CB.util.ent(e.rng, salto, R.nenufar);
     const serie = [inicio, inicio + salto, inicio + salto * 2];
     const destino = inicio + salto * 3;
     enun.appendChild(CB.ui.crear('p', 'enunciado',
@@ -115,7 +134,8 @@ CB.jefes.turno = function () {
 
   if (m === 'reflejo') {
     /* Hay que ELEGIR LOS DATOS correctos antes de operar. */
-    const a = CB.util.ent(e.rng, 5, 40), b = CB.util.ent(e.rng, 1, a);
+    const a = CB.util.ent(e.rng, Math.min(5, R.reflejoMax - 1), R.reflejoMax);
+    const b = CB.util.ent(e.rng, 1, a);
     const sobra = CB.util.ent(e.rng, 1, 9);
     enun.appendChild(CB.ui.crear('p', 'enunciado',
       'Cristalina refleja: ' + a + ', ' + b + ' y ' + sobra + '.'));
@@ -126,8 +146,8 @@ CB.jefes.turno = function () {
   }
 
   /* restaurar: la multiplicación como matriz a la que le falta una pieza */
-  const f = CB.util.elegir(e.rng, [2, 5, 10]);
-  const g = CB.util.ent(e.rng, 2, 10);
+  const f = CB.util.elegir(e.rng, R.tablas);
+  const g = CB.util.ent(e.rng, 2, R.matrizMax);
   enun.appendChild(CB.ui.crear('p', 'enunciado',
     'Brasita ha apagado la matriz de ' + f + ' × ' + g + '.'));
   enun.appendChild(CB.ui.matriz(f, g));
@@ -136,13 +156,14 @@ CB.jefes.turno = function () {
 };
 
 CB.jefes.prepararRamas = function (e, opc) {
-  const objetivo = CB.util.ent(e.rng, 10, 60);
+  const R = CB.jefes.rangos();
+  const objetivo = CB.util.ent(e.rng, Math.min(10, R.objetivoRamas - 5), R.objetivoRamas);
   let ramas = [], i, a, b;
   for (i = 0; i < 4; i++) {
     if (i === 0) { a = CB.util.ent(e.rng, 1, objetivo); b = objetivo - a; }
     else {
-      a = CB.util.ent(e.rng, 1, 60);
-      b = CB.util.ent(e.rng, 1, 40);
+      a = CB.util.ent(e.rng, 1, R.objetivoRamas);
+      b = CB.util.ent(e.rng, 1, R.sumandoRamas);
       if (a + b === objetivo) b += 1;
     }
     ramas.push({ a: a, b: b, valor: a + b });

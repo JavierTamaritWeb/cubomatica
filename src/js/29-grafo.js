@@ -18,6 +18,12 @@ CB.grafo.estado = function (nivelId, perfil) {
   const pre = nivel.prerrequisitos || [];
   let i;
 
+  /* El contenido de un curso POSTERIOR al del perfil no existe todavía para
+     ese niño: bloqueado aquí, y con ello fuera de desbloqueados(), de la
+     frontera y de la cantera de una sola vez. */
+  const cursoPerfil = CB.catalogo.cursoDe(perfil);
+  if (nivel.curso > cursoPerfil) return 'bloqueado';
+
   /* Los niveles de ampliación siguen sus prerrequisitos, pero además exigen que
      el adulto haya activado su flag. Nunca bloquean nada nuclear (CU5). */
   if (nivel.ampliacion && nivel.flagAdulto) {
@@ -25,10 +31,29 @@ CB.grafo.estado = function (nivelId, perfil) {
     if (!aj[nivel.flagAdulto]) return 'bloqueado';
   }
 
+  /* Un prerrequisito de un CURSO ANTERIOR al del perfil se da por satisfecho:
+     quien entra en 4.º no ha «superado» nada de 3.º dentro del juego, y sin
+     esta regla no desbloquearía ni un nivel. Las lagunas reales las cubren la
+     calibración, la escalera y el 20 % de repaso de cursos anteriores. */
   for (i = 0; i < pre.length; i++) {
+    const nivelPre = CB.catalogo.get(pre[i]);
+    if (nivelPre && nivelPre.curso < cursoPerfil) continue;
     if (!CB.grafo.superado(pre[i], perfil)) return 'bloqueado';
   }
   return 'abierta';
+};
+
+/* Un curso está DOMINADO cuando todos sus niveles nucleares están superados
+   con la definición de siempre (n≥3 y ≥60 %). Es lo que dispara la promoción
+   al curso siguiente, con su felicitación, al final de la partida (E129). */
+CB.grafo.cursoDominado = function (perfil, curso) {
+  const nucleares = CB.catalogo.nuclearesDeCurso(curso);
+  if (!nucleares.length) return false;
+  let i;
+  for (i = 0; i < nucleares.length; i++) {
+    if (!CB.grafo.superado(nucleares[i].id, perfil)) return false;
+  }
+  return true;
 };
 
 CB.grafo.desbloqueados = function (perfil) {

@@ -30,6 +30,37 @@ CB.partida.rtMedianaDe = function (nivel, perfil) {
 /* Sin él, en la primera partida de la vida del niño solo hay cuatro niveles abiertos (los que no tienen prerrequisitos) y el relleno por presupuesto de tiempo produce un guion de 20 ítems con 12 del mismo nivel: monótono y, de hecho, la… */
 CB.partida.MAX_REPETICIONES = 3;
 
+/* Un nivel de curso anterior para la cuota de repaso del guion, por
+   preferencia: destreza vencida por la curva de olvido > nivel aún no
+   superado > azar. `cabe` viene del guion: respeta su tope de repeticiones. */
+CB.partida.elegirRepasoInferior = function (perfil, bolsaInferior, cabe, rng) {
+  const abiertos = bolsaInferior.filter(function (id) {
+    const n = CB.catalogo.get(id);
+    return n && !n.ampliacion && cabe(id) &&
+           CB.grafo.estado(id, perfil) === 'abierta';
+  });
+  if (!abiertos.length) return null;
+  const vencidas = CB.memoria.vencidosHoy(perfil, CB.util.hoyISO());
+  let lista = abiertos.filter(function (id) {
+    return vencidas.indexOf(CB.catalogo.get(id).destreza) !== -1;
+  });
+  if (!lista.length) {
+    lista = abiertos.filter(function (id) { return !CB.grafo.superado(id, perfil); });
+  }
+  if (!lista.length) lista = abiertos;
+  return CB.catalogo.get(CB.util.elegir(rng, lista));
+};
+
+/* El techo numérico que la partida pasa al generador: el del CURSO del perfil
+   y su trimestre deducido. Un ítem de repaso de 1.º dentro de una partida de
+   2.º sigue siendo de 1.º porque su generador manda; un problema de 2.º nunca
+   debe encogerse por culpa de la fila de al lado. */
+CB.partida.techoDe = function (perfil) {
+  const fila = CB.CURRICULO.techoCurso[CB.catalogo.cursoDe(perfil)] ||
+               CB.CURRICULO.techoCurso[2];
+  return fila[perfil.trimestreDeducido || 1] || 99;
+};
+
 CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   const guion = [];
   let segundos = 0, intentos = 0;
@@ -37,26 +68,63 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   const destrezas = CB.util.barajar(CB.adaptativo.SLUGS, rng);
   const nivelesMundo = mundo ? mundo.niveles : CB.catalogo.ids();
 
+  /* La mezcla 80/20 (3.0.0): el 80 % del guion es del curso del perfil y en
+     torno al 20 % de cursos ANTERIORES — repaso que da confianza. El barajado
+     final de siempre reparte los dos montones: nunca «las fáciles primero». */
+  const cursoActivo = CB.catalogo.cursoDe(perfil);
+  function cursoDeNivel(id) {
+    const n = CB.catalogo.get(id);
+    return n ? n.curso : cursoActivo;
+  }
+  const bolsaCurso = nivelesMundo.filter(function (id) {
+    return cursoDeNivel(id) === cursoActivo;
+  });
+  const bolsaInferior = nivelesMundo.filter(function (id) {
+    return cursoDeNivel(id) < cursoActivo;
+  });
+  let deInferior = 0;
+
   function cabe(id) {
     return (veces[id] || 0) < CB.partida.MAX_REPETICIONES;
   }
   function anotar(id) {
     veces[id] = (veces[id] || 0) + 1;
     guion.push(id);
+    if (cursoDeNivel(id) < cursoActivo) deInferior++;
     segundos += CB.partida.rtMedianaDe(CB.catalogo.get(id), perfil);
   }
 
   function candidatoDe(slug) {
     const banda = CB.adaptativo.elegirBeta(slug, perfil);
-    let lista = CB.catalogo.candidatos(slug, banda, perfil).filter(function (n) {
-      return nivelesMundo.indexOf(n.id) !== -1 && cabe(n.id);
+    const todos = CB.catalogo.candidatos(slug, banda, perfil);
+    /* Tres anillos: el curso activo dentro del mundo, el mundo entero, el
+       catálogo. Los anillos de reserva solo admiten cursos anteriores mientras
+       la cuota del 20 % lo pida: sin este cerrojo, un perfil de 2.º recién
+       creado —con casi todo 2.º aún bloqueado y todo 1.º abierto de golpe—
+       recibía un guion con el 80 % de repaso, la proporción EXACTAMENTE al
+       revés de la pedida. */
+    function admisible(n) {
+      return cabe(n.id) && (n.curso === cursoActivo || cuotaInferiorPendiente());
+    }
+    let lista = todos.filter(function (n) {
+      return bolsaCurso.indexOf(n.id) !== -1 && cabe(n.id);
     });
     if (!lista.length) {
-      lista = CB.catalogo.candidatos(slug, banda, perfil).filter(function (n) {
-        return cabe(n.id);
+      lista = todos.filter(function (n) {
+        return nivelesMundo.indexOf(n.id) !== -1 && admisible(n);
       });
     }
+    if (!lista.length) lista = todos.filter(admisible);
     return CB.util.elegir(rng, lista);
+  }
+
+  function candidatoInferior() {
+    return CB.partida.elegirRepasoInferior(perfil, bolsaInferior, cabe, rng);
+  }
+
+  function cuotaInferiorPendiente() {
+    return cursoActivo > 1 && bolsaInferior.length > 0 &&
+           deInferior < Math.floor(0.2 * (guion.length + 1));
   }
 
   /* 1) Vencidos por la curva de olvido primero: la razón honesta de volver. */
@@ -89,19 +157,29 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
       });
       if (!deLaLetra.length) return;
       if (guion.some(function (id) { return CB.catalogo.get(id).letra === letra; })) return;
-      const elegido = CB.util.elegir(rng, deLaLetra);
+      /* Con nivel del curso activo disponible, la cuota por letra no se paga
+         con repaso: el repaso tiene su propia cuota. */
+      const delCurso = deLaLetra.filter(function (id) {
+        return CB.catalogo.get(id).curso === cursoActivo;
+      });
+      const elegido = CB.util.elegir(rng, delCurso.length ? delCurso : deLaLetra);
       if (elegido && guion.length < CB.partida.MAX_ITEMS) anotar(elegido);
     })(letras[i]);
   }
 
   /* 4) Se rellena hasta agotar el presupuesto de tiempo, respetando el tope de
         repeticiones. Si se agotan los niveles abiertos, se para: más vale una
-        partida corta que veinte veces la misma pregunta. */
+        partida corta que veinte veces la misma pregunta. La cuota del 20 % se
+        cobra aquí, ítem a ítem, ANTES de tirar del curso activo. */
   intentos = 0;
   let seguidosSinSuerte = 0;
   while (segundos < CB.partida.OBJETIVO_S && guion.length < CB.partida.MAX_ITEMS &&
          intentos < 200 && seguidosSinSuerte < destrezas.length * 2) {
     intentos++;
+    if (cuotaInferiorPendiente()) {
+      n = candidatoInferior();
+      if (n) { anotar(n.id); seguidosSinSuerte = 0; continue; }
+    }
     const slug = destrezas[intentos % destrezas.length];
     n = candidatoDe(slug);
     if (!n) { seguidosSinSuerte++; continue; }
@@ -118,7 +196,17 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
     if (n) { anotar(n.id); continue; }
     const abiertos = CB.grafo.desbloqueados(perfil);
     if (!abiertos.length) break;
-    guion.push(CB.util.elegir(rng, abiertos));
+    const abiertosDelCurso = abiertos.filter(function (id) {
+      return CB.catalogo.get(id).curso === cursoActivo;
+    });
+    guion.push(CB.util.elegir(rng, abiertosDelCurso.length ? abiertosDelCurso : abiertos));
+  }
+
+  /* Garantía de la mezcla: con curso > 1 y una partida entera, al menos UN
+     ítem de repaso de cursos anteriores, aunque el relleno no lo haya pedido. */
+  if (cursoActivo > 1 && deInferior === 0 && guion.length >= CB.partida.MIN_ITEMS) {
+    n = candidatoInferior();
+    if (n) anotar(n.id);
   }
 
   return CB.util.barajar(guion, rng).slice(0, CB.partida.MAX_ITEMS);
@@ -270,7 +358,7 @@ CB.partida.servirItem = function () {
     const rngItem = CB.util.mulberry32(e.semilla + e.indice * 7919 + k * 104729);
     item = nivel.generar(rngItem, estadoNivel.D || 2, {
       ajustes: perfil.ajustes,
-      techo: CB.CURRICULO.techoTrimestre[perfil.trimestreDeducido || 1] || 99,
+      techo: CB.partida.techoDe(perfil),
       bolsas: perfil.bolsasProblemas,
       datoSobrante: nivel.datoSobrante &&
                     (perfil.trimestreDeducido === 3) &&
@@ -1153,12 +1241,41 @@ CB.partida.finalizar = function (motivo) {
       mundoNuevo = m;
     }
   });
+
+  /* PROMOCIÓN DE CURSO (3.0.0, E129). Con todos los nucleares del curso
+     superados, el perfil sube de curso él solo y la felicitación se lleva el
+     cartel grande. cursosCompletados es el cerrojo: una vez por curso, aunque
+     el adulto baje y vuelva a subir. Si el curso siguiente aún no tiene
+     contenido (fases pendientes), se celebra la maestría y no se sube a un
+     curso vacío. */
+  const cursoNuevo = CB.partida.comprobarPromocion(perfil);
+
   perfil.partidaEnCurso = null;
   CB.almacen.podar(perfil, {});
   CB.almacen.guardarPerfil(perfil);
 
-  CB.partida.pintarFin(motivo, bono, { logros: logrosFin, mundoNuevo: mundoNuevo, esRecord: esRecord });
+  CB.partida.pintarFin(motivo, bono, { logros: logrosFin, mundoNuevo: mundoNuevo,
+                                       esRecord: esRecord, cursoNuevo: cursoNuevo });
   CB.partida.estado = null;
+};
+
+/* Devuelve el curso al que se ha promocionado, 'maestria' si se ha dominado el
+   último curso disponible, o null si no ha pasado nada. Muta el perfil pero NO
+   guarda: se guarda en finalizar, junto con todo lo demás. */
+CB.partida.comprobarPromocion = function (perfil) {
+  const curso = CB.catalogo.cursoDe(perfil);
+  if (!perfil.cursosCompletados) perfil.cursosCompletados = [];
+  if (perfil.cursosCompletados.indexOf(curso) !== -1) return null;
+  if (!CB.grafo.cursoDominado(perfil, curso)) return null;
+
+  perfil.cursosCompletados.push(curso);
+  const disponibles = CB.catalogo.cursosDisponibles();
+  const siguiente = curso + 1;
+  if (curso < 6 && disponibles.indexOf(siguiente) !== -1) {
+    perfil.curso = siguiente;
+    return siguiente;
+  }
+  return 'maestria';
 };
 
 CB.partida.desbloquearMundos = function () {
@@ -1238,6 +1355,14 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
       dijo.push('Tu mejor expedición');
     }
 
+    if (hitos.cursoNuevo) {
+      const frase = (hitos.cursoNuevo === 'maestria')
+        ? '¡Has dominado todo el contenido de tu curso!'
+        : '¡Curso completado! Pasas a ' + hitos.cursoNuevo + '.º de Primaria.';
+      lista.appendChild(CB.ui.crear('p', null, frase));
+      dijo.push(frase);
+    }
+
     caja.hidden = !dijo.length;
   }
 
@@ -1260,7 +1385,14 @@ CB.partida.pintarFin = function (motivo, bono, hitos) {
      existirían para un lector de pantalla. Una sola cadena: dos anuncios en el
      mismo turno se tapan. */
   if (dijo.length) CB.a11y.anunciar(dijo.join('. ') + '.');
-  if (hitos.mundoNuevo) CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
+  /* Una celebración a la vez, y la promoción de curso gana a todas: es el
+     momento más raro del juego — como mucho cinco veces en la vida de un
+     perfil — y el espectáculo es inversamente proporcional a la frecuencia. */
+  if (hitos.cursoNuevo === 'maestria') {
+    CB.ui.festejo.mostrar('logro', '¡Curso dominado!');
+  } else if (hitos.cursoNuevo) {
+    CB.ui.festejo.mostrar('logro', '¡Pasas a ' + hitos.cursoNuevo + '.º!');
+  } else if (hitos.mundoNuevo) CB.ui.festejo.mostrar('jefe', '¡Paso abierto!');
   else if (hitos.esRecord) CB.ui.festejo.mostrar('logro', '¡Tu récord!');
 
   /* 3.º Momento socioafectivo: 1,5 s DESPUÉS, y solo si la partida duró ≥3 min.

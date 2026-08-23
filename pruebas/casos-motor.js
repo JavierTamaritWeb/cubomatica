@@ -12,13 +12,33 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   t.ok(amp.length === 0, 'CU5 · ninguna ampliación es prerrequisito de un nivel nuclear',
        amp.join(' | '));
 
-  /* candidatos() NUNCA devuelve vacío, ni con el perfil recién creado */
+  /* candidatos() NUNCA devuelve vacío, ni con el perfil recién creado — y por
+     CURSO: un perfil nuevo de 1.º debe llenar todas las destrezas que su curso
+     declara, no las 13 (multiplicación y vocabulario no existen en 1.º). */
   const perfil = CB.pruebas.perfilNuevo();
   const vacios = CB.adaptativo.SLUGS.filter(function (s) {
     return CB.catalogo.candidatos(s, CB.adaptativo.elegirBeta(s, perfil), perfil).length === 0;
   });
   t.ok(vacios.length === 0, 'candidatos() nunca devuelve [] para ninguna de las 13 destrezas',
        vacios.join(', '));
+
+  const perfil1 = CB.pruebas.perfilNuevo();
+  perfil1.curso = 1;
+  const slugs1 = CB.catalogo.slugsDeCurso(1);
+  t.ok(slugs1.length >= 4, '1.º declara al menos 4 destrezas', slugs1.join(', '));
+  const vacios1 = slugs1.filter(function (s) {
+    return CB.catalogo.candidatos(s, CB.adaptativo.elegirBeta(s, perfil1), perfil1).length === 0;
+  });
+  t.ok(vacios1.length === 0,
+    'candidatos() tampoco devuelve [] para un perfil nuevo de 1.º', vacios1.join(', '));
+  const coladas = [];
+  slugs1.forEach(function (s) {
+    CB.catalogo.candidatos(s, CB.adaptativo.elegirBeta(s, perfil1), perfil1)
+      .forEach(function (n) { if (n.curso > 1) coladas.push(n.id); });
+  });
+  t.ok(coladas.length === 0,
+    'a un perfil de 1.º no se le cuela ningún nivel de un curso superior',
+    coladas.join(', '));
 
   /* La regla de las luces (§12.1) */
   const est = CB.vidas.nuevoEstado(0);
@@ -248,7 +268,12 @@ CB.pruebas.suite('Motor: fechas, memoria, cuota y almacenamiento', function () {
     diario: { diasJugados: ['2026-07-20'] }, respuestas: []
   };
   const mig = CB.almacen.migrar(JSON.parse(JSON.stringify(v1)));
-  t.igual(mig.version, 3, 'migrar lleva el perfil a la versión de esquema vigente');
+  t.igual(mig.version, 4, 'migrar lleva el perfil a la versión de esquema vigente');
+  /* v4: el curso llega en 3.0.0 y todo perfil anterior es de 2.º por definición */
+  t.igual(mig.curso, 2, 'la migración v4 estampa curso 2 a los perfiles antiguos');
+  t.ok(Object.prototype.toString.call(mig.cursosCompletados) === '[object Array]' &&
+       mig.cursosCompletados.length === 0,
+    'la migración v4 añade cursosCompletados vacío');
   t.igual(mig.gemas, 1240, 'la migración NO pierde ni una gema');
   t.igual(Object.keys(mig.logros).length, 3, 'la migración NO pierde ni un logro');
   t.igual(mig.cromos.length, 2, 'la migración NO pierde ni un cromo');

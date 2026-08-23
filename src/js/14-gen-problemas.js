@@ -662,7 +662,10 @@ CB.gen.problemas.SUBTIPO_DE_NIVEL = {
   P5: 'COMPARACION_1', P6: 'COMPARACION_2', P7: 'CAMBIO_3', P8: 'CAMBIO_4',
   P9: 'COMPARACION_3', P10: 'COMPARACION_4', P11: 'IGUALACION_1', P12: 'IGUALACION_2',
   P13: 'CAMBIO_5', P14: 'CAMBIO_6', P15: 'COMPARACION_5', P16: 'COMPARACION_6',
-  P17: 'IGUALACION_3', P18: 'IGUALACION_4', P19: 'IGUALACION_5', P20: 'IGUALACION_6'
+  P17: 'IGUALACION_3', P18: 'IGUALACION_4', P19: 'IGUALACION_5', P20: 'IGUALACION_6',
+  /* Curso 1.º (3.0.0): las mismas cuatro estructuras nucleares. El curso no
+     cambia la plantilla, cambia el techo numérico que la partida pasa en ctx. */
+  P21: 'CAMBIO_1', P22: 'CAMBIO_2', P23: 'COMBINACION_1', P24: 'COMBINACION_2'
 };
 
 /* Los generadores P1..P20 que consume el catálogo. */

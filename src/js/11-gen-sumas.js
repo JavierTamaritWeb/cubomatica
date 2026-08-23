@@ -206,3 +206,45 @@ CB.gen.sumas.S16 = function (rng, D) {
     llevadas: CB.gen.sumas.llevadas(a + b, c) + CB.gen.sumas.llevadas(a, b)
   };
 };
+
+/* ——— Curso 1.º (3.0.0): S17…S21 ——— */
+
+/* S17 Sumar 1, 2 y 3 */
+CB.gen.sumas.S17 = function (rng, D) {
+  const a = CB.util.ent(rng, 0, (D === 1) ? 5 : 10);
+  const b = CB.util.ent(rng, 1, 3);
+  return itemSuma({ a: a, b: b, r: a + b });
+};
+
+/* S18 Sumar sin pasar de 20, sin llevada por construcción */
+CB.gen.sumas.S18 = function (rng, D) {
+  const a = CB.util.ent(rng, 0, (D === 1) ? 10 : 19);
+  const b = CB.util.ent(rng, 0, Math.min(9 - (a % 10), 20 - a));
+  return itemSuma({ a: a, b: b, r: a + b });
+};
+
+/* S19 Sumar decenas enteras hasta 50 */
+CB.gen.sumas.S19 = function (rng, D) {
+  const a = CB.util.ent(rng, 1, (D === 1) ? 2 : 4) * 10;
+  const b = CB.util.ent(rng, 1, Math.max(1, (50 - a) / 10)) * 10;
+  const it = itemSuma({ a: a, b: b, r: a + b });
+  it.formato = 'opciones4';
+  return it;
+};
+
+/* S20 Sumas de dos cifras sin llevar: mezcla DU+U y DU+DU */
+CB.gen.sumas.S20 = function (rng, D) {
+  const cifrasB = (rng() < 0.5) ? 1 : 2;
+  return itemSuma(CB.gen.sumas.intentar(rng, [false, false], 2, cifrasB, 99));
+};
+
+/* S21 Pasar de 10: la primera llevada (a + b entre 11 y 18) */
+CB.gen.sumas.S21 = function (rng, D) {
+  let a, b, k = 0;
+  do {
+    k++;
+    a = CB.util.ent(rng, 2, 9); b = CB.util.ent(rng, 2, 9);
+  } while (a + b < 11 && k < 40);
+  if (a + b < 11) { a = 8; b = 5; }
+  return itemSuma({ a: a, b: b, r: a + b });
+};

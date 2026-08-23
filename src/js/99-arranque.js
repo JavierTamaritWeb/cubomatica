@@ -12,22 +12,36 @@ window.addEventListener('unhandledrejection', function (ev) {
   try { CB.pantallas.fallo(ev.reason || { message: 'promesa rechazada' }); } catch (e) { }
 });
 
-/* Calibración jugable: 4 ítems, sin cronómetro, sin luces, sin nota */
+/* Calibración jugable: 4 ítems POR CURSO, sin cronómetro, sin luces, sin nota.
+   El banco de 2.º es el original; cada curso nuevo trae el suyo con su fase de
+   contenido. ITEMS apunta al banco del perfil activo desde iniciar(). */
 CB.calibracion = {
-  ITEMS: [
-    { consigna: 'Toca el número más grande.', opciones: [34, 43], respuesta: 43,
-      destreza: 'valor_posicional' },
-    { consigna: '23 + 14', respuesta: 37, destreza: 'suma_sin_llevar', teclado: true },
-    { consigna: '47 − 12', respuesta: 35, destreza: 'resta_sin_llevar', teclado: true },
-    { consigna: '28 + 15', respuesta: 43, destreza: 'suma_llevada', teclado: true }
-  ],
+  BANCOS: {
+    1: [
+      { consigna: 'Toca el número más grande.', opciones: [7, 9], respuesta: 9,
+        destreza: 'numeracion' },
+      { consigna: '3 + 2', respuesta: 5, destreza: 'suma_sin_llevar', teclado: true },
+      { consigna: '8 − 3', respuesta: 5, destreza: 'resta_sin_llevar', teclado: true },
+      { consigna: '6 + 4', respuesta: 10, destreza: 'suma_sin_llevar', teclado: true }
+    ],
+    2: [
+      { consigna: 'Toca el número más grande.', opciones: [34, 43], respuesta: 43,
+        destreza: 'valor_posicional' },
+      { consigna: '23 + 14', respuesta: 37, destreza: 'suma_sin_llevar', teclado: true },
+      { consigna: '47 − 12', respuesta: 35, destreza: 'resta_sin_llevar', teclado: true },
+      { consigna: '28 + 15', respuesta: 43, destreza: 'suma_llevada', teclado: true }
+    ]
+  },
   indice: 0,
   aciertos: 0
 };
+CB.calibracion.ITEMS = CB.calibracion.BANCOS[2];
 
 CB.calibracion.iniciar = function () {
   CB.calibracion.indice = 0;
   CB.calibracion.aciertos = 0;
+  CB.calibracion.ITEMS =
+    CB.calibracion.BANCOS[CB.catalogo.cursoDe(CB.perfil)] || CB.calibracion.BANCOS[2];
   CB.pantallas.ir('p-calibracion');
   CB.calibracion.servir();
 };
@@ -160,7 +174,40 @@ CB.perfiles.pintar = function () {
   }
 };
 
+/* Paso previo a crear: «¿En qué curso está?». El curso se DECLARA una vez —
+   es un dato administrativo que quien crea el perfil sabe con certeza —, y
+   después solo el panel del adulto puede cambiarlo; el trimestre, en cambio,
+   se sigue DEDUCIENDO en la calibración (§7.2). Los cursos ofrecidos salen de
+   cursosDisponibles(): cuando una fase añada 3.º-6.º, aparecerán solos. */
 CB.perfiles.crear = function () {
+  const cont = document.getElementById('lista-perfiles');
+  const btnNuevo = document.getElementById('btn-nuevo-perfil');
+  if (!cont) { CB.perfiles.crearConCurso(2); return; }
+
+  CB.ui.vaciar(cont);
+  if (btnNuevo) btnNuevo.hidden = true;
+
+  const pregunta = CB.ui.crear('p', 'texto', '¿En qué curso de Primaria está?');
+  pregunta.id = 'pregunta-curso';
+  cont.appendChild(pregunta);
+
+  const fila = CB.ui.crear('div', 'fila fila--centro');
+  fila.setAttribute('role', 'group');
+  fila.setAttribute('aria-labelledby', 'pregunta-curso');
+  CB.catalogo.cursosDisponibles().forEach(function (c) {
+    fila.appendChild(CB.ui.boton(c + '.º', 'btn-bloque--primario', function () {
+      CB.perfiles.crearConCurso(c);
+    }));
+  });
+  cont.appendChild(fila);
+
+  cont.appendChild(CB.ui.boton('◀ Volver', '', function () {
+    CB.perfiles.pintar();
+  }));
+  CB.a11y.anunciar('¿En qué curso de Primaria está?');
+};
+
+CB.perfiles.crearConCurso = function (curso) {
   const idx = CB.almacen.indice();
   const hoy = CB.util.hoyISO();
   const semilla = CB.util.hash32(hoy + idx.length + (CB.almacen.bytesUsados() || 0));
@@ -185,6 +232,7 @@ CB.perfiles.crear = function () {
   }
 
   const perfil = CB.almacen.perfilNuevo(id, mote, avatar, hoy, previos);
+  perfil.curso = CB.util.clamp(curso || 2, 1, 6);
   CB.almacen.guardarPerfil(perfil);
   CB.almacen.fijarUltimoPerfil(id);
   CB.perfiles.activar(id);

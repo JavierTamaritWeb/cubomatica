@@ -375,6 +375,17 @@ juzgar(/<span id="hud-segundos" class="reloj__cifra"><\/span>/.test(html),
   'E124 · el HUD no trae un numero de segundos escrito a mano',
   '#hud-segundos vuelve a nacer con un literal que solo vale para un modo');
 
+/* E126 · La ayuda explica el CURSO (3.0.0): que se elige al crear el minero,
+   que hay repaso de cursos anteriores y que al dominar el curso se pasa al
+   siguiente. La palabra «curso» ausente de la ayuda significaria un juego con
+   seis cursos cuya unica documentacion infantil no los menciona. */
+juzgar(/[Cc]urso/.test(secAyuda) && /repas/.test(secAyuda),
+  'E126 · la ayuda explica el curso y el repaso de cursos anteriores',
+  'la ayuda no menciona el curso o el repaso: quedo vieja con la 3.0.0');
+juzgar(/curso siguiente/.test(secAyuda),
+  'E126 · la ayuda promete el paso al curso siguiente al dominarlo',
+  'la ayuda no cuenta la promocion de curso');
+
 /* E125 · Normal empieza en 120: TRES digitos donde la caja media dos. A 320 px
    eso no lanza ningun error, se recorta contra el borde y no lo ve nadie. */
 const cssComp = leer(D('src/scss/components/_componentes.scss'));

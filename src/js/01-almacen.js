@@ -3,7 +3,7 @@
 var CB = CB || {};
 CB.almacen = CB.almacen || {};
 
-CB.almacen.VERSION_ESQUEMA = 3;
+CB.almacen.VERSION_ESQUEMA = 4;
 CB.almacen.PREFIJO = 'cubomatica.';
 CB.almacen.memoria = {};          // respaldo si localStorage está bloqueado
 CB.almacen.sinDisco = false;
@@ -167,6 +167,12 @@ CB.almacen.perfilNuevo = function (id, mote, avatar, hoyISO, ajustesPrevios) {
     id: id, mote: mote, avatar: avatar, colorBloque: '#5AA02C',
     creadoISO: hoyISO,
     trimestreDeducido: 1,
+    /* En la RAÍZ y no en ajustes: los ajustes se copian al crear el siguiente
+       perfil, y el hermano pequeño heredaría el curso del mayor. Quien lo crea
+       lo estampa después con lo elegido en p-perfiles; 2 es el curso del
+       catálogo original y el de todos los perfiles anteriores a la v4. */
+    curso: 2,
+    cursosCompletados: [],
     calibrado: false,
     grupo: null,
     ajustes: ajustesPrevios || {
@@ -291,6 +297,14 @@ CB.almacen.migrar = function (perfil) {
       perfil.mejorPuntuacion = mp;
 
       perfil.version = 3;
+    }
+
+    if (perfil.version < 4) {
+      /* El curso llega en 3.0.0. Todo perfil anterior es, por definición, de
+         2.º: es el único curso que el juego ha tenido nunca. */
+      if (perfil.curso == null) perfil.curso = 2;
+      if (!perfil.cursosCompletados) perfil.cursosCompletados = [];
+      perfil.version = 4;
     }
 
     CB.almacen.recortarFechasFuturas(perfil);
@@ -436,6 +450,7 @@ CB.almacen.podar = function (perfil, opciones) {
 /* Exportar e importar CON VALIDACIÓN */
 CB.almacen.CAMPOS_PERMITIDOS = [
   'version', 'id', 'mote', 'avatar', 'colorBloque', 'creadoISO', 'trimestreDeducido',
+  'curso', 'cursosCompletados',
   'calibrado', 'grupo', 'ajustes', 'gemas', 'puntosTotales', 'mejorPuntuacion',
   'vidasReserva', 'componentesVistos', 'destrezas', 'niveles', 'problemas',
   'errores', 'items', 'mundos', 'logros', 'cromos', 'glosario', 'mensajes',
@@ -465,6 +480,15 @@ CB.almacen.validarImportado = function (crudo, motesValidos) {
   }
   if (!/^#[0-9A-Fa-f]{6}$/.test(String(limpio.colorBloque))) limpio.colorBloque = '#5AA02C';
   limpio.avatar = CB.util.clamp(parseInt(limpio.avatar, 10) || 0, 0, 15);
+  /* El curso, como el avatar: un entero acotado, nunca texto libre. */
+  limpio.curso = CB.util.clamp(parseInt(limpio.curso, 10) || 2, 1, 6);
+  if (Object.prototype.toString.call(limpio.cursosCompletados) !== '[object Array]') {
+    limpio.cursosCompletados = [];
+  } else {
+    limpio.cursosCompletados = limpio.cursosCompletados.filter(function (c) {
+      return c === Math.round(c) && c >= 1 && c <= 6;
+    });
+  }
   if (!limpio.id || !/^[A-Za-z0-9-]{1,32}$/.test(String(limpio.id))) {
     limpio.id = 'p-' + CB.util.hash32(String(limpio.mote) + limpio.avatar).toString(16);
   }

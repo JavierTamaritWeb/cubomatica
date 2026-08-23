@@ -14,7 +14,49 @@ CB.catalogo.FAMILIAS = {
   V: { puntosBase: 70,  tIdeal: 7000,  tLimite: 20000, beta: [320, 920] }
 };
 
-CB.catalogo.TABLA = [
+/* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
+   formato de fila de siempre; el parser recorre los cursos en orden y estampa
+   nivel.curso desde la clave. Las 92 filas de 2.º no se tocan: el campo
+   opcional 14 (saberSecundario) hace peligroso añadir columnas, y la beta se
+   interpola por familia×curso justo para que las de 2.º no se muevan. */
+CB.catalogo.TABLAS = {
+  /* ——— 1.º de Primaria (3.0.0): 21 niveles sobre los generadores existentes
+     con rangos bajos. Techos de curso: 20 / 59 / 99 por trimestre. ——— */
+  1: [
+  /* Numeración: 6 */
+  ['N17','Contar hasta 12','numeracion',0,12,0,1,'opciones4','A.1',['1.1','5.1'],[],11,false,null],
+  ['N18','Leer y escribir hasta 20','numeracion',0,20,0,1,'teclado','A.2.b',['6.1'],['N17'],20,false,null],
+  ['N19','Mayor o menor hasta 20','numeracion',0,20,0,1,'balanza','A.4.b',['5.1','6.1'],['N17'],120,false,null],
+  ['N20','Leer y escribir hasta 59','numeracion',0,59,0,2,'teclado','A.2.b',['6.1'],['N18'],39,false,null],
+  ['N21','Series de 1 en 1 y de 2 en 2','numeracion',0,59,0,2,'ordenar','A.4.a',['3.1'],['N18'],140,false,null],
+  ['N22','El anterior y el posterior','numeracion',0,99,0,3,'teclado','A.2.b',['1.2'],['N20'],150,false,null],
+
+  /* Sumas: 5 */
+  ['S17','Sumar 1, 2 y 3','suma_sin_llevar',0,13,0,1,'teclado','A.3.b',['2.1'],[],30,false,null],
+  ['S18','Sumar sin pasar de 20','suma_sin_llevar',0,20,0,2,'teclado','A.3.b',['2.1'],['S17'],90,false,null],
+  ['S19','Sumar decenas enteras','suma_sin_llevar',0,50,0,2,'opciones4','A.3.a',['3.1'],['S18'],10,false,null],
+  ['S20','Sumas de dos cifras sin llevar','suma_sin_llevar',0,99,0,3,'teclado','A.3.b',['2.1'],['S18'],800,false,null],
+  ['S21','Pasar de 10: la primera llevada','suma_llevada',0,18,1,3,'teclado','A.3.b',['2.1','6.2'],['S18'],30,false,null],
+
+  /* Restas: 4 */
+  ['R15','Quitar 1, 2 y 3','resta_sin_llevar',0,10,0,1,'teclado','A.3.b',['2.1'],[],20,false,null],
+  ['R16','Restar sin pasar de 20','resta_sin_llevar',0,20,0,2,'teclado','A.3.b',['2.1'],['R15'],80,false,null],
+  ['R17','Restar decenas enteras','resta_sin_llevar',0,50,0,2,'opciones4','A.3.a',['3.1'],['R16'],10,false,null],
+  ['R18','Restas de dos cifras sin llevar','resta_sin_llevar',0,99,0,3,'teclado','A.3.b',['2.1'],['R16'],800,false,null],
+
+  /* Problemas: 4 */
+  ['P21','Cambio: gano y cuento','problemas_cambio',0,20,0,2,'teclado','A.3.b',['1.1','2.1','2.2'],['S17'],600,false,null],
+  ['P22','Cambio: pierdo y cuento','problemas_cambio',0,20,0,2,'teclado','A.3.b',['1.1','2.1','2.2'],['R15'],600,false,null],
+  ['P23','Combinación: juntar todo','problemas_combinacion',0,59,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['S18'],600,false,null],
+  ['P24','Combinación: la otra parte','problemas_combinacion',0,59,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P23'],600,false,null],
+
+  /* Dinero: 2 */
+  ['E9','Contar monedas hasta 10 euros','dinero',0,10,0,2,'monedas','A.5',['2.1','5.2'],['S17'],40,false,null],
+  ['E10','Pagar justo hasta 20 euros','dinero',0,20,0,3,'monedas','A.5',['2.1','2.2'],['E9'],19,false,null]
+  ],
+
+  /* ——— 2.º de Primaria: los 92 originales. ——— */
+  2: [
   /* Numeración: 16 */
   ['N1','Contar y recontar','numeracion',0,99,0,1,'opciones4','A.1',['1.1','5.1'],[],22,false,null,'A.2.c'],
   ['N2','Leer y escribir hasta 99','numeracion',0,99,0,1,'teclado','A.2.b',['6.1'],['N1'],90,false,null],
@@ -120,7 +162,8 @@ CB.catalogo.TABLA = [
   ['V6','Las palabras del dinero','vocabulario',0,0,0,3,'opciones4','A.5',['6.1','5.2'],['E1'],6,false,null],
   ['V7','Veces, doble y mitad','vocabulario',0,0,0,3,'opciones4','A.3.a',['6.1'],['M1'],6,false,null],
   ['V8','Las palabras de los problemas','vocabulario',0,0,0,3,'opciones4','A.3.b',['6.1','1.1'],['P1'],6,false,null]
-];
+  ]
+};
 
 /* Los 4 niveles con dato sobrante (§9.4): solo en 3.er trimestre y NUNCA en la
    primera partida del niño. */
@@ -138,24 +181,53 @@ CB.catalogo.CATEGORIA_MULT = {
 CB.catalogo._porId = {};
 CB.catalogo._ids = [];
 
+/* Desplazamiento de beta por curso. La interpolación se hace DENTRO de cada
+   familia×curso y luego se suma este offset: con 2.º a 0 y posiciones
+   intactas, las 92 betas originales quedan byte a byte como estaban, que es lo
+   que protege el emparejamiento adaptativo de los perfiles ya guardados
+   (guardián E127, con el volcado literal de las 92). */
+CB.catalogo.BETA_CURSO = { 1: -160, 2: 0, 3: 150, 4: 300, 5: 450, 6: 600 };
+
+/* Fracción del rango de beta de la familia que ocupa cada curso. Sin esto,
+   los 5 niveles de sumas de 1.º se repartían el MISMO rango que los 16 de
+   2.º y «8 + 5» (S21) salía con β960: catalogado más difícil que una llevada
+   de tres cifras. Un curso con pocos niveles ocupa un tramo corto. 2.º queda
+   en 1 — sus 92 betas no se mueven (E127). */
+CB.catalogo.ANCHO_BETA_CURSO = { 1: 0.4, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1 };
+
+CB.catalogo.CURSOS = [];
+
 (function () {
   const familiaDe = { N: 'numeracion', S: 'sumas', R: 'restas', M: 'multiplicacion',
                     P: 'problemas', E: 'dinero', V: 'vocabulario' };
+
+  const cursos = [];
+  let c;
+  for (c in CB.catalogo.TABLAS) {
+    if (Object.prototype.hasOwnProperty.call(CB.catalogo.TABLAS, c)) cursos.push(Number(c));
+  }
+  cursos.sort(function (a, b) { return a - b; });
+  CB.catalogo.CURSOS = cursos;
+
+  cursos.forEach(function (curso) {
+  const tabla = CB.catalogo.TABLAS[curso];
   const contadorFamilia = {};
 
-  CB.catalogo.TABLA.forEach(function (fila) {
+  tabla.forEach(function (fila) {
     const id = fila[0];
     const letra = id.charAt(0);
     const fam = CB.catalogo.FAMILIAS[letra];
     contadorFamilia[letra] = (contadorFamilia[letra] || 0) + 1;
 
-    /* betaBase repartida por la familia: los primeros niveles en la parte baja
-       del rango, los últimos en la alta. */
-    const total = CB.catalogo.TABLA.filter(function (f) {
+    /* betaBase repartida por la familia DEL CURSO: los primeros niveles en la
+       parte baja del rango, los últimos en la alta. */
+    const total = tabla.filter(function (f) {
       return f[0].charAt(0) === letra;
     }).length;
     const pos = (total > 1) ? (contadorFamilia[letra] - 1) / (total - 1) : 0;
-    const beta = Math.round(fam.beta[0] + pos * (fam.beta[1] - fam.beta[0]));
+    const ancho = CB.catalogo.ANCHO_BETA_CURSO[curso] || 1;
+    const beta = Math.round(fam.beta[0] + pos * ancho * (fam.beta[1] - fam.beta[0])) +
+                 (CB.catalogo.BETA_CURSO[curso] || 0);
 
     const tI = fam.tIdeal;
     let tL = fam.tLimite;
@@ -163,6 +235,7 @@ CB.catalogo._ids = [];
 
     const nivel = {
       id: id,
+      curso: curso,
       nombre: fila[1],
       familia: familiaDe[letra],
       letra: letra,
@@ -214,6 +287,7 @@ CB.catalogo._ids = [];
     CB.catalogo._porId[id] = nivel;
     CB.catalogo._ids.push(id);
   });
+  });
 })();
 
 /* API */
@@ -240,14 +314,55 @@ CB.catalogo.desbloqueados = function (perfil) {
   return CB.grafo.desbloqueados(perfil).map(function (id) { return CB.catalogo.get(id); });
 };
 
-/* candidatos() NUNCA devuelve []. */
+/* El curso activo de un perfil. 2 por defecto: es el curso del catálogo
+   original y el que la migración v4 estampa a todos los perfiles anteriores. */
+CB.catalogo.cursoDe = function (perfil) {
+  return (perfil && perfil.curso) || 2;
+};
+
+CB.catalogo.nivelesDeCurso = function (curso) {
+  return CB.catalogo.todos().filter(function (n) { return n.curso === curso; });
+};
+
+CB.catalogo.nuclearesDeCurso = function (curso) {
+  return CB.catalogo.nivelesDeCurso(curso).filter(function (n) { return !n.ampliacion; });
+};
+
+CB.catalogo.slugsDeCurso = function (curso) {
+  const vistos = {}, out = [];
+  CB.catalogo.nivelesDeCurso(curso).forEach(function (n) {
+    if (!vistos[n.destreza]) { vistos[n.destreza] = true; out.push(n.destreza); }
+  });
+  return out;
+};
+
+/* Los cursos que se pueden ELEGIR: los que tienen contenido nuclear. Los
+   selectores de UI (creación de perfil, panel del adulto) se alimentan de aquí
+   y crecen solos cuando una fase añade la tabla de un curso nuevo. */
+CB.catalogo.cursosDisponibles = function () {
+  return CB.catalogo.CURSOS.filter(function (c) {
+    return CB.catalogo.nuclearesDeCurso(c).length > 0;
+  });
+};
+
+/* candidatos() NUNCA devuelve []. Solo sirve niveles del curso del perfil o de
+   cursos anteriores (el contenido de cursos superiores no existe para el
+   niño), y PREFIERE el curso del perfil: el emparejador adaptativo empareja
+   dentro del curso, y el repaso de cursos anteriores es trabajo de la cuota
+   del guion, no de esta función. Sin esa preferencia, el niño sintético de
+   casos-motor.js bajaba del 75 % de acierto: le caían niveles de 1.º en la
+   banda que su curso ya cubría. */
 CB.catalogo.candidatos = function (slug, banda, perfil) {
-  const abiertos = CB.catalogo.porDestreza(slug).filter(function (n) {
+  const cursoTope = CB.catalogo.cursoDe(perfil);
+  let abiertos = CB.catalogo.porDestreza(slug).filter(function (n) {
+    if (n.curso > cursoTope) return false;
     if (CB.grafo.estado(n.id, perfil) !== 'abierta') return false;
     const e = perfil && perfil.niveles ? perfil.niveles[n.id] : null;
     if (e && e.enPausa) return false;                  // escalón 5 de la escalera
     return true;
   });
+  const delCurso = abiertos.filter(function (n) { return n.curso === cursoTope; });
+  if (delCurso.length) abiertos = delCurso;
 
   const min = banda[0], max = banda[1];
   let i, sel;
@@ -273,14 +388,22 @@ CB.catalogo.candidatos = function (slug, banda, perfil) {
     return [abiertos[0]];
   }
 
-  /* 4) la destreza no tiene ningún nivel abierto: se cae a la frontera global */
+  /* 4) la destreza no tiene ningún nivel abierto: se cae a la frontera global,
+     prefiriendo también aquí el curso del perfil. */
   const frontera = CB.grafo.frontera(perfil);
-  if (frontera.length) return [CB.catalogo.get(frontera[0])];
+  const fronteraDelCurso = frontera.filter(function (id) {
+    const n = CB.catalogo.get(id);
+    return n && n.curso === cursoTope;
+  });
+  const filaFrontera = fronteraDelCurso.length ? fronteraDelCurso : frontera;
+  if (filaFrontera.length) return [CB.catalogo.get(filaFrontera[0])];
 
   /* 5) solo posible si el perfil no tiene NINGÚN nivel abierto, situación
      imposible: el catálogo declara ≥1 nivel con prerrequisitos:[] por bloque.
-     Aun así, se devuelve algo antes que dejar la partida sin ítems. */
-  return [CB.catalogo.get('S1')];
+     Aun así, se devuelve algo antes que dejar la partida sin ítems — y del
+     curso del niño, no S1 a secas: para un perfil de 1.º, S1 es de 2.º. */
+  const primero = CB.catalogo.nuclearesDeCurso(cursoTope)[0];
+  return [primero || CB.catalogo.get('S1')];
 };
 
 /* Los 4 mundos (§5.2). Tabla CERRADA */
@@ -290,7 +413,8 @@ CB.MUNDOS = [
     niveles: ['N1','N2','N3','N4','N5','N6','N7','N8',
               'S1','S2','S3','S4','S5','S6','S7',
               'R1','R2','R3','R4','R5',
-              'P1','P2','E1','E2'] },
+              'P1','P2','E1','E2',
+              'N17','N18','S17','R15','P21'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -298,20 +422,23 @@ CB.MUNDOS = [
               'S8','S9','S10','S11','S12','S13',
               'R6','R7','R8','R9','R10',
               'P3','P4','P5','P6','P7','P8',
-              'E3','E4','V1','V2'] },
+              'E3','E4','V1','V2',
+              'N19','N20','S18','R16','E9'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
     niveles: ['N14','S14','R11','R12',
               'P9','P10','P11','P12','P13','P14','P15','P16',
-              'E5','E6','V3','V4','V5','V6'] },
+              'E5','E6','V3','V4','V5','V6',
+              'N21','S19','R17','P22','E10'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
     niveles: ['N15','N16','S15','S16','R13','R14',
               'P17','P18','P19','P20','E7','E8',
               'M1','M2','M3','M4','M5','M6','M7','M8','M9','M10',
-              'V7','V8'] }
+              'V7','V8',
+              'N22','S20','S21','R18','P23','P24'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {
@@ -330,18 +457,25 @@ CB.catalogo.getMundo = function (id) {
 
 /* Niveles NUCLEARES de un mundo: los que no son ampliación. Un mundo se
    desbloquea al completar el 60 % de los nucleares del anterior (§5.3): no el
-   100 %, porque bloquear por perfección es un muro. */
-CB.catalogo.nuclearesDe = function (mundoId) {
+   100 %, porque bloquear por perfección es un muro.
+   El 2.º parámetro es opcional: con él, solo los nucleares de ESE curso. */
+CB.catalogo.nuclearesDe = function (mundoId, curso) {
   const m = CB.catalogo.getMundo(mundoId);
   if (!m) return [];
   return m.niveles.filter(function (id) {
     const n = CB.catalogo.get(id);
-    return n && !n.ampliacion;
+    if (!n || n.ampliacion) return false;
+    if (curso != null && n.curso !== curso) return false;
+    return true;
   });
 };
 
+/* El progreso de un mundo se mide SOLO sobre los nucleares del curso activo.
+   Sin este filtro, al añadir los niveles de 1.º a los cuatro mundos la
+   fracción de todos los perfiles de 2.º habría bajado de golpe — el mismo
+   mapa, de repente menos completo, sin que el niño hubiera hecho nada. */
 CB.catalogo.progresoMundo = function (mundoId, perfil) {
-  const nucleares = CB.catalogo.nuclearesDe(mundoId);
+  const nucleares = CB.catalogo.nuclearesDe(mundoId, CB.catalogo.cursoDe(perfil));
   let hechos = 0, i;
   for (i = 0; i < nucleares.length; i++) {
     if (CB.grafo.superado(nucleares[i], perfil)) hechos++;
