@@ -131,6 +131,14 @@ $animados:
   // Superficie de las cajas del documento. NO es --blanco: esa es la luz del
   // bisel y la nube, y alto contraste no puede apagarla sin borrar el relieve.
   --bg-caja: #FFFFFF;
+
+  // La superficie de cada estado de veta, separada del tono del bioma que le
+  // da color. El tono pinta ademas biseles y fondos: apagarlo en alto
+  // contraste habria borrado el relieve, y no apagarlo dejaba el rotulo
+  // ilegible (E113). La pieza necesita una superficie que sea solo suya.
+  @each $estado, $tono in $estados-veta {
+    --bg-veta-#{$estado}: var(--deco-#{$tono});
+  }
   --gris-hueso:   #E8E4DE;
   --gris-carbon:  #33302B;
   --gris-piedra:  #7A766F;
@@ -219,6 +227,10 @@ $animados:
   // Superficies claras fijas. Sin esto la tinta pasa a blanca y el fondo se
   // queda claro: el panel adulto entero era blanco sobre blanco (E112).
   --bg-caja:          #000000;
+
+  @each $estado, $tono in $estados-veta {
+    --bg-veta-#{$estado}: #000000;
+  }
   --crema-fila:       #1A1A1A;
   --peligro-suave:    #000000;
 }

@@ -12,6 +12,42 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.23.7] — 2026-08-23
+
+**Tercera cifra.** Las vetas activas, que era lo que 1.23.6 dejó declarado como
+pendiente. Sin cambios en el formato del perfil guardado ni en la API `CB.*`.
+
+### Corregido
+
+- **En «Alto contraste» el rótulo de una veta abierta no se leía**: blanco sobre
+  arena, 1,55:1, y 3,36:1 sobre la piedra. La veta se pintaba con
+  `var(--deco-<tono>)`, y ese tono **no es solo suyo** —pinta biseles, nubes y
+  fondos de bioma—, así que la paleta no podía apagarlo sin borrar el relieve del
+  juego entero. Cada estado gana ahora una superficie que sí es solo suya,
+  `--bg-veta-<estado>`, con el tono del bioma como valor; la paleta de alto
+  contraste ya puede apagarla, igual que hizo con `--bg-caja` en 1.23.6. En modo
+  normal no cambia ni un color.
+- **El texto de estado de una veta abierta se quedaba en 3,24:1** («sin empezar»
+  sobre la piedra). La veta declaraba `--texto-sec: var(--texto-secundario)`,
+  que es la tinta de un panel crema, no la de su propia superficie. Con el
+  principal llega a 4,99:1 en el peor de los cinco estados abiertos.
+- Con esto, **cero texto activo por debajo del mínimo WCAG en las 18 pantallas,
+  en los dos modos** (antes: 6 nodos en normal y 91 en alto contraste). Lo que
+  queda son componentes inactivos —vetas cerradas, cromos y mundos bloqueados,
+  términos aún no encontrados—, que WCAG 1.4.3 exime y cuyo gris es el lenguaje
+  de «cerrado».
+
+### Pruebas
+
+- **E113** cruza las dos mitades: los seis estados los escribe `CB.memoria`, así
+  que todo estado que el JS sabe escribir tiene que tener superficie propia y
+  leerse en los dos modos. Pinta las vetas con `CB.mapaDestrezas.pintar()` y va
+  cambiando el mismo `data-estado` que escribe el juego cuando el niño avanza; no
+  fabrica ninguna veta a mano. Comprueba además que la superficie **no se hereda**
+  —un estado sin la suya no pinta nada y coge la de abajo, que es justo el fallo—
+  y mide el bloqueado sin exigirle nada, para que no pase por no medirse.
+  Verificado sembrando el defecto: 17 comprobaciones en rojo.
+
 ## [1.23.6] — 2026-08-23
 
 **Tercera cifra.** Contraste del panel adulto, en los dos modos. Sin cambios en
@@ -45,7 +81,7 @@ el formato del perfil guardado ni en la API pública `CB.*`.
   las parejas que el diseño pretende, y el fallo fue una pareja que nadie declaró.
   Verificado sembrando el defecto: 18 nodos en rojo antes del arreglo.
 
-### Pendiente
+### Pendiente (resuelto en 1.23.7)
 
 - Las vetas **activas** (`nuevo`, `aprendiendo`) quedan en 3,4:1 y 1,55:1 en alto
   contraste, por la misma causa: superficie de bioma clara y tinta que pasa a

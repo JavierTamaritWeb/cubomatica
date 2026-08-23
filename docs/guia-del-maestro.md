@@ -2,7 +2,7 @@
 
 # Guía del maestro — Cubomática
 
-> Cubomática 1.23.6
+> Cubomática 1.23.7
 
 Dos páginas. Lo que hace falta saber antes de ponerlo en un aula de 2.º.
 

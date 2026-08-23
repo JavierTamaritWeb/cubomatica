@@ -18,8 +18,12 @@
 .tarjeta-perfil,
 .termino-glosario,
 .cromo,
-.veta,
 .ajuste { --texto-sec: var(--texto-secundario); }
+
+// La veta no es un panel crema: su superficie mas clara es la piedra, y sobre
+// ella el secundario se queda en 3,2:1. Con el principal llega a 4,99:1 en el
+// peor de sus cinco estados abiertos (E113).
+.veta { --texto-sec: var(--texto-principal); }
 
 .cromo, .fila-ordenar__hueco, .columna-cdu, .balanza__cifra, .lienzo-explicador {
   color: var(--texto-principal);
@@ -509,7 +513,7 @@
   width: 96px; min-height: 96px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: var(--e1); padding: var(--e1);
-  background: var(--deco-piedra);
+  background: var(--bg-veta-nuevo);
   color: var(--texto-principal);
   font-size: 15px; text-align: center;
   box-shadow: inset 4px 4px 0 0 var(--deco-piedra-cla),
@@ -520,7 +524,7 @@
 // Cada estado combina color, texto o forma; nunca se comunica solo por color.
 @each $estado, $tono in v.$estados-veta {
   .veta[data-estado="#{$estado}"] {
-    background: var(--deco-#{$tono});
+    background: var(--bg-veta-#{$estado});
 
     @if $estado == bloqueado { color: var(--gris-hueso); }
   }

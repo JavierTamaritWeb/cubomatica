@@ -325,3 +325,105 @@ CB.pruebas.suite('E112 · el texto del panel adulto se lee en los dos modos', fu
     'E112 · todo el texto de la caja llega a 4,5:1 en los dos modos',
     flojos.slice(0, 4).join(' · '));
 });
+
+/* E113 · La pieza tomaba su color del bioma, y el bioma no se apaga */
+
+/* La veta se pintaba con var(--deco-<tono>) directamente. Ese tono no es solo
+   suyo: pinta biseles, nubes y fondos, así que la paleta de alto contraste no
+   podía apagarlo sin borrar el relieve del juego entero — y no apagarlo dejaba
+   el rótulo blanco sobre arena, a 1,55:1. La pieza necesitaba una superficie
+   que fuera solo suya (--bg-veta-<estado>), y entonces la paleta ya puede.
+   Como los seis estados los escribe CB.memoria, el cruce es la prueba: todo
+   estado que el JS sabe escribir tiene que ser legible en los dos modos. */
+CB.pruebas.suite('E113 · cada estado de veta se lee en los dos modos', function () {
+  const t = CB.pruebas;
+
+  function rgbAHex(s) {
+    const m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(s || '');
+    if (!m) return null;
+    function dos(n) { const h = Number(n).toString(16); return h.length === 1 ? '0' + h : h; }
+    return '#' + dos(m[1]) + dos(m[2]) + dos(m[3]);
+  }
+  function lum(h) {
+    const r = parseInt(h.substr(1, 2), 16) / 255, g = parseInt(h.substr(3, 2), 16) / 255,
+        b = parseInt(h.substr(5, 2), 16) / 255;
+    function c(x) { return (x <= 0.03928) ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }
+    return 0.2126 * c(r) + 0.7152 * c(g) + 0.0722 * c(b);
+  }
+  function ratio(a, b) {
+    const la = lum(a), lb = lum(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+
+  const perfilPrevio = CB.perfil;
+  CB.perfil = CB.pruebas.perfilNuevo();
+
+  /* Las vetas las pinta el módulo que las pinta: así el rótulo, el icono y el
+     texto de estado son los del juego, con sus clases. */
+  CB.mapaDestrezas.pintar();
+  const veta = document.querySelector('#rejilla-vetas .veta');
+  if (!t.ok(!!veta, 'E113 · el mapa de destrezas ha pintado vetas que medir')) {
+    CB.perfil = perfilPrevio;
+    return;
+  }
+
+  const estados = Object.keys(CB.memoria.ETIQUETA);
+  t.igual(estados.length, 6, 'E113 · CB.memoria declara los seis estados de veta');
+
+  const raiz = document.documentElement;
+  const teniaAC = raiz.classList.contains('alto-contraste');
+  const estadoOriginal = veta.getAttribute('data-estado');
+  const flojos = [], sinSuperficie = [], sinMedir = [];
+  let medidas = 0;
+
+  ['sin alto contraste', 'con alto contraste'].forEach(function (modo) {
+    if (modo === 'con alto contraste') raiz.classList.add('alto-contraste');
+    else raiz.classList.remove('alto-contraste');
+
+    estados.forEach(function (estado) {
+      /* Se cambia el mismo atributo que escribe 43-mapa-destrezas.js cuando el
+         niño avanza; no se fabrica ninguna veta a mano. */
+      veta.setAttribute('data-estado', estado);
+      const fondoCrudo = getComputedStyle(veta).backgroundColor;
+      const fondo = rgbAHex(fondoCrudo);
+
+      /* Un estado sin superficie propia no pinta nada y hereda la de abajo:
+         eso es justo el fallo, y se ve aquí antes que en el ratio. */
+      if (!fondo || fondoCrudo.indexOf('rgba(0, 0, 0, 0)') !== -1) {
+        sinSuperficie.push(modo + ' · ' + estado);
+        return;
+      }
+
+      const textos = [].slice.call(veta.querySelectorAll('span'));
+      textos.forEach(function (n) {
+        if (!(n.textContent || '').trim()) return;
+        const tinta = rgbAHex(getComputedStyle(n).color);
+        if (!tinta) { sinMedir.push(modo + ' · ' + estado); return; }
+        medidas++;
+        const r = ratio(tinta, fondo);
+        /* El bloqueado se mide igual, pero no se le exige: WCAG 1.4.3 exime a
+           los componentes inactivos, y su gris ES el lenguaje de «cerrada». */
+        if (estado !== 'bloqueado' && r < 4.5) {
+          flojos.push(modo + ' · ' + estado + ' ' + tinta + ' sobre ' + fondo +
+                      ' = ' + r.toFixed(2));
+        }
+      });
+    });
+  });
+
+  if (estadoOriginal) veta.setAttribute('data-estado', estadoOriginal);
+  if (!teniaAC) raiz.classList.remove('alto-contraste');
+  else raiz.classList.add('alto-contraste');
+  CB.perfil = perfilPrevio;
+
+  t.igual(sinSuperficie.length, 0,
+    'E113 · los seis estados pintan superficie propia, no la heredan',
+    sinSuperficie.slice(0, 4).join(' · '));
+  t.igual(sinMedir.length, 0,
+    'E113 · se ha podido medir la tinta de cada rótulo', sinMedir.slice(0, 4).join(' · '));
+  t.ok(medidas >= estados.length * 2,
+    'E113 · se ha medido cada estado en los dos modos', medidas + ' medidas');
+  t.igual(flojos.length, 0,
+    'E113 · los cinco estados abiertos llegan a 4,5:1 en los dos modos',
+    flojos.slice(0, 4).join(' · '));
+});

@@ -102,6 +102,12 @@
   --blanco: #FFFFFF;
   --negro: #000000;
   --bg-caja: #FFFFFF;
+  --bg-veta-bloqueado: var(--deco-piedra-osc);
+  --bg-veta-nuevo: var(--deco-piedra);
+  --bg-veta-aprendiendo: var(--deco-arena);
+  --bg-veta-afianzada: var(--deco-hierba-cla);
+  --bg-veta-dominada: var(--deco-cristal-cla);
+  --bg-veta-oxidada: var(--deco-musgo-cla);
   --gris-hueso: #E8E4DE;
   --gris-carbon: #33302B;
   --gris-piedra: #7A766F;
@@ -212,6 +218,12 @@
   --mal-fondo: #000000;
   --mal-texto: #FFFFFF;
   --bg-caja: #000000;
+  --bg-veta-bloqueado: #000000;
+  --bg-veta-nuevo: #000000;
+  --bg-veta-aprendiendo: #000000;
+  --bg-veta-afianzada: #000000;
+  --bg-veta-dominada: #000000;
+  --bg-veta-oxidada: #000000;
   --crema-fila: #1A1A1A;
   --peligro-suave: #000000;
 }
@@ -237,6 +249,12 @@
     --mal-fondo: #000000;
     --mal-texto: #FFFFFF;
     --bg-caja: #000000;
+    --bg-veta-bloqueado: #000000;
+    --bg-veta-nuevo: #000000;
+    --bg-veta-aprendiendo: #000000;
+    --bg-veta-afianzada: #000000;
+    --bg-veta-dominada: #000000;
+    --bg-veta-oxidada: #000000;
     --crema-fila: #1A1A1A;
     --peligro-suave: #000000;
   }
@@ -440,9 +458,12 @@ button:disabled {
 .tarjeta-perfil,
 .termino-glosario,
 .cromo,
-.veta,
 .ajuste {
   --texto-sec: var(--texto-secundario);
+}
+
+.veta {
+  --texto-sec: var(--texto-principal);
 }
 
 .cromo, .fila-ordenar__hueco, .columna-cdu, .balanza__cifra, .lienzo-explicador {
@@ -1214,7 +1235,7 @@ button:disabled {
   justify-content: center;
   gap: var(--e1);
   padding: var(--e1);
-  background: var(--deco-piedra);
+  background: var(--bg-veta-nuevo);
   color: var(--texto-principal);
   font-size: 15px;
   text-align: center;
@@ -1227,28 +1248,28 @@ button:disabled {
 }
 
 .veta[data-estado=bloqueado] {
-  background: var(--deco-piedra-osc);
+  background: var(--bg-veta-bloqueado);
   color: var(--gris-hueso);
 }
 
 .veta[data-estado=nuevo] {
-  background: var(--deco-piedra);
+  background: var(--bg-veta-nuevo);
 }
 
 .veta[data-estado=aprendiendo] {
-  background: var(--deco-arena);
+  background: var(--bg-veta-aprendiendo);
 }
 
 .veta[data-estado=afianzada] {
-  background: var(--deco-hierba-cla);
+  background: var(--bg-veta-afianzada);
 }
 
 .veta[data-estado=dominada] {
-  background: var(--deco-cristal-cla);
+  background: var(--bg-veta-dominada);
 }
 
 .veta[data-estado=oxidada] {
-  background: var(--deco-musgo-cla);
+  background: var(--bg-veta-oxidada);
 }
 
 .veta.veta--frontera {

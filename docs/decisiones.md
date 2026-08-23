@@ -3846,3 +3846,45 @@ pasa a blanca. Separar «color de bioma» de «superficie de pieza» toca los bi
 de todo el juego y las 54 capturas de `retrato-pantallas.mjs`. Las vetas
 **bloqueadas** no se tocan: WCAG 1.4.3 exime a los componentes inactivos, y su
 gris es precisamente el lenguaje de «cerrado».
+
+---
+
+## D-1.23.7 — Un color que sirve para dos cosas no se puede cambiar para una
+
+La veta se pintaba con `var(--deco-arena)`, `var(--deco-piedra)` y los demás
+tonos del bioma, directamente. Leído en el SCSS parece lo correcto: el estado
+«aprendiendo» es arena, y arena es `--deco-arena`. El problema aparece cuando
+hay que cambiarlo en un solo sitio, porque **ese tono no era solo de la veta**:
+pinta también los biseles, las nubes y los fondos de bioma. En alto contraste
+había que apagarlo para que el rótulo se leyera, y apagarlo habría borrado el
+relieve de todo el juego. La variable no se podía tocar ni dejar quieta.
+
+Es la misma forma del fallo de `--blanco` en 1.23.6, y por eso conviene
+enunciarla aparte: **cuando un mismo valor hace de identidad visual y de
+superficie, deja de poder cambiarse por una de las dos razones**. La salida es
+la misma las dos veces: dar a la pieza una superficie que sea solo suya
+—`--bg-veta-<estado>`, con el tono del bioma como valor— y dejar que la paleta
+la apague. En modo normal no cambia ni un color; en alto contraste, las seis
+superficies se van a negro y el estado se sigue leyendo por el icono y por el
+texto, que es lo que exige la regla de «nunca solo color».
+
+El segundo fallo era más pequeño y más viejo. `.veta` estaba en la lista de
+contenedores que declaran `--texto-sec: var(--texto-secundario)`, junto a
+`.panel-bloque` y los demás. Esa tinta está calculada para un panel crema, y la
+superficie más clara de una veta es la piedra: encima, el secundario se queda en
+3,24:1. Estar en la lista correcta no basta si el valor que declara es el de otro
+sitio; la veta declara ahora el principal, que da 4,99:1 en el peor de sus cinco
+estados abiertos.
+
+E113 se apoya en que los seis estados existen dos veces: en `$estados-veta` del
+SCSS y en `CB.memoria.ETIQUETA` del JS. La prueba recorre los del JS, porque son
+los que el juego sabe escribir, y por eso detecta también el caso que no se me
+habría ocurrido comprobar: un estado nuevo al que nadie le dé superficie no
+falla, simplemente **hereda la de debajo**. Por eso comprueba antes que la veta
+pinta fondo opaco propio, y sólo después mide el ratio. Al bloqueado lo mide
+igual pero no le exige nada —WCAG 1.4.3 exime a los componentes inactivos—, y
+esa distinción se escribe en la prueba en vez de dejarla fuera, que es como se
+convierten en invisibles.
+
+Con esto no queda texto activo por debajo del mínimo en ninguna de las 18
+pantallas, en ninguno de los dos modos.
