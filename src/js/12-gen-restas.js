@@ -187,3 +187,51 @@ CB.gen.restas.R18 = function (rng, D) {
   const cifrasB = (rng() < 0.5) ? 1 : 2;
   return itemResta(CB.gen.restas.construir(rng, [false, false], 2, cifrasB, 99));
 };
+
+/* ——— Cursos 3.º-4.º (3.1.0): R19…R23 ——— */
+
+/* R19 Restas con dos llevadas (3.º): en 3.º esto es nuclear; en 2.º sigue
+   siendo la ampliación R14 con su flag. La mecánica es la misma. */
+CB.gen.restas.R19 = function (rng, D) {
+  return CB.gen.restas.R14(rng, D);
+};
+
+/* R20 Restas de cuatro cifras (3.º) */
+CB.gen.restas.R20 = function (rng, D) {
+  const patron = [rng() < 0.6, rng() < 0.4, false, false];
+  return itemResta(CB.gen.restas.construir(rng, patron, 4, 4, 9999));
+};
+
+/* R21 Restar centenas de cabeza (3.º) */
+CB.gen.restas.R21 = function (rng, D) {
+  const a = CB.util.ent(rng, 11, (D === 1) ? 40 : 99) * 100;
+  const b = CB.util.ent(rng, 1, 9) * 100;
+  const it = itemResta({ a: a, b: b, r: a - b });
+  it.formato = 'opciones4';
+  it.consigna = CB.gen.motor.sep(a) + ' − ' + b;
+  return it;
+};
+
+/* R22 Restas de números grandes (4.º) */
+CB.gen.restas.R22 = function (rng, D) {
+  const patron = [rng() < 0.6, rng() < 0.4, rng() < 0.3, false, false];
+  return itemResta(CB.gen.restas.construir(rng, patron, 5, 5, 99999));
+};
+
+/* R23 Estimar restas (4.º) */
+CB.gen.restas.R23 = function (rng, D) {
+  const am = CB.util.ent(rng, 5, 9) * 1000;
+  const bm = CB.util.ent(rng, 2, am / 1000 - 2) * 1000;
+  const a = am - CB.util.ent(rng, 30, 180);
+  const b = bm - CB.util.ent(rng, 30, 180);
+  const est = am - bm;
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuál es la MEJOR estimación de ' + CB.gen.motor.sep(a) + ' − ' +
+              CB.gen.motor.sep(b) + '?',
+    respuesta: est,
+    expr: 'estR' + a + '_' + b,
+    diagnostico: false,
+    distractoresFijos: [est - 1000, est + 1000, est + 500]
+  };
+};

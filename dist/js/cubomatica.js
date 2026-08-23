@@ -56,7 +56,31 @@ CB.CURRICULO = {
     'F.1':   'Creencias, actitudes y emociones. Gestión emocional: estrategias de identificación y expresión de las propias emociones ante las matemáticas. Curiosidad e iniciativa en el aprendizaje de las matemáticas.',
     'F.2.a': 'Trabajo en equipo, inclusión, respeto y diversidad. Identificación y rechazo de actitudes discriminatorias ante las diferencias individuales presentes en el aula. Actitudes inclusivas y aceptación de la diversidad del grupo.',
     'F.2.b': 'Trabajo en equipo, inclusión, respeto y diversidad. Participación activa en el trabajo en equipo: interacción positiva y respeto por el trabajo de los demás.',
-    'F.2.c': 'Trabajo en equipo, inclusión, respeto y diversidad. Contribución de las matemáticas a los distintos ámbitos del conocimiento humano desde una perspectiva de género.'
+    'F.2.c': 'Trabajo en equipo, inclusión, respeto y diversidad. Contribución de las matemáticas a los distintos ámbitos del conocimiento humano desde una perspectiva de género.',
+
+    /* SENTIDO NUMÉRICO DE 2.º CICLO (cursos 3.º y 4.º), 3.1.0. Resumen fiel
+       del RD 157/2022; el reparto entre 3.º y 4.º es secuenciación propia
+       (ver SECUENCIACION). El prefijo A2. es CICLO 2, no curso. Los criterios
+       de evaluación se citan por número de competencia: la transcripción
+       literal de arriba es la del primer ciclo y la de los otros ciclos queda
+       declarada como pendiente en docs/decisiones.md (misma estructura). */
+    'A2.1': 'Cantidad (2.º ciclo). Lectura, representación, composición, descomposición y recomposición de números naturales hasta 999.999.',
+    'A2.2': 'Relaciones (2.º ciclo). Sistema de numeración de base diez: valor posicional, comparación, ordenación y redondeo de números grandes.',
+    'A2.3': 'Sentido de las operaciones (2.º ciclo). Multiplicación y división de números naturales: tablas, algoritmos y situaciones de la vida cotidiana.',
+    'A2.4': 'Cantidad (2.º ciclo). Fracciones propias con denominador hasta 12 en contextos de la vida cotidiana: partes de un todo y de una cantidad.',
+    'A2.5': 'Cantidad (2.º ciclo). Números decimales: décimas y centésimas en contextos de medida y de dinero.',
+    'A2.6': 'Educación financiera (2.º ciclo). Cálculo y estimación de cantidades y cambios (euros y céntimos) en problemas cotidianos.',
+    'A2.7': 'Sentido de las operaciones (2.º ciclo). Estrategias de cálculo mental y estimaciones razonadas con números grandes.',
+
+    /* SENTIDO NUMÉRICO DE 3.er CICLO (cursos 5.º y 6.º), 3.1.0. Mismo aviso. */
+    'A3.1': 'Cantidad (3.er ciclo). Números naturales grandes, hasta los millones: lectura, representación y ordenación.',
+    'A3.2': 'Relaciones (3.er ciclo). Múltiplos, divisores y criterios de divisibilidad en situaciones de cálculo.',
+    'A3.3': 'Sentido de las operaciones (3.er ciclo). Potencias, raíz cuadrada exacta y operaciones combinadas con paréntesis.',
+    'A3.4': 'Sentido de las operaciones (3.er ciclo). División con divisores de hasta dos cifras y estimación de cocientes.',
+    'A3.5': 'Cantidad (3.er ciclo). Fracciones: equivalencia, comparación, número mixto y operaciones sencillas.',
+    'A3.6': 'Cantidad (3.er ciclo). Números decimales: comparación, redondeo y las cuatro operaciones en contextos cotidianos.',
+    'A3.7': 'Relaciones (3.er ciclo). Porcentajes y proporcionalidad directa en situaciones de compra y de la vida cotidiana.',
+    'A3.8': 'Cantidad (3.er ciclo). Números enteros negativos en contextos cotidianos: temperaturas, alturas y plantas de un edificio.'
   },
 
   /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */
@@ -942,6 +966,72 @@ CB.datos.RECOMENDACIONES = {
   }
 };
 
+/* ——— Cursos 3.º-6.º (3.1.0): los 11 códigos nuevos ——— */
+
+CB.datos.RECOMENDACIONES['E-D-COC-VECINO'] = {
+  frase: 'Al dividir se pasa una vez: da el resultado de la fila siguiente de la tabla.',
+  actividad: 'Repartid 24 garbanzos en 6 platos de verdad y contad lo que cae en cada ' +
+             'uno. Después preguntad: ¿y si fueran 30?, ¿y 18? El plato físico corrige ' +
+             'la tabla mejor que repetirla de memoria.'
+};
+CB.datos.RECOMENDACIONES['E-D-COC-CORTO'] = {
+  frase: 'Al dividir se queda corto: da el resultado de la fila anterior de la tabla.',
+  actividad: 'El juego de «¿cuántas veces cabe?»: con 35 fichas, que vaya quitando ' +
+             'grupos de 5 y haga una raya por cada grupo. Las rayas SON el cociente.'
+};
+CB.datos.RECOMENDACIONES['E-D-RESTO-COMO-COC'] = {
+  frase: 'Confunde lo que sobra con lo que toca: escribe el resto donde va el cociente.',
+  actividad: 'Repartid 17 cromos entre 3: que separe los montones (5, 5 y 5) Y ADEMÁS ' +
+             'deje los 2 sobrantes en el centro, y que diga en voz alta «tocan a 5 y ' +
+             'sobran 2». Las dos palabras, siempre juntas.'
+};
+CB.datos.RECOMENDACIONES['E-D-TABLA-VECINA'] = {
+  frase: 'Divide entre un número vecino del que toca: mezcla dos tablas.',
+  actividad: 'Antes de cada división, que rodee el divisor con un círculo y diga «tabla ' +
+             'del N» en voz alta. Solo entonces puede empezar a calcular.'
+};
+CB.datos.RECOMENDACIONES['E-C-COMA-CORRIDA'] = {
+  frase: 'La coma se le corre un lugar y el resultado sale diez veces más grande.',
+  actividad: 'Con dinero de verdad: 2,50 € son dos monedas y media de euro, no 25 €. ' +
+             'Que pague 2,50 € con monedas y luego escriba la cantidad. El bolsillo no ' +
+             'deja correr la coma.'
+};
+CB.datos.RECOMENDACIONES['E-C-COMA-CORTA'] = {
+  frase: 'La coma se le corre un lugar y el resultado sale diez veces más pequeño.',
+  actividad: 'La recta en el suelo con cinta de pintor: marcad 0, 1, 2 y 3, y que ' +
+             'coloque 0,5 y 1,5 caminando. Después que coloque el resultado de su cuenta ' +
+             'y se pregunte si cae donde debería.'
+};
+CB.datos.RECOMENDACIONES['E-T-RESTA-DIRECTA'] = {
+  frase: 'Resta el porcentaje como si fuera una cantidad: al 25 % de 80 responde 55.',
+  actividad: 'Cortad una tira de papel en 4 partes iguales: el 25 % es UNA parte de ' +
+             'las cuatro, no «quitar 25». Repetidlo con el 50 % (la mitad) y el 10 % ' +
+             '(una de diez).'
+};
+CB.datos.RECOMENDACIONES['E-T-SIN-DIVIDIR'] = {
+  frase: 'Multiplica por el porcentaje pero se olvida de dividir entre 100.',
+  actividad: 'Que escriba SIEMPRE el porcentaje como fracción antes de calcular: ' +
+             '25 % = 25/100. Con la fracción delante, el «entre 100» deja de olvidarse.'
+};
+CB.datos.RECOMENDACIONES['E-Z-SIN-SIGNO'] = {
+  frase: 'Calcula bien la distancia pero pierde el signo: responde 3 donde era −3.',
+  actividad: 'Dibujad un termómetro grande con el cero bien marcado. Que cuente los ' +
+             'saltos hacia abajo CRUZANDO el cero con el dedo: lo que queda por debajo ' +
+             'se lee siempre con «menos» delante.'
+};
+CB.datos.RECOMENDACIONES['E-F-SUMA-DENOM'] = {
+  frase: 'Al sumar fracciones suma también los denominadores: 1/4 + 2/4 le da 3/8.',
+  actividad: 'Dos barras de papel iguales cortadas en cuartos: juntad 1 cuarto y 2 ' +
+             'cuartos sobre la mesa. Se VE que hay 3 cuartos y que las partes no ' +
+             'cambian de tamaño por juntarlas.'
+};
+CB.datos.RECOMENDACIONES['E-C-ALINEACION'] = {
+  frase: 'Suma decimales sin alinear la coma: junta décimas con unidades.',
+  actividad: 'Papel cuadriculado y una regla vertical dibujada donde va la coma. ' +
+             'Primero solo COLOCAR cinco sumas con la coma en su columna, sin ' +
+             'resolver ninguna. Colocar es la mitad de la cuenta.'
+};
+
 /* 00-nucleo.js — CB.util y CB.LEGAL */
 
 var CB = CB || {};
@@ -1181,7 +1271,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.0.0';
+CB.VERSION = '3.1.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -3354,6 +3444,332 @@ CB.gen.numeracion.N22 = function (rng, D) {
   };
 };
 
+/* ——— Cursos 3.º-6.º (3.1.0): N23…N44 ——— */
+
+/* enPalabras hasta 9.999.999 (3.1.0). La versión base topa en 999 a propósito
+   para 2.º; los cursos altos leen millares y millones. Con apócope: 21.000 es
+   «veintiún mil», no «veintiuno mil». */
+CB.gen.numeracion.enPalabrasGrande = function (n) {
+  n = Math.round(n);
+  if (n < 0 || n > 9999999) return String(n);
+  if (n <= 999) return CB.gen.numeracion.enPalabras(n);
+
+  function apocopa(txt) {
+    return txt.replace(/veintiuno$/, 'veintiún').replace(/ uno$/, ' un')
+              .replace(/^uno$/, 'un');
+  }
+
+  if (n < 1000000) {
+    const miles = Math.floor(n / 1000), resto = n % 1000;
+    const milesTxt = (miles === 1)
+      ? 'mil'
+      : apocopa(CB.gen.numeracion.enPalabras(miles)) + ' mil';
+    return milesTxt + (resto ? ' ' + CB.gen.numeracion.enPalabras(resto) : '');
+  }
+  const millones = Math.floor(n / 1000000), resto2 = n % 1000000;
+  const cabeza = (millones === 1)
+    ? 'un millón'
+    : CB.gen.numeracion.enPalabras(millones) + ' millones';
+  return cabeza + (resto2 ? ' ' + CB.gen.numeracion.enPalabrasGrande(resto2) : '');
+};
+
+/* Aproximar a la potencia de diez pedida, sin caso frontera (el ,5 exacto se
+   esquiva sumando: redondear 450 a la centena es debatible en 3.º). */
+function itemAproximar(rng, D, min, max, unidad, nombreUnidad) {
+  let n = tramo(min, max, D, rng);
+  if (n % unidad === 0) n += CB.util.ent(rng, 1, 9);
+  if (n % unidad === unidad / 2) n += 1;
+  const abajo = Math.floor(n / unidad) * unidad;
+  const arriba = abajo + unidad;
+  const resp = (n % unidad) >= unidad / 2 ? arriba : abajo;
+  return {
+    formato: 'opciones4',
+    consigna: 'Aproxima ' + CB.gen.motor.sep(n) + ' a la ' + nombreUnidad + '.',
+    respuesta: resp,
+    expr: 'apx' + unidad + '_' + n,
+    diagnostico: false,
+    distractoresFijos: [resp === arriba ? abajo : arriba,
+                        abajo - unidad >= 0 ? abajo - unidad : arriba + 2 * unidad,
+                        arriba + unidad]
+  };
+}
+CB.gen.numeracion._itemAproximar = itemAproximar;
+
+/* N23 Aproximar a la centena (3.º) */
+CB.gen.numeracion.N23 = function (rng, D) {
+  return itemAproximar(rng, D, 150, 949, 100, 'centena más cercana');
+};
+
+/* N24 Leer y escribir hasta 9.999 (3.º) */
+CB.gen.numeracion.N24 = function (rng, D) {
+  const n = tramo(1000, 9999, D, rng);
+  return {
+    formato: 'teclado',
+    consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabrasGrande(n),
+    respuesta: n, expr: 'leer' + n, diagnostico: true
+  };
+};
+
+/* N25 Las unidades de millar (3.º) */
+CB.gen.numeracion.N25 = function (rng, D) {
+  const n = tramo(1000, 9999, D, rng);
+  const cual = CB.util.ent(rng, 0, 3);
+  const partes = ['unidades de millar', 'centenas', 'decenas', 'unidades sueltas'];
+  const val = [Math.floor(n / 1000), Math.floor(n / 100) % 10,
+               Math.floor(n / 10) % 10, n % 10][cual];
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuántas ' + partes[cual] + ' tiene el ' + CB.gen.motor.sep(n) + '?',
+    respuesta: val,
+    expr: 'um' + cual + '_' + n,
+    diagnostico: true,
+    contexto: { numero: n, parte: partes[cual] }
+  };
+};
+
+/* N26 Comparar hasta 9.999 (3.º) */
+CB.gen.numeracion.N26 = function (rng, D) { return comparacion(rng, D, 9999); };
+
+/* N27 Aproximar al millar (3.º) */
+CB.gen.numeracion.N27 = function (rng, D) {
+  return itemAproximar(rng, D, 1500, 9499, 1000, 'unidad de millar más cercana');
+};
+
+/* N28 Leer y escribir hasta 99.999 (3.º) */
+CB.gen.numeracion.N28 = function (rng, D) {
+  const n = tramo(10000, 99999, D, rng);
+  return {
+    formato: 'teclado',
+    consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabrasGrande(n),
+    respuesta: n, expr: 'leer' + n, diagnostico: true
+  };
+};
+
+/* N29 Ordenar números grandes (3.º) */
+CB.gen.numeracion.N29 = function (rng, D) {
+  const cuantos = (D === 1) ? 3 : 4, orden = [];
+  let v, k = 0;
+  while (orden.length < cuantos && k < 80) {
+    k++;
+    v = tramo(1000, 99999, D, rng);
+    if (orden.indexOf(v) === -1) orden.push(v);
+  }
+  orden.sort(function (a, b) { return a - b; });
+  return {
+    formato: 'ordenar',
+    consigna: 'Coloca los números de menor a mayor.',
+    orden: orden,
+    piezas: CB.util.barajar(orden, rng),
+    respuesta: orden[orden.length - 1],
+    expr: 'ordg' + orden.join('_'),
+    diagnostico: false
+  };
+};
+
+/* N30 Hasta el medio millón (4.º) */
+CB.gen.numeracion.N30 = function (rng, D) {
+  const n = tramo(100000, 499999, D, rng);
+  return {
+    formato: 'teclado',
+    consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabrasGrande(n),
+    respuesta: n, expr: 'leer' + n, diagnostico: true
+  };
+};
+
+/* N31 Hasta 999.999 (4.º) */
+CB.gen.numeracion.N31 = function (rng, D) {
+  const n = tramo(500000, 999999, D, rng);
+  return {
+    formato: 'teclado',
+    consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabrasGrande(n),
+    respuesta: n, expr: 'leer' + n, diagnostico: true
+  };
+};
+
+/* N32 Aproximar a la decena de millar (4.º) */
+CB.gen.numeracion.N32 = function (rng, D) {
+  return itemAproximar(rng, D, 15000, 94999, 10000, 'decena de millar más cercana');
+};
+
+/* N33 Descomponer números grandes (4.º) */
+CB.gen.numeracion.N33 = function (rng, D) {
+  const n = tramo(10000, 99999, D, rng);
+  const trozos = [];
+  let resto = n, unidad = 10000;
+  while (unidad >= 1) {
+    const parte = Math.floor(resto / unidad) * unidad;
+    if (parte) trozos.push(CB.gen.motor.sep(parte));
+    resto -= parte;
+    unidad /= 10;
+  }
+  return {
+    formato: 'teclado',
+    consigna: '¿Qué número es? ' + trozos.join(' + '),
+    respuesta: n,
+    expr: 'descg' + n,
+    diagnostico: true
+  };
+};
+
+/* N34 Los millones (5.º) */
+CB.gen.numeracion.N34 = function (rng, D) {
+  const n = CB.util.ent(rng, 1, 9) * 1000000 + CB.util.ent(rng, 0, 9) * 100000;
+  return {
+    formato: 'teclado',
+    consigna: 'Escribe el número: ' + CB.gen.numeracion.enPalabrasGrande(n),
+    respuesta: n, expr: 'leer' + n, diagnostico: false
+  };
+};
+
+/* N35 El valor de cada cifra (5.º) */
+CB.gen.numeracion.N35 = function (rng, D) {
+  const n = tramo(100000, 999999, D, rng);
+  const cual = CB.util.ent(rng, 0, 2);
+  const partes = ['centenas de millar', 'decenas de millar', 'unidades de millar'];
+  const val = [Math.floor(n / 100000), Math.floor(n / 10000) % 10,
+               Math.floor(n / 1000) % 10][cual];
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuántas ' + partes[cual] + ' tiene el ' + CB.gen.motor.sep(n) + '?',
+    respuesta: val,
+    expr: 'cm' + cual + '_' + n,
+    diagnostico: true,
+    contexto: { numero: n, parte: partes[cual] }
+  };
+};
+
+/* N36 Múltiplos (5.º) */
+CB.gen.numeracion.N36 = function (rng, D) {
+  const d = CB.util.ent(rng, 3, 9);
+  const k = CB.util.ent(rng, 3, (D === 1) ? 6 : 12);
+  const resp = d * k;
+  return {
+    formato: 'opciones4',
+    consigna: 'Toca el MÚLTIPLO de ' + d + '.',
+    respuesta: resp,
+    expr: 'mul' + d + '_' + k,
+    diagnostico: false,
+    distractoresFijos: [resp + 1, resp - 1, resp + 2]
+  };
+};
+
+/* N37 Divisores (5.º) */
+CB.gen.numeracion.N37 = function (rng, D) {
+  const n = CB.util.elegir(rng, [12, 18, 20, 24, 30, 36, 40, 48, 60]);
+  const divisores = [];
+  const noDivisores = [];
+  let v;
+  for (v = 2; v < n; v++) {
+    if (n % v === 0) divisores.push(v); else noDivisores.push(v);
+  }
+  const resp = CB.util.elegir(rng, divisores);
+  return {
+    formato: 'opciones4',
+    consigna: 'Toca el DIVISOR de ' + n + '.',
+    respuesta: resp,
+    expr: 'div' + n + '_' + resp,
+    diagnostico: false,
+    distractoresFijos: CB.util.barajar(noDivisores, rng).slice(0, 3)
+  };
+};
+
+/* N38 Divisible entre 2, 3, 5 y 10 (5.º) */
+CB.gen.numeracion.N38 = function (rng, D) {
+  const d = CB.util.elegir(rng, [2, 3, 5, 10]);
+  const resp = d * CB.util.ent(rng, 11, Math.floor(999 / d));
+  const fijos = [];
+  let k = 0, v;
+  while (fijos.length < 3 && k < 80) {
+    k++;
+    v = CB.util.ent(rng, 20, 999);
+    if (v % d === 0 || v === resp || fijos.indexOf(v) !== -1) continue;
+    fijos.push(v);
+  }
+  return {
+    formato: 'opciones4',
+    consigna: 'Toca el número divisible entre ' + d + '.',
+    respuesta: resp,
+    expr: 'dvs' + d + '_' + resp,
+    diagnostico: false,
+    distractoresFijos: fijos
+  };
+};
+
+/* N39 Aproximar números grandes (5.º) */
+CB.gen.numeracion.N39 = function (rng, D) {
+  return itemAproximar(rng, D, 150000, 8949999, 100000, 'centena de millar más cercana');
+};
+
+/* N40 Potencias (6.º) */
+CB.gen.numeracion.N40 = function (rng, D) {
+  const casos = [];
+  let b;
+  for (b = 2; b <= 12; b++) casos.push([b, 2, b + '²', b * b]);
+  for (b = 2; b <= 5; b++) casos.push([b, 3, b + '³', b * b * b]);
+  const c = CB.util.elegir(rng, (D === 1) ? casos.slice(0, 8) : casos);
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuánto es ' + c[2] + '?',
+    respuesta: c[3],
+    expr: 'pot' + c[0] + '_' + c[1],
+    diagnostico: false
+  };
+};
+
+/* N41 La raíz cuadrada exacta (6.º) */
+CB.gen.numeracion.N41 = function (rng, D) {
+  const r = CB.util.ent(rng, 2, (D === 1) ? 8 : 12);
+  return {
+    formato: 'teclado',
+    consigna: '¿Qué número multiplicado por sí mismo da ' + (r * r) + '?',
+    respuesta: r,
+    expr: 'raiz' + (r * r),
+    diagnostico: false
+  };
+};
+
+/* N42 El mínimo común múltiplo (6.º) */
+CB.gen.numeracion.N42 = function (rng, D) {
+  const pares = [[2, 3], [3, 4], [4, 6], [2, 5], [6, 8], [3, 5], [4, 10], [6, 9], [8, 12], [5, 10]];
+  const p = CB.util.elegir(rng, (D === 1) ? pares.slice(0, 5) : pares);
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuál es el mínimo común múltiplo de ' + p[0] + ' y ' + p[1] + '?',
+    respuesta: CB.gen.motor.mcm(p[0], p[1]),
+    expr: 'mcm' + p.join('_'),
+    diagnostico: false
+  };
+};
+
+/* N43 El máximo común divisor (6.º) */
+CB.gen.numeracion.N43 = function (rng, D) {
+  const pares = [[6, 9], [8, 12], [10, 15], [12, 18], [6, 8], [9, 12], [20, 30], [14, 21], [16, 24], [15, 25]];
+  const p = CB.util.elegir(rng, (D === 1) ? pares.slice(0, 5) : pares);
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuál es el máximo común divisor de ' + p[0] + ' y ' + p[1] + '?',
+    respuesta: CB.gen.motor.mcd(p[0], p[1]),
+    expr: 'mcd' + p.join('_'),
+    diagnostico: false
+  };
+};
+
+/* N44 Las potencias de 10 (6.º) */
+CB.gen.numeracion.N44 = function (rng, D) {
+  const e = CB.util.ent(rng, 2, (D === 1) ? 4 : 6);
+  const sup = ['', '', '²', '³', '⁴', '⁵', '⁶'][e];
+  const pideCeros = rng() < 0.4;
+  return {
+    formato: 'teclado',
+    consigna: pideCeros
+      ? '¿Cuántos ceros tiene 10' + sup + '?'
+      : '¿Cuánto es 10' + sup + '?',
+    respuesta: pideCeros ? e : Math.pow(10, e),
+    expr: 'p10_' + e + (pideCeros ? 'c' : ''),
+    diagnostico: false
+  };
+};
+
 /* 11-gen-sumas.js — S1…S16 */
 
 var CB = CB || {};
@@ -3605,6 +4021,53 @@ CB.gen.sumas.S21 = function (rng, D) {
   return itemSuma({ a: a, b: b, r: a + b });
 };
 
+/* ——— Cursos 3.º-4.º (3.1.0): S22…S26 ——— */
+
+/* S22 Sumas con dos llevadas (3.º) */
+CB.gen.sumas.S22 = function (rng, D) {
+  return itemSuma(CB.gen.sumas.intentar(rng, [true, true, false], 3, 3, 999));
+};
+
+/* S23 Sumas de cuatro cifras (3.º) */
+CB.gen.sumas.S23 = function (rng, D) {
+  const patron = [rng() < 0.6, rng() < 0.4, false, false];
+  return itemSuma(CB.gen.sumas.intentar(rng, patron, 4, 4, 9999));
+};
+
+/* S24 Sumar centenas y millares de cabeza (3.º) */
+CB.gen.sumas.S24 = function (rng, D) {
+  const a = CB.util.ent(rng, 10, (D === 1) ? 40 : 89) * 100;
+  const b = CB.util.ent(rng, 1, 9) * 100;
+  const it = itemSuma({ a: a, b: b, r: a + b });
+  it.formato = 'opciones4';
+  it.consigna = CB.gen.motor.sep(a) + ' + ' + b;
+  return it;
+};
+
+/* S25 Sumas de números grandes (4.º) */
+CB.gen.sumas.S25 = function (rng, D) {
+  const patron = [rng() < 0.6, rng() < 0.4, rng() < 0.3, false, false];
+  return itemSuma(CB.gen.sumas.intentar(rng, patron, 5, 5, 99999));
+};
+
+/* S26 Estimar sumas (4.º) */
+CB.gen.sumas.S26 = function (rng, D) {
+  const am = CB.util.ent(rng, 2, 5) * 1000;
+  const bm = CB.util.ent(rng, 2, 4) * 1000;
+  const a = am - CB.util.ent(rng, 30, 180);
+  const b = bm - CB.util.ent(rng, 30, 180);
+  const est = am + bm;
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuál es la MEJOR estimación de ' + CB.gen.motor.sep(a) + ' + ' +
+              CB.gen.motor.sep(b) + '?',
+    respuesta: est,
+    expr: 'estS' + a + '_' + b,
+    diagnostico: false,
+    distractoresFijos: [est - 1000, est + 1000, est - 500]
+  };
+};
+
 /* 12-gen-restas.js — R1…R14 */
 
 var CB = CB || {};
@@ -3795,6 +4258,54 @@ CB.gen.restas.R18 = function (rng, D) {
   return itemResta(CB.gen.restas.construir(rng, [false, false], 2, cifrasB, 99));
 };
 
+/* ——— Cursos 3.º-4.º (3.1.0): R19…R23 ——— */
+
+/* R19 Restas con dos llevadas (3.º): en 3.º esto es nuclear; en 2.º sigue
+   siendo la ampliación R14 con su flag. La mecánica es la misma. */
+CB.gen.restas.R19 = function (rng, D) {
+  return CB.gen.restas.R14(rng, D);
+};
+
+/* R20 Restas de cuatro cifras (3.º) */
+CB.gen.restas.R20 = function (rng, D) {
+  const patron = [rng() < 0.6, rng() < 0.4, false, false];
+  return itemResta(CB.gen.restas.construir(rng, patron, 4, 4, 9999));
+};
+
+/* R21 Restar centenas de cabeza (3.º) */
+CB.gen.restas.R21 = function (rng, D) {
+  const a = CB.util.ent(rng, 11, (D === 1) ? 40 : 99) * 100;
+  const b = CB.util.ent(rng, 1, 9) * 100;
+  const it = itemResta({ a: a, b: b, r: a - b });
+  it.formato = 'opciones4';
+  it.consigna = CB.gen.motor.sep(a) + ' − ' + b;
+  return it;
+};
+
+/* R22 Restas de números grandes (4.º) */
+CB.gen.restas.R22 = function (rng, D) {
+  const patron = [rng() < 0.6, rng() < 0.4, rng() < 0.3, false, false];
+  return itemResta(CB.gen.restas.construir(rng, patron, 5, 5, 99999));
+};
+
+/* R23 Estimar restas (4.º) */
+CB.gen.restas.R23 = function (rng, D) {
+  const am = CB.util.ent(rng, 5, 9) * 1000;
+  const bm = CB.util.ent(rng, 2, am / 1000 - 2) * 1000;
+  const a = am - CB.util.ent(rng, 30, 180);
+  const b = bm - CB.util.ent(rng, 30, 180);
+  const est = am - bm;
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuál es la MEJOR estimación de ' + CB.gen.motor.sep(a) + ' − ' +
+              CB.gen.motor.sep(b) + '?',
+    respuesta: est,
+    expr: 'estR' + a + '_' + b,
+    diagnostico: false,
+    distractoresFijos: [est - 1000, est + 1000, est + 500]
+  };
+};
+
 /* 13-gen-multiplicacion.js — M1…M10 */
 
 var CB = CB || {};
@@ -3915,6 +4426,10 @@ CB.gen.multiplicacion.factoresValidos = function (item, tablas69) {
   const o = item.operandos || [];
   if (o.length !== 2) return true;              // «la mitad de» no es un producto
 
+  /* Desde 3.º las tablas enteras y los factores grandes son nucleares: este
+     vigilante protege la INICIACIÓN de 2.º (M1-M10), no a los mayores. */
+  if (item.tablasCompletas) return true;
+
   const a = o[0], b = o[1];
   if (!(a >= 0 && a <= 10) || !(b >= 0 && b <= 10)) return false;   // nunca > 10
   if (tablas69) return true;
@@ -3922,6 +4437,119 @@ CB.gen.multiplicacion.factoresValidos = function (item, tablas69) {
   const N = CB.gen.multiplicacion.TABLAS_NUCLEARES;
   const M = CB.gen.multiplicacion.MAX_CONCEPTO;
   return (N.indexOf(a) !== -1) || (N.indexOf(b) !== -1) || (a <= M && b <= M);
+};
+
+/* ——— Cursos 3.º-5.º (3.1.0): M11…M22. Todos llevan tablasCompletas: desde
+   3.º las tablas enteras son nucleares y los factores pueden pasar de 10, y
+   factoresValidos deja de vigilarlos (vigila la INICIACIÓN de 2.º). ——— */
+
+function itemMultGrande(a, b) {
+  return {
+    formato: 'teclado',
+    operacion: '×',
+    operandos: [a, b],
+    respuesta: a * b,
+    expr: a + 'x' + b,
+    consigna: (a > 999 ? CB.gen.motor.sep(a) : a) + ' × ' + b,
+    diagnostico: true,
+    tablasCompletas: true
+  };
+}
+CB.gen.multiplicacion._itemMultGrande = itemMultGrande;
+
+function conTablasCompletas(it) { it.tablasCompletas = true; return it; }
+
+/* M11 La tabla del 6 (3.º) */
+CB.gen.multiplicacion.M11 = function (rng, D) {
+  return conTablasCompletas(tabla(6)(rng, D));
+};
+
+/* M12 Las tablas del 7, del 8 y del 9 (3.º) */
+CB.gen.multiplicacion.M12 = function (rng, D) {
+  return conTablasCompletas(tabla(CB.util.elegir(rng, [7, 8, 9]))(rng, D));
+};
+
+/* M13 Todas las tablas (3.º) */
+CB.gen.multiplicacion.M13 = function (rng, D) {
+  return conTablasCompletas(tabla(CB.util.ent(rng, 2, 10))(rng, D));
+};
+
+/* M14 Por una cifra, sin llevada (3.º): cada dígito × b se queda en su casilla */
+CB.gen.multiplicacion.M14 = function (rng, D) {
+  const b = CB.util.ent(rng, 2, 4);
+  const tope = Math.floor(9 / b);
+  const a = CB.util.ent(rng, 1, tope) * 10 + CB.util.ent(rng, 0, tope);
+  return itemMultGrande(a, b);
+};
+
+/* M15 Por una cifra, con llevada (3.º) */
+CB.gen.multiplicacion.M15 = function (rng, D) {
+  const b = CB.util.ent(rng, 3, 9);
+  const a = CB.util.ent(rng, 12, (D === 1) ? 40 : Math.floor(999 / b));
+  return itemMultGrande(a, b);
+};
+
+/* M16 Por 10 y por 100 (3.º) */
+CB.gen.multiplicacion.M16 = function (rng, D) {
+  const pot = CB.util.elegir(rng, (D === 1) ? [10] : [10, 100]);
+  const a = CB.util.ent(rng, 2, 99);
+  return itemMultGrande(a, pot);
+};
+
+/* M17 Por dos cifras (4.º) */
+CB.gen.multiplicacion.M17 = function (rng, D) {
+  const a = CB.util.ent(rng, 12, (D === 1) ? 40 : 99);
+  const b = CB.util.ent(rng, 12, (D === 1) ? 25 : 99);
+  return itemMultGrande(a, b);
+};
+
+/* M18 Por decenas enteras (4.º) */
+CB.gen.multiplicacion.M18 = function (rng, D) {
+  const a = CB.util.ent(rng, 12, (D === 1) ? 40 : 99);
+  const b = CB.util.ent(rng, 2, 9) * 10;
+  return itemMultGrande(a, b);
+};
+
+/* M19 El doble y el triple de grandes (4.º) */
+CB.gen.multiplicacion.M19 = function (rng, D) {
+  const k = CB.util.elegir(rng, [2, 3]);
+  const n = CB.util.ent(rng, 100, Math.floor(9999 / k));
+  const it = itemMultGrande(n, k);
+  it.consigna = '¿Cuánto es el ' + (k === 2 ? 'doble' : 'triple') + ' de ' +
+                CB.gen.motor.sep(n) + '?';
+  it.expr = 'dt' + k + '_' + n;
+  return it;
+};
+
+/* M20 Por 1.000 (4.º) */
+CB.gen.multiplicacion.M20 = function (rng, D) {
+  const a = CB.util.ent(rng, 2, (D === 1) ? 99 : 999);
+  return itemMultGrande(a, 1000);
+};
+
+/* M21 Decenas por decenas y centenas (5.º) */
+CB.gen.multiplicacion.M21 = function (rng, D) {
+  const a = CB.util.ent(rng, 2, 9) * ((rng() < 0.5) ? 100 : 10);
+  const b = CB.util.ent(rng, 2, 9) * 10;
+  return itemMultGrande(a, b);
+};
+
+/* M22 Operaciones combinadas (5.º): el paréntesis manda */
+CB.gen.multiplicacion.M22 = function (rng, D) {
+  const a = CB.util.ent(rng, 2, (D === 1) ? 10 : 20);
+  const b = CB.util.ent(rng, 2, 9);
+  const c = CB.util.ent(rng, 2, 9);
+  const conParentesis = rng() < 0.5;
+  return {
+    formato: 'teclado',
+    consigna: conParentesis
+      ? '(' + a + ' + ' + b + ') × ' + c
+      : a + ' + ' + b + ' × ' + c,
+    respuesta: conParentesis ? (a + b) * c : a + b * c,
+    expr: 'comb' + (conParentesis ? 'p' : '') + a + '_' + b + '_' + c,
+    diagnostico: false,
+    tablasCompletas: true
+  };
 };
 
 /* 14-gen-problemas.js — P1…P20, las 20 estructuras semánticas aditivas */
@@ -4438,7 +5066,12 @@ CB.gen.problemas.PROBLEMAS_SEGUROS = [
 /* Generación */
 CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
   ctx = ctx || {};
-  const techo = ctx.techo || 99;
+  /* El techo del problema se queda en 999 aunque el curso llegue al millón:
+     el validador de lectura fácil exige respuesta ≤ 999, y sin este tope un
+     curso alto agotaba los 20 intentos y servía SIEMPRE el problema de
+     respaldo. En los problemas la dificultad vive en la estructura, no en el
+     tamaño del número (3.1.0). */
+  const techo = Math.min(ctx.techo || 99, 999);
   const conSobrante = !!ctx.datoSobrante;
   let intentos = 0, item;
 
@@ -4591,7 +5224,18 @@ CB.gen.problemas.SUBTIPO_DE_NIVEL = {
   P17: 'IGUALACION_3', P18: 'IGUALACION_4', P19: 'IGUALACION_5', P20: 'IGUALACION_6',
   /* Curso 1.º (3.0.0): las mismas cuatro estructuras nucleares. El curso no
      cambia la plantilla, cambia el techo numérico que la partida pasa en ctx. */
-  P21: 'CAMBIO_1', P22: 'CAMBIO_2', P23: 'COMBINACION_1', P24: 'COMBINACION_2'
+  P21: 'CAMBIO_1', P22: 'CAMBIO_2', P23: 'COMBINACION_1', P24: 'COMBINACION_2',
+  /* Cursos 3.º-6.º (3.1.0): las estructuras más duras del banco aditivo, con
+     números hasta 999. Los problemas MULTIPLICATIVOS son deuda declarada en
+     docs/decisiones.md: exigen plantillas y validación nuevas, no filas. */
+  P25: 'IGUALACION_1', P26: 'CAMBIO_5', P27: 'CAMBIO_6', P28: 'COMPARACION_5',
+  P29: 'COMPARACION_6',
+  P30: 'IGUALACION_3', P31: 'IGUALACION_4', P32: 'COMBINACION_2', P33: 'CAMBIO_5',
+  P34: 'COMPARACION_5',
+  P35: 'IGUALACION_5', P36: 'IGUALACION_6', P37: 'CAMBIO_6', P38: 'COMPARACION_6',
+  P39: 'COMBINACION_1',
+  P40: 'IGUALACION_5', P41: 'IGUALACION_6', P42: 'COMPARACION_5', P43: 'CAMBIO_5',
+  P44: 'COMBINACION_2'
 };
 
 /* Los generadores P1..P20 que consume el catálogo. */
@@ -4874,6 +5518,89 @@ CB.gen.dinero.E10 = function (rng, D) {
   };
 };
 
+/* ——— Cursos 3.º-4.º (3.1.0): E11…E14 ——— */
+
+/* E11 Céntimos: contar y equivaler (3.º). SIEMPRE céntimos enteros. */
+CB.gen.dinero.E11 = function (rng, D) {
+  if (rng() < 0.5) {
+    const c = CB.util.elegir(rng, CB.gen.dinero.CENTIMOS);
+    return {
+      formato: 'opciones4',
+      consigna: '¿Cuántas monedas de ' + CB.gen.dinero.centimos(c) + ' hacen 1 euro?',
+      respuesta: 100 / c,
+      expr: 'e11eq' + c,
+      diagnostico: false
+    };
+  }
+  const c2 = CB.util.elegir(rng, CB.gen.dinero.CENTIMOS);
+  const n = CB.util.ent(rng, 2, (D === 1) ? 4 : 6);
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuántos céntimos son ' + n + ' monedas de ' +
+              CB.gen.dinero.centimos(c2) + '?',
+    operacion: '×', operandos: [n, c2],
+    respuesta: n * c2,
+    expr: 'e11c' + n + '_' + c2,
+    diagnostico: true,
+    tablasCompletas: true
+  };
+};
+
+/* E12 La compra grande (3.º) */
+CB.gen.dinero.E12 = function (rng, D) {
+  if (rng() < 0.5) {
+    const a = CB.util.ent(rng, 25, (D === 1) ? 200 : 499);
+    const b = CB.util.ent(rng, 25, Math.min(499, 999 - a));
+    return {
+      formato: 'teclado',
+      consigna: 'Una bici cuesta ' + a + ' € y un casco ' + b +
+                ' €. ¿Cuánto es en total?',
+      operacion: '+', operandos: [a, b],
+      respuesta: a + b,
+      expr: 'e12s' + a + '_' + b,
+      diagnostico: true
+    };
+  }
+  const precio = CB.util.ent(rng, 12, 89);
+  return {
+    formato: 'teclado',
+    consigna: 'Cuesta ' + precio + ' €. Pagas con 100 €. ¿Cuánto te devuelven?',
+    operacion: '-', operandos: [100, precio],
+    respuesta: 100 - precio,
+    expr: 'e12c' + precio,
+    diagnostico: true
+  };
+};
+
+/* E13 El cambio con céntimos (4.º): la respuesta lleva coma */
+CB.gen.dinero.E13 = function (rng, D) {
+  const precio = CB.util.ent(rng, 5, 19) * 25;             // 1,25 … 4,75
+  const paga = 500;
+  return {
+    formato: 'teclado', conComa: true,
+    consigna: 'Cuesta ' + CB.gen.motor.coma(precio, 100) +
+              ' €. Pagas con 5 €. ¿Cuánto te devuelven?',
+    respuesta: CB.gen.motor.dec(paga - precio, 100),
+    expr: 'e13_' + precio,
+    diagnostico: false
+  };
+};
+
+/* E14 El presupuesto (4.º) */
+CB.gen.dinero.E14 = function (rng, D) {
+  const total = CB.util.elegir(rng, [200, 300, 500]);
+  const a = CB.util.ent(rng, 40, Math.floor(total / 2) - 10);
+  const b = CB.util.ent(rng, 40, total - a - 10);
+  return {
+    formato: 'teclado',
+    consigna: 'Tienes ' + total + ' €. Compras por ' + a + ' € y por ' + b +
+              ' €. ¿Cuánto te queda?',
+    respuesta: total - a - b,
+    expr: 'e14_' + total + '_' + a + '_' + b,
+    diagnostico: false
+  };
+};
+
 /* 16-gen-vocabulario.js — V1…V8 (Diccionario de Bloques) */
 
 var CB = CB || {};
@@ -4976,6 +5703,979 @@ CB.gen.vocabulario.terminoDe = function (item) {
   return item && item.termino ? item.termino : null;
 };
 
+/* 19-gen-motor.js — Ayudas compartidas por los generadores de 3.º-6.º (3.1.0).
+   PURO: sin DOM y sin Math.random; todo rng viene inyectado. Los decimales se
+   construyen SIEMPRE como entero escalado dividido UNA vez entre 10 o 100:
+   así parseFloat(lo tecleado) y la respuesta son el mismo doble exacto. */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.motor = {};
+
+/* Un número grande, legible: 45 231 (espacio, nunca punto: el guardián de los
+   decimales busca [,.] pegado a cifra, y el punto de millar lo pisaría). */
+CB.gen.motor.sep = function (n) {
+  const s = String(Math.round(Math.abs(n)));
+  let out = '', i;
+  for (i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 === 0) out += ' ';
+    out += s.charAt(i);
+  }
+  return (n < 0 ? '−' : '') + out;
+};
+
+/* Entero escalado → texto con coma: coma(345, 100) = '3,45'. */
+CB.gen.motor.coma = function (escalado, escala) {
+  const neg = escalado < 0 ? '−' : '';
+  const abs = Math.abs(escalado);
+  const ent = Math.floor(abs / escala);
+  let dec = String(abs % escala);
+  while (dec.length < String(escala).length - 1) dec = '0' + dec;
+  dec = dec.replace(/0+$/, '');
+  return neg + ent + (dec.length ? ',' + dec : '');
+};
+
+/* Entero escalado → Number exacto: dec(345, 100) = 3.45. UNA división. */
+CB.gen.motor.dec = function (escalado, escala) { return escalado / escala; };
+
+CB.gen.motor.mcd = function (a, b) {
+  a = Math.abs(a); b = Math.abs(b);
+  while (b) { const t = a % b; a = b; b = t; }
+  return a || 1;
+};
+
+CB.gen.motor.mcm = function (a, b) {
+  return (a * b) / CB.gen.motor.mcd(a, b);
+};
+
+/* La fracción como texto: es la RESPUESTA de los ítems de fracción (una
+   cadena, como 'c20' en el dinero: el motor de distractores hace aritmética
+   y una fracción no es un número tecleable). */
+CB.gen.motor.fstr = function (num, den) { return num + '/' + den; };
+
+/* Recorre [min, max] según D, igual que tramo() en 10-gen-numeracion. */
+CB.gen.motor.tramo = function (min, max, D, rng) {
+  return CB.gen.numeracion._tramo(min, max, D, rng);
+};
+
+/* 19a-gen-division.js — D1…D17 (cursos 3.º-6.º) */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.division = {};
+
+/* a ÷ d = c (resto r). Se construye desde el cociente: la división siempre
+   cuadra por construcción, nunca por reintento. */
+function itemDiv(a, d, c, pideResto, r) {
+  return {
+    formato: 'teclado',
+    operacion: '÷',
+    operandos: [a, d],
+    respuesta: pideResto ? r : c,
+    expr: a + '/' + d + (pideResto ? 'r' : ''),
+    consigna: pideResto
+      ? (a + ' ÷ ' + d + ' — ¿cuánto SOBRA?')
+      : (a + ' ÷ ' + d),
+    diagnostico: true,
+    contexto: { cociente: c, resto: r || 0 }
+  };
+}
+CB.gen.division._itemDiv = itemDiv;
+
+/* D1 Repartir en partes iguales (3.º) */
+CB.gen.division.D1 = function (rng, D) {
+  const d = CB.util.ent(rng, 2, 5);
+  const c = CB.util.ent(rng, 2, (D === 1) ? 5 : 10);
+  const a = d * c;
+  return {
+    formato: 'opciones4',
+    consigna: a + ' caramelos entre ' + d + ' amigos. ¿Cuántos a cada uno?',
+    operacion: '÷', operandos: [a, d],
+    respuesta: c,
+    expr: 'rep' + a + '_' + d,
+    diagnostico: true
+  };
+};
+
+/* D2 Dividir con las tablas del 2, del 5 y del 10 (3.º) */
+CB.gen.division.D2 = function (rng, D) {
+  const d = CB.util.elegir(rng, [2, 5, 10]);
+  const c = CB.util.ent(rng, 1, (D === 1) ? 5 : 10);
+  return itemDiv(d * c, d, c, false, 0);
+};
+
+/* D3 Dividir con todas las tablas (3.º) */
+CB.gen.division.D3 = function (rng, D) {
+  const d = CB.util.ent(rng, 2, 10);
+  const c = CB.util.ent(rng, 2, (D === 1) ? 5 : 10);
+  return itemDiv(d * c, d, c, false, 0);
+};
+
+/* D4 La división con resto (3.º): pide el cociente o lo que sobra */
+CB.gen.division.D4 = function (rng, D) {
+  const d = CB.util.ent(rng, 2, 9);
+  const c = CB.util.ent(rng, 2, (D === 1) ? 5 : 9);
+  const r = CB.util.ent(rng, 1, d - 1);
+  return itemDiv(d * c + r, d, c, rng() < 0.4, r);
+};
+
+/* D5 Dividir dos cifras entre una, exacta (3.º) */
+CB.gen.division.D5 = function (rng, D) {
+  const d = CB.util.ent(rng, 2, 9);
+  const c = CB.util.ent(rng, Math.ceil(10 / d) + 1, Math.floor(99 / d));
+  return itemDiv(d * c, d, c, false, 0);
+};
+
+/* D6 La prueba de la división (3.º): divisor × cociente + resto */
+CB.gen.division.D6 = function (rng, D) {
+  const d = CB.util.ent(rng, 2, 9);
+  const c = CB.util.ent(rng, 3, (D === 1) ? 10 : 30);
+  const r = CB.util.ent(rng, 0, d - 1);
+  return {
+    formato: 'teclado',
+    consigna: 'El divisor es ' + d + ', el cociente ' + c + ' y el resto ' + r +
+              '. ¿Qué número se dividió?',
+    respuesta: d * c + r,
+    expr: 'prueba' + d + '_' + c + '_' + r,
+    diagnostico: false
+  };
+};
+
+/* D7 Tres cifras entre una, exacta (4.º) */
+CB.gen.division.D7 = function (rng, D) {
+  const d = CB.util.ent(rng, 2, 9);
+  const c = CB.util.ent(rng, Math.ceil(100 / d) + 1, Math.floor(999 / d));
+  return itemDiv(d * c, d, c, false, 0);
+};
+
+/* D8 Con resto y números grandes (4.º) */
+CB.gen.division.D8 = function (rng, D) {
+  const d = CB.util.ent(rng, 3, 9);
+  const c = CB.util.ent(rng, 12, (D === 1) ? 40 : 99);
+  const r = CB.util.ent(rng, 1, d - 1);
+  return itemDiv(d * c + r, d, c, rng() < 0.4, r);
+};
+
+/* D9 Dividir entre 10, 100 y 1.000 (4.º) */
+CB.gen.division.D9 = function (rng, D) {
+  const pot = CB.util.elegir(rng, (D === 1) ? [10, 100] : [10, 100, 1000]);
+  const c = CB.util.ent(rng, 2, 99);
+  return itemDiv(c * pot, pot, c, false, 0);
+};
+
+/* D10 Entre dos cifras: iniciación (4.º) */
+CB.gen.division.D10 = function (rng, D) {
+  const d = CB.util.elegir(rng, [11, 12, 15, 20, 25]);
+  const c = CB.util.ent(rng, 2, (D === 1) ? 5 : 9);
+  return itemDiv(d * c, d, c, false, 0);
+};
+
+/* D11 La mitad, el tercio y el cuarto (4.º) */
+CB.gen.division.D11 = function (rng, D) {
+  const par = CB.util.elegir(rng, [[2, 'la mitad'], [3, 'el tercio'], [4, 'el cuarto']]);
+  const c = CB.util.ent(rng, 25, (D === 1) ? 200 : 2400);
+  const a = c * par[0];
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuánto es ' + par[1] + ' de ' + CB.gen.motor.sep(a) + '?',
+    operacion: '÷', operandos: [a, par[0]],
+    respuesta: c,
+    expr: 'parte' + par[0] + '_' + a,
+    diagnostico: true
+  };
+};
+
+/* D12 Entre dos cifras (5.º) */
+CB.gen.division.D12 = function (rng, D) {
+  const d = CB.util.ent(rng, 11, 30);
+  const c = CB.util.ent(rng, 3, (D === 1) ? 12 : 40);
+  return itemDiv(d * c, d, c, false, 0);
+};
+
+/* D13 Exacta y entera (5.º): con dos cifras y resto */
+CB.gen.division.D13 = function (rng, D) {
+  const d = CB.util.ent(rng, 11, 25);
+  const c = CB.util.ent(rng, 4, (D === 1) ? 15 : 60);
+  const r = CB.util.ent(rng, 0, d - 1);
+  return itemDiv(d * c + r, d, c, r > 0 && rng() < 0.4, r);
+};
+
+/* D14 Números grandes (5.º) */
+CB.gen.division.D14 = function (rng, D) {
+  const d = CB.util.ent(rng, 2, 12);
+  const c = CB.util.ent(rng, 300, (D === 1) ? 2000 : 8000);
+  return itemDiv(d * c, d, c, false, 0);
+};
+
+/* D15 Cocientes con ceros (5.º): 2.412 ÷ 12 = 201 */
+CB.gen.division.D15 = function (rng, D) {
+  const d = CB.util.ent(rng, 2, 12);
+  const c = CB.util.ent(rng, 1, 9) * 100 + CB.util.ent(rng, 1, 9);
+  return itemDiv(d * c, d, c, false, 0);
+};
+
+/* D16 Divisores grandes (6.º) */
+CB.gen.division.D16 = function (rng, D) {
+  const d = CB.util.ent(rng, 25, 99);
+  const c = CB.util.ent(rng, 10, (D === 1) ? 40 : 99);
+  return itemDiv(d * c, d, c, false, 0);
+};
+
+/* D17 Estimar el cociente (6.º) */
+CB.gen.division.D17 = function (rng, D) {
+  const d = CB.util.ent(rng, 3, 9);
+  const cRedondo = CB.util.ent(rng, 2, 9) * 100;
+  const a = cRedondo * d + CB.util.ent(rng, 1, d * 9);
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuál es la MEJOR estimación de ' + CB.gen.motor.sep(a) + ' ÷ ' + d + '?',
+    respuesta: cRedondo,
+    expr: 'est' + a + '_' + d,
+    diagnostico: false,
+    distractoresFijos: [cRedondo / 10, cRedondo * 10, cRedondo + 500]
+  };
+};
+
+/* 19b-gen-fracciones.js — F1…F20 (cursos 3.º-6.º).
+   LA RESPUESTA DE UNA FRACCIÓN ES UNA CADENA ('3/4'), como 'c20' en el
+   dinero: no se puede teclear y el motor de distractores haría aritmética con
+   ella. Todos los ítems de fracción-como-respuesta llevan respuestaFraccion,
+   opciones4 y distractoresFijos; los de resultado entero o decimal, teclado. */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.fracciones = {};
+
+const fstr = function (n, d) { return CB.gen.motor.fstr(n, d); };
+
+function itemFrac(consigna, num, den, fijos, expr, visual) {
+  const resp = fstr(num, den);
+  /* Los fijos se DEDUPLICAN aquí, no en cada nivel: den−num puede coincidir
+     con num±1, a·b con a+b+1… y un juego de opciones con dos iguales rompe el
+     invariante 5. Si tras depurar faltan, se rellena con fracciones vecinas. */
+  const unicos = [];
+  fijos.forEach(function (f) {
+    if (f !== resp && unicos.indexOf(f) === -1) unicos.push(f);
+  });
+  let k = 2;
+  while (unicos.length < 3 && k < 40) {
+    const cand = fstr(num + k, den + k + 1);
+    if (cand !== resp && unicos.indexOf(cand) === -1) unicos.push(cand);
+    k++;
+  }
+  const it = {
+    formato: 'opciones4',
+    consigna: consigna,
+    respuesta: resp,
+    respuestaFraccion: true,
+    distractoresFijos: unicos.slice(0, 3),
+    expr: expr,
+    diagnostico: false
+  };
+  if (visual) it.visual = visual;
+  return it;
+}
+CB.gen.fracciones._itemFrac = itemFrac;
+
+/* F1 Mitades, tercios y cuartos (3.º) */
+CB.gen.fracciones.F1 = function (rng, D) {
+  const den = CB.util.elegir(rng, (D === 1) ? [2, 4] : [2, 3, 4]);
+  return itemFrac('¿Qué parte está pintada?', 1, den,
+    [2, 3, 4, 6].filter(function (x) { return x !== den; })
+      .slice(0, 3).map(function (x) { return fstr(1, x); }),
+    'f1_' + den, { tipo: 'fraccion', partes: den, sombreadas: 1 });
+};
+
+/* F2 ¿Qué fracción está pintada? (3.º) */
+CB.gen.fracciones.F2 = function (rng, D) {
+  const den = CB.util.elegir(rng, (D === 1) ? [4, 5, 6] : [5, 6, 8, 10, 12]);
+  const num = CB.util.ent(rng, 2, den - 1);
+  const fijos = [];
+  if (num - 1 >= 1) fijos.push(fstr(num - 1, den));
+  if (num + 1 <= den) fijos.push(fstr(num + 1, den));
+  fijos.push(fstr(den - num, den));
+  if (fijos.length < 3) fijos.push(fstr(num, den + 2));
+  return itemFrac('¿Qué fracción está pintada?', num, den,
+    fijos.slice(0, 3), 'f2_' + num + '_' + den,
+    { tipo: 'fraccion', partes: den, sombreadas: num });
+};
+
+/* F3 La fracción de una cantidad (3.º) */
+CB.gen.fracciones.F3 = function (rng, D) {
+  const den = CB.util.elegir(rng, [2, 3, 4, 5]);
+  const parte = CB.util.ent(rng, 2, (D === 1) ? 10 : 20);
+  const total = den * parte;
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuánto es ' + fstr(1, den) + ' de ' + total + '?',
+    operacion: '÷', operandos: [total, den],
+    respuesta: parte,
+    expr: 'f3_' + den + '_' + total,
+    diagnostico: true
+  };
+};
+
+/* F4 Comparar fracciones sencillas (3.º): la mayor de las unitarias */
+CB.gen.fracciones.F4 = function (rng, D) {
+  const pool = CB.util.barajar([2, 3, 4, 5, 6, 8, 10, 12], rng).slice(0, 4);
+  pool.sort(function (a, b) { return a - b; });
+  return itemFrac('Toca la fracción MAYOR.', 1, pool[0],
+    pool.slice(1).map(function (x) { return fstr(1, x); }),
+    'f4_' + pool.join('_'));
+};
+
+/* F5 Fracciones equivalentes (4.º) */
+CB.gen.fracciones.F5 = function (rng, D) {
+  const base = CB.util.elegir(rng, [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [2, 5]]);
+  const k = CB.util.ent(rng, 2, (D === 1) ? 3 : 4);
+  return itemFrac('¿Cuál vale lo MISMO que ' + fstr(base[0], base[1]) + '?',
+    base[0] * k, base[1] * k,
+    [fstr(base[0], base[1] * k), fstr(base[0] + 1, base[1]),
+     fstr(base[0] * k, base[1] * k + 1)],
+    'f5_' + base.join('_') + 'x' + k);
+};
+
+/* F6 La fracción de una cantidad grande (4.º) */
+CB.gen.fracciones.F6 = function (rng, D) {
+  const den = CB.util.elegir(rng, [2, 3, 4, 5, 10]);
+  const num = CB.util.ent(rng, 1, den - 1);
+  const parte = CB.util.ent(rng, 5, (D === 1) ? 30 : 90);
+  const total = den * parte;
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuánto es ' + fstr(num, den) + ' de ' + CB.gen.motor.sep(total) + '?',
+    respuesta: num * parte,
+    expr: 'f6_' + num + '_' + den + '_' + total,
+    diagnostico: false
+  };
+};
+
+/* F7 Mayor que un entero (4.º) */
+CB.gen.fracciones.F7 = function (rng, D) {
+  const den = CB.util.elegir(rng, [2, 3, 4, 5]);
+  const num = den + CB.util.ent(rng, 1, den);
+  return itemFrac('Toca la fracción MAYOR que un entero.', num, den,
+    [fstr(Math.max(1, den - 1), den), fstr(1, den), fstr(den, den + 1)],
+    'f7_' + num + '_' + den);
+};
+
+/* F8 Sumar con el mismo denominador (4.º) */
+CB.gen.fracciones.F8 = function (rng, D) {
+  const den = CB.util.elegir(rng, [5, 6, 8, 10, 12]);
+  const a = CB.util.ent(rng, 1, den - 3);
+  const b = CB.util.ent(rng, 1, den - a - 1);
+  return itemFrac(fstr(a, den) + ' + ' + fstr(b, den),
+    a + b, den,
+    [fstr(a + b, den * 2), fstr(a * b, den), fstr(a + b + 1, den)],
+    'f8_' + a + '_' + b + '_' + den);
+};
+
+/* F9 La fracción y el decimal (4.º) */
+CB.gen.fracciones.F9 = function (rng, D) {
+  const par = CB.util.elegir(rng, [
+    [['0,5'], 1, 2, [[1, 5], [2, 5], [1, 4]]],
+    [['0,25'], 1, 4, [[1, 2], [2, 5], [1, 5]]],
+    [['0,75'], 3, 4, [[7, 5], [1, 4], [3, 5]]],
+    [['0,1'], 1, 10, [[1, 2], [1, 5], [10, 1]]]
+  ]);
+  return itemFrac('¿Qué fracción es ' + par[0][0] + '?', par[1], par[2],
+    par[3].map(function (p) { return fstr(p[0], p[1]); }),
+    'f9_' + par[0][0]);
+};
+
+/* F10 Simplificar (5.º) */
+CB.gen.fracciones.F10 = function (rng, D) {
+  const base = CB.util.elegir(rng, [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [2, 5], [1, 5]]);
+  const k = CB.util.ent(rng, 2, (D === 1) ? 3 : 5);
+  return itemFrac('Simplifica ' + fstr(base[0] * k, base[1] * k) + '.',
+    base[0], base[1],
+    [fstr(base[0], base[1] * k), fstr(base[0] + 1, base[1] + 1),
+     fstr(base[0] * k, base[1])],
+    'f10_' + base.join('_') + 'x' + k);
+};
+
+/* F11 El denominador común (5.º) */
+CB.gen.fracciones.F11 = function (rng, D) {
+  const pares = [[2, 3], [3, 4], [2, 5], [4, 6], [3, 5], [4, 10], [6, 8], [2, 7]];
+  const p = CB.util.elegir(rng, (D === 1) ? pares.slice(0, 4) : pares);
+  return {
+    formato: 'teclado',
+    consigna: 'Para sumar ' + fstr(1, p[0]) + ' y ' + fstr(1, p[1]) +
+              ', ¿qué denominador común usas? (el menor)',
+    respuesta: CB.gen.motor.mcm(p[0], p[1]),
+    expr: 'f11_' + p.join('_'),
+    diagnostico: false
+  };
+};
+
+/* F12 Sumar y restar con el mismo denominador (5.º) */
+CB.gen.fracciones.F12 = function (rng, D) {
+  const den = CB.util.elegir(rng, [6, 8, 9, 10, 12]);
+  const resta = rng() < 0.5;
+  const a = CB.util.ent(rng, 3, den - 1);
+  const b = CB.util.ent(rng, 1, a - 1);
+  const sumaReal = resta ? (a - b) : (a + b);
+  return itemFrac(fstr(a, den) + (resta ? ' − ' : ' + ') + fstr(b, den),
+    sumaReal, den,
+    [fstr(sumaReal, resta ? den : den * 2), fstr(Math.abs(a * 1 - b) + 1, den),
+     fstr(sumaReal + 1, den)],
+    'f12_' + a + (resta ? 'm' : 'p') + b + '_' + den);
+};
+
+/* F13 La fracción de una cantidad (5.º) */
+CB.gen.fracciones.F13 = function (rng, D) {
+  const den = CB.util.elegir(rng, [3, 4, 5, 6, 8, 10]);
+  const num = CB.util.ent(rng, 1, den - 1);
+  const parte = CB.util.ent(rng, 10, (D === 1) ? 50 : 120);
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuánto es ' + fstr(num, den) + ' de ' + CB.gen.motor.sep(den * parte) + '?',
+    respuesta: num * parte,
+    expr: 'f13_' + num + '_' + den + '_' + parte,
+    diagnostico: false
+  };
+};
+
+/* F14 El número mixto (5.º) */
+CB.gen.fracciones.F14 = function (rng, D) {
+  const den = CB.util.elegir(rng, [2, 3, 4, 5]);
+  const ent = CB.util.ent(rng, 1, 3);
+  const resto = CB.util.ent(rng, 1, den - 1);
+  const num = ent * den + resto;
+  return {
+    formato: 'teclado',
+    consigna: fstr(num, den) + ' son ' + ent +
+              (ent === 1 ? ' entero' : ' enteros') + ' y ¿cuántos ' +
+              ['medios', 'tercios', 'cuartos', 'quintos'][den - 2] + '?',
+    respuesta: resto,
+    expr: 'f14_' + num + '_' + den,
+    diagnostico: false
+  };
+};
+
+/* F15 De la fracción al decimal (5.º) */
+CB.gen.fracciones.F15 = function (rng, D) {
+  const par = CB.util.elegir(rng, [[1, 2, 5, 10], [1, 4, 25, 100], [3, 4, 75, 100],
+                                   [1, 5, 2, 10], [3, 10, 3, 10], [7, 10, 7, 10],
+                                   [1, 10, 1, 10], [9, 10, 9, 10]]);
+  return {
+    formato: 'teclado',
+    conComa: true,
+    consigna: 'Escribe ' + fstr(par[0], par[1]) + ' como número con coma.',
+    respuesta: CB.gen.motor.dec(par[2], par[3]),
+    expr: 'f15_' + par[0] + '_' + par[1],
+    diagnostico: false
+  };
+};
+
+/* F16 Sumar con distinto denominador (6.º) */
+CB.gen.fracciones.F16 = function (rng, D) {
+  const casos = [[1, 2, 1, 4, 3, 4], [1, 2, 1, 6, 4, 6], [1, 3, 1, 6, 3, 6],
+                 [1, 2, 1, 8, 5, 8], [1, 4, 1, 8, 3, 8], [1, 2, 3, 10, 8, 10],
+                 [1, 3, 1, 9, 4, 9], [1, 5, 3, 10, 5, 10]];
+  const c = CB.util.elegir(rng, casos);
+  return itemFrac(fstr(c[0], c[1]) + ' + ' + fstr(c[2], c[3]),
+    c[4], c[5],
+    [fstr(c[0] + c[2], c[1] + c[3]), fstr(c[4] + 1, c[5]), fstr(c[4], c[5] * 2)],
+    'f16_' + c.slice(0, 4).join('_'));
+};
+
+/* F17 Restar con distinto denominador (6.º) */
+CB.gen.fracciones.F17 = function (rng, D) {
+  const casos = [[1, 2, 1, 4, 1, 4], [1, 2, 1, 6, 2, 6], [1, 3, 1, 6, 1, 6],
+                 [3, 4, 1, 2, 1, 4], [1, 2, 1, 8, 3, 8], [7, 10, 1, 2, 2, 10],
+                 [2, 3, 1, 6, 3, 6], [1, 2, 1, 10, 4, 10]];
+  const c = CB.util.elegir(rng, casos);
+  return itemFrac(fstr(c[0], c[1]) + ' − ' + fstr(c[2], c[3]),
+    c[4], c[5],
+    [fstr(c[0] + c[2], c[1] + c[3]), fstr(c[4] + 1, c[5]), fstr(1, c[1] + c[3])],
+    'f17_' + c.slice(0, 4).join('_'));
+};
+
+/* F18 Una fracción por un entero (6.º) */
+CB.gen.fracciones.F18 = function (rng, D) {
+  const den = CB.util.elegir(rng, [2, 3, 4, 5]);
+  const num = CB.util.ent(rng, 1, den - 1);
+  const k = den * CB.util.ent(rng, 1, (D === 1) ? 4 : 10);
+  return {
+    formato: 'teclado',
+    consigna: fstr(num, den) + ' × ' + k,
+    respuesta: (num * k) / den,
+    expr: 'f18_' + num + '_' + den + '_' + k,
+    diagnostico: false
+  };
+};
+
+/* F19 La fracción de una fracción (6.º) */
+CB.gen.fracciones.F19 = function (rng, D) {
+  const casos = [[2, 2, 'la mitad de un medio', 1, 4],
+                 [2, 3, 'la mitad de un tercio', 1, 6],
+                 [2, 4, 'la mitad de un cuarto', 1, 8],
+                 [3, 2, 'el tercio de un medio', 1, 6],
+                 [2, 5, 'la mitad de un quinto', 1, 10],
+                 [3, 3, 'el tercio de un tercio', 1, 9]];
+  const c = CB.util.elegir(rng, casos);
+  return itemFrac('¿Cuánto es ' + c[2] + '?', c[3], c[4],
+    [fstr(1, c[0] + c[1]), fstr(2, c[4]), fstr(1, c[4] - 1)],
+    'f19_' + c[0] + '_' + c[1]);
+};
+
+/* F20 La fracción mayor (6.º) */
+CB.gen.fracciones.F20 = function (rng, D) {
+  const candidatas = CB.util.barajar(
+    [[1, 2], [2, 3], [3, 4], [1, 3], [3, 5], [5, 6], [1, 4], [4, 5], [2, 5], [5, 8]],
+    rng).slice(0, 4);
+  let mayor = candidatas[0], i;
+  for (i = 1; i < candidatas.length; i++) {
+    if (candidatas[i][0] * mayor[1] > mayor[0] * candidatas[i][1]) mayor = candidatas[i];
+  }
+  return itemFrac('Toca la fracción MAYOR.', mayor[0], mayor[1],
+    candidatas.filter(function (f) { return f !== mayor; })
+      .map(function (f) { return fstr(f[0], f[1]); }),
+    'f20_' + candidatas.map(function (f) { return f.join('-'); }).join('_'));
+};
+
+/* 19c-gen-decimales.js — C1…C15 (cursos 4.º-6.º).
+   REGLA DE ORO: cada decimal nace como entero escalado y se divide UNA vez
+   entre 10 o 100. Así la respuesta y parseFloat(lo tecleado) son el mismo
+   doble, y la igualdad estricta de responder() es exacta. Los ítems que se
+   contestan con coma llevan conComa: el teclado saca la tecla. */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.decimales = {};
+
+const comaTxt = function (sc, esc) { return CB.gen.motor.coma(sc, esc); };
+const decNum = function (sc, esc) { return CB.gen.motor.dec(sc, esc); };
+
+/* C1 Las décimas (4.º) */
+CB.gen.decimales.C1 = function (rng, D) {
+  const u = CB.util.ent(rng, 0, (D === 1) ? 5 : 9);
+  const d = CB.util.ent(rng, 1, 9);
+  return {
+    formato: 'teclado', conComa: true,
+    consigna: 'Escribe con coma: ' + u + (u === 1 ? ' unidad y ' : ' unidades y ') +
+              d + (d === 1 ? ' décima' : ' décimas') + '.',
+    respuesta: decNum(u * 10 + d, 10),
+    expr: 'c1_' + u + '_' + d,
+    diagnostico: false
+  };
+};
+
+/* C2 Las centésimas (4.º) */
+CB.gen.decimales.C2 = function (rng, D) {
+  const u = CB.util.ent(rng, 0, (D === 1) ? 5 : 9);
+  const c = CB.util.ent(rng, 1, 99);
+  return {
+    formato: 'teclado', conComa: true,
+    consigna: 'Escribe con coma: ' + u + (u === 1 ? ' unidad y ' : ' unidades y ') +
+              c + (c === 1 ? ' centésima' : ' centésimas') + '.',
+    respuesta: decNum(u * 100 + c, 100),
+    expr: 'c2_' + u + '_' + c,
+    diagnostico: false
+  };
+};
+
+/* C3 Sumar decimales (4.º) */
+CB.gen.decimales.C3 = function (rng, D) {
+  const a = CB.util.ent(rng, 11, (D === 1) ? 50 : 89);   // décimas escaladas
+  const b = CB.util.ent(rng, 11, 99 - a);
+  return {
+    formato: 'teclado', conComa: true,
+    operacion: '+', operandos: [decNum(a, 10), decNum(b, 10)],
+    consigna: comaTxt(a, 10) + ' + ' + comaTxt(b, 10),
+    respuesta: decNum(a + b, 10),
+    expr: 'c3_' + a + '_' + b,
+    diagnostico: true
+  };
+};
+
+/* C4 Restar decimales (4.º) */
+CB.gen.decimales.C4 = function (rng, D) {
+  const b = CB.util.ent(rng, 11, (D === 1) ? 40 : 80);
+  const a = CB.util.ent(rng, b + 1, 99);
+  return {
+    formato: 'teclado', conComa: true,
+    operacion: '-', operandos: [decNum(a, 10), decNum(b, 10)],
+    consigna: comaTxt(a, 10) + ' − ' + comaTxt(b, 10),
+    respuesta: decNum(a - b, 10),
+    expr: 'c4_' + a + '_' + b,
+    diagnostico: true
+  };
+};
+
+/* C5 El dinero con coma (4.º) */
+CB.gen.decimales.C5 = function (rng, D) {
+  const a = CB.util.elegir(rng, [125, 150, 175, 225, 250, 275, 325, 350, 450, 550]);
+  const b = CB.util.elegir(rng, [25, 50, 75, 125, 150, 225, 250]);
+  return {
+    formato: 'teclado', conComa: true,
+    consigna: 'Un cuaderno cuesta ' + comaTxt(a, 100) + ' € y un lápiz ' +
+              comaTxt(b, 100) + ' €. ¿Cuánto es en total?',
+    operacion: '+', operandos: [decNum(a, 100), decNum(b, 100)],
+    respuesta: decNum(a + b, 100),
+    expr: 'c5_' + a + '_' + b,
+    diagnostico: true
+  };
+};
+
+/* C6 Comparar decimales (5.º): el clásico 3,5 contra 3,45 */
+CB.gen.decimales.C6 = function (rng, D) {
+  const ent = CB.util.ent(rng, 1, 9);
+  const d1 = CB.util.ent(rng, 2, 9);
+  const grupo = [
+    ent * 100 + d1 * 10,                       // x,d0  (x,5)
+    /* desde 2: restar 1 daría x,(d-1)9, que es EXACTAMENTE el tercero */
+    ent * 100 + d1 * 10 - CB.util.ent(rng, 2, 9),
+    ent * 100 + (d1 - 1) * 10 + 9,             // x,(d-1)9
+    (ent - 1) * 100 + 99                       // (x-1),99
+  ];
+  const mayor = Math.max.apply(null, grupo);
+  return {
+    formato: 'opciones4',
+    consigna: 'Toca el número MAYOR.',
+    respuesta: comaTxt(mayor, 100),
+    respuestaFraccion: true,                    /* respuesta-texto, como 'c20' */
+    distractoresFijos: grupo.filter(function (v) { return v !== mayor; })
+      .map(function (v) { return comaTxt(v, 100); }),
+    expr: 'c6_' + grupo.join('_'),
+    diagnostico: false
+  };
+};
+
+/* C7 Sumar y restar decimales (5.º): centésimas */
+CB.gen.decimales.C7 = function (rng, D) {
+  const resta = rng() < 0.5;
+  let a = CB.util.ent(rng, 101, (D === 1) ? 500 : 899);
+  let b = CB.util.ent(rng, 101, 899);
+  if (resta && b > a) { const t = a; a = b; b = t; }
+  if (!resta && a + b > 999) b = 999 - a;
+  return {
+    formato: 'teclado', conComa: true,
+    operacion: resta ? '-' : '+', operandos: [decNum(a, 100), decNum(b, 100)],
+    consigna: comaTxt(a, 100) + (resta ? ' − ' : ' + ') + comaTxt(b, 100),
+    respuesta: decNum(resta ? (a - b) : (a + b), 100),
+    expr: 'c7_' + a + (resta ? 'm' : 'p') + b,
+    diagnostico: true
+  };
+};
+
+/* C8 Un decimal por un entero (5.º) */
+CB.gen.decimales.C8 = function (rng, D) {
+  const a = CB.util.ent(rng, 11, (D === 1) ? 40 : 99);   // décimas
+  const k = CB.util.ent(rng, 2, 9);
+  return {
+    formato: 'teclado', conComa: true,
+    operacion: '×', operandos: [decNum(a, 10), k],
+    consigna: comaTxt(a, 10) + ' × ' + k,
+    respuesta: decNum(a * k, 10),
+    expr: 'c8_' + a + '_' + k,
+    diagnostico: false
+  };
+};
+
+/* C9 Decimal por y entre 10 y 100 (5.º). Al DIVIDIR se parte de décimas: las
+   centésimas entre 10 darían milésimas, y la milésima no existe en el juego. */
+CB.gen.decimales.C9 = function (rng, D) {
+  const divide = rng() < 0.4;
+  if (divide) {
+    const sd = CB.util.ent(rng, 11, 99);                 // décimas: x,y
+    return {
+      formato: 'teclado', conComa: true,
+      consigna: comaTxt(sd, 10) + ' ÷ 10',
+      respuesta: decNum(sd, 100),
+      expr: 'c9d' + sd,
+      diagnostico: false
+    };
+  }
+  const sc = CB.util.ent(rng, 101, 999);                 // centésimas: x,yz
+  const pot = CB.util.elegir(rng, (D === 1) ? [10] : [10, 100]);
+  return {
+    formato: 'teclado', conComa: true,
+    consigna: comaTxt(sc, 100) + ' × ' + pot,
+    respuesta: decNum(sc, Math.max(1, 100 / pot)),
+    expr: 'c9_' + sc + 'x' + pot,
+    diagnostico: false
+  };
+};
+
+/* C10 Un decimal entre un entero, exacto (5.º) */
+CB.gen.decimales.C10 = function (rng, D) {
+  const c = CB.util.ent(rng, 11, (D === 1) ? 30 : 99);   // cociente en décimas
+  const d = CB.util.ent(rng, 2, 9);
+  return {
+    formato: 'teclado', conComa: true,
+    operacion: '÷', operandos: [decNum(c * d, 10), d],
+    consigna: comaTxt(c * d, 10) + ' ÷ ' + d,
+    respuesta: decNum(c, 10),
+    expr: 'c10_' + c + '_' + d,
+    diagnostico: false
+  };
+};
+
+/* C11 Redondear decimales (5.º) */
+CB.gen.decimales.C11 = function (rng, D) {
+  let sc = CB.util.ent(rng, 101, 899);
+  if (sc % 10 === 0) sc += CB.util.ent(rng, 1, 9);
+  if (sc % 100 === 50) sc += 1;                          // sin caso frontera
+  const resp = Math.round(sc / 100);
+  return {
+    formato: 'teclado',
+    consigna: 'Redondea ' + comaTxt(sc, 100) + ' a las unidades.',
+    respuesta: resp,
+    expr: 'c11_' + sc,
+    diagnostico: false
+  };
+};
+
+/* C12 Operaciones con decimales (6.º) */
+CB.gen.decimales.C12 = function (rng, D) {
+  const modo = CB.util.ent(rng, 1, 3);
+  if (modo === 3) {
+    const a3 = CB.util.ent(rng, 12, 60);                 // décimas
+    const k3 = CB.util.ent(rng, 3, 12);
+    return {
+      formato: 'teclado', conComa: true,
+      operacion: '×', operandos: [decNum(a3, 10), k3],
+      consigna: comaTxt(a3, 10) + ' × ' + k3,
+      respuesta: decNum(a3 * k3, 10),
+      expr: 'c12x_' + a3 + '_' + k3,
+      diagnostico: false
+    };
+  }
+  const resta = modo === 2;
+  let a = CB.util.ent(rng, 105, 985);
+  let b = CB.util.ent(rng, 105, 985);
+  if (resta && b > a) { const t = a; a = b; b = t; }
+  if (!resta && a + b > 1999) b = 1999 - a;
+  return {
+    formato: 'teclado', conComa: true,
+    operacion: resta ? '-' : '+', operandos: [decNum(a, 100), decNum(b, 100)],
+    consigna: comaTxt(a, 100) + (resta ? ' − ' : ' + ') + comaTxt(b, 100),
+    respuesta: decNum(resta ? (a - b) : (a + b), 100),
+    expr: 'c12_' + a + (resta ? 'm' : 'p') + b,
+    diagnostico: true
+  };
+};
+
+/* C13 Dividir entre 0,5 y 0,25 (6.º): multiplicar disfrazado */
+CB.gen.decimales.C13 = function (rng, D) {
+  const par = CB.util.elegir(rng, [[5, 10, 2], [25, 100, 4]]);   // 0,5 → ×2
+  const a = CB.util.ent(rng, 2, (D === 1) ? 12 : 30);
+  return {
+    formato: 'teclado',
+    consigna: a + ' ÷ ' + comaTxt(par[0], par[1]),
+    respuesta: a * par[2],
+    expr: 'c13_' + a + '_' + par[0],
+    diagnostico: false
+  };
+};
+
+/* C14 Porcentaje, decimal y fracción (6.º) */
+CB.gen.decimales.C14 = function (rng, D) {
+  const pct = CB.util.elegir(rng, [10, 20, 25, 30, 40, 50, 60, 75, 80, 90]);
+  return {
+    formato: 'teclado', conComa: true,
+    consigna: 'Escribe el ' + pct + ' % como número con coma.',
+    respuesta: decNum(pct, 100),
+    expr: 'c14_' + pct,
+    diagnostico: false
+  };
+};
+
+/* C15 El ticket de la compra (6.º) */
+CB.gen.decimales.C15 = function (rng, D) {
+  const precios = [75, 125, 150, 175, 225, 250, 325, 350, 425, 550];
+  const a = CB.util.elegir(rng, precios);
+  const b = CB.util.elegir(rng, precios);
+  const c = CB.util.elegir(rng, precios);
+  return {
+    formato: 'teclado', conComa: true,
+    consigna: 'El ticket: ' + comaTxt(a, 100) + ' €, ' + comaTxt(b, 100) +
+              ' € y ' + comaTxt(c, 100) + ' €. ¿Cuánto es en total?',
+    respuesta: decNum(a + b + c, 100),
+    expr: 'c15_' + a + '_' + b + '_' + c,
+    diagnostico: false
+  };
+};
+
+/* 19d-gen-porcentajes.js — T1…T6 (6.º). Respuestas SIEMPRE enteras: los
+   porcentajes se construyen desde la respuesta para que el reparto cuadre. */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.porcentajes = {};
+
+/* T1 El tanto por ciento */
+CB.gen.porcentajes.T1 = function (rng, D) {
+  const pct = CB.util.elegir(rng, (D === 1) ? [50, 100] : [10, 25, 50, 75, 100]);
+  const base = CB.util.ent(rng, 2, 20) * (pct === 25 || pct === 75 ? 4 : (pct === 10 ? 10 : 2));
+  const resp = (base * pct) / 100;
+  const candidatos = [base - resp, resp + pct, Math.round(resp / 2), resp * 2,
+                      resp + 5, resp + 1];
+  const fijos = [];
+  candidatos.forEach(function (v) {
+    if (v > 0 && v !== resp && fijos.indexOf(v) === -1 && fijos.length < 3) fijos.push(v);
+  });
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuánto es el ' + pct + ' % de ' + base + '?',
+    respuesta: resp,
+    expr: 't1_' + pct + '_' + base,
+    diagnostico: false,
+    distractoresFijos: fijos
+  };
+};
+
+/* T2 El 10 %, el 25 % y el 50 % de números grandes */
+CB.gen.porcentajes.T2 = function (rng, D) {
+  const pct = CB.util.elegir(rng, [10, 25, 50]);
+  const paso = { 10: 10, 25: 4, 50: 2 }[pct];
+  const base = CB.util.ent(rng, 3, (D === 1) ? 40 : 99) * paso;
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuánto es el ' + pct + ' % de ' + CB.gen.motor.sep(base) + '?',
+    respuesta: (base * pct) / 100,
+    expr: 't2_' + pct + '_' + base,
+    diagnostico: true,
+    operacion: '%', operandos: [base, pct]
+  };
+};
+
+/* T3 El descuento */
+CB.gen.porcentajes.T3 = function (rng, D) {
+  const pct = CB.util.elegir(rng, [10, 20, 25, 50]);
+  const paso = { 10: 10, 20: 5, 25: 4, 50: 2 }[pct];
+  const precio = CB.util.ent(rng, 2, (D === 1) ? 20 : 90) * paso;
+  return {
+    formato: 'teclado',
+    consigna: 'Cuesta ' + precio + ' € y tiene un ' + pct +
+              ' % de descuento. ¿Cuánto pagas?',
+    respuesta: precio - (precio * pct) / 100,
+    expr: 't3_' + pct + '_' + precio,
+    diagnostico: true,
+    operacion: '%', operandos: [precio, pct]
+  };
+};
+
+/* T4 La subida */
+CB.gen.porcentajes.T4 = function (rng, D) {
+  const pct = CB.util.elegir(rng, [10, 25, 50]);
+  const paso = { 10: 10, 25: 4, 50: 2 }[pct];
+  const precio = CB.util.ent(rng, 2, (D === 1) ? 20 : 80) * paso;
+  return {
+    formato: 'teclado',
+    consigna: 'Costaba ' + precio + ' € y sube un ' + pct +
+              ' %. ¿Cuánto cuesta ahora?',
+    respuesta: precio + (precio * pct) / 100,
+    expr: 't4_' + pct + '_' + precio,
+    diagnostico: false
+  };
+};
+
+/* T5 La proporción directa */
+CB.gen.porcentajes.T5 = function (rng, D) {
+  const unidad = CB.util.ent(rng, 2, (D === 1) ? 5 : 12);
+  const n1 = CB.util.ent(rng, 2, 5);
+  let n2 = CB.util.ent(rng, 2, 9);
+  if (n2 === n1) n2 += 1;
+  return {
+    formato: 'teclado',
+    consigna: n1 + ' cuadernos cuestan ' + (n1 * unidad) + ' €. ¿Cuánto cuestan ' +
+              n2 + '?',
+    respuesta: n2 * unidad,
+    expr: 't5_' + unidad + '_' + n1 + '_' + n2,
+    diagnostico: false
+  };
+};
+
+/* T6 Cualquier porcentaje entero */
+CB.gen.porcentajes.T6 = function (rng, D) {
+  const pct = CB.util.ent(rng, 2, 30);
+  const base = CB.util.ent(rng, 2, (D === 1) ? 6 : 9) * 100;
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuánto es el ' + pct + ' % de ' + CB.gen.motor.sep(base) + '?',
+    respuesta: (base * pct) / 100,
+    expr: 't6_' + pct + '_' + base,
+    diagnostico: true,
+    operacion: '%', operandos: [base, pct]
+  };
+};
+
+/* 19e-gen-enteros.js — Z1…Z4 (6.º). La primera vez que el juego dice un
+   número negativo, y siempre con contexto: termómetro, ascensor, recta. El
+   teclado saca la tecla del signo con conSigno. */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.enteros = {};
+
+/* Z1 El termómetro */
+CB.gen.enteros.Z1 = function (rng, D) {
+  const desde = CB.util.ent(rng, (D === 1) ? 2 : 0, 9);
+  const baja = CB.util.ent(rng, desde + 1, desde + ((D === 1) ? 6 : 15));
+  return {
+    formato: 'teclado', conSigno: true,
+    consigna: 'Estaba a ' + desde + ' °C y baja ' + baja +
+              ' grados. ¿A qué temperatura queda?',
+    operacion: '-', operandos: [desde, baja],
+    respuesta: desde - baja,
+    expr: 'z1_' + desde + '_' + baja,
+    diagnostico: true
+  };
+};
+
+/* Z2 El ascensor */
+CB.gen.enteros.Z2 = function (rng, D) {
+  const planta = CB.util.ent(rng, 0, (D === 1) ? 3 : 6);
+  const baja = CB.util.ent(rng, planta + 1, planta + 5);
+  return {
+    formato: 'teclado', conSigno: true,
+    consigna: 'El ascensor está en la planta ' + planta + ' y baja ' + baja +
+              ' plantas. ¿A qué planta llega?',
+    operacion: '-', operandos: [planta, baja],
+    respuesta: planta - baja,
+    expr: 'z2_' + planta + '_' + baja,
+    diagnostico: true
+  };
+};
+
+/* Z3 Comparar enteros */
+CB.gen.enteros.Z3 = function (rng, D) {
+  const grupo = [];
+  let k = 0;
+  while (grupo.length < 4 && k < 60) {
+    k++;
+    const v = CB.util.ent(rng, 0, 20) - 10;
+    if (grupo.indexOf(v) === -1) grupo.push(v);
+  }
+  const menor = Math.min.apply(null, grupo);
+  return {
+    formato: 'opciones4',
+    consigna: 'Toca el número MENOR.',
+    respuesta: menor,
+    expr: 'z3_' + grupo.join('_'),
+    diagnostico: false,
+    distractoresFijos: grupo.filter(function (v) { return v !== menor; })
+  };
+};
+
+/* Z4 La recta con negativos */
+CB.gen.enteros.Z4 = function (rng, D) {
+  const n = CB.util.ent(rng, 0, 18) - 9;
+  const pidePosterior = rng() < 0.5;
+  return {
+    formato: 'teclado', conSigno: true,
+    consigna: pidePosterior
+      ? '¿Qué número va justo después del ' + n + '?'
+      : '¿Qué número va justo antes del ' + n + '?',
+    respuesta: pidePosterior ? n + 1 : n - 1,
+    expr: 'z4_' + (pidePosterior ? 'p' : 'a') + n,
+    diagnostico: false
+  };
+};
+
 /* 17-catalogo.js — Los 92 niveles y los 4 mundos. ESTE FICHERO ES UN CONTRATO. */
 
 var CB = CB || {};
@@ -4989,7 +6689,14 @@ CB.catalogo.FAMILIAS = {
   M: { puntosBase: 100, tIdeal: 7000,  tLimite: 21000, beta: [780, 1180] },
   P: { puntosBase: 160, tIdeal: 20000, tLimite: 50000, beta: [620, 1280] },
   E: { puntosBase: 90,  tIdeal: 10000, tLimite: 26000, beta: [400, 1040] },
-  V: { puntosBase: 70,  tIdeal: 7000,  tLimite: 20000, beta: [320, 920] }
+  V: { puntosBase: 70,  tIdeal: 7000,  tLimite: 20000, beta: [320, 920] },
+  /* Familias de 3.º-6.º (3.1.0). Los rangos de beta son RELATIVOS, como los
+     de arriba: el desplazamiento por curso (BETA_CURSO) los sitúa. */
+  D: { puntosBase: 120, tIdeal: 9000,  tLimite: 27000, beta: [400, 1000] },
+  F: { puntosBase: 120, tIdeal: 10000, tLimite: 30000, beta: [450, 1050] },
+  C: { puntosBase: 110, tIdeal: 9000,  tLimite: 27000, beta: [450, 1050] },
+  T: { puntosBase: 130, tIdeal: 12000, tLimite: 36000, beta: [500, 1100] },
+  Z: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [400, 1000] }
 };
 
 /* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
@@ -5140,6 +6847,152 @@ CB.catalogo.TABLAS = {
   ['V6','Las palabras del dinero','vocabulario',0,0,0,3,'opciones4','A.5',['6.1','5.2'],['E1'],6,false,null],
   ['V7','Veces, doble y mitad','vocabulario',0,0,0,3,'opciones4','A.3.a',['6.1'],['M1'],6,false,null],
   ['V8','Las palabras de los problemas','vocabulario',0,0,0,3,'opciones4','A.3.b',['6.1','1.1'],['P1'],6,false,null]
+  ],
+
+  /* ——— 3.º de Primaria (3.1.0): 36 niveles. Techos 999 / 9.999 / 99.999. ——— */
+  3: [
+  ['N23','Aproximar a la centena','numeracion',0,999,0,1,'opciones4','A2.2',['2.1'],['N13'],546,false,null],
+  ['N24','Leer y escribir hasta 9.999','numeracion',0,9999,0,2,'teclado','A2.1',['6.1'],['N15'],4027,false,null],
+  ['N25','Las unidades de millar','valor_posicional',0,9999,0,2,'opciones4','A2.2',['1.2','6.1'],['N24'],6020,false,null],
+  ['N26','Comparar hasta 9.999','numeracion',0,9999,0,2,'balanza','A2.2',['5.1'],['N24'],6838,false,null],
+  ['N27','Aproximar al millar','numeracion',0,9999,0,2,'opciones4','A2.2',['2.1'],['N23','N24'],3822,false,null],
+  ['N28','Leer y escribir hasta 99.999','numeracion',0,99999,0,3,'teclado','A2.1',['6.1'],['N24'],6563,false,null],
+  ['N29','Ordenar números grandes','numeracion',0,99999,0,3,'ordenar','A2.2',['5.1'],['N26','N28'],7000,false,null],
+  ['S22','Sumas con dos llevadas','suma_llevada',0,999,2,1,'teclado','A2.7',['2.1','6.2'],['S15'],6503,false,null],
+  ['S23','Sumas de cuatro cifras','suma_llevada',0,9999,1,2,'teclado','A2.7',['2.1'],['S22'],6997,false,null],
+  ['S24','Sumar centenas y millares de cabeza','suma_sin_llevar',0,9999,0,3,'opciones4','A2.7',['3.1'],['S13'],503,false,null],
+  ['R19','Restas con dos llevadas','resta_llevada',0,999,2,1,'teclado','A2.7',['2.1','6.2'],['R13'],6542,false,null],
+  ['R20','Restas de cuatro cifras','resta_llevada',0,9999,1,2,'teclado','A2.7',['2.1'],['R19'],6997,false,null],
+  ['R21','Restar centenas de cabeza','resta_sin_llevar',0,9999,0,3,'opciones4','A2.7',['3.1'],['R9'],560,false,null],
+  ['M11','La tabla del 6','multiplicacion',0,60,0,1,'teclado','A2.3',['3.1'],['M7'],7,false,null],
+  ['M12','Las tablas del 7, del 8 y del 9','multiplicacion',0,90,0,1,'teclado','A2.3',['3.1'],['M11'],23,false,null],
+  ['M13','Todas las tablas','multiplicacion',0,100,0,2,'teclado','A2.3',['3.1','5.1'],['M12'],69,false,null],
+  ['M14','Por una cifra, sin llevada','multiplicacion',0,999,0,2,'teclado','A2.3',['2.1'],['M13'],26,false,null],
+  ['M15','Por una cifra, con llevada','multiplicacion',0,999,1,3,'teclado','A2.3',['2.1','6.2'],['M14'],856,false,null],
+  ['M16','Por 10 y por 100','multiplicacion',0,9999,0,3,'teclado','A2.3',['3.1'],['M13'],137,false,null],
+  ['D1','Repartir en partes iguales','division',0,50,0,1,'opciones4','A2.3',['1.2','5.1'],['M7'],25,false,null],
+  ['D2','Dividir con el 2, el 5 y el 10','division',0,100,0,1,'teclado','A2.3',['3.1'],['D1'],21,false,null],
+  ['D3','Dividir con todas las tablas','division',0,100,0,2,'teclado','A2.3',['3.1'],['D2','M13'],56,false,null],
+  ['D4','La división con resto','division',0,100,0,2,'teclado','A2.3',['2.1','6.2'],['D3'],403,false,null],
+  ['D5','Dos cifras entre una','division',0,99,0,3,'teclado','A2.3',['2.1'],['D4'],109,false,null],
+  ['D6','La prueba de la división','division',0,999,0,3,'teclado','A2.3',['5.1','6.2'],['D4'],853,false,null],
+  ['F1','Mitades, tercios y cuartos','fracciones',0,12,0,2,'opciones4','A2.4',['1.2','6.1'],['N3'],2,false,null],
+  ['F2','¿Qué fracción está pintada?','fracciones',0,12,0,2,'opciones4','A2.4',['1.2','6.1'],['F1'],23,false,null],
+  ['F3','La fracción de una cantidad','fracciones',0,100,0,3,'teclado','A2.4',['2.1'],['F2','D3'],53,false,null],
+  ['F4','Comparar fracciones sencillas','fracciones',0,12,0,3,'opciones4','A2.4',['5.1'],['F2'],49,false,null],
+  ['P25','Igualar: cuánto falta (3.º)','problemas_igualacion',0,999,0,1,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,false,null],
+  ['P26','Cuánto tenía antes de ganar','problemas_cambio',0,999,0,2,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
+  ['P27','Cuánto tenía antes de perder','problemas_cambio',0,999,0,2,'teclado','A.4.c',['1.1','2.1','2.3'],['P8'],600,false,null],
+  ['P28','Comparar: referente con más (3.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
+  ['P29','Comparar: referente con menos (3.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P10'],600,false,null],
+  ['E11','Céntimos: contar y equivaler','dinero',0,300,0,2,'teclado','A2.6',['2.1','5.2'],['E4'],16,false,null],
+  ['E12','La compra grande','dinero',0,999,0,3,'teclado','A2.6',['2.1','2.2'],['E7'],1481,false,null]
+  ],
+
+  /* ——— 4.º de Primaria: 34 niveles. Techos 99.999 / 499.999 / 999.999. ——— */
+  4: [
+  ['N30','Hasta el medio millón','numeracion',0,499999,0,2,'teclado','A2.1',['6.1'],['N28'],6899,false,null],
+  ['N31','Hasta 999.999','numeracion',0,999999,0,3,'teclado','A2.1',['6.1'],['N30'],6927,false,null],
+  ['N32','Aproximar a la decena de millar','numeracion',0,99999,0,1,'opciones4','A2.2',['2.1'],['N27'],6533,false,null],
+  ['N33','Descomponer números grandes','valor_posicional',0,99999,0,1,'teclado','A2.2',['1.2','6.2'],['N28'],6618,false,null],
+  ['S25','Sumas de números grandes','suma_llevada',0,99999,1,1,'teclado','A2.7',['2.1'],['S23'],7000,false,null],
+  ['S26','Estimar sumas','suma_sin_llevar',0,9999,0,2,'opciones4','A2.7',['2.1','5.1'],['N27'],6865,false,null,'A.2.a'],
+  ['R22','Restas de números grandes','resta_llevada',0,99999,1,1,'teclado','A2.7',['2.1'],['R20'],7000,false,null],
+  ['R23','Estimar restas','resta_sin_llevar',0,9999,0,2,'opciones4','A2.7',['2.1','5.1'],['S26'],6911,false,null,'A.2.a'],
+  ['M17','Por dos cifras','multiplicacion',0,9999,1,2,'teclado','A2.3',['2.1','6.2'],['M15'],3271,false,null],
+  ['M18','Por decenas enteras','multiplicacion',0,9999,0,1,'teclado','A2.3',['3.1'],['M17'],492,false,null],
+  ['M19','El doble y el triple de grandes','multiplicacion',0,9999,0,3,'teclado','A2.7',['3.1'],['M15'],3964,false,null],
+  ['M20','Por 1.000','multiplicacion',0,999999,0,3,'teclado','A2.3',['3.1'],['M16'],698,false,null],
+  ['D7','Tres cifras entre una','division',0,999,0,1,'teclado','A2.3',['2.1'],['D5'],1129,false,null],
+  ['D8','Con resto y números grandes','division',0,999,0,2,'teclado','A2.3',['2.1','6.2'],['D7'],3014,false,null],
+  ['D9','Dividir entre 10, 100 y 1.000','division',0,99999,0,2,'teclado','A2.3',['3.1'],['M16'],205,false,null],
+  ['D10','Entre dos cifras: iniciación','division',0,999,0,3,'teclado','A2.3',['2.1'],['D8'],28,false,null],
+  ['D11','La mitad, el tercio y el cuarto','division',0,9999,0,3,'teclado','A2.7',['3.1'],['D8'],3182,false,null],
+  ['F5','Fracciones equivalentes','fracciones',0,20,0,1,'opciones4','A2.4',['3.1','5.1'],['F2'],12,false,null],
+  ['F6','La fracción de una cantidad grande','fracciones',0,500,0,2,'teclado','A2.4',['2.1'],['F3'],1070,false,null],
+  ['F7','Mayor que un entero','fracciones',0,12,0,2,'opciones4','A2.4',['5.1','6.1'],['F5'],9,false,null],
+  ['F8','Sumar con el mismo denominador','fracciones',0,24,0,3,'opciones4','A2.4',['2.1'],['F5'],86,false,null],
+  ['F9','La fracción y el decimal','fracciones',0,10,0,3,'opciones4','A2.5',['5.1'],['C1','F5'],2,false,null,'A2.4'],
+  ['C1','Las décimas','decimales',0,10,0,2,'teclado','A2.5',['6.1','6.2'],['E11'],62,false,null],
+  ['C2','Las centésimas','decimales',0,10,0,2,'teclado','A2.5',['6.1','6.2'],['C1'],693,false,null],
+  ['C3','Sumar decimales','decimales',0,20,0,3,'teclado','A2.5',['2.1'],['C2'],2024,false,null],
+  ['C4','Restar decimales','decimales',0,10,0,3,'teclado','A2.5',['2.1'],['C3'],2406,false,null],
+  ['C5','El dinero con coma','decimales',0,10,0,3,'teclado','A2.6',['2.1','5.2'],['C3'],49,false,null,'A2.5'],
+  ['P30','Igualar: referido, añadir (4.º)','problemas_igualacion',0,999,0,1,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,false,null],
+  ['P31','Igualar: referido, quitar (4.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
+  ['P32','Juntar: la otra parte (4.º)','problemas_combinacion',0,999,0,2,'teclado','A.3.b',['1.1','2.1','2.2'],['P4'],600,false,null],
+  ['P33','Cuánto tenía antes (4.º)','problemas_cambio',0,999,0,3,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
+  ['P34','Comparar: referente con más (4.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
+  ['E13','El cambio con céntimos','dinero',0,10,0,3,'teclado','A2.6',['2.1','2.2'],['C4','E6'],10,false,null,'A2.5'],
+  ['E14','El presupuesto','dinero',0,999,0,2,'teclado','A2.6',['2.1','2.2'],['E12'],6001,false,null]
+  ],
+
+  /* ——— 5.º de Primaria: 29 niveles. Techos 999.999 / 9.999.999 / íd. ——— */
+  5: [
+  ['N34','Los millones','numeracion',0,9999999,0,2,'teclado','A3.1',['6.1'],['N31'],62,false,null],
+  ['N35','El valor de cada cifra','valor_posicional',0,999999,0,1,'opciones4','A3.1',['1.2','6.1'],['N31'],6987,false,null],
+  ['N36','Múltiplos','numeracion',0,144,0,1,'opciones4','A3.2',['3.1','5.1'],['M13'],49,false,null],
+  ['N37','Divisores','numeracion',0,60,0,2,'opciones4','A3.2',['3.1','5.1'],['N36','D3'],38,false,null],
+  ['N38','Divisible entre 2, 3, 5 y 10','numeracion',0,999,0,3,'opciones4','A3.2',['3.1'],['N36'],761,false,null],
+  ['N39','Aproximar números grandes','numeracion',0,9999999,0,2,'opciones4','A3.1',['2.1'],['N32'],6997,false,null],
+  ['M21','Decenas por decenas','multiplicacion',0,99999,0,1,'teclado','A2.7',['3.1'],['M18'],89,false,null],
+  ['M22','Operaciones combinadas','multiplicacion',0,999,0,2,'teclado','A3.3',['2.1','6.2'],['M15'],1629,false,null],
+  ['D12','Entre dos cifras','division',0,9999,0,1,'teclado','A3.4',['2.1'],['D10'],532,false,null],
+  ['D13','Exacta y entera','division',0,9999,0,2,'teclado','A3.4',['2.1','6.2'],['D12'],5489,false,null],
+  ['D14','Números grandes entre una cifra','division',0,99999,0,2,'teclado','A3.4',['2.1'],['D8'],6462,false,null],
+  ['D15','Cocientes con ceros','division',0,99999,0,3,'teclado','A3.4',['2.1','6.2'],['D12'],623,false,null],
+  ['F10','Simplificar fracciones','fracciones',0,25,0,1,'opciones4','A3.5',['3.1'],['F5'],19,false,null],
+  ['F11','El denominador común','fracciones',0,40,0,2,'teclado','A3.5',['2.1','5.1'],['F10'],5,false,null],
+  ['F12','Sumar y restar: mismo denominador','fracciones',0,24,0,1,'opciones4','A3.5',['2.1'],['F8'],203,false,null],
+  ['F13','La fracción de una cantidad (5.º)','fracciones',0,999,0,2,'teclado','A3.5',['2.1'],['F6'],2009,false,null],
+  ['F14','El número mixto','fracciones',0,25,0,3,'teclado','A3.5',['6.1','6.2'],['F12'],21,false,null],
+  ['F15','De la fracción al decimal','fracciones',0,10,0,3,'teclado','A3.6',['5.1'],['F9'],5,false,null,'A3.5'],
+  ['C6','Comparar decimales','decimales',0,10,0,1,'opciones4','A3.6',['5.1'],['C2'],403,false,null],
+  ['C7','Sumar y restar decimales (5.º)','decimales',0,20,0,1,'teclado','A3.6',['2.1'],['C3','C4'],5967,false,null],
+  ['C8','Un decimal por un entero','decimales',0,99,0,2,'teclado','A3.6',['2.1'],['C7','M15'],498,false,null],
+  ['C9','La coma y las potencias de 10','decimales',0,999,0,2,'teclado','A3.6',['3.1'],['C7','M16'],1241,false,null],
+  ['C10','Un decimal entre un entero','decimales',0,99,0,3,'teclado','A3.6',['2.1'],['C7','D5'],498,false,null],
+  ['C11','Redondear decimales','decimales',0,10,0,3,'teclado','A3.6',['2.1'],['C6','N23'],503,false,null],
+  ['P35','Igualar: referente, añadir (5.º)','problemas_igualacion',0,999,0,1,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,false,null],
+  ['P36','Igualar: referente, quitar (5.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
+  ['P37','Cuánto tenía antes de perder (5.º)','problemas_cambio',0,999,0,2,'teclado','A.4.c',['1.1','2.1','2.3'],['P8'],600,false,null],
+  ['P38','Comparar: referente con menos (5.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P10'],600,false,null],
+  ['P39','Juntar: el total (5.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P3'],600,false,null]
+  ],
+
+  /* ——— 6.º de Primaria: 31 niveles. Techo 9.999.999 en los tres. ——— */
+  6: [
+  ['N40','Potencias','numeracion',0,144,0,1,'teclado','A3.3',['3.1','6.1'],['M13'],10,false,null],
+  ['N41','La raíz cuadrada exacta','numeracion',0,144,0,1,'teclado','A3.3',['3.1'],['N40'],7,false,null],
+  ['N42','El mínimo común múltiplo','numeracion',0,40,0,2,'teclado','A3.2',['2.1','5.1'],['N36'],7,false,null],
+  ['N43','El máximo común divisor','numeracion',0,30,0,2,'teclado','A3.2',['2.1','5.1'],['N37'],7,false,null],
+  ['N44','Las potencias de 10','numeracion',0,1000000,0,3,'teclado','A3.3',['3.1'],['N40','M16'],7,false,null],
+  ['Z1','Bajo cero: el termómetro','enteros',-24,24,0,1,'teclado','A3.8',['1.1','5.2'],['R8'],105,false,null],
+  ['Z2','El ascensor','enteros',-11,11,0,1,'teclado','A3.8',['1.1','5.2'],['Z1'],24,false,null],
+  ['Z3','Comparar enteros','enteros',-10,10,0,2,'opciones4','A3.8',['5.1'],['Z1'],6760,false,null],
+  ['Z4','La recta con negativos','enteros',-10,10,0,3,'teclado','A3.8',['1.2'],['Z3'],26,false,null],
+  ['C12','Operaciones con decimales (6.º)','decimales',0,99,0,1,'teclado','A3.6',['2.1'],['C7'],5050,false,null],
+  ['C13','Dividir entre 0,5 y 0,25','decimales',0,120,0,2,'teclado','A3.6',['3.1','5.1'],['C10'],40,false,null],
+  ['C14','Porcentaje, decimal y fracción','decimales',0,10,0,3,'teclado','A3.7',['5.1'],['T1','C11'],7,false,null,'A3.6'],
+  ['C15','El ticket de la compra','decimales',0,20,0,2,'teclado','A2.6',['1.1','2.1'],['C12'],700,false,null,'A3.6'],
+  ['F16','Sumar: distinto denominador','fracciones',0,24,0,1,'opciones4','A3.5',['2.1'],['F11'],5,false,null],
+  ['F17','Restar: distinto denominador','fracciones',0,24,0,2,'opciones4','A3.5',['2.1'],['F16'],5,false,null],
+  ['F18','Una fracción por un entero','fracciones',0,50,0,2,'teclado','A3.5',['2.1'],['F13'],70,false,null],
+  ['F19','La fracción de una fracción','fracciones',0,12,0,3,'opciones4','A3.5',['3.1'],['F16'],4,false,null],
+  ['F20','La fracción mayor','fracciones',0,12,0,3,'opciones4','A3.5',['5.1'],['F10'],3074,false,null],
+  ['T1','El tanto por ciento','porcentajes',0,100,0,1,'opciones4','A3.7',['1.2','5.1'],['F3'],66,false,null],
+  ['T2','El 10, el 25 y el 50 por ciento','porcentajes',0,999,0,1,'teclado','A3.7',['3.1'],['T1'],203,false,null],
+  ['T3','El descuento','porcentajes',0,999,0,2,'teclado','A3.7',['1.1','2.1'],['T2'],249,false,null],
+  ['T4','La subida','porcentajes',0,999,0,2,'teclado','A3.7',['1.1','2.1'],['T2'],165,false,null],
+  ['T5','La proporción directa','porcentajes',0,999,0,3,'teclado','A3.7',['1.1','2.1'],['D3'],215,false,null],
+  ['T6','Cualquier porcentaje','porcentajes',0,999,0,3,'teclado','A3.7',['2.1'],['T2','M17'],162,false,null],
+  ['D16','Divisores grandes','division',0,9999,0,1,'teclado','A3.4',['2.1'],['D13'],3439,false,null],
+  ['D17','Estimar el cociente','division',0,9999,0,2,'opciones4','A3.4',['2.1','5.1'],['D16'],1992,false,null,'A.2.a'],
+  ['P40','Igualar: referente, añadir (6.º)','problemas_igualacion',0,999,0,1,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,false,null],
+  ['P41','Igualar: referente, quitar (6.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
+  ['P42','Comparar: referente con más (6.º)','problemas_comparacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
+  ['P43','Cuánto tenía antes (6.º)','problemas_cambio',0,999,0,3,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
+  ['P44','Juntar: la otra parte (6.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P4'],600,false,null]
   ]
 };
 
@@ -5171,13 +7024,27 @@ CB.catalogo.BETA_CURSO = { 1: -160, 2: 0, 3: 150, 4: 300, 5: 450, 6: 600 };
    2.º y «8 + 5» (S21) salía con β960: catalogado más difícil que una llevada
    de tres cifras. Un curso con pocos niveles ocupa un tramo corto. 2.º queda
    en 1 — sus 92 betas no se mueven (E127). */
-CB.catalogo.ANCHO_BETA_CURSO = { 1: 0.4, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1 };
+CB.catalogo.ANCHO_BETA_CURSO = { 1: 0.4, 2: 1, 3: 0.8, 4: 0.8, 5: 0.8, 6: 0.8 };
 
 CB.catalogo.CURSOS = [];
 
+/* Lo que cada curso tiene PERMITIDO en sus números (3.1.0). La comparten la
+   producción (distractores, teclado) y los invariantes de la suite: un solo
+   dueño, o el guardián y el juego acabarían discrepando en silencio. */
+CB.catalogo.LIMITES_CURSO = {
+  1: { max: 999 },
+  2: { max: 999 },
+  3: { max: 99999 },
+  4: { max: 999999, decimales: true },
+  5: { max: 9999999, decimales: true },
+  6: { max: 9999999, decimales: true, negativos: true, min: -99 }
+};
+
 (function () {
   const familiaDe = { N: 'numeracion', S: 'sumas', R: 'restas', M: 'multiplicacion',
-                    P: 'problemas', E: 'dinero', V: 'vocabulario' };
+                    P: 'problemas', E: 'dinero', V: 'vocabulario',
+                    D: 'division', F: 'fracciones', C: 'decimales',
+                    T: 'porcentajes', Z: 'enteros' };
 
   const cursos = [];
   let c;
@@ -5241,7 +7108,9 @@ CB.catalogo.CURSOS = [];
     /* El generador se resuelve por familia y por id. */
     const mod = { N: CB.gen.numeracion, S: CB.gen.sumas, R: CB.gen.restas,
                 M: CB.gen.multiplicacion, P: CB.gen.problemas,
-                E: CB.gen.dinero, V: CB.gen.vocabulario }[letra];
+                E: CB.gen.dinero, V: CB.gen.vocabulario,
+                D: CB.gen.division, F: CB.gen.fracciones, C: CB.gen.decimales,
+                T: CB.gen.porcentajes, Z: CB.gen.enteros }[letra];
 
     nivel.generar = (function (m, i) {
       return function (rng, D, ctx) {
@@ -5257,6 +7126,10 @@ CB.catalogo.CURSOS = [];
         base.tLimite = nivel.tLimite;
         base.beta = nivel.betaBase;
         base.ampliacion = nivel.ampliacion;
+        /* El rango del nivel viaja con el ítem (3.1.0): el teclado dimensiona
+           sus cifras con él y el anti-azar acota qué respuesta es imposible.
+           Sin esto, los dos seguirían clavados en el 999 de 2.º. */
+        base.rangoNivel = nivel.rango;
         if (base.diagnostico == null) base.diagnostico = nivel.diagnostico;
         return base;
       };
@@ -5392,7 +7265,11 @@ CB.MUNDOS = [
               'S1','S2','S3','S4','S5','S6','S7',
               'R1','R2','R3','R4','R5',
               'P1','P2','E1','E2',
-              'N17','N18','S17','R15','P21'] },
+              'N17','N18','S17','R15','P21',
+              'N23','N24','N25','N26','N27','N28','N29','S24','R21',
+              'N30','N31','N32','N33','S26','R23',
+              'N34','N35','N36','N37','N38','N39',
+              'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -5401,14 +7278,22 @@ CB.MUNDOS = [
               'R6','R7','R8','R9','R10',
               'P3','P4','P5','P6','P7','P8',
               'E3','E4','V1','V2',
-              'N19','N20','S18','R16','E9'] },
+              'N19','N20','S18','R16','E9',
+              'S22','S23','R19','R20','E11','E12',
+              'S25','R22','C1','C2','C3','C4','C5','E13','E14',
+              'C6','C7','C8','C9','C10','C11',
+              'C12','C13','C14','C15'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
     niveles: ['N14','S14','R11','R12',
               'P9','P10','P11','P12','P13','P14','P15','P16',
               'E5','E6','V3','V4','V5','V6',
-              'N21','S19','R17','P22','E10'] },
+              'N21','S19','R17','P22','E10',
+              'F1','F2','F3','F4','P25','P26','P27','P28','P29',
+              'F5','F6','F7','F8','F9','P30','P31','P32','P33','P34',
+              'F10','F11','F12','F13','F14','F15','P35','P36','P37','P38','P39',
+              'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
@@ -5416,7 +7301,11 @@ CB.MUNDOS = [
               'P17','P18','P19','P20','E7','E8',
               'M1','M2','M3','M4','M5','M6','M7','M8','M9','M10',
               'V7','V8',
-              'N22','S20','S21','R18','P23','P24'] }
+              'N22','S20','S21','R18','P23','P24',
+              'M11','M12','M13','M14','M15','M16','D1','D2','D3','D4','D5','D6',
+              'M17','M18','M19','M20','D7','D8','D9','D10','D11',
+              'M21','M22','D12','D13','D14','D15',
+              'T1','T2','T3','T4','T5','T6','D16','D17'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {
@@ -5793,8 +7682,13 @@ CB.distractores.para = function (item, rng) {
     if (v === correcta || v < 0 || vistos[v]) continue;
 
     const intencionado = !!CB.ERRORES[cod].puedeSuperar999;
-    const limite = intencionado ? CB.distractores.LIMITE_INTENCIONADO
-                              : CB.distractores.LIMITE_NORMAL;
+    /* El tope escala con el rango del nivel (3.1.0): 999 era el mundo de 2.º
+       y silenciaba todo distractor de un producto de cuatro cifras — el ítem
+       degradaba a teclado sin que nadie lo viera. */
+    const topeNivel = Math.max(CB.distractores.LIMITE_NORMAL,
+      (item.rangoNivel && item.rangoNivel[1]) || 0);
+    const limite = intencionado ? Math.max(CB.distractores.LIMITE_INTENCIONADO, topeNivel * 2)
+                              : topeNivel;
     if (v > limite) continue;
 
     /* Invariante 6: distractor plausible, salvo los intencionados. */
@@ -5816,7 +7710,8 @@ CB.distractores.para = function (item, rng) {
     const sg = signos[Math.floor(idx / ks.length) % 2];
     idx++;
     v = correcta + sg * kk;
-    if (v < 0 || v > CB.distractores.LIMITE_NORMAL) continue;
+    if (v < 0 || v > Math.max(CB.distractores.LIMITE_NORMAL,
+                              (item.rangoNivel && item.rangoNivel[1]) || 0)) continue;
     if (v === correcta || vistos[v]) continue;
     vistos[v] = true;
     opciones.push({ valor: v, codigoError: null, intencionado: false, correcta: false });
@@ -5880,6 +7775,113 @@ CB.distractores.registrar = function (perfil, item, valorDado) {
     if (perfil.errores[cod].ejemplos.length > 3) perfil.errores[cod].ejemplos.length = 3;
   }
   return d;
+};
+
+/* ——— Códigos de error de 3.º-6.º (3.1.0): división, decimales, porcentajes,
+   enteros y fracciones. Mismo contrato que los 24 originales: simular() y
+   diagnostico:false son mutuamente excluyentes, y cada código tiene su
+   recomendación en datos/recomendaciones.js (CU8 lo cruza). ——— */
+
+CB.ERRORES['E-D-COC-VECINO'] = {
+  familia: 'D', diagnostico: true,
+  pista: 'Repasa la tabla: te has quedado una vez por encima.',
+  reparacion: 'matrizFilasColumnas',
+  simular: function (item) {
+    if (item.operacion !== '÷') return null;
+    const c = (item.contexto && item.contexto.cociente != null)
+      ? item.contexto.cociente : item.respuesta;
+    return c + 1;
+  }
+};
+
+CB.ERRORES['E-D-COC-CORTO'] = {
+  familia: 'D', diagnostico: true,
+  pista: 'Repasa la tabla: te has quedado una vez por debajo.',
+  reparacion: 'matrizFilasColumnas',
+  simular: function (item) {
+    if (item.operacion !== '÷') return null;
+    const c = (item.contexto && item.contexto.cociente != null)
+      ? item.contexto.cociente : item.respuesta;
+    return c > 1 ? c - 1 : null;
+  }
+};
+
+CB.ERRORES['E-D-RESTO-COMO-COC'] = {
+  familia: 'D', diagnostico: true,
+  pista: 'Eso que has escrito es lo que sobra, no lo que toca a cada uno.',
+  reparacion: 'matrizFilasColumnas',
+  simular: function (item) {
+    if (item.operacion !== '÷' || !item.contexto) return null;
+    return item.contexto.resto > 0 ? item.contexto.resto : null;
+  }
+};
+
+CB.ERRORES['E-D-TABLA-VECINA'] = {
+  familia: 'D', diagnostico: true,
+  pista: 'Mira bien entre qué número estás dividiendo.',
+  reparacion: 'matrizFilasColumnas',
+  simular: function (item) {
+    if (item.operacion !== '÷' || !item.operandos) return null;
+    const a = item.operandos[0], d = item.operandos[1];
+    if (!(d >= 2)) return null;
+    return Math.round(a / (d + 1));
+  }
+};
+
+CB.ERRORES['E-C-COMA-CORRIDA'] = {
+  familia: 'C', diagnostico: true, puedeSuperar999: true,
+  pista: 'La coma se te ha movido un sitio: el número salió diez veces más grande.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) { return item.respuesta * 10; }
+};
+
+CB.ERRORES['E-C-COMA-CORTA'] = {
+  familia: 'C', diagnostico: true,
+  pista: 'La coma se te ha movido un sitio: el número salió diez veces más pequeño.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) { return item.respuesta / 10; }
+};
+
+CB.ERRORES['E-T-RESTA-DIRECTA'] = {
+  familia: 'T', diagnostico: true,
+  pista: 'Has restado el número del porcentaje, y el porcentaje no se resta: se calcula.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (item.operacion !== '%' || !item.operandos) return null;
+    const v = item.operandos[0] - item.operandos[1];
+    return v > 0 ? v : null;
+  }
+};
+
+CB.ERRORES['E-T-SIN-DIVIDIR'] = {
+  familia: 'T', diagnostico: true, puedeSuperar999: true,
+  pista: 'Multiplicaste bien, pero falta dividir entre 100.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (item.operacion !== '%' || !item.operandos) return null;
+    return item.operandos[0] * item.operandos[1];
+  }
+};
+
+CB.ERRORES['E-Z-SIN-SIGNO'] = {
+  familia: 'Z', diagnostico: true,
+  pista: 'El número es ese, pero por DEBAJO de cero: le falta el signo.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    return (item.respuesta < 0) ? Math.abs(item.respuesta) : null;
+  }
+};
+
+CB.ERRORES['E-F-SUMA-DENOM'] = {
+  familia: 'F', diagnostico: false,
+  pista: 'Los denominadores no se suman: dicen en cuántas partes está cortado el todo.',
+  reparacion: 'barrasComparativas'
+};
+
+CB.ERRORES['E-C-ALINEACION'] = {
+  familia: 'C', diagnostico: false,
+  pista: 'Coloca coma debajo de coma antes de operar.',
+  reparacion: 'rectaNumerica'
 };
 
 /* 20-puntuacion.js — Requisitos 6 y 7 del usuario */
@@ -6104,13 +8106,18 @@ CB.antiazar.tresFallosRapidos = function (historial) {
   return true;
 };
 
-/* S4 — respuesta imposible: fuera de [0, 999] o negativa. */
+/* S4 — respuesta imposible: fuera del rango DEL NIVEL (3.1.0). El [0, 999]
+   fijo era el mundo de 2.º: un curso alto teclea legítimamente 45.231, y un
+   ítem de enteros teclea −3. El catálogo inyecta rangoNivel en cada ítem. */
 CB.antiazar.respuestaPosible = function (item) {
   if (!item) return true;
   const v = item.valorDado;
   if (v == null) return true;
   if (!isFinite(v)) return false;
-  return v >= 0 && v <= 999;
+  const rango = item.rangoNivel || [0, 999];
+  const max = Math.max(999, rango[1]);
+  const min = Math.min(0, rango[0]);
+  return v >= min && v <= max;
 };
 
 /* Los efectos del azar. NUNCA apaga una luz (§12.1, regla 2) */
@@ -6323,8 +8330,9 @@ CB.vidas.PRECEDENCIA_FIN = {
 var CB = CB || {};
 CB.adaptativo = CB.adaptativo || {};
 
-/* Lista CERRADA de los 13 slugs. casos-curriculo.js (CU6) comprueba que los 92
-   niveles del catálogo apuntan a uno de estos. */
+/* Lista CERRADA de los 18 slugs. casos-curriculo.js (CU6) comprueba que todos
+   los niveles del catálogo apuntan a uno de estos. Los cinco últimos llegan
+   con los cursos 3.º-6.º (3.1.0). */
 CB.adaptativo.SLUGS = [
   'numeracion', 'valor_posicional',
   'suma_sin_llevar', 'suma_llevada',
@@ -6332,7 +8340,8 @@ CB.adaptativo.SLUGS = [
   'multiplicacion',
   'problemas_cambio', 'problemas_combinacion',
   'problemas_comparacion', 'problemas_igualacion',
-  'dinero', 'vocabulario'
+  'dinero', 'vocabulario',
+  'division', 'fracciones', 'decimales', 'porcentajes', 'enteros'
 ];
 
 CB.adaptativo.THETA_INICIAL = 1000;
@@ -6909,7 +8918,12 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'suma_sin_llevar':
     case 'resta_sin_llevar':   return 'tabla100';
     case 'numeracion':         return 'rectaNumerica';
-    case 'multiplicacion':     return 'matrizFilasColumnas';
+    case 'multiplicacion':
+    case 'division':           return 'matrizFilasColumnas';
+    case 'fracciones':         return 'barrasComparativas';
+    case 'decimales':
+    case 'porcentajes':
+    case 'enteros':            return 'rectaNumerica';
     case 'problemas_comparacion':
     case 'problemas_igualacion':
     case 'problemas_cambio':
@@ -7886,6 +9900,10 @@ CB.ui.pintarItem = function (item) {
     cont.appendChild(CB.ui.filaVagonetas(item.visual.total, item.visual.marcada));
   }
 
+  if (item.visual && item.visual.tipo === 'fraccion') {
+    cont.appendChild(CB.ui.barraFraccion(item.visual.partes, item.visual.sombreadas));
+  }
+
   if (item.preguntaPrevia) {
     cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
   }
@@ -7916,6 +9934,36 @@ CB.ui.matriz = function (filas, columnas) {
   }
   caja.appendChild(rej);
   caja.setAttribute('aria-label', filas + ' filas de ' + columnas);
+  return caja;
+};
+
+/* La barra de fracción (3.1.0): un todo partido en `partes` rectángulos
+   iguales, con `sombreadas` pintadas. Vóxel puro: rectángulos con bisel,
+   nada de tartas (una tarta pide border-radius, y aquí no existe). */
+CB.ui.barraFraccion = function (partes, sombreadas) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const rej = CB.ui.crear('div');
+  rej.style.display = 'grid';
+  rej.style.gridTemplateColumns = 'repeat(' + partes + ', 40px)';
+  rej.style.gap = '4px';
+  let i;
+  for (i = 0; i < partes && i < 12; i++) {
+    const b = CB.ui.crear('span');
+    b.style.width = '40px'; b.style.height = '28px';
+    if (i < sombreadas) {
+      b.style.background = 'var(--deco-cristal)';
+      b.style.boxShadow = 'inset 3px 3px 0 0 var(--deco-cristal-cla), ' +
+                          'inset -3px -3px 0 0 var(--deco-cristal-osc)';
+    } else {
+      b.style.background = 'var(--deco-piedra)';
+      b.style.boxShadow = 'inset 3px 3px 0 0 var(--deco-piedra-cla), ' +
+                          'inset -3px -3px 0 0 var(--deco-piedra-osc)';
+    }
+    rej.appendChild(b);
+  }
+  caja.appendChild(rej);
+  caja.setAttribute('aria-label',
+    sombreadas + ' de ' + partes + ' partes pintadas');
   return caja;
 };
 
@@ -8917,7 +10965,20 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   cont.appendChild(visor);
 
   const teclado = CB.ui.crear('div', 'teclado-bloques');
-  const teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'OK'];
+  /* Cifras según el RANGO DEL NIVEL (3.1.0): el tope fijo de 3 era el mundo
+     de 2.º, y con él un niño de 4.º no podía ni teclear 45.231. La coma y el
+     signo solo existen si el ítem los pide (decimales de 4.º-6.º, enteros de
+     6.º): en los cursos bajos el teclado es EXACTAMENTE el de siempre. */
+  const rangoMax = (item && item.rangoNivel && item.rangoNivel[1]) || 999;
+  const maxLargo = String(Math.max(999, rangoMax)).length +
+                   (item && item.conComa ? 3 : 0) +
+                   (item && item.conSigno ? 1 : 0);
+  let teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'OK'];
+  if (item && item.conComa) {
+    teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫', 'OK'];
+  } else if (item && item.conSigno) {
+    teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '−', '0', '⌫', 'OK'];
+  }
   let i;
 
   function pinta() {
@@ -8933,12 +10994,29 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     }
     if (t === 'OK') {
       if (!CB.componentes._valor.length) return;
+      if (!/[0-9]/.test(CB.componentes._valor)) return;   // solo «−» o «,»: nada
       CB.componentes.pedirConfirmacion(boton, function () {
-        alResponder(parseInt(CB.componentes._valor, 10), 'teclado');
+        const bruto = CB.componentes._valor.replace('−', '-').replace(',', '.');
+        const v = (item && (item.conComa || item.conSigno))
+          ? parseFloat(bruto)
+          : parseInt(bruto, 10);
+        alResponder(v, 'teclado');
       });
       return;
     }
-    if (CB.componentes._valor.length >= 3) return;      // techo 999
+    if (t === ',') {
+      if (CB.componentes._valor.indexOf(',') !== -1) return;   // una coma, no dos
+      if (!CB.componentes._valor.length) CB.componentes._valor = '0';
+    }
+    if (t === '−') {
+      /* El signo conmuta y siempre va delante. */
+      CB.componentes._valor = (CB.componentes._valor.charAt(0) === '−')
+        ? CB.componentes._valor.slice(1)
+        : '−' + CB.componentes._valor;
+      pinta(); CB.audio.sfx('picar');
+      return;
+    }
+    if (CB.componentes._valor.length >= maxLargo) return;
     CB.componentes._valor += t;
     pinta();
     CB.audio.sfx('picar');
@@ -8967,6 +11045,8 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     tipo: 'tecladoBloques',
     tecla: function (k) {
       if (/^[0-9]$/.test(k)) { pulsa(k, null); return true; }
+      if ((k === ',' || k === '.') && item && item.conComa) { pulsa(',', null); return true; }
+      if (k === '-' && item && item.conSigno) { pulsa('−', null); return true; }
       if (k === 'Backspace' || k === 'Delete') { pulsa('⌫', null); return true; }
       /* Iba por su cuenta y se saltaba pedirConfirmacion(), así que la confirmación de dos toques que impone el antiazar tras una detección solo se le aplicaba a quien juega tocando: con teclado, Enter contestaba a la primera. */
       if (k === 'Enter') { pulsa('OK', botonOK); return true; }
@@ -9578,8 +11658,10 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
     problemasPuestos++;
   }
 
-  /* 3) CUOTA: al menos 1 ítem de cada bloque desbloqueado. */
-  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V'];
+  /* 3) CUOTA: al menos 1 ítem de cada bloque desbloqueado. Las cinco letras
+     nuevas solo existen desde 3.º: en los cursos bajos su lista sale vacía y
+     el bucle las salta solo. */
+  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V', 'D', 'F', 'C', 'T', 'Z'];
   for (i = 0; i < letras.length; i++) {
     (function (letra) {
       const deLaLetra = nivelesMundo.filter(function (id) {
@@ -10857,7 +12939,10 @@ CB.partida.NOMBRES_DESTREZA = {
   multiplicacion: 'Las veces', problemas_cambio: 'Problemas de cambio',
   problemas_combinacion: 'Problemas de juntar', problemas_comparacion: 'Problemas de comparar',
   problemas_igualacion: 'Problemas de igualar', dinero: 'El dinero',
-  vocabulario: 'Las palabras'
+  vocabulario: 'Las palabras',
+  division: 'La división', fracciones: 'Las fracciones',
+  decimales: 'Los números con coma', porcentajes: 'El tanto por ciento',
+  enteros: 'Los números bajo cero'
 };
 CB.partida.nombreDestreza = function (slug) {
   return CB.partida.NOMBRES_DESTREZA[slug] || slug;
@@ -11117,7 +13202,12 @@ CB.adulto.semaforo = function (perfil) {
     'Numeración': ['numeracion', 'valor_posicional'],
     'Sumas': ['suma_sin_llevar', 'suma_llevada'],
     'Restas': ['resta_sin_llevar', 'resta_llevada'],
-    'Tablas (iniciación)': ['multiplicacion'],
+    'Multiplicación': ['multiplicacion'],
+    'División': ['division'],
+    'Fracciones': ['fracciones'],
+    'Decimales': ['decimales'],
+    'Porcentajes y proporción': ['porcentajes'],
+    'Enteros': ['enteros'],
     'Problemas': ['problemas_cambio', 'problemas_combinacion',
                   'problemas_comparacion', 'problemas_igualacion'],
     'Dinero': ['dinero'],
@@ -11816,7 +13906,15 @@ CB.jefes.RANGO_CURSO = {
   1: { objetivoRamas: 15, sumandoRamas: 12, nenufar: 12, saltos: [1, 2],
        reflejoMax: 10, tablas: [2], matrizMax: 5 },
   2: { objetivoRamas: 60, sumandoRamas: 40, nenufar: 40, saltos: [2, 5, 10],
-       reflejoMax: 40, tablas: [2, 5, 10], matrizMax: 10 }
+       reflejoMax: 40, tablas: [2, 5, 10], matrizMax: 10 },
+  3: { objetivoRamas: 200, sumandoRamas: 150, nenufar: 80, saltos: [3, 4, 6, 9],
+       reflejoMax: 100, tablas: [3, 4, 6, 7, 8, 9], matrizMax: 10 },
+  4: { objetivoRamas: 500, sumandoRamas: 350, nenufar: 120, saltos: [6, 7, 8, 12],
+       reflejoMax: 300, tablas: [6, 7, 8, 9], matrizMax: 12 },
+  5: { objetivoRamas: 900, sumandoRamas: 600, nenufar: 200, saltos: [11, 12, 15, 25],
+       reflejoMax: 600, tablas: [7, 8, 9, 12], matrizMax: 12 },
+  6: { objetivoRamas: 900, sumandoRamas: 700, nenufar: 300, saltos: [15, 25, 50],
+       reflejoMax: 900, tablas: [8, 9, 11, 12], matrizMax: 12 }
 };
 
 CB.jefes.rangos = function () {
@@ -12581,6 +14679,33 @@ CB.calibracion = {
       { consigna: '23 + 14', respuesta: 37, destreza: 'suma_sin_llevar', teclado: true },
       { consigna: '47 − 12', respuesta: 35, destreza: 'resta_sin_llevar', teclado: true },
       { consigna: '28 + 15', respuesta: 43, destreza: 'suma_llevada', teclado: true }
+    ],
+    /* 3.º-6.º (3.1.0): respuestas SIEMPRE de tres cifras o menos, para que el
+       teclado de la calibración no necesite coma ni signo. */
+    3: [
+      { consigna: 'Toca el número más grande.', opciones: [340, 430], respuesta: 430,
+        destreza: 'valor_posicional' },
+      { consigna: '46 + 38', respuesta: 84, destreza: 'suma_llevada', teclado: true },
+      { consigna: '72 − 35', respuesta: 37, destreza: 'resta_llevada', teclado: true },
+      { consigna: '6 × 4', respuesta: 24, destreza: 'multiplicacion', teclado: true }
+    ],
+    4: [
+      { consigna: '304 + 158', respuesta: 462, destreza: 'suma_llevada', teclado: true },
+      { consigna: '512 − 78', respuesta: 434, destreza: 'resta_llevada', teclado: true },
+      { consigna: '7 × 8', respuesta: 56, destreza: 'multiplicacion', teclado: true },
+      { consigna: '36 ÷ 4', respuesta: 9, destreza: 'division', teclado: true }
+    ],
+    5: [
+      { consigna: '45 ÷ 9', respuesta: 5, destreza: 'division', teclado: true },
+      { consigna: '7 × 60', respuesta: 420, destreza: 'multiplicacion', teclado: true },
+      { consigna: '¿Cuánto es 3/4 de 20?', respuesta: 15, destreza: 'fracciones', teclado: true },
+      { consigna: '2,5 + 1,5', respuesta: 4, destreza: 'decimales', teclado: true }
+    ],
+    6: [
+      { consigna: '¿Cuánto es el 25 % de 80?', respuesta: 20, destreza: 'porcentajes', teclado: true },
+      { consigna: '¿Cuánto es 3/5 de 45?', respuesta: 27, destreza: 'fracciones', teclado: true },
+      { consigna: '2,4 + 3,6', respuesta: 6, destreza: 'decimales', teclado: true },
+      { consigna: '144 ÷ 12', respuesta: 12, destreza: 'division', teclado: true }
     ]
   },
   indice: 0,

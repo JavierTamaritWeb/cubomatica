@@ -27,7 +27,12 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'suma_sin_llevar':
     case 'resta_sin_llevar':   return 'tabla100';
     case 'numeracion':         return 'rectaNumerica';
-    case 'multiplicacion':     return 'matrizFilasColumnas';
+    case 'multiplicacion':
+    case 'division':           return 'matrizFilasColumnas';
+    case 'fracciones':         return 'barrasComparativas';
+    case 'decimales':
+    case 'porcentajes':
+    case 'enteros':            return 'rectaNumerica';
     case 'problemas_comparacion':
     case 'problemas_igualacion':
     case 'problemas_cambio':

@@ -512,7 +512,12 @@ CB.gen.problemas.PROBLEMAS_SEGUROS = [
 /* Generación */
 CB.gen.problemas.generarSubtipo = function (subtipo, rng, D, ctx) {
   ctx = ctx || {};
-  const techo = ctx.techo || 99;
+  /* El techo del problema se queda en 999 aunque el curso llegue al millón:
+     el validador de lectura fácil exige respuesta ≤ 999, y sin este tope un
+     curso alto agotaba los 20 intentos y servía SIEMPRE el problema de
+     respaldo. En los problemas la dificultad vive en la estructura, no en el
+     tamaño del número (3.1.0). */
+  const techo = Math.min(ctx.techo || 99, 999);
   const conSobrante = !!ctx.datoSobrante;
   let intentos = 0, item;
 
@@ -665,7 +670,18 @@ CB.gen.problemas.SUBTIPO_DE_NIVEL = {
   P17: 'IGUALACION_3', P18: 'IGUALACION_4', P19: 'IGUALACION_5', P20: 'IGUALACION_6',
   /* Curso 1.º (3.0.0): las mismas cuatro estructuras nucleares. El curso no
      cambia la plantilla, cambia el techo numérico que la partida pasa en ctx. */
-  P21: 'CAMBIO_1', P22: 'CAMBIO_2', P23: 'COMBINACION_1', P24: 'COMBINACION_2'
+  P21: 'CAMBIO_1', P22: 'CAMBIO_2', P23: 'COMBINACION_1', P24: 'COMBINACION_2',
+  /* Cursos 3.º-6.º (3.1.0): las estructuras más duras del banco aditivo, con
+     números hasta 999. Los problemas MULTIPLICATIVOS son deuda declarada en
+     docs/decisiones.md: exigen plantillas y validación nuevas, no filas. */
+  P25: 'IGUALACION_1', P26: 'CAMBIO_5', P27: 'CAMBIO_6', P28: 'COMPARACION_5',
+  P29: 'COMPARACION_6',
+  P30: 'IGUALACION_3', P31: 'IGUALACION_4', P32: 'COMBINACION_2', P33: 'CAMBIO_5',
+  P34: 'COMPARACION_5',
+  P35: 'IGUALACION_5', P36: 'IGUALACION_6', P37: 'CAMBIO_6', P38: 'COMPARACION_6',
+  P39: 'COMBINACION_1',
+  P40: 'IGUALACION_5', P41: 'IGUALACION_6', P42: 'COMPARACION_5', P43: 'CAMBIO_5',
+  P44: 'COMBINACION_2'
 };
 
 /* Los generadores P1..P20 que consume el catálogo. */

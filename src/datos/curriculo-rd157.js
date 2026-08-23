@@ -56,7 +56,31 @@ CB.CURRICULO = {
     'F.1':   'Creencias, actitudes y emociones. Gestión emocional: estrategias de identificación y expresión de las propias emociones ante las matemáticas. Curiosidad e iniciativa en el aprendizaje de las matemáticas.',
     'F.2.a': 'Trabajo en equipo, inclusión, respeto y diversidad. Identificación y rechazo de actitudes discriminatorias ante las diferencias individuales presentes en el aula. Actitudes inclusivas y aceptación de la diversidad del grupo.',
     'F.2.b': 'Trabajo en equipo, inclusión, respeto y diversidad. Participación activa en el trabajo en equipo: interacción positiva y respeto por el trabajo de los demás.',
-    'F.2.c': 'Trabajo en equipo, inclusión, respeto y diversidad. Contribución de las matemáticas a los distintos ámbitos del conocimiento humano desde una perspectiva de género.'
+    'F.2.c': 'Trabajo en equipo, inclusión, respeto y diversidad. Contribución de las matemáticas a los distintos ámbitos del conocimiento humano desde una perspectiva de género.',
+
+    /* SENTIDO NUMÉRICO DE 2.º CICLO (cursos 3.º y 4.º), 3.1.0. Resumen fiel
+       del RD 157/2022; el reparto entre 3.º y 4.º es secuenciación propia
+       (ver SECUENCIACION). El prefijo A2. es CICLO 2, no curso. Los criterios
+       de evaluación se citan por número de competencia: la transcripción
+       literal de arriba es la del primer ciclo y la de los otros ciclos queda
+       declarada como pendiente en docs/decisiones.md (misma estructura). */
+    'A2.1': 'Cantidad (2.º ciclo). Lectura, representación, composición, descomposición y recomposición de números naturales hasta 999.999.',
+    'A2.2': 'Relaciones (2.º ciclo). Sistema de numeración de base diez: valor posicional, comparación, ordenación y redondeo de números grandes.',
+    'A2.3': 'Sentido de las operaciones (2.º ciclo). Multiplicación y división de números naturales: tablas, algoritmos y situaciones de la vida cotidiana.',
+    'A2.4': 'Cantidad (2.º ciclo). Fracciones propias con denominador hasta 12 en contextos de la vida cotidiana: partes de un todo y de una cantidad.',
+    'A2.5': 'Cantidad (2.º ciclo). Números decimales: décimas y centésimas en contextos de medida y de dinero.',
+    'A2.6': 'Educación financiera (2.º ciclo). Cálculo y estimación de cantidades y cambios (euros y céntimos) en problemas cotidianos.',
+    'A2.7': 'Sentido de las operaciones (2.º ciclo). Estrategias de cálculo mental y estimaciones razonadas con números grandes.',
+
+    /* SENTIDO NUMÉRICO DE 3.er CICLO (cursos 5.º y 6.º), 3.1.0. Mismo aviso. */
+    'A3.1': 'Cantidad (3.er ciclo). Números naturales grandes, hasta los millones: lectura, representación y ordenación.',
+    'A3.2': 'Relaciones (3.er ciclo). Múltiplos, divisores y criterios de divisibilidad en situaciones de cálculo.',
+    'A3.3': 'Sentido de las operaciones (3.er ciclo). Potencias, raíz cuadrada exacta y operaciones combinadas con paréntesis.',
+    'A3.4': 'Sentido de las operaciones (3.er ciclo). División con divisores de hasta dos cifras y estimación de cocientes.',
+    'A3.5': 'Cantidad (3.er ciclo). Fracciones: equivalencia, comparación, número mixto y operaciones sencillas.',
+    'A3.6': 'Cantidad (3.er ciclo). Números decimales: comparación, redondeo y las cuatro operaciones en contextos cotidianos.',
+    'A3.7': 'Relaciones (3.er ciclo). Porcentajes y proporcionalidad directa en situaciones de compra y de la vida cotidiana.',
+    'A3.8': 'Cantidad (3.er ciclo). Números enteros negativos en contextos cotidianos: temperaturas, alturas y plantas de un edificio.'
   },
 
   /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */

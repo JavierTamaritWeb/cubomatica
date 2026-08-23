@@ -3,8 +3,9 @@
 var CB = CB || {};
 CB.adaptativo = CB.adaptativo || {};
 
-/* Lista CERRADA de los 13 slugs. casos-curriculo.js (CU6) comprueba que los 92
-   niveles del catálogo apuntan a uno de estos. */
+/* Lista CERRADA de los 18 slugs. casos-curriculo.js (CU6) comprueba que todos
+   los niveles del catálogo apuntan a uno de estos. Los cinco últimos llegan
+   con los cursos 3.º-6.º (3.1.0). */
 CB.adaptativo.SLUGS = [
   'numeracion', 'valor_posicional',
   'suma_sin_llevar', 'suma_llevada',
@@ -12,7 +13,8 @@ CB.adaptativo.SLUGS = [
   'multiplicacion',
   'problemas_cambio', 'problemas_combinacion',
   'problemas_comparacion', 'problemas_igualacion',
-  'dinero', 'vocabulario'
+  'dinero', 'vocabulario',
+  'division', 'fracciones', 'decimales', 'porcentajes', 'enteros'
 ];
 
 CB.adaptativo.THETA_INICIAL = 1000;

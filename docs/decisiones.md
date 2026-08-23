@@ -4012,3 +4012,55 @@ Las decisiones que hay que conocer antes de tocar esto:
 - **La vitrina de premios lee el perfil, no inventa datos** (`CB.casa.premios`):
   diplomas de curso, guardianes, récords por modo y logros v1. Lo no ganado se
   enseña cerrado, como los cromos (E136).
+
+---
+
+## D-3.1.0 · El sentido numérico de 3.º a 6.º (Fase 1 de los cursos)
+
+130 niveles nuevos (catálogo: 243) reparten el sentido numérico del RD
+157/2022 entre los cursos 3.º-6.º: cinco familias nuevas — D división,
+F fracciones, C decimales, T porcentajes, Z enteros — en seis guiones
+(manifiesto 46 → 52), 18 destrezas adaptativas y 35 códigos de error. Las
+decisiones que hay que conocer:
+
+- **Una fracción no es un número tecleable, así que su respuesta es una
+  CADENA** ('3/4'), exactamente como la pieza de céntimo 'c20': opciones4 con
+  `distractoresFijos`, marca `respuestaFraccion`, y el motor de distractores
+  ni la toca. La comparación de cadenas de `responder()` ya existía. Los
+  fijos se DEDUPLICAN en `itemFrac`: den−num coincidía con num±1 y a·b con
+  a+b+1, y un juego de opciones con dos iguales rompe el invariante 5 — lo
+  cazó el arnés de Node antes de llegar a la suite.
+- **Un decimal nace como entero escalado y se divide UNA vez entre 10 o
+  100.** Así `parseFloat` de lo tecleado y la respuesta son el mismo doble y
+  la igualdad estricta es exacta, sin tolerancias. La milésima no existe:
+  C9 dividía centésimas entre 10 y el arnés lo tumbó; ahora divide décimas.
+- **El teclado dimensiona sus cifras con `item.rangoNivel`** (que el catálogo
+  inyecta en cada ítem) y solo saca la tecla de coma o de signo si el ítem
+  declara `conComa`/`conSigno`: en 1.º-3.º es EXACTAMENTE el teclado de
+  siempre. El anti-azar (S4) y los topes del motor de distractores escalan
+  con el mismo rango: el [0, 999] fijo era el mundo de 2.º.
+- **Los problemas se quedan en 999 aunque el curso llegue al millón**
+  (`generarSubtipo` recorta el techo): el validador de lectura fácil exige
+  respuesta ≤ 999 y sin el tope un curso alto agotaba los 20 intentos y
+  servía SIEMPRE el problema de respaldo. La dificultad de un problema vive
+  en la estructura. **Deuda declarada**: los P de 3.º-6.º reutilizan las
+  estructuras aditivas más duras; los problemas MULTIPLICATIVOS (grupos,
+  reparto, comparación multiplicativa) exigen plantillas y validación nuevas.
+- **Los criterios de evaluación se citan por número de competencia**: la
+  transcripción literal de `criterios` es la del primer ciclo, y la de los
+  ciclos 2.º y 3.º queda pendiente (misma estructura de ocho competencias).
+  Los SABERES sí están transcritos por ciclo (claves A2.x / A3.x).
+- **`factoresValidos` vigila la INICIACIÓN de 2.º, no a los mayores**: los
+  ítems de 3.º+ llevan `tablasCompletas` y el vigilante los deja pasar. Lo
+  mismo con INV11 (doble llevada): en 3.º ES el contenido (R19-R20), así que
+  el invariante se acota a curso ≤ 2.
+- **Cardinalidades medidas, no estimadas**: las 110 se calcularon generando
+  10.000 ítems por nivel y tomando el 70 % de los únicos observados (acotado
+  por la tirada corta de 400). El arnés que las midió comprobó de paso todos
+  los invariantes por curso.
+- **Arranque 400 → 480 KB** (`comprobar-dist.mjs`): los seis cursos añaden
+  ~60 KB minificados; en el Chromebook de referencia son ~80 ms más de
+  parse, y la alternativa —partir el bundle— rompía el contrato de un solo
+  guion. Queda margen (432 de 480) para las fases B-E.
+- **3.1.0, no 4.0.0**: el esquema de perfil no cambia (v4). La regla escrita
+  del proyecto manda.

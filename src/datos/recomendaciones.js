@@ -150,3 +150,69 @@ CB.datos.RECOMENDACIONES = {
                'problema exige entender la palabra mucho más que resolverlo.'
   }
 };
+
+/* ——— Cursos 3.º-6.º (3.1.0): los 11 códigos nuevos ——— */
+
+CB.datos.RECOMENDACIONES['E-D-COC-VECINO'] = {
+  frase: 'Al dividir se pasa una vez: da el resultado de la fila siguiente de la tabla.',
+  actividad: 'Repartid 24 garbanzos en 6 platos de verdad y contad lo que cae en cada ' +
+             'uno. Después preguntad: ¿y si fueran 30?, ¿y 18? El plato físico corrige ' +
+             'la tabla mejor que repetirla de memoria.'
+};
+CB.datos.RECOMENDACIONES['E-D-COC-CORTO'] = {
+  frase: 'Al dividir se queda corto: da el resultado de la fila anterior de la tabla.',
+  actividad: 'El juego de «¿cuántas veces cabe?»: con 35 fichas, que vaya quitando ' +
+             'grupos de 5 y haga una raya por cada grupo. Las rayas SON el cociente.'
+};
+CB.datos.RECOMENDACIONES['E-D-RESTO-COMO-COC'] = {
+  frase: 'Confunde lo que sobra con lo que toca: escribe el resto donde va el cociente.',
+  actividad: 'Repartid 17 cromos entre 3: que separe los montones (5, 5 y 5) Y ADEMÁS ' +
+             'deje los 2 sobrantes en el centro, y que diga en voz alta «tocan a 5 y ' +
+             'sobran 2». Las dos palabras, siempre juntas.'
+};
+CB.datos.RECOMENDACIONES['E-D-TABLA-VECINA'] = {
+  frase: 'Divide entre un número vecino del que toca: mezcla dos tablas.',
+  actividad: 'Antes de cada división, que rodee el divisor con un círculo y diga «tabla ' +
+             'del N» en voz alta. Solo entonces puede empezar a calcular.'
+};
+CB.datos.RECOMENDACIONES['E-C-COMA-CORRIDA'] = {
+  frase: 'La coma se le corre un lugar y el resultado sale diez veces más grande.',
+  actividad: 'Con dinero de verdad: 2,50 € son dos monedas y media de euro, no 25 €. ' +
+             'Que pague 2,50 € con monedas y luego escriba la cantidad. El bolsillo no ' +
+             'deja correr la coma.'
+};
+CB.datos.RECOMENDACIONES['E-C-COMA-CORTA'] = {
+  frase: 'La coma se le corre un lugar y el resultado sale diez veces más pequeño.',
+  actividad: 'La recta en el suelo con cinta de pintor: marcad 0, 1, 2 y 3, y que ' +
+             'coloque 0,5 y 1,5 caminando. Después que coloque el resultado de su cuenta ' +
+             'y se pregunte si cae donde debería.'
+};
+CB.datos.RECOMENDACIONES['E-T-RESTA-DIRECTA'] = {
+  frase: 'Resta el porcentaje como si fuera una cantidad: al 25 % de 80 responde 55.',
+  actividad: 'Cortad una tira de papel en 4 partes iguales: el 25 % es UNA parte de ' +
+             'las cuatro, no «quitar 25». Repetidlo con el 50 % (la mitad) y el 10 % ' +
+             '(una de diez).'
+};
+CB.datos.RECOMENDACIONES['E-T-SIN-DIVIDIR'] = {
+  frase: 'Multiplica por el porcentaje pero se olvida de dividir entre 100.',
+  actividad: 'Que escriba SIEMPRE el porcentaje como fracción antes de calcular: ' +
+             '25 % = 25/100. Con la fracción delante, el «entre 100» deja de olvidarse.'
+};
+CB.datos.RECOMENDACIONES['E-Z-SIN-SIGNO'] = {
+  frase: 'Calcula bien la distancia pero pierde el signo: responde 3 donde era −3.',
+  actividad: 'Dibujad un termómetro grande con el cero bien marcado. Que cuente los ' +
+             'saltos hacia abajo CRUZANDO el cero con el dedo: lo que queda por debajo ' +
+             'se lee siempre con «menos» delante.'
+};
+CB.datos.RECOMENDACIONES['E-F-SUMA-DENOM'] = {
+  frase: 'Al sumar fracciones suma también los denominadores: 1/4 + 2/4 le da 3/8.',
+  actividad: 'Dos barras de papel iguales cortadas en cuartos: juntad 1 cuarto y 2 ' +
+             'cuartos sobre la mesa. Se VE que hay 3 cuartos y que las partes no ' +
+             'cambian de tamaño por juntarlas.'
+};
+CB.datos.RECOMENDACIONES['E-C-ALINEACION'] = {
+  frase: 'Suma decimales sin alinear la coma: junta décimas con unidades.',
+  actividad: 'Papel cuadriculado y una regla vertical dibujada donde va la coma. ' +
+             'Primero solo COLOCAR cinco sumas con la coma en su columna, sin ' +
+             'resolver ninguna. Colocar es la mitad de la cuenta.'
+};

@@ -212,7 +212,12 @@ juzgar(!ausentes.length, 'todo lo que referencia dist/index.html existe en dist/
   'dist/index.html apunta a ficheros que no estan', ausentes.join(', '));
 
 /* Se suman el HTML y exactamente lo que referencia, y nada mas — en dist/ conviven el bundle minificado que se sirve y el legible que solo usan la auditoria y la suite, asi que pesar la carpeta entera daria mas del doble de lo que nadie… */
-const TOPE_KB = 400;
+/* 400 protegia el arranque en un Chromebook de 2019 con el contenido de un
+   solo curso. Los seis cursos de 3.1.0 anaden ~60 KB minificados de
+   generadores y catalogo; 480 son ~80 ms mas de parse en esa maquina, y la
+   alternativa (partir el bundle) rompe el contrato de un solo guion.
+   Decision anotada en docs/decisiones.md (D-3.1.0). */
+const TOPE_KB = 480;
 const pesa = (f) => readFileSync(join(DIST, f)).length;
 const arranque = ['index.html'].concat(referidos.filter((u) => !/^audio\//.test(u)));
 const kb = Math.round(arranque.reduce((n, f) => n + pesa(f.split('?')[0]), 0) / 1024);

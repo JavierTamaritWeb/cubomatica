@@ -12,6 +12,20 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.1.0] — 2026-08-23
+
+**Fase 1 de los cursos: el sentido numérico de 3.º a 6.º.** 130 niveles nuevos
+(catálogo: 243), cinco familias nuevas — **D** división, **F** fracciones,
+**C** decimales, **T** porcentajes, **Z** enteros — en seis guiones nuevos
+(manifiesto 46 → 52), con 18 destrezas adaptativas, 35 códigos de error (24 +
+11) y los saberes del sentido numérico de 2.º y 3.er ciclo transcritos en
+`datos/curriculo-rd157.js`. El teclado gana la tecla de coma y la de signo
+(solo cuando el ítem las pide), dimensiona sus cifras por el rango del nivel,
+y el anti-azar y los distractores escalan con el curso. Presupuesto de
+arranque 400 → 480 KB, documentado (D-3.1.0). El esquema de perfil NO cambia
+(v4): por eso es 3.1.0 y no 4.0.0. Deuda declarada: problemas multiplicativos
+y transcripción literal de los criterios de 2.º-3.er ciclo.
+
 ## [3.0.0] — 2026-08-23
 
 **Primera cifra por su única razón: cambia el formato del perfil guardado.**

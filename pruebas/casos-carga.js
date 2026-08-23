@@ -30,11 +30,13 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
        ausentes.join(', '));
 
   const gens = ['numeracion', 'sumas', 'restas', 'multiplicacion', 'problemas',
-              'dinero', 'vocabulario'];
+              'dinero', 'vocabulario',
+              'division', 'fracciones', 'decimales', 'porcentajes', 'enteros'];
   const sinGen = gens.filter(function (g) { return !CB.gen[g]; });
-  t.ok(sinGen.length === 0, 'los 7 generadores están registrados', sinGen.join(', '));
+  t.ok(sinGen.length === 0, 'los ' + gens.length + ' generadores están registrados',
+       sinGen.join(', '));
 
-  t.igual(CB.catalogo.ids().length, 113, 'el catálogo declara 113 niveles (3.0.0)');
+  t.igual(CB.catalogo.ids().length, 243, 'el catálogo declara 243 niveles (3.1.0)');
   t.igual(CB.MUNDOS.length, 4, 'hay 4 mundos en v1');
 
   /* La versión. auditar.sh comprueba que README, CHANGELOG y LEEME digan la

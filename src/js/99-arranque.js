@@ -30,6 +30,33 @@ CB.calibracion = {
       { consigna: '23 + 14', respuesta: 37, destreza: 'suma_sin_llevar', teclado: true },
       { consigna: '47 − 12', respuesta: 35, destreza: 'resta_sin_llevar', teclado: true },
       { consigna: '28 + 15', respuesta: 43, destreza: 'suma_llevada', teclado: true }
+    ],
+    /* 3.º-6.º (3.1.0): respuestas SIEMPRE de tres cifras o menos, para que el
+       teclado de la calibración no necesite coma ni signo. */
+    3: [
+      { consigna: 'Toca el número más grande.', opciones: [340, 430], respuesta: 430,
+        destreza: 'valor_posicional' },
+      { consigna: '46 + 38', respuesta: 84, destreza: 'suma_llevada', teclado: true },
+      { consigna: '72 − 35', respuesta: 37, destreza: 'resta_llevada', teclado: true },
+      { consigna: '6 × 4', respuesta: 24, destreza: 'multiplicacion', teclado: true }
+    ],
+    4: [
+      { consigna: '304 + 158', respuesta: 462, destreza: 'suma_llevada', teclado: true },
+      { consigna: '512 − 78', respuesta: 434, destreza: 'resta_llevada', teclado: true },
+      { consigna: '7 × 8', respuesta: 56, destreza: 'multiplicacion', teclado: true },
+      { consigna: '36 ÷ 4', respuesta: 9, destreza: 'division', teclado: true }
+    ],
+    5: [
+      { consigna: '45 ÷ 9', respuesta: 5, destreza: 'division', teclado: true },
+      { consigna: '7 × 60', respuesta: 420, destreza: 'multiplicacion', teclado: true },
+      { consigna: '¿Cuánto es 3/4 de 20?', respuesta: 15, destreza: 'fracciones', teclado: true },
+      { consigna: '2,5 + 1,5', respuesta: 4, destreza: 'decimales', teclado: true }
+    ],
+    6: [
+      { consigna: '¿Cuánto es el 25 % de 80?', respuesta: 20, destreza: 'porcentajes', teclado: true },
+      { consigna: '¿Cuánto es 3/5 de 45?', respuesta: 27, destreza: 'fracciones', teclado: true },
+      { consigna: '2,4 + 3,6', respuesta: 6, destreza: 'decimales', teclado: true },
+      { consigna: '144 ÷ 12', respuesta: 12, destreza: 'division', teclado: true }
     ]
   },
   indice: 0,

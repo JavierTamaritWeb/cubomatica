@@ -72,12 +72,14 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   t.igual(CB.grafo.ampliacionesComoPrerrequisito().length, 0,
     'CU5 · ninguna ampliación es prerrequisito de un nivel nuclear');
 
-  /* CU6 — los 92 apuntan a uno de los 13 slugs */
+  /* CU6 — todos los niveles apuntan a uno de los slugs declarados */
   const malSlug = niveles.filter(function (n) {
     return CB.adaptativo.SLUGS.indexOf(n.destreza) === -1;
   });
+  t.igual(CB.adaptativo.SLUGS.length, 18, 'CU6 · hay 18 slugs de destreza (13 + los 5 de 3.º-6.º)');
   t.ok(malSlug.length === 0,
-    'CU6 · los ' + niveles.length + ' niveles apuntan a uno de los 13 slugs de destreza',
+    'CU6 · los ' + niveles.length + ' niveles apuntan a uno de los ' +
+    CB.adaptativo.SLUGS.length + ' slugs de destreza',
     malSlug.map(function (n) { return n.id + ':' + n.destreza; }).join(', '));
 
   /* CU7 — la unión de los mundos es EXACTAMENTE los 92 ids */
@@ -90,7 +92,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   });
   const huerfanos = CB.catalogo.ids().filter(function (id) { return union.indexOf(id) === -1; });
   const fantasmas = union.filter(function (id) { return !CB.catalogo.get(id); });
-  t.igual(union.length, 113, 'CU7a · los mundos suman 113 niveles (92 de 2.º + 21 de 1.º)');
+  t.igual(union.length, 243, 'CU7a · los mundos suman 243 niveles (los seis cursos)');
   t.ok(repes.length === 0, 'CU7b · ningún nivel aparece en dos mundos', repes.join(', '));
   t.ok(huerfanos.length === 0, 'CU7c · ningún nivel se queda fuera de los mundos',
        huerfanos.join(', '));
@@ -100,8 +102,8 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   /* CU8 — CB.ERRORES y recomendaciones comparten el conjunto de claves */
   const ce = Object.keys(CB.ERRORES).sort();
   const cr = Object.keys(CB.datos.RECOMENDACIONES).sort();
-  t.igual(ce.length, 24, 'CU8a · hay 24 códigos de error');
-  t.igual(cr.length, 24, 'CU8b · hay 24 recomendaciones');
+  t.igual(ce.length, 35, 'CU8a · hay 35 códigos de error (24 + los 11 de 3.º-6.º)');
+  t.igual(cr.length, 35, 'CU8b · hay 35 recomendaciones');
   t.ok(ce.join('|') === cr.join('|'),
     'CU8c · CB.ERRORES y datos/recomendaciones.js tienen el MISMO conjunto de claves',
     'solo en errores: ' + ce.filter(function (k) { return cr.indexOf(k) === -1; }).join(',') +
@@ -116,8 +118,8 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
 
   const conSimular = ce.filter(function (k) { return typeof CB.ERRORES[k].simular === 'function'; });
   const sinDiag = ce.filter(function (k) { return CB.ERRORES[k].diagnostico === false; });
-  t.igual(conSimular.length, 18, '18 códigos tienen simular()');
-  t.igual(sinDiag.length, 6, 'los 6 restantes declaran diagnostico:false');
+  t.igual(conSimular.length, 27, '27 códigos tienen simular()');
+  t.igual(sinDiag.length, 8, 'los 8 restantes declaran diagnostico:false');
   const incoherentes = ce.filter(function (k) {
     return (typeof CB.ERRORES[k].simular === 'function') === (CB.ERRORES[k].diagnostico === false);
   });
@@ -146,9 +148,10 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
              n.trimestreSugerido + ')';
     }).join(', '));
 
-  /* La multiplicación: M1-M8 nucleares de T3, M9-M10 ampliación */
-  const mult = niveles.filter(function (n) { return n.letra === 'M'; });
-  t.igual(mult.length, 10, 'hay 10 niveles de multiplicación (no 18: §8.4)');
+  /* La multiplicación DE 2.º: M1-M8 nucleares de T3, M9-M10 ampliación. Los
+     M11-M22 de 3.º-5.º son otra cosa: tablas completas y factores grandes. */
+  const mult = niveles.filter(function (n) { return n.letra === 'M' && n.curso === 2; });
+  t.igual(mult.length, 10, 'hay 10 niveles de multiplicación en 2.º (no 18: §8.4)');
   const nucleares = mult.filter(function (n) { return !n.ampliacion; });
   t.igual(nucleares.length, 8, 'M1-M8 son iniciación NUCLEAR, no ampliación');
   t.ok(nucleares.every(function (n) { return n.trimestreSugerido === 3; }),
@@ -183,15 +186,18 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   /* Reparto declarado, por letra y por curso */
   const cuenta = {};
   niveles.forEach(function (n) { cuenta[n.letra] = (cuenta[n.letra] || 0) + 1; });
-  t.ok(cuenta.N === 22 && cuenta.S === 21 && cuenta.R === 18 && cuenta.M === 10 &&
-       cuenta.P === 24 && cuenta.E === 10 && cuenta.V === 8,
-    'reparto 22 N · 21 S · 18 R · 10 M · 24 P · 10 E · 8 V = 113',
+  t.ok(cuenta.N === 44 && cuenta.S === 26 && cuenta.R === 23 && cuenta.M === 22 &&
+       cuenta.P === 44 && cuenta.E === 14 && cuenta.V === 8 &&
+       cuenta.D === 17 && cuenta.F === 20 && cuenta.C === 15 &&
+       cuenta.T === 6 && cuenta.Z === 4,
+    'reparto 44 N · 26 S · 23 R · 22 M · 44 P · 14 E · 8 V · 17 D · 20 F · 15 C · 6 T · 4 Z = 243',
     JSON.stringify(cuenta));
 
   const porCurso = {};
   niveles.forEach(function (n) { porCurso[n.curso] = (porCurso[n.curso] || 0) + 1; });
-  t.ok(porCurso[1] === 21 && porCurso[2] === 92,
-    'por curso: 21 niveles de 1.º y los 92 originales de 2.º',
+  t.ok(porCurso[1] === 21 && porCurso[2] === 92 && porCurso[3] === 36 &&
+       porCurso[4] === 34 && porCurso[5] === 29 && porCurso[6] === 31,
+    'por curso: 21 · 92 · 36 · 34 · 29 · 31 (los 92 de 2.º, intactos)',
     JSON.stringify(porCurso));
 
   /* La cita de la norma es completa dondequiera que aparezca */

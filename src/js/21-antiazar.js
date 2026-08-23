@@ -68,13 +68,18 @@ CB.antiazar.tresFallosRapidos = function (historial) {
   return true;
 };
 
-/* S4 — respuesta imposible: fuera de [0, 999] o negativa. */
+/* S4 — respuesta imposible: fuera del rango DEL NIVEL (3.1.0). El [0, 999]
+   fijo era el mundo de 2.º: un curso alto teclea legítimamente 45.231, y un
+   ítem de enteros teclea −3. El catálogo inyecta rangoNivel en cada ítem. */
 CB.antiazar.respuestaPosible = function (item) {
   if (!item) return true;
   const v = item.valorDado;
   if (v == null) return true;
   if (!isFinite(v)) return false;
-  return v >= 0 && v <= 999;
+  const rango = item.rangoNivel || [0, 999];
+  const max = Math.max(999, rango[1]);
+  const min = Math.min(0, rango[0]);
+  return v >= min && v <= max;
 };
 
 /* Los efectos del azar. NUNCA apaga una luz (§12.1, regla 2) */

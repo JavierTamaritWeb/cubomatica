@@ -126,7 +126,20 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
   cont.appendChild(visor);
 
   const teclado = CB.ui.crear('div', 'teclado-bloques');
-  const teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'OK'];
+  /* Cifras según el RANGO DEL NIVEL (3.1.0): el tope fijo de 3 era el mundo
+     de 2.º, y con él un niño de 4.º no podía ni teclear 45.231. La coma y el
+     signo solo existen si el ítem los pide (decimales de 4.º-6.º, enteros de
+     6.º): en los cursos bajos el teclado es EXACTAMENTE el de siempre. */
+  const rangoMax = (item && item.rangoNivel && item.rangoNivel[1]) || 999;
+  const maxLargo = String(Math.max(999, rangoMax)).length +
+                   (item && item.conComa ? 3 : 0) +
+                   (item && item.conSigno ? 1 : 0);
+  let teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'OK'];
+  if (item && item.conComa) {
+    teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫', 'OK'];
+  } else if (item && item.conSigno) {
+    teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '−', '0', '⌫', 'OK'];
+  }
   let i;
 
   function pinta() {
@@ -142,12 +155,29 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     }
     if (t === 'OK') {
       if (!CB.componentes._valor.length) return;
+      if (!/[0-9]/.test(CB.componentes._valor)) return;   // solo «−» o «,»: nada
       CB.componentes.pedirConfirmacion(boton, function () {
-        alResponder(parseInt(CB.componentes._valor, 10), 'teclado');
+        const bruto = CB.componentes._valor.replace('−', '-').replace(',', '.');
+        const v = (item && (item.conComa || item.conSigno))
+          ? parseFloat(bruto)
+          : parseInt(bruto, 10);
+        alResponder(v, 'teclado');
       });
       return;
     }
-    if (CB.componentes._valor.length >= 3) return;      // techo 999
+    if (t === ',') {
+      if (CB.componentes._valor.indexOf(',') !== -1) return;   // una coma, no dos
+      if (!CB.componentes._valor.length) CB.componentes._valor = '0';
+    }
+    if (t === '−') {
+      /* El signo conmuta y siempre va delante. */
+      CB.componentes._valor = (CB.componentes._valor.charAt(0) === '−')
+        ? CB.componentes._valor.slice(1)
+        : '−' + CB.componentes._valor;
+      pinta(); CB.audio.sfx('picar');
+      return;
+    }
+    if (CB.componentes._valor.length >= maxLargo) return;
     CB.componentes._valor += t;
     pinta();
     CB.audio.sfx('picar');
@@ -176,6 +206,8 @@ CB.componentes.tecladoBloques = function (item, alResponder, opciones) {
     tipo: 'tecladoBloques',
     tecla: function (k) {
       if (/^[0-9]$/.test(k)) { pulsa(k, null); return true; }
+      if ((k === ',' || k === '.') && item && item.conComa) { pulsa(',', null); return true; }
+      if (k === '-' && item && item.conSigno) { pulsa('−', null); return true; }
       if (k === 'Backspace' || k === 'Delete') { pulsa('⌫', null); return true; }
       /* Iba por su cuenta y se saltaba pedirConfirmacion(), así que la confirmación de dos toques que impone el antiazar tras una detección solo se le aplicaba a quien juega tocando: con teclado, Enter contestaba a la primera. */
       if (k === 'Enter') { pulsa('OK', botonOK); return true; }

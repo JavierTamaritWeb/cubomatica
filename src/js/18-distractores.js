@@ -309,8 +309,13 @@ CB.distractores.para = function (item, rng) {
     if (v === correcta || v < 0 || vistos[v]) continue;
 
     const intencionado = !!CB.ERRORES[cod].puedeSuperar999;
-    const limite = intencionado ? CB.distractores.LIMITE_INTENCIONADO
-                              : CB.distractores.LIMITE_NORMAL;
+    /* El tope escala con el rango del nivel (3.1.0): 999 era el mundo de 2.º
+       y silenciaba todo distractor de un producto de cuatro cifras — el ítem
+       degradaba a teclado sin que nadie lo viera. */
+    const topeNivel = Math.max(CB.distractores.LIMITE_NORMAL,
+      (item.rangoNivel && item.rangoNivel[1]) || 0);
+    const limite = intencionado ? Math.max(CB.distractores.LIMITE_INTENCIONADO, topeNivel * 2)
+                              : topeNivel;
     if (v > limite) continue;
 
     /* Invariante 6: distractor plausible, salvo los intencionados. */
@@ -332,7 +337,8 @@ CB.distractores.para = function (item, rng) {
     const sg = signos[Math.floor(idx / ks.length) % 2];
     idx++;
     v = correcta + sg * kk;
-    if (v < 0 || v > CB.distractores.LIMITE_NORMAL) continue;
+    if (v < 0 || v > Math.max(CB.distractores.LIMITE_NORMAL,
+                              (item.rangoNivel && item.rangoNivel[1]) || 0)) continue;
     if (v === correcta || vistos[v]) continue;
     vistos[v] = true;
     opciones.push({ valor: v, codigoError: null, intencionado: false, correcta: false });
@@ -396,4 +402,111 @@ CB.distractores.registrar = function (perfil, item, valorDado) {
     if (perfil.errores[cod].ejemplos.length > 3) perfil.errores[cod].ejemplos.length = 3;
   }
   return d;
+};
+
+/* ——— Códigos de error de 3.º-6.º (3.1.0): división, decimales, porcentajes,
+   enteros y fracciones. Mismo contrato que los 24 originales: simular() y
+   diagnostico:false son mutuamente excluyentes, y cada código tiene su
+   recomendación en datos/recomendaciones.js (CU8 lo cruza). ——— */
+
+CB.ERRORES['E-D-COC-VECINO'] = {
+  familia: 'D', diagnostico: true,
+  pista: 'Repasa la tabla: te has quedado una vez por encima.',
+  reparacion: 'matrizFilasColumnas',
+  simular: function (item) {
+    if (item.operacion !== '÷') return null;
+    const c = (item.contexto && item.contexto.cociente != null)
+      ? item.contexto.cociente : item.respuesta;
+    return c + 1;
+  }
+};
+
+CB.ERRORES['E-D-COC-CORTO'] = {
+  familia: 'D', diagnostico: true,
+  pista: 'Repasa la tabla: te has quedado una vez por debajo.',
+  reparacion: 'matrizFilasColumnas',
+  simular: function (item) {
+    if (item.operacion !== '÷') return null;
+    const c = (item.contexto && item.contexto.cociente != null)
+      ? item.contexto.cociente : item.respuesta;
+    return c > 1 ? c - 1 : null;
+  }
+};
+
+CB.ERRORES['E-D-RESTO-COMO-COC'] = {
+  familia: 'D', diagnostico: true,
+  pista: 'Eso que has escrito es lo que sobra, no lo que toca a cada uno.',
+  reparacion: 'matrizFilasColumnas',
+  simular: function (item) {
+    if (item.operacion !== '÷' || !item.contexto) return null;
+    return item.contexto.resto > 0 ? item.contexto.resto : null;
+  }
+};
+
+CB.ERRORES['E-D-TABLA-VECINA'] = {
+  familia: 'D', diagnostico: true,
+  pista: 'Mira bien entre qué número estás dividiendo.',
+  reparacion: 'matrizFilasColumnas',
+  simular: function (item) {
+    if (item.operacion !== '÷' || !item.operandos) return null;
+    const a = item.operandos[0], d = item.operandos[1];
+    if (!(d >= 2)) return null;
+    return Math.round(a / (d + 1));
+  }
+};
+
+CB.ERRORES['E-C-COMA-CORRIDA'] = {
+  familia: 'C', diagnostico: true, puedeSuperar999: true,
+  pista: 'La coma se te ha movido un sitio: el número salió diez veces más grande.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) { return item.respuesta * 10; }
+};
+
+CB.ERRORES['E-C-COMA-CORTA'] = {
+  familia: 'C', diagnostico: true,
+  pista: 'La coma se te ha movido un sitio: el número salió diez veces más pequeño.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) { return item.respuesta / 10; }
+};
+
+CB.ERRORES['E-T-RESTA-DIRECTA'] = {
+  familia: 'T', diagnostico: true,
+  pista: 'Has restado el número del porcentaje, y el porcentaje no se resta: se calcula.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (item.operacion !== '%' || !item.operandos) return null;
+    const v = item.operandos[0] - item.operandos[1];
+    return v > 0 ? v : null;
+  }
+};
+
+CB.ERRORES['E-T-SIN-DIVIDIR'] = {
+  familia: 'T', diagnostico: true, puedeSuperar999: true,
+  pista: 'Multiplicaste bien, pero falta dividir entre 100.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (item.operacion !== '%' || !item.operandos) return null;
+    return item.operandos[0] * item.operandos[1];
+  }
+};
+
+CB.ERRORES['E-Z-SIN-SIGNO'] = {
+  familia: 'Z', diagnostico: true,
+  pista: 'El número es ese, pero por DEBAJO de cero: le falta el signo.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    return (item.respuesta < 0) ? Math.abs(item.respuesta) : null;
+  }
+};
+
+CB.ERRORES['E-F-SUMA-DENOM'] = {
+  familia: 'F', diagnostico: false,
+  pista: 'Los denominadores no se suman: dicen en cuántas partes está cortado el todo.',
+  reparacion: 'barrasComparativas'
+};
+
+CB.ERRORES['E-C-ALINEACION'] = {
+  familia: 'C', diagnostico: false,
+  pista: 'Coloca coma debajo de coma antes de operar.',
+  reparacion: 'rectaNumerica'
 };

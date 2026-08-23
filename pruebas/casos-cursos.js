@@ -69,8 +69,8 @@ CB.pruebas.suite('Cursos: betas congeladas, mezcla 80/20 y promoción', function
     'E132 · cada mundo tiene al menos 3 niveles nucleares de cada curso disponible',
     pobres.join(', '));
 
-  t.ok(CB.catalogo.cursosDisponibles().join(',') === '1,2',
-    'E135 · los cursos disponibles hoy son 1.º y 2.º (crece con cada fase de contenido)');
+  t.ok(CB.catalogo.cursosDisponibles().join(',') === '1,2,3,4,5,6',
+    'E135 · los seis cursos de Primaria están disponibles (3.1.0)');
 
   /* El progreso de mundo se mide sobre el curso activo: los 21 niveles de 1.º
      no pueden hacer que el mapa de un perfil de 2.º parezca menos completo. */
@@ -180,9 +180,14 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
     'E129 · si el adulto baja el curso, el cerrojo de cursosCompletados evita re-celebrar');
   p.curso = 2;
   dominar(p, 2);
+  t.igual(CB.partida.comprobarPromocion(p), 3,
+    'E129 · con 3.º publicado (3.1.0), dominar 2.º promociona a 3.º');
+  t.igual(p.curso, 3, 'el perfil sube a 3.º');
+  p.curso = 6;
+  dominar(p, 6);
   t.igual(CB.partida.comprobarPromocion(p), 'maestria',
-    'E129 · dominar el último curso disponible es maestría, no un salto a un curso vacío');
-  t.igual(p.curso, 2, 'sin 3.º publicado, el perfil se queda en 2.º');
+    'E129 · dominar 6.º es maestría: no hay curso al que saltar');
+  t.igual(p.curso, 6, 'el perfil se queda en 6.º');
 
   /* E131 · la caja del adulto con raiz:true lee y escribe la RAÍZ del perfil,
      no perfil.ajustes. Se pulsa el botón de verdad, con guardado y repintado

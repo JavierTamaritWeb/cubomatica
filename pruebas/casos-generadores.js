@@ -2,8 +2,12 @@
 
 CB.pruebas.suite('Generadores: los 12 invariantes', function () {
   const t = CB.pruebas;
-  const porNivel = CB.pruebas.modoLargo ? 10000 : 1000;
+  /* 400 en la suite rápida desde 3.1.0: con 243 niveles, 1000 tiradas por
+     nivel multiplicaba por 2,6 el tiempo de la suite entera. El modo largo
+     conserva las 10.000: es la puerta de entrega, no la de desarrollo. */
+  const porNivel = CB.pruebas.modoLargo ? 10000 : 400;
   const ids = CB.catalogo.ids();
+  const LIMITES = CB.catalogo.LIMITES_CURSO;
 
   const fallos = {
     inv1: 0, inv2: 0, inv3: 0, inv4: 0, inv5: 0, inv5bis: 0, inv5ter: 0,
@@ -20,6 +24,8 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
 
   ids.forEach(function (id) {
     const nivel = CB.catalogo.get(id);
+    const lim = LIMITES[nivel.curso] || LIMITES[2];
+    const minCurso = lim.negativos ? (lim.min || -999) : 0;
     const unicos = {};
     let nUnicos = 0, s;
 
@@ -29,34 +35,53 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
         ajustes: { tablas69: nivel.flagAdulto === 'tablas69',
                    centimos: nivel.flagAdulto === 'centimos',
                    restasDobleLlevada: nivel.flagAdulto === 'restasDobleLlevada' },
-        techo: 999,
+        techo: lim.max,
         bolsas: CB.gen.problemas.nuevoEstadoBolsas()
       });
       if (!item) { anota('nulos', id + ' devuelve null'); break; }
       totalItems++;
       if (!unicos[item.expr]) { unicos[item.expr] = 1; nUnicos++; }
 
-      /* La exención es ESTRECHA a propósito: solo la respuesta, solo si es una cadena, y solo en un ítem que pide dibujar piezas. */
+      /* Las exenciones son ESTRECHAS a propósito: solo la respuesta, solo si
+         es una cadena, y solo en los dos ítems que lo declaran — la pieza de
+         céntimo ('c20') y la fracción o el decimal como texto ('3/4', '3,45'). */
       const esPieza = (item.piezasDinero === true && typeof item.respuesta === 'string');
+      const esTexto = esPieza ||
+        (item.respuestaFraccion === true && typeof item.respuesta === 'string');
 
-      /* INV 1 — operandos y respuesta en [0, 999] */
-      if (!esPieza && !(item.respuesta >= 0 && item.respuesta <= 999)) {
+      /* INV 1 — operandos y respuesta dentro de lo permitido AL CURSO */
+      if (!esTexto && !(item.respuesta >= minCurso && item.respuesta <= lim.max)) {
         anota('inv1', id + ' respuesta ' + item.respuesta);
       }
       if (esPieza && !CB.gen.dinero.esCentimo(item.respuesta)) {
         anota('inv1', id + ' respuesta en cadena que no es una pieza: ' + item.respuesta);
       }
       (item.operandos || []).forEach(function (o) {
-        if (!(o >= 0 && o <= 999)) anota('inv1', id + ' operando ' + o);
+        if (!(o >= 0 && Math.abs(o) <= lim.max)) anota('inv1', id + ' operando ' + o);
       });
 
-      /* INV 2 — toda resta con resultado ≥ 0 */
-      if (item.operacion === '-' && item.respuesta < 0) anota('inv2', id);
+      /* INV 2 — toda resta con resultado ≥ 0, salvo los enteros de 6.º, cuyo
+         oficio es exactamente cruzar el cero (llevan conSigno). */
+      if (item.operacion === '-' && item.respuesta < 0 && !item.conSigno) anota('inv2', id);
 
-      /* INV 3 — sin decimales, sin negativos, sin fracción */
-      if (!esPieza && item.respuesta !== Math.round(item.respuesta)) anota('inv3', id + ' decimal');
+      /* INV 3 — la notación que el curso aún no ha visto está PROHIBIDA, y la
+         que sí, permitida: coma decimal desde 4.º, barra de fracción desde
+         3.º. El ½ tipográfico no existe nunca; las fracciones se escriben
+         «1/2» o se dibujan. */
+      if (!esTexto && item.respuesta !== Math.round(item.respuesta)) {
+        if (!lim.decimales) anota('inv3', id + ' decimal');
+        else if (Math.abs(Math.round(item.respuesta * 100) - item.respuesta * 100) > 1e-6) {
+          anota('inv3', id + ' más de dos decimales: ' + item.respuesta);
+        }
+      }
       const txt = (item.consigna || '') + (item.enunciado || '');
-      if (/[,.]\d|\d\/\d|½|¼/.test(txt)) anota('inv3', id + ' notación prohibida: ' + txt);
+      if (/½|¼|\.\d/.test(txt)) anota('inv3', id + ' notación prohibida: ' + txt);
+      if (nivel.curso <= 2 && /,\d|\d\/\d/.test(txt)) {
+        anota('inv3', id + ' notación de curso alto en 1.º-2.º: ' + txt);
+      }
+      if (nivel.curso === 3 && /,\d/.test(txt)) {
+        anota('inv3', id + ' coma decimal en 3.º: ' + txt);
+      }
 
       /* INV 4 — factores de multiplicación */
       if (nivel.letra === 'M' &&
@@ -89,8 +114,10 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
           d.opciones.forEach(function (o) {
             if (o.valor < 0) anota('inv5', id + ' distractor negativo');
             if (!o.correcta && o.valor === item.respuesta) anota('inv5ter', id);
-            const lim = o.intencionado ? 1999 : 999;
-            if (o.valor > lim) anota('inv1', id + ' distractor ' + o.valor + ' > ' + lim);
+            /* El mismo tope que usa el motor: escala con el rango del nivel. */
+            const topeNivel = Math.max(999, nivel.rango[1]);
+            const topeD = o.intencionado ? Math.max(1999, topeNivel * 2) : topeNivel;
+            if (o.valor > topeD) anota('inv1', id + ' distractor ' + o.valor + ' > ' + topeD);
             if (!o.correcta && !o.intencionado && o.codigoError &&
                 Math.abs(o.valor - item.respuesta) > Math.max(20, 0.5 * item.respuesta)) {
               anota('inv6', id + ' distractor lejano ' + o.valor + ' vs ' + item.respuesta);
@@ -101,8 +128,10 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
         if (item.opciones != null) anota('inv5', id + ' opciones no nulas en ' + item.formato);
       }
 
-      /* INV 11 — restas nucleares: una llevada como máximo y sin cero prestado */
-      if (nivel.letra === 'R' && !nivel.ampliacion && item.operandos) {
+      /* INV 11 — restas nucleares de 1.º-2.º: una llevada como máximo y sin
+         cero prestado. En 3.º la doble llevada ES el contenido (R19-R20):
+         el invariante protege la iniciación, no persigue a los mayores. */
+      if (nivel.curso <= 2 && nivel.letra === 'R' && !nivel.ampliacion && item.operandos) {
         if (item.llevadas > 1) {
           anota('inv11', id + ' ' + item.expr + ' con ' + item.llevadas + ' llevadas');
         }

@@ -219,6 +219,10 @@ CB.ui.pintarItem = function (item) {
     cont.appendChild(CB.ui.filaVagonetas(item.visual.total, item.visual.marcada));
   }
 
+  if (item.visual && item.visual.tipo === 'fraccion') {
+    cont.appendChild(CB.ui.barraFraccion(item.visual.partes, item.visual.sombreadas));
+  }
+
   if (item.preguntaPrevia) {
     cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
   }
@@ -249,6 +253,36 @@ CB.ui.matriz = function (filas, columnas) {
   }
   caja.appendChild(rej);
   caja.setAttribute('aria-label', filas + ' filas de ' + columnas);
+  return caja;
+};
+
+/* La barra de fracción (3.1.0): un todo partido en `partes` rectángulos
+   iguales, con `sombreadas` pintadas. Vóxel puro: rectángulos con bisel,
+   nada de tartas (una tarta pide border-radius, y aquí no existe). */
+CB.ui.barraFraccion = function (partes, sombreadas) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const rej = CB.ui.crear('div');
+  rej.style.display = 'grid';
+  rej.style.gridTemplateColumns = 'repeat(' + partes + ', 40px)';
+  rej.style.gap = '4px';
+  let i;
+  for (i = 0; i < partes && i < 12; i++) {
+    const b = CB.ui.crear('span');
+    b.style.width = '40px'; b.style.height = '28px';
+    if (i < sombreadas) {
+      b.style.background = 'var(--deco-cristal)';
+      b.style.boxShadow = 'inset 3px 3px 0 0 var(--deco-cristal-cla), ' +
+                          'inset -3px -3px 0 0 var(--deco-cristal-osc)';
+    } else {
+      b.style.background = 'var(--deco-piedra)';
+      b.style.boxShadow = 'inset 3px 3px 0 0 var(--deco-piedra-cla), ' +
+                          'inset -3px -3px 0 0 var(--deco-piedra-osc)';
+    }
+    rej.appendChild(b);
+  }
+  caja.appendChild(rej);
+  caja.setAttribute('aria-label',
+    sombreadas + ' de ' + partes + ' partes pintadas');
   return caja;
 };
 

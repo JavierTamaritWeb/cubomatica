@@ -248,3 +248,50 @@ CB.gen.sumas.S21 = function (rng, D) {
   if (a + b < 11) { a = 8; b = 5; }
   return itemSuma({ a: a, b: b, r: a + b });
 };
+
+/* ——— Cursos 3.º-4.º (3.1.0): S22…S26 ——— */
+
+/* S22 Sumas con dos llevadas (3.º) */
+CB.gen.sumas.S22 = function (rng, D) {
+  return itemSuma(CB.gen.sumas.intentar(rng, [true, true, false], 3, 3, 999));
+};
+
+/* S23 Sumas de cuatro cifras (3.º) */
+CB.gen.sumas.S23 = function (rng, D) {
+  const patron = [rng() < 0.6, rng() < 0.4, false, false];
+  return itemSuma(CB.gen.sumas.intentar(rng, patron, 4, 4, 9999));
+};
+
+/* S24 Sumar centenas y millares de cabeza (3.º) */
+CB.gen.sumas.S24 = function (rng, D) {
+  const a = CB.util.ent(rng, 10, (D === 1) ? 40 : 89) * 100;
+  const b = CB.util.ent(rng, 1, 9) * 100;
+  const it = itemSuma({ a: a, b: b, r: a + b });
+  it.formato = 'opciones4';
+  it.consigna = CB.gen.motor.sep(a) + ' + ' + b;
+  return it;
+};
+
+/* S25 Sumas de números grandes (4.º) */
+CB.gen.sumas.S25 = function (rng, D) {
+  const patron = [rng() < 0.6, rng() < 0.4, rng() < 0.3, false, false];
+  return itemSuma(CB.gen.sumas.intentar(rng, patron, 5, 5, 99999));
+};
+
+/* S26 Estimar sumas (4.º) */
+CB.gen.sumas.S26 = function (rng, D) {
+  const am = CB.util.ent(rng, 2, 5) * 1000;
+  const bm = CB.util.ent(rng, 2, 4) * 1000;
+  const a = am - CB.util.ent(rng, 30, 180);
+  const b = bm - CB.util.ent(rng, 30, 180);
+  const est = am + bm;
+  return {
+    formato: 'opciones4',
+    consigna: '¿Cuál es la MEJOR estimación de ' + CB.gen.motor.sep(a) + ' + ' +
+              CB.gen.motor.sep(b) + '?',
+    respuesta: est,
+    expr: 'estS' + a + '_' + b,
+    diagnostico: false,
+    distractoresFijos: [est - 1000, est + 1000, est - 500]
+  };
+};

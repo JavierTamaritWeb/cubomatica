@@ -264,3 +264,86 @@ CB.gen.dinero.E10 = function (rng, D) {
     diagnostico: true
   };
 };
+
+/* ——— Cursos 3.º-4.º (3.1.0): E11…E14 ——— */
+
+/* E11 Céntimos: contar y equivaler (3.º). SIEMPRE céntimos enteros. */
+CB.gen.dinero.E11 = function (rng, D) {
+  if (rng() < 0.5) {
+    const c = CB.util.elegir(rng, CB.gen.dinero.CENTIMOS);
+    return {
+      formato: 'opciones4',
+      consigna: '¿Cuántas monedas de ' + CB.gen.dinero.centimos(c) + ' hacen 1 euro?',
+      respuesta: 100 / c,
+      expr: 'e11eq' + c,
+      diagnostico: false
+    };
+  }
+  const c2 = CB.util.elegir(rng, CB.gen.dinero.CENTIMOS);
+  const n = CB.util.ent(rng, 2, (D === 1) ? 4 : 6);
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuántos céntimos son ' + n + ' monedas de ' +
+              CB.gen.dinero.centimos(c2) + '?',
+    operacion: '×', operandos: [n, c2],
+    respuesta: n * c2,
+    expr: 'e11c' + n + '_' + c2,
+    diagnostico: true,
+    tablasCompletas: true
+  };
+};
+
+/* E12 La compra grande (3.º) */
+CB.gen.dinero.E12 = function (rng, D) {
+  if (rng() < 0.5) {
+    const a = CB.util.ent(rng, 25, (D === 1) ? 200 : 499);
+    const b = CB.util.ent(rng, 25, Math.min(499, 999 - a));
+    return {
+      formato: 'teclado',
+      consigna: 'Una bici cuesta ' + a + ' € y un casco ' + b +
+                ' €. ¿Cuánto es en total?',
+      operacion: '+', operandos: [a, b],
+      respuesta: a + b,
+      expr: 'e12s' + a + '_' + b,
+      diagnostico: true
+    };
+  }
+  const precio = CB.util.ent(rng, 12, 89);
+  return {
+    formato: 'teclado',
+    consigna: 'Cuesta ' + precio + ' €. Pagas con 100 €. ¿Cuánto te devuelven?',
+    operacion: '-', operandos: [100, precio],
+    respuesta: 100 - precio,
+    expr: 'e12c' + precio,
+    diagnostico: true
+  };
+};
+
+/* E13 El cambio con céntimos (4.º): la respuesta lleva coma */
+CB.gen.dinero.E13 = function (rng, D) {
+  const precio = CB.util.ent(rng, 5, 19) * 25;             // 1,25 … 4,75
+  const paga = 500;
+  return {
+    formato: 'teclado', conComa: true,
+    consigna: 'Cuesta ' + CB.gen.motor.coma(precio, 100) +
+              ' €. Pagas con 5 €. ¿Cuánto te devuelven?',
+    respuesta: CB.gen.motor.dec(paga - precio, 100),
+    expr: 'e13_' + precio,
+    diagnostico: false
+  };
+};
+
+/* E14 El presupuesto (4.º) */
+CB.gen.dinero.E14 = function (rng, D) {
+  const total = CB.util.elegir(rng, [200, 300, 500]);
+  const a = CB.util.ent(rng, 40, Math.floor(total / 2) - 10);
+  const b = CB.util.ent(rng, 40, total - a - 10);
+  return {
+    formato: 'teclado',
+    consigna: 'Tienes ' + total + ' €. Compras por ' + a + ' € y por ' + b +
+              ' €. ¿Cuánto te queda?',
+    respuesta: total - a - b,
+    expr: 'e14_' + total + '_' + a + '_' + b,
+    diagnostico: false
+  };
+};

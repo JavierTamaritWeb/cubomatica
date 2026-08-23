@@ -15,7 +15,15 @@ CB.jefes.RANGO_CURSO = {
   1: { objetivoRamas: 15, sumandoRamas: 12, nenufar: 12, saltos: [1, 2],
        reflejoMax: 10, tablas: [2], matrizMax: 5 },
   2: { objetivoRamas: 60, sumandoRamas: 40, nenufar: 40, saltos: [2, 5, 10],
-       reflejoMax: 40, tablas: [2, 5, 10], matrizMax: 10 }
+       reflejoMax: 40, tablas: [2, 5, 10], matrizMax: 10 },
+  3: { objetivoRamas: 200, sumandoRamas: 150, nenufar: 80, saltos: [3, 4, 6, 9],
+       reflejoMax: 100, tablas: [3, 4, 6, 7, 8, 9], matrizMax: 10 },
+  4: { objetivoRamas: 500, sumandoRamas: 350, nenufar: 120, saltos: [6, 7, 8, 12],
+       reflejoMax: 300, tablas: [6, 7, 8, 9], matrizMax: 12 },
+  5: { objetivoRamas: 900, sumandoRamas: 600, nenufar: 200, saltos: [11, 12, 15, 25],
+       reflejoMax: 600, tablas: [7, 8, 9, 12], matrizMax: 12 },
+  6: { objetivoRamas: 900, sumandoRamas: 700, nenufar: 300, saltos: [15, 25, 50],
+       reflejoMax: 900, tablas: [8, 9, 11, 12], matrizMax: 12 }
 };
 
 CB.jefes.rangos = function () {

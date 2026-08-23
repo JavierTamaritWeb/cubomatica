@@ -19,7 +19,7 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   const vacios = CB.adaptativo.SLUGS.filter(function (s) {
     return CB.catalogo.candidatos(s, CB.adaptativo.elegirBeta(s, perfil), perfil).length === 0;
   });
-  t.ok(vacios.length === 0, 'candidatos() nunca devuelve [] para ninguna de las 13 destrezas',
+  t.ok(vacios.length === 0, 'candidatos() nunca devuelve [] para ninguna de las 18 destrezas',
        vacios.join(', '));
 
   const perfil1 = CB.pruebas.perfilNuevo();
@@ -168,15 +168,19 @@ CB.pruebas.suite('Motor: el niño sintético independiente', function () {
   function simular(thetaReal, sesiones, semilla) {
     const rng = CB.util.mulberry32(semilla);
     const perfil = CB.pruebas.perfilNuevo();
+    /* El niño sintético juega LAS DESTREZAS DE SU CURSO, como el juego real:
+       con los 18 slugs globales le caerían división o decimales, que en 2.º
+       no existen, y la banda de candidatos se iría a la reserva. */
+    const slugs = CB.catalogo.slugsDeCurso(CB.catalogo.cursoDe(perfil));
     const theta = {};
     let aciertos = 0, total = 0, partidasCortas = 0, s, i;
 
-    CB.adaptativo.SLUGS.forEach(function (k) { theta[k] = thetaReal; });
+    slugs.forEach(function (k) { theta[k] = thetaReal; });
 
     for (s = 0; s < sesiones; s++) {
       let itemsSesion = 0, lucesRestantes = 3;
       for (i = 0; i < 15 && lucesRestantes > 0; i++) {
-        const slug = CB.adaptativo.SLUGS[i % CB.adaptativo.SLUGS.length];
+        const slug = slugs[i % slugs.length];
         const banda = CB.adaptativo.elegirBeta(slug, perfil);
         const cands = CB.catalogo.candidatos(slug, banda, perfil);
         const nivel = cands[Math.floor(rng() * cands.length)];
@@ -204,7 +208,7 @@ CB.pruebas.suite('Motor: el niño sintético independiente', function () {
         en.n++; if (acierto) en.aciertos++;
       }
       if (lucesRestantes <= 0 && itemsSesion < 8) partidasCortas++;
-      CB.adaptativo.SLUGS.forEach(function (k) { theta[k] += 8; });   // aprendizaje
+      slugs.forEach(function (k) { theta[k] += 8; });   // aprendizaje
     }
     return { tasa: aciertos / total, partidasCortas: partidasCortas / sesiones,
              perfil: perfil, total: total };

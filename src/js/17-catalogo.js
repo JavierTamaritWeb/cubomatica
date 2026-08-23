@@ -11,7 +11,14 @@ CB.catalogo.FAMILIAS = {
   M: { puntosBase: 100, tIdeal: 7000,  tLimite: 21000, beta: [780, 1180] },
   P: { puntosBase: 160, tIdeal: 20000, tLimite: 50000, beta: [620, 1280] },
   E: { puntosBase: 90,  tIdeal: 10000, tLimite: 26000, beta: [400, 1040] },
-  V: { puntosBase: 70,  tIdeal: 7000,  tLimite: 20000, beta: [320, 920] }
+  V: { puntosBase: 70,  tIdeal: 7000,  tLimite: 20000, beta: [320, 920] },
+  /* Familias de 3.º-6.º (3.1.0). Los rangos de beta son RELATIVOS, como los
+     de arriba: el desplazamiento por curso (BETA_CURSO) los sitúa. */
+  D: { puntosBase: 120, tIdeal: 9000,  tLimite: 27000, beta: [400, 1000] },
+  F: { puntosBase: 120, tIdeal: 10000, tLimite: 30000, beta: [450, 1050] },
+  C: { puntosBase: 110, tIdeal: 9000,  tLimite: 27000, beta: [450, 1050] },
+  T: { puntosBase: 130, tIdeal: 12000, tLimite: 36000, beta: [500, 1100] },
+  Z: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [400, 1000] }
 };
 
 /* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
@@ -162,6 +169,152 @@ CB.catalogo.TABLAS = {
   ['V6','Las palabras del dinero','vocabulario',0,0,0,3,'opciones4','A.5',['6.1','5.2'],['E1'],6,false,null],
   ['V7','Veces, doble y mitad','vocabulario',0,0,0,3,'opciones4','A.3.a',['6.1'],['M1'],6,false,null],
   ['V8','Las palabras de los problemas','vocabulario',0,0,0,3,'opciones4','A.3.b',['6.1','1.1'],['P1'],6,false,null]
+  ],
+
+  /* ——— 3.º de Primaria (3.1.0): 36 niveles. Techos 999 / 9.999 / 99.999. ——— */
+  3: [
+  ['N23','Aproximar a la centena','numeracion',0,999,0,1,'opciones4','A2.2',['2.1'],['N13'],546,false,null],
+  ['N24','Leer y escribir hasta 9.999','numeracion',0,9999,0,2,'teclado','A2.1',['6.1'],['N15'],4027,false,null],
+  ['N25','Las unidades de millar','valor_posicional',0,9999,0,2,'opciones4','A2.2',['1.2','6.1'],['N24'],6020,false,null],
+  ['N26','Comparar hasta 9.999','numeracion',0,9999,0,2,'balanza','A2.2',['5.1'],['N24'],6838,false,null],
+  ['N27','Aproximar al millar','numeracion',0,9999,0,2,'opciones4','A2.2',['2.1'],['N23','N24'],3822,false,null],
+  ['N28','Leer y escribir hasta 99.999','numeracion',0,99999,0,3,'teclado','A2.1',['6.1'],['N24'],6563,false,null],
+  ['N29','Ordenar números grandes','numeracion',0,99999,0,3,'ordenar','A2.2',['5.1'],['N26','N28'],7000,false,null],
+  ['S22','Sumas con dos llevadas','suma_llevada',0,999,2,1,'teclado','A2.7',['2.1','6.2'],['S15'],6503,false,null],
+  ['S23','Sumas de cuatro cifras','suma_llevada',0,9999,1,2,'teclado','A2.7',['2.1'],['S22'],6997,false,null],
+  ['S24','Sumar centenas y millares de cabeza','suma_sin_llevar',0,9999,0,3,'opciones4','A2.7',['3.1'],['S13'],503,false,null],
+  ['R19','Restas con dos llevadas','resta_llevada',0,999,2,1,'teclado','A2.7',['2.1','6.2'],['R13'],6542,false,null],
+  ['R20','Restas de cuatro cifras','resta_llevada',0,9999,1,2,'teclado','A2.7',['2.1'],['R19'],6997,false,null],
+  ['R21','Restar centenas de cabeza','resta_sin_llevar',0,9999,0,3,'opciones4','A2.7',['3.1'],['R9'],560,false,null],
+  ['M11','La tabla del 6','multiplicacion',0,60,0,1,'teclado','A2.3',['3.1'],['M7'],7,false,null],
+  ['M12','Las tablas del 7, del 8 y del 9','multiplicacion',0,90,0,1,'teclado','A2.3',['3.1'],['M11'],23,false,null],
+  ['M13','Todas las tablas','multiplicacion',0,100,0,2,'teclado','A2.3',['3.1','5.1'],['M12'],69,false,null],
+  ['M14','Por una cifra, sin llevada','multiplicacion',0,999,0,2,'teclado','A2.3',['2.1'],['M13'],26,false,null],
+  ['M15','Por una cifra, con llevada','multiplicacion',0,999,1,3,'teclado','A2.3',['2.1','6.2'],['M14'],856,false,null],
+  ['M16','Por 10 y por 100','multiplicacion',0,9999,0,3,'teclado','A2.3',['3.1'],['M13'],137,false,null],
+  ['D1','Repartir en partes iguales','division',0,50,0,1,'opciones4','A2.3',['1.2','5.1'],['M7'],25,false,null],
+  ['D2','Dividir con el 2, el 5 y el 10','division',0,100,0,1,'teclado','A2.3',['3.1'],['D1'],21,false,null],
+  ['D3','Dividir con todas las tablas','division',0,100,0,2,'teclado','A2.3',['3.1'],['D2','M13'],56,false,null],
+  ['D4','La división con resto','division',0,100,0,2,'teclado','A2.3',['2.1','6.2'],['D3'],403,false,null],
+  ['D5','Dos cifras entre una','division',0,99,0,3,'teclado','A2.3',['2.1'],['D4'],109,false,null],
+  ['D6','La prueba de la división','division',0,999,0,3,'teclado','A2.3',['5.1','6.2'],['D4'],853,false,null],
+  ['F1','Mitades, tercios y cuartos','fracciones',0,12,0,2,'opciones4','A2.4',['1.2','6.1'],['N3'],2,false,null],
+  ['F2','¿Qué fracción está pintada?','fracciones',0,12,0,2,'opciones4','A2.4',['1.2','6.1'],['F1'],23,false,null],
+  ['F3','La fracción de una cantidad','fracciones',0,100,0,3,'teclado','A2.4',['2.1'],['F2','D3'],53,false,null],
+  ['F4','Comparar fracciones sencillas','fracciones',0,12,0,3,'opciones4','A2.4',['5.1'],['F2'],49,false,null],
+  ['P25','Igualar: cuánto falta (3.º)','problemas_igualacion',0,999,0,1,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,false,null],
+  ['P26','Cuánto tenía antes de ganar','problemas_cambio',0,999,0,2,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
+  ['P27','Cuánto tenía antes de perder','problemas_cambio',0,999,0,2,'teclado','A.4.c',['1.1','2.1','2.3'],['P8'],600,false,null],
+  ['P28','Comparar: referente con más (3.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
+  ['P29','Comparar: referente con menos (3.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P10'],600,false,null],
+  ['E11','Céntimos: contar y equivaler','dinero',0,300,0,2,'teclado','A2.6',['2.1','5.2'],['E4'],16,false,null],
+  ['E12','La compra grande','dinero',0,999,0,3,'teclado','A2.6',['2.1','2.2'],['E7'],1481,false,null]
+  ],
+
+  /* ——— 4.º de Primaria: 34 niveles. Techos 99.999 / 499.999 / 999.999. ——— */
+  4: [
+  ['N30','Hasta el medio millón','numeracion',0,499999,0,2,'teclado','A2.1',['6.1'],['N28'],6899,false,null],
+  ['N31','Hasta 999.999','numeracion',0,999999,0,3,'teclado','A2.1',['6.1'],['N30'],6927,false,null],
+  ['N32','Aproximar a la decena de millar','numeracion',0,99999,0,1,'opciones4','A2.2',['2.1'],['N27'],6533,false,null],
+  ['N33','Descomponer números grandes','valor_posicional',0,99999,0,1,'teclado','A2.2',['1.2','6.2'],['N28'],6618,false,null],
+  ['S25','Sumas de números grandes','suma_llevada',0,99999,1,1,'teclado','A2.7',['2.1'],['S23'],7000,false,null],
+  ['S26','Estimar sumas','suma_sin_llevar',0,9999,0,2,'opciones4','A2.7',['2.1','5.1'],['N27'],6865,false,null,'A.2.a'],
+  ['R22','Restas de números grandes','resta_llevada',0,99999,1,1,'teclado','A2.7',['2.1'],['R20'],7000,false,null],
+  ['R23','Estimar restas','resta_sin_llevar',0,9999,0,2,'opciones4','A2.7',['2.1','5.1'],['S26'],6911,false,null,'A.2.a'],
+  ['M17','Por dos cifras','multiplicacion',0,9999,1,2,'teclado','A2.3',['2.1','6.2'],['M15'],3271,false,null],
+  ['M18','Por decenas enteras','multiplicacion',0,9999,0,1,'teclado','A2.3',['3.1'],['M17'],492,false,null],
+  ['M19','El doble y el triple de grandes','multiplicacion',0,9999,0,3,'teclado','A2.7',['3.1'],['M15'],3964,false,null],
+  ['M20','Por 1.000','multiplicacion',0,999999,0,3,'teclado','A2.3',['3.1'],['M16'],698,false,null],
+  ['D7','Tres cifras entre una','division',0,999,0,1,'teclado','A2.3',['2.1'],['D5'],1129,false,null],
+  ['D8','Con resto y números grandes','division',0,999,0,2,'teclado','A2.3',['2.1','6.2'],['D7'],3014,false,null],
+  ['D9','Dividir entre 10, 100 y 1.000','division',0,99999,0,2,'teclado','A2.3',['3.1'],['M16'],205,false,null],
+  ['D10','Entre dos cifras: iniciación','division',0,999,0,3,'teclado','A2.3',['2.1'],['D8'],28,false,null],
+  ['D11','La mitad, el tercio y el cuarto','division',0,9999,0,3,'teclado','A2.7',['3.1'],['D8'],3182,false,null],
+  ['F5','Fracciones equivalentes','fracciones',0,20,0,1,'opciones4','A2.4',['3.1','5.1'],['F2'],12,false,null],
+  ['F6','La fracción de una cantidad grande','fracciones',0,500,0,2,'teclado','A2.4',['2.1'],['F3'],1070,false,null],
+  ['F7','Mayor que un entero','fracciones',0,12,0,2,'opciones4','A2.4',['5.1','6.1'],['F5'],9,false,null],
+  ['F8','Sumar con el mismo denominador','fracciones',0,24,0,3,'opciones4','A2.4',['2.1'],['F5'],86,false,null],
+  ['F9','La fracción y el decimal','fracciones',0,10,0,3,'opciones4','A2.5',['5.1'],['C1','F5'],2,false,null,'A2.4'],
+  ['C1','Las décimas','decimales',0,10,0,2,'teclado','A2.5',['6.1','6.2'],['E11'],62,false,null],
+  ['C2','Las centésimas','decimales',0,10,0,2,'teclado','A2.5',['6.1','6.2'],['C1'],693,false,null],
+  ['C3','Sumar decimales','decimales',0,20,0,3,'teclado','A2.5',['2.1'],['C2'],2024,false,null],
+  ['C4','Restar decimales','decimales',0,10,0,3,'teclado','A2.5',['2.1'],['C3'],2406,false,null],
+  ['C5','El dinero con coma','decimales',0,10,0,3,'teclado','A2.6',['2.1','5.2'],['C3'],49,false,null,'A2.5'],
+  ['P30','Igualar: referido, añadir (4.º)','problemas_igualacion',0,999,0,1,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,false,null],
+  ['P31','Igualar: referido, quitar (4.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
+  ['P32','Juntar: la otra parte (4.º)','problemas_combinacion',0,999,0,2,'teclado','A.3.b',['1.1','2.1','2.2'],['P4'],600,false,null],
+  ['P33','Cuánto tenía antes (4.º)','problemas_cambio',0,999,0,3,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
+  ['P34','Comparar: referente con más (4.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
+  ['E13','El cambio con céntimos','dinero',0,10,0,3,'teclado','A2.6',['2.1','2.2'],['C4','E6'],10,false,null,'A2.5'],
+  ['E14','El presupuesto','dinero',0,999,0,2,'teclado','A2.6',['2.1','2.2'],['E12'],6001,false,null]
+  ],
+
+  /* ——— 5.º de Primaria: 29 niveles. Techos 999.999 / 9.999.999 / íd. ——— */
+  5: [
+  ['N34','Los millones','numeracion',0,9999999,0,2,'teclado','A3.1',['6.1'],['N31'],62,false,null],
+  ['N35','El valor de cada cifra','valor_posicional',0,999999,0,1,'opciones4','A3.1',['1.2','6.1'],['N31'],6987,false,null],
+  ['N36','Múltiplos','numeracion',0,144,0,1,'opciones4','A3.2',['3.1','5.1'],['M13'],49,false,null],
+  ['N37','Divisores','numeracion',0,60,0,2,'opciones4','A3.2',['3.1','5.1'],['N36','D3'],38,false,null],
+  ['N38','Divisible entre 2, 3, 5 y 10','numeracion',0,999,0,3,'opciones4','A3.2',['3.1'],['N36'],761,false,null],
+  ['N39','Aproximar números grandes','numeracion',0,9999999,0,2,'opciones4','A3.1',['2.1'],['N32'],6997,false,null],
+  ['M21','Decenas por decenas','multiplicacion',0,99999,0,1,'teclado','A2.7',['3.1'],['M18'],89,false,null],
+  ['M22','Operaciones combinadas','multiplicacion',0,999,0,2,'teclado','A3.3',['2.1','6.2'],['M15'],1629,false,null],
+  ['D12','Entre dos cifras','division',0,9999,0,1,'teclado','A3.4',['2.1'],['D10'],532,false,null],
+  ['D13','Exacta y entera','division',0,9999,0,2,'teclado','A3.4',['2.1','6.2'],['D12'],5489,false,null],
+  ['D14','Números grandes entre una cifra','division',0,99999,0,2,'teclado','A3.4',['2.1'],['D8'],6462,false,null],
+  ['D15','Cocientes con ceros','division',0,99999,0,3,'teclado','A3.4',['2.1','6.2'],['D12'],623,false,null],
+  ['F10','Simplificar fracciones','fracciones',0,25,0,1,'opciones4','A3.5',['3.1'],['F5'],19,false,null],
+  ['F11','El denominador común','fracciones',0,40,0,2,'teclado','A3.5',['2.1','5.1'],['F10'],5,false,null],
+  ['F12','Sumar y restar: mismo denominador','fracciones',0,24,0,1,'opciones4','A3.5',['2.1'],['F8'],203,false,null],
+  ['F13','La fracción de una cantidad (5.º)','fracciones',0,999,0,2,'teclado','A3.5',['2.1'],['F6'],2009,false,null],
+  ['F14','El número mixto','fracciones',0,25,0,3,'teclado','A3.5',['6.1','6.2'],['F12'],21,false,null],
+  ['F15','De la fracción al decimal','fracciones',0,10,0,3,'teclado','A3.6',['5.1'],['F9'],5,false,null,'A3.5'],
+  ['C6','Comparar decimales','decimales',0,10,0,1,'opciones4','A3.6',['5.1'],['C2'],403,false,null],
+  ['C7','Sumar y restar decimales (5.º)','decimales',0,20,0,1,'teclado','A3.6',['2.1'],['C3','C4'],5967,false,null],
+  ['C8','Un decimal por un entero','decimales',0,99,0,2,'teclado','A3.6',['2.1'],['C7','M15'],498,false,null],
+  ['C9','La coma y las potencias de 10','decimales',0,999,0,2,'teclado','A3.6',['3.1'],['C7','M16'],1241,false,null],
+  ['C10','Un decimal entre un entero','decimales',0,99,0,3,'teclado','A3.6',['2.1'],['C7','D5'],498,false,null],
+  ['C11','Redondear decimales','decimales',0,10,0,3,'teclado','A3.6',['2.1'],['C6','N23'],503,false,null],
+  ['P35','Igualar: referente, añadir (5.º)','problemas_igualacion',0,999,0,1,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,false,null],
+  ['P36','Igualar: referente, quitar (5.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
+  ['P37','Cuánto tenía antes de perder (5.º)','problemas_cambio',0,999,0,2,'teclado','A.4.c',['1.1','2.1','2.3'],['P8'],600,false,null],
+  ['P38','Comparar: referente con menos (5.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P10'],600,false,null],
+  ['P39','Juntar: el total (5.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P3'],600,false,null]
+  ],
+
+  /* ——— 6.º de Primaria: 31 niveles. Techo 9.999.999 en los tres. ——— */
+  6: [
+  ['N40','Potencias','numeracion',0,144,0,1,'teclado','A3.3',['3.1','6.1'],['M13'],10,false,null],
+  ['N41','La raíz cuadrada exacta','numeracion',0,144,0,1,'teclado','A3.3',['3.1'],['N40'],7,false,null],
+  ['N42','El mínimo común múltiplo','numeracion',0,40,0,2,'teclado','A3.2',['2.1','5.1'],['N36'],7,false,null],
+  ['N43','El máximo común divisor','numeracion',0,30,0,2,'teclado','A3.2',['2.1','5.1'],['N37'],7,false,null],
+  ['N44','Las potencias de 10','numeracion',0,1000000,0,3,'teclado','A3.3',['3.1'],['N40','M16'],7,false,null],
+  ['Z1','Bajo cero: el termómetro','enteros',-24,24,0,1,'teclado','A3.8',['1.1','5.2'],['R8'],105,false,null],
+  ['Z2','El ascensor','enteros',-11,11,0,1,'teclado','A3.8',['1.1','5.2'],['Z1'],24,false,null],
+  ['Z3','Comparar enteros','enteros',-10,10,0,2,'opciones4','A3.8',['5.1'],['Z1'],6760,false,null],
+  ['Z4','La recta con negativos','enteros',-10,10,0,3,'teclado','A3.8',['1.2'],['Z3'],26,false,null],
+  ['C12','Operaciones con decimales (6.º)','decimales',0,99,0,1,'teclado','A3.6',['2.1'],['C7'],5050,false,null],
+  ['C13','Dividir entre 0,5 y 0,25','decimales',0,120,0,2,'teclado','A3.6',['3.1','5.1'],['C10'],40,false,null],
+  ['C14','Porcentaje, decimal y fracción','decimales',0,10,0,3,'teclado','A3.7',['5.1'],['T1','C11'],7,false,null,'A3.6'],
+  ['C15','El ticket de la compra','decimales',0,20,0,2,'teclado','A2.6',['1.1','2.1'],['C12'],700,false,null,'A3.6'],
+  ['F16','Sumar: distinto denominador','fracciones',0,24,0,1,'opciones4','A3.5',['2.1'],['F11'],5,false,null],
+  ['F17','Restar: distinto denominador','fracciones',0,24,0,2,'opciones4','A3.5',['2.1'],['F16'],5,false,null],
+  ['F18','Una fracción por un entero','fracciones',0,50,0,2,'teclado','A3.5',['2.1'],['F13'],70,false,null],
+  ['F19','La fracción de una fracción','fracciones',0,12,0,3,'opciones4','A3.5',['3.1'],['F16'],4,false,null],
+  ['F20','La fracción mayor','fracciones',0,12,0,3,'opciones4','A3.5',['5.1'],['F10'],3074,false,null],
+  ['T1','El tanto por ciento','porcentajes',0,100,0,1,'opciones4','A3.7',['1.2','5.1'],['F3'],66,false,null],
+  ['T2','El 10, el 25 y el 50 por ciento','porcentajes',0,999,0,1,'teclado','A3.7',['3.1'],['T1'],203,false,null],
+  ['T3','El descuento','porcentajes',0,999,0,2,'teclado','A3.7',['1.1','2.1'],['T2'],249,false,null],
+  ['T4','La subida','porcentajes',0,999,0,2,'teclado','A3.7',['1.1','2.1'],['T2'],165,false,null],
+  ['T5','La proporción directa','porcentajes',0,999,0,3,'teclado','A3.7',['1.1','2.1'],['D3'],215,false,null],
+  ['T6','Cualquier porcentaje','porcentajes',0,999,0,3,'teclado','A3.7',['2.1'],['T2','M17'],162,false,null],
+  ['D16','Divisores grandes','division',0,9999,0,1,'teclado','A3.4',['2.1'],['D13'],3439,false,null],
+  ['D17','Estimar el cociente','division',0,9999,0,2,'opciones4','A3.4',['2.1','5.1'],['D16'],1992,false,null,'A.2.a'],
+  ['P40','Igualar: referente, añadir (6.º)','problemas_igualacion',0,999,0,1,'teclado','A.4.b',['1.1','2.1','2.3'],['P11'],600,false,null],
+  ['P41','Igualar: referente, quitar (6.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
+  ['P42','Comparar: referente con más (6.º)','problemas_comparacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
+  ['P43','Cuánto tenía antes (6.º)','problemas_cambio',0,999,0,3,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
+  ['P44','Juntar: la otra parte (6.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P4'],600,false,null]
   ]
 };
 
@@ -193,13 +346,27 @@ CB.catalogo.BETA_CURSO = { 1: -160, 2: 0, 3: 150, 4: 300, 5: 450, 6: 600 };
    2.º y «8 + 5» (S21) salía con β960: catalogado más difícil que una llevada
    de tres cifras. Un curso con pocos niveles ocupa un tramo corto. 2.º queda
    en 1 — sus 92 betas no se mueven (E127). */
-CB.catalogo.ANCHO_BETA_CURSO = { 1: 0.4, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1 };
+CB.catalogo.ANCHO_BETA_CURSO = { 1: 0.4, 2: 1, 3: 0.8, 4: 0.8, 5: 0.8, 6: 0.8 };
 
 CB.catalogo.CURSOS = [];
 
+/* Lo que cada curso tiene PERMITIDO en sus números (3.1.0). La comparten la
+   producción (distractores, teclado) y los invariantes de la suite: un solo
+   dueño, o el guardián y el juego acabarían discrepando en silencio. */
+CB.catalogo.LIMITES_CURSO = {
+  1: { max: 999 },
+  2: { max: 999 },
+  3: { max: 99999 },
+  4: { max: 999999, decimales: true },
+  5: { max: 9999999, decimales: true },
+  6: { max: 9999999, decimales: true, negativos: true, min: -99 }
+};
+
 (function () {
   const familiaDe = { N: 'numeracion', S: 'sumas', R: 'restas', M: 'multiplicacion',
-                    P: 'problemas', E: 'dinero', V: 'vocabulario' };
+                    P: 'problemas', E: 'dinero', V: 'vocabulario',
+                    D: 'division', F: 'fracciones', C: 'decimales',
+                    T: 'porcentajes', Z: 'enteros' };
 
   const cursos = [];
   let c;
@@ -263,7 +430,9 @@ CB.catalogo.CURSOS = [];
     /* El generador se resuelve por familia y por id. */
     const mod = { N: CB.gen.numeracion, S: CB.gen.sumas, R: CB.gen.restas,
                 M: CB.gen.multiplicacion, P: CB.gen.problemas,
-                E: CB.gen.dinero, V: CB.gen.vocabulario }[letra];
+                E: CB.gen.dinero, V: CB.gen.vocabulario,
+                D: CB.gen.division, F: CB.gen.fracciones, C: CB.gen.decimales,
+                T: CB.gen.porcentajes, Z: CB.gen.enteros }[letra];
 
     nivel.generar = (function (m, i) {
       return function (rng, D, ctx) {
@@ -279,6 +448,10 @@ CB.catalogo.CURSOS = [];
         base.tLimite = nivel.tLimite;
         base.beta = nivel.betaBase;
         base.ampliacion = nivel.ampliacion;
+        /* El rango del nivel viaja con el ítem (3.1.0): el teclado dimensiona
+           sus cifras con él y el anti-azar acota qué respuesta es imposible.
+           Sin esto, los dos seguirían clavados en el 999 de 2.º. */
+        base.rangoNivel = nivel.rango;
         if (base.diagnostico == null) base.diagnostico = nivel.diagnostico;
         return base;
       };
@@ -414,7 +587,11 @@ CB.MUNDOS = [
               'S1','S2','S3','S4','S5','S6','S7',
               'R1','R2','R3','R4','R5',
               'P1','P2','E1','E2',
-              'N17','N18','S17','R15','P21'] },
+              'N17','N18','S17','R15','P21',
+              'N23','N24','N25','N26','N27','N28','N29','S24','R21',
+              'N30','N31','N32','N33','S26','R23',
+              'N34','N35','N36','N37','N38','N39',
+              'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -423,14 +600,22 @@ CB.MUNDOS = [
               'R6','R7','R8','R9','R10',
               'P3','P4','P5','P6','P7','P8',
               'E3','E4','V1','V2',
-              'N19','N20','S18','R16','E9'] },
+              'N19','N20','S18','R16','E9',
+              'S22','S23','R19','R20','E11','E12',
+              'S25','R22','C1','C2','C3','C4','C5','E13','E14',
+              'C6','C7','C8','C9','C10','C11',
+              'C12','C13','C14','C15'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
     niveles: ['N14','S14','R11','R12',
               'P9','P10','P11','P12','P13','P14','P15','P16',
               'E5','E6','V3','V4','V5','V6',
-              'N21','S19','R17','P22','E10'] },
+              'N21','S19','R17','P22','E10',
+              'F1','F2','F3','F4','P25','P26','P27','P28','P29',
+              'F5','F6','F7','F8','F9','P30','P31','P32','P33','P34',
+              'F10','F11','F12','F13','F14','F15','P35','P36','P37','P38','P39',
+              'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
@@ -438,7 +623,11 @@ CB.MUNDOS = [
               'P17','P18','P19','P20','E7','E8',
               'M1','M2','M3','M4','M5','M6','M7','M8','M9','M10',
               'V7','V8',
-              'N22','S20','S21','R18','P23','P24'] }
+              'N22','S20','S21','R18','P23','P24',
+              'M11','M12','M13','M14','M15','M16','D1','D2','D3','D4','D5','D6',
+              'M17','M18','M19','M20','D7','D8','D9','D10','D11',
+              'M21','M22','D12','D13','D14','D15',
+              'T1','T2','T3','T4','T5','T6','D16','D17'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {
