@@ -14,7 +14,11 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
     inv6: 0, inv11: 0, inv12: 0, inv13: 0, inv14: 0, nulos: 0
   };
   const ejemplos = {};
-  const FORMATOS = ['opciones4', 'teclado', 'signo', 'balanza', 'ordenar', 'monedas', 'datos'];
+  /* La lista blanca es la del DESPACHADOR de servirItem, no una mas ancha:
+     'datos' estuvo aqui sin existir ni como emision ni como rama — un formato
+     asi pasaria la prueba y caeria al teclado en silencio. 'signo' sigue: el
+     despachador lo sirve (selectorSigno), aunque hoy ningun nivel lo emita. */
+  const FORMATOS = ['opciones4', 'teclado', 'signo', 'balanza', 'ordenar', 'monedas'];
   let totalItems = 0, conOpciones = 0;
 
   function anota(clave, texto) {
@@ -179,6 +183,11 @@ CB.pruebas.suite('Generadores: los 12 invariantes', function () {
   t.ok(fallos.inv6 === 0, 'INV 6 · distractores plausibles salvo los intencionados', ejemplos.inv6);
   t.ok(fallos.inv11 === 0, 'INV 11 · restas nucleares con una sola llevada y sin cero prestado', ejemplos.inv11);
   t.ok(fallos.inv12 === 0, 'INV 12 · variedad suficiente en todos los niveles', ejemplos.inv12);
+  /* Control negativo: INV 12 delega el criterio en variedadSuficiente, que es
+     codigo de produccion — si alguien la dejara en «return true», el
+     invariante quedaria verde para siempre sin que nada lo delatara. */
+  t.ok(CB.catalogo.variedadSuficiente(ids[0], 1, 10000) === false,
+    'INV 12 · el criterio distingue: 1 único en 10.000 tiradas NO es variedad suficiente');
   t.ok(fallos.inv13 === 0, 'INV 13 · E147: mismo expr, mismo contenido (respuesta, consigna, orden)', ejemplos.inv13);
   t.ok(fallos.inv14 === 0, 'INV 14 · operación de la lista cerrada, siempre en ASCII', ejemplos.inv14);
 

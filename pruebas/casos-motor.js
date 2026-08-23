@@ -104,8 +104,8 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   const rr = CB.vidas.conceder(estV3, 'reto_bonus', perfilV3, 'expedicion');
   t.ok(!rr.aplicada && rr.guardada && perfilV3.vidasReserva === 1,
        'al tope, la luz se GUARDA en reserva y no se convierte en gemas (§12.7)');
-  t.ok(CB.vidas.conceder === CB.vidas.conceder && CB.vidas.gemasSustitutas === undefined,
-       'gemasSustitutas está eliminada de la API');
+  t.ok(typeof CB.vidas.conceder === 'function' && CB.vidas.gemasSustitutas === undefined,
+       'gemasSustitutas está eliminada de la API (y conceder sigue existiendo)');
 
   const estTr = CB.vidas.nuevoEstado(0);
   t.ok(!CB.vidas.conceder(estTr, 'reto_bonus', perfilV, 'tranquila').aplicada,

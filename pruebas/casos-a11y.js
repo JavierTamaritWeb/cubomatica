@@ -8,15 +8,22 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
                   '[tabindex]:not([tabindex="-1"])';
 
   /* 1. Saltarse los bloques repetidos (WCAG 2.4.1) */
+  /* Tres maneras de pasar sin medir tenia este bloque: seccion ausente (el if
+     entero no corria y no registraba nada), barra sin nada enfocable
+     (primeroDeBarra -1 y el ok era vacuo) y orden vacio. Ahora cada ausencia
+     es un rojo con nombre. */
   const enPartida = document.getElementById('p-partida');
+  t.ok(!!enPartida, 'la maqueta tiene #p-partida (sin ella, WCAG 2.4.1 no se mide)');
   if (enPartida) {
     const orden = [].slice.call(enPartida.querySelectorAll(ENFOCABLE));
     const barra = enPartida.querySelector('.barra-herramientas');
 
     t.ok(!!barra, 'la partida tiene barra de herramientas que ordenar');
+    t.ok(orden.length >= 3, 'hay al menos 3 enfocables que ordenar', orden.length + '');
     const primeroDeBarra = orden.findIndex
       ? orden.findIndex(function (el) { return barra && barra.contains(el); })
       : -1;
+    t.ok(primeroDeBarra >= 0, 'la barra contiene algo enfocable que ordenar');
     const hayFueraDespues = primeroDeBarra >= 0 && orden.slice(primeroDeBarra)
       .some(function (el) { return !barra.contains(el); });
     t.ok(!hayFueraDespues,
@@ -33,11 +40,14 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
   /* 3. El Tab no se va a una pantalla que no se ve */
   const previa = CB.pantallas.actual;
   const fugas = [];
+  let visitadas = 0;
   CB.pantallas.IDS.forEach(function (id) {
     if (id === 'p-error') return;
-    try { CB.pantallas.ir(id); } catch (e) { return; }
+    try { CB.pantallas.ir(id); }
+    catch (e) { t.ok(false, 'no se puede entrar en ' + id, e.message); return; }
     const seccion = document.getElementById(id);
-    if (!seccion) return;
+    if (!seccion) { t.ok(false, 'falta <section id="' + id + '"> en la maqueta'); return; }
+    visitadas++;
     /* Solo se miran las OTRAS pantallas del juego. */
     CB.pantallas.IDS.forEach(function (otro) {
       if (otro === id) return;
@@ -49,17 +59,22 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
       });
     });
   });
+  t.igual(visitadas, CB.pantallas.IDS.length - 1,
+    'se han recorrido las 17 pantallas navegables (una pantalla saltada era un verde falso)');
   t.ok(fugas.length === 0,
     'estando en cualquier pantalla, el Tab no alcanza nada de las otras diecisiete',
     fugas.slice(0, 5).join(' · '));
 
   /* 4. Las dieciocho son regiones con nombre */
   const sinNombre = [], sinMain = [];
+  let conNombreMiradas = 0;
   CB.pantallas.IDS.forEach(function (id) {
     if (id === 'p-error') return;
-    try { CB.pantallas.ir(id); } catch (e) { return; }
+    try { CB.pantallas.ir(id); }
+    catch (e) { t.ok(false, 'no se puede entrar en ' + id, e.message); return; }
     const s = document.getElementById(id);
-    if (!s) return;
+    if (!s) { t.ok(false, 'falta <section id="' + id + '"> en la maqueta'); return; }
+    conNombreMiradas++;
     const idEtiqueta = s.getAttribute('aria-labelledby');
     const etiqueta = idEtiqueta ? document.getElementById(idEtiqueta) : null;
     if (!etiqueta || !etiqueta.textContent.trim()) sinNombre.push(id);
@@ -72,6 +87,8 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
     });
     if (otras.length) sinMain.push(id + ' comparte main con ' + otras.join(','));
   });
+  t.igual(conNombreMiradas, CB.pantallas.IDS.length - 1,
+    'las 17 se han mirado de verdad para el nombre accesible');
   t.ok(sinNombre.length === 0,
     'las 17 pantallas navegables tienen nombre accesible, tomado de su <h1>',
     sinNombre.join(', '));
@@ -125,6 +142,8 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
     'el aviso de los diez segundos va por la región urgente, no por la educada');
   t.ok(fuenteFallo.indexOf('urgente') !== -1,
     'y el de la luz que se apaga también: los dos caducan');
+  t.ok(typeof CB.partida.pintarFin === 'function',
+    'pintarFin existe (el negativo de abajo pasaba con la funcion ausente)');
   t.ok(String(CB.partida.pintarFin || '').indexOf('a11y.urgente') === -1,
     'pero el resumen del final NO interrumpe: eso no caduca');
 });
@@ -319,7 +338,12 @@ CB.pruebas.suite('A11y: el altavoz de la pregunta (E143)', function () {
     t.ok(false, 'E143 · falta #jefe-enunciado en la página de pruebas');
   } else {
     const mudas = [], sinTexto = [];
-    ['ramas', 'nenufares', 'reflejo', 'restaurar'].forEach(function (mecanica) {
+    const mecanicas = Object.keys(CB.jefes.DEFINICION).map(function (j) {
+      return CB.jefes.DEFINICION[j].mecanica;
+    });
+    t.ok(mecanicas.length >= 4 && new Set(mecanicas).size === mecanicas.length,
+      'E143 · las mecanicas se derivan del registro real (' + mecanicas.length + '), no de una lista a mano');
+    mecanicas.forEach(function (mecanica) {
       CB.jefes.estado = {
         mundo: CB.MUNDOS[0], jefe: 'prueba',
         def: { mecanica: mecanica, icono: '🌳' },

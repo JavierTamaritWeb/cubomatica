@@ -236,6 +236,8 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
        cuenta.U === 6 && cuenta.X === 6 && cuenta.J === 7 && cuenta.K === 6,
     'reparto 44 N · 26 S · 23 R · 22 M · 44 P · 14 E · 8 V · 17 D · 20 F · 15 C · 6 T · 4 Z · 15 B · 6 H · 12 G · 7 A · 6 U · 6 X · 7 J · 6 K = 308',
     JSON.stringify(cuenta));
+  /* Una letra 21.ª dejaria las veinte comparaciones de arriba en verde. */
+  t.igual(Object.keys(cuenta).length, 20, 'y las letras son exactamente 20');
 
   const porCurso = {};
   niveles.forEach(function (n) { porCurso[n.curso] = (porCurso[n.curso] || 0) + 1; });
@@ -243,6 +245,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
        porCurso[4] === 45 && porCurso[5] === 41 && porCurso[6] === 44,
     'por curso: 29 · 102 · 47 · 45 · 41 · 44 (los 92 numéricos de 2.º, intactos)',
     JSON.stringify(porCurso));
+  t.igual(Object.keys(porCurso).length, 6, 'y los cursos son exactamente 6');
 
   /* La cita de la norma es completa dondequiera que aparezca */
   t.ok(CB.LEGAL.NORMA.indexOf('157/2022') !== -1 &&

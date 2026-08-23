@@ -243,9 +243,9 @@ CB.pruebas.suite('Modos: Fácil, Normal y Experto', function () {
     lectores.join(', '));
 
   /* Y la comprobación de arriba solo vale si de verdad hay palancas que mirar. */
-  t.ok(CB.modos.PALANCAS.every(function (k) {
+  t.ok(CB.modos.PALANCAS.length === 5 && CB.modos.PALANCAS.every(function (k) {
     return CB.modos.TABLA.experto[k] >= CB.modos.TABLA.facil[k];
-  }), 'E123 · y las cinco palancas de Experto siguen en pie con el reloj quitado');
+  }), 'E123 · y las cinco palancas de Experto siguen en pie con el reloj quitado ([].every es true)');
   t.ok(CB.adulto.AJUSTES.some(function (a) { return a.k === 'sinLimiteTiempo'; }),
     'E123 · y el ajuste vive en el panel del adulto, detrás de la puerta parental');
 });

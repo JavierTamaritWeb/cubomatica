@@ -107,9 +107,15 @@ CB.pruebas.perfilNuevo = function () {
 
 CB.pruebas.render = function () {
   const r = document.getElementById('resumen');
-  const verde = CB.pruebas.fallos === 0;
+  /* Un salto NO cuenta como verde (la leccion de casos-contraste, ahora del
+     ejecutor entero): el resumen decia «TODO EN VERDE» con una obligacion
+     legal sin verificar. En una ejecucion normal (http, dist construido)
+     hay CERO saltos, asi que el veredicto solo cambia donde debia. */
+  const verde = CB.pruebas.fallos === 0 && CB.pruebas.saltados === 0;
   r.className = verde ? 'verde' : 'rojo';
-  r.textContent = (verde ? 'TODO EN VERDE — ' : 'HAY FALLOS — ') +
+  r.textContent = (CB.pruebas.fallos === 0
+    ? (verde ? 'TODO EN VERDE — ' : 'INCOMPLETO (hay saltos, no es un verde) — ')
+    : 'HAY FALLOS — ') +
     CB.pruebas.total + ' comprobaciones, ' + CB.pruebas.fallos + ' fallos' +
     (CB.pruebas.saltados ? ', ' + CB.pruebas.saltados + ' saltadas' : '');
 };

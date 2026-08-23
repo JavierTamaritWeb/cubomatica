@@ -110,7 +110,9 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
        Object.keys(fuera).slice(0, 12).join(', '));
 
   /* INVARIANTE 10: el dato sobrante nunca combina con uno necesario */
-  let mal10 = 0, ej10 = null;
+  let mal10 = 0, ej10 = null, conSobrante10 = 0;
+  t.ok(CB.catalogo.CON_DATO_SOBRANTE.length >= 4,
+    'INV 10 · hay niveles con dato sobrante que medir', CB.catalogo.CON_DATO_SOBRANTE.length + '');
   CB.catalogo.CON_DATO_SOBRANTE.forEach(function (nivelId) {
     const sub = CB.gen.problemas.SUBTIPO_DE_NIVEL[nivelId];
     for (k = 0; k < 200; k++) {
@@ -118,6 +120,7 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
         CB.util.mulberry32(k * 271 + nivelId.charCodeAt(1)), 2,
         { techo: 99, bolsas: CB.gen.problemas.nuevoEstadoBolsas(), datoSobrante: true });
       if (!it4.datoSobrante) continue;
+      conSobrante10++;
       const c = it4.numeroSobrante, r = it4.respuesta, a = it4.datos[0], b = it4.datos[1];
       if (a + c === r || a - c === r || b + c === r || b - c === r ||
           c + a === r || c - a === r || c + b === r || c - b === r || c === r) {
@@ -128,6 +131,9 @@ CB.pruebas.suite('Problemas: 20 estructuras, validador e invariantes 7, 8 y 10',
       if (nums > 3) { mal10++; if (!ej10) ej10 = 'más de 3 números: ' + it4.enunciado; }
     }
   });
+  t.ok(conSobrante10 > 100,
+    'INV 10 · el generador ha servido sobrantes de verdad (si dejara de honrar la bandera, esto cae)',
+    conSobrante10 + ' items');
   t.ok(mal10 === 0,
     'INV 10 · el dato sobrante nunca da la respuesta al combinarse con uno necesario', ej10);
 

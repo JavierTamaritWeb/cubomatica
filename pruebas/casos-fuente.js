@@ -7,7 +7,11 @@ CB.pruebas.suite('Tipografía: cobertura de glifos y rama activa de la cascada',
   const lienzo = document.createElement('canvas');
   lienzo.width = 64; lienzo.height = 64;
   const g = lienzo.getContext('2d');
-  if (!g) { CB.pruebas.saltar('cobertura de glifos', 'sin canvas'); return; }
+  if (!g) {
+    t.ok(false, 'cobertura de glifos: no hay canvas',
+      'sin canvas no se puede verificar una obligación legal — ejecuta la suite en un navegador real');
+    return;
+  }
 
   function huella(fuente, ch) {
     g.clearRect(0, 0, 64, 64);
@@ -26,7 +30,11 @@ CB.pruebas.suite('Tipografía: cobertura de glifos y rama activa de la cascada',
   ['--fuente-lectura', '--fuente-pixel'].forEach(function (nombreVar) {
     const fuente = getComputedStyle(document.documentElement)
       .getPropertyValue(nombreVar).trim();
-    if (!fuente) { CB.pruebas.saltar(nombreVar, 'variable no resuelta'); return; }
+    if (!fuente) {
+      t.ok(false, nombreVar + ': variable no resuelta',
+        'la hoja del juego no está cargada o la variable se ha renombrado — nada de lo de abajo se midió');
+      return;
+    }
 
     const hNotdef = huella(fuente, PRIVADO);
     const faltan = [];

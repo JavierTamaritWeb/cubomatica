@@ -17,7 +17,11 @@ const rojo = (m, d) => {
   console.log('  \x1b[31m✘ ' + m + '\x1b[0m');
   if (d) String(d).split('\n').slice(0, 10).forEach((l) => console.log('      ' + l));
 };
-const salto = (m) => console.log('  \x1b[33m–\x1b[0m ' + m);
+/* Un salto NO es un verde: todo lo alcanzable solo por salto() desaparecia en
+   silencio en una maquina sin build — seccion 3 entera, el suelo tactil, la
+   regla del 400 % — y el veredicto seguia diciendo «se puede entregar». */
+let SALTOS = 0;
+const salto = (m) => { SALTOS++; console.log('  \x1b[33m–\x1b[0m ' + m); };
 const juzgar = (cond, bien, mal, detalle) => (cond ? verde(bien) : rojo(mal, detalle));
 const titulo = (n) => { console.log(''); console.log(n); };
 
@@ -71,19 +75,51 @@ function buscar(ficheros, re, limpiar = sinComentariosJS) {
 /* Las tres reglas duras de estilo, como funciones */
 const cero = (v) => parseFloat(v) === 0;
 const ESTILO = {
-  radios: (css) => [...css.matchAll(/border-radius:\s*([^;}]+)/g)].map((m) => m[1].trim())
+  /* border(-top-left|-start-start|…)-radius: los cuatro longhands por esquina
+     y los logicos no contienen la subcadena «border-radius» y escapaban. */
+  radios: (css) => [...css.matchAll(/border(?:-[a-z]+-[a-z]+)?-radius:\s*([^;}]+)/g)]
+    .map((m) => m[1].trim())
     .filter((v) => !v.replace(/!important/, '').trim().split(/[\s/]+/).every(cero)),
 
   /* Una sombra puede llevar varias capas separadas por comas; la coma de dentro
      de rgba() no separa capas, de ahí el (?![^(]*\)). */
   difusas: (css) => {
     const malas = [];
-    for (const m of css.matchAll(/box-shadow:\s*([^;}]+)/g)) {
-      for (const capa of m[1].split(/,(?![^(]*\))/)) {
-        const n = capa.trim().replace(/^inset\s+/, '')
-          .match(/^(-?[\d.]+)\w*\s+(-?[\d.]+)\w*\s+(-?[\d.]+)\w*/);
-        if (n && !cero(n[3])) malas.push(capa.trim().slice(0, 110));
+    /* Fichas de nivel superior: espacios fuera de parentesis. Los offsets del
+       bisel se escriben con var()/calc() y son legales; lo que se juzga es la
+       TERCERA longitud (el desenfoque), que debe ser el literal 0 — un
+       desenfoque escondido en var() es rojo por inauditable. */
+    const fichas = (s) => {
+      const out = []; let nivel = 0, acc = '';
+      for (const ch of s) {
+        if (ch === '(') nivel++;
+        if (ch === ')') nivel--;
+        if (/\s/.test(ch) && nivel === 0) { if (acc) out.push(acc); acc = ''; }
+        else acc += ch;
       }
+      if (acc) out.push(acc);
+      return out;
+    };
+    const esColor = (f) => /^(#|rgba?\(|hsla?\(|currentcolor$|transparent$)/i.test(f);
+    const juzgarCapa = (capa, rotulo) => {
+      const limpia = capa.trim().replace(/^inset\s+/, '');
+      if (/^(none|inherit|initial|unset)\b/.test(limpia)) return;
+      const largo = fichas(limpia).filter((f) => !esColor(f));
+      /* La sintaxis admite 2-4 longitudes; si sobran, la ultima var() es el color. */
+      while (largo.length > 4 && /^var\(/.test(largo[largo.length - 1])) largo.pop();
+      if (largo.length < 2 || largo.length > 4) {
+        malas.push('imparseable: ' + rotulo + limpia.slice(0, 90));
+        return;
+      }
+      if (largo.length >= 3 && !/^-?0(\.0+)?([a-z%]+)?$/.test(largo[2])) {
+        malas.push(rotulo + limpia.slice(0, 110));
+      }
+    };
+    for (const m of css.matchAll(/(?:box-shadow|text-shadow):\s*([^;}]+)/g)) {
+      for (const capa of m[1].split(/,(?![^(]*\))/)) juzgarCapa(capa, '');
+    }
+    for (const m of css.matchAll(/drop-shadow\(\s*([^)]+)\)/g)) {
+      juzgarCapa(m[1], 'drop-shadow ');
     }
     return malas;
   },
@@ -95,7 +131,7 @@ const ESTILO = {
     .filter((v) => !/steps\(/.test(v) && !/^(none|inherit|initial|unset)\b/.test(v)),
 
   /* El grep de arriba solo mira las formas ABREVIADAS, `animation:` y `transition:`. */
-  suavesLargas: (css) => [...css.matchAll(/animation-timing-function:\s*([^;}]+)/g)]
+  suavesLargas: (css) => [...css.matchAll(/(?:animation|transition)-timing-function:\s*([^;}]+)/g)]
     .map((m) => m[1].trim())
     .filter((v) => !/steps\(/.test(v) && !/^(inherit|initial|unset)\b/.test(v)),
 
@@ -137,6 +173,28 @@ for (const f of recorrer(RAIZ)) {
 }
 juzgar(!hitsMarca.length, '0 coincidencias de la lista negra fuera de los ficheros exentos',
   'coincidencias de la lista negra:', hitsMarca.join('\n'));
+
+/* Y sobre dist/: es el artefacto que la gente recibe, y la PODA lo excluia del
+   barrido. Los dos paquetes JS quedan fuera porque heredan la declaracion
+   exenta de CB.LEGAL (00-nucleo); todo lo demas —html, css, textos, el sw y
+   los NOMBRES de fichero— se mira. */
+const hitsDist = [];
+if (HAY_DIST) {
+  for (const f of recorrer(D('dist'), false)) {
+    const nombre = f.split('/').pop();
+    if (PATRON.test(nombre)) hitsDist.push('nombre de fichero: ' + corto(f));
+    if (!EXT_TEXTO.test(f)) continue;
+    if (/cubomatica(\.min)?\.js$/.test(nombre)) continue;
+    if (EXENTOS.has(nombre)) continue;
+    leer(f).split('\n').forEach((l, n) => {
+      if (PATRON.test(l)) hitsDist.push(corto(f) + ':' + (n + 1) + ': ' + l.trim().slice(0, 110));
+    });
+  }
+  juzgar(!hitsDist.length, '0 coincidencias de la lista negra en dist/ (html, css, textos y nombres)',
+    'coincidencias de la lista negra en lo distribuido:', hitsDist.join('\n'));
+} else {
+  salto('marca en dist/: no hay dist construido');
+}
 
 const usos = buscar([D('src/datos/nombres.js'), D('pruebas/casos-marca.js')], PATRON, (t) => t)
   .filter((l) => !/PROHIBIDOS|NEGRA|lista negra/i.test(l));
@@ -210,17 +268,27 @@ if (!HAY_DIST) {
   /* Un solo fichero DECLARA color y por eso puede escribir hex: _variables.
      Los demás parciales consumen la paleta por nombre. */
   const sueltos = buscar(salvo(SCSS, '_variables'),
-    /#[0-9A-Fa-f]{3,8}\b/, sinComentariosCSS);
+    /#[0-9A-Fa-f]{3,8}\b|\b(?:rgb|hsl|lab|lch|oklch|color)a?\(/, sinComentariosCSS)
+    /* rgba(0,0,0,·) y rgba(255,255,255,·) son sombra y luz del bisel — alfa
+       sobre negro o blanco puros, no un matiz que la paleta deba gobernar. */
+    .filter((l) => !/rgba?\(\s*(?:0\s*,\s*0\s*,\s*0|255\s*,\s*255\s*,\s*255)\s*,/.test(l));
   juzgar(!sueltos.length,
-    'cero colores sueltos: solo los declara _variables.scss',
+    'cero colores sueltos: solo los declara _variables.scss (hex y funciones de color)',
     'hay colores escritos a mano fuera del fichero de variables',
     sueltos.join('\n'));
 
   /* El suelo táctil de 64px. El riesgo no es incumplirlo hoy: es que un punto de
      ruptura futuro baje sin que nadie redimensione el navegador a diez tamaños
      antes de entregar. */
-  const lados = [...css.matchAll(/--lado-(?:deseado|techo): *(\d+)px/g)].map((m) => +m[1]);
-  const minLado = lados.length ? Math.min(...lados) : null;
+  const declaracionesLado = [...css.matchAll(/--lado-(?:deseado|techo):\s*([^;}]+)/g)]
+    .map((m) => m[1].trim());
+  const ladosPx = declaracionesLado.filter((v) => /^\d+px$/.test(v)).map((v) => parseInt(v, 10));
+  const ladosRaros = declaracionesLado.filter((v) => !/^\d+px$/.test(v));
+  juzgar(!ladosRaros.length,
+    'todas las declaraciones del lado del boton son px enteros (auditables)',
+    'hay declaraciones de --lado-* en una forma que el suelo tactil no puede auditar (rem, calc, min()…)',
+    ladosRaros.join('\n'));
+  const minLado = ladosPx.length ? Math.min(...ladosPx) : null;
   juzgar(minLado !== null && minLado >= 64,
     'ninguna regla baja el boton de ' + minLado + ' px (suelo tactil: 64)',
     'hay una regla que baja el boton a ' + minLado + ' px, por debajo del suelo de 64');
@@ -312,11 +380,17 @@ if (HAY_AUDIO) {
 /* Cero red. Se filtran las citas legales y las referencias en comentarios: lo
    que se persigue es una PETICIÓN, no una URL escrita. */
 const fuentes = TODO_JS.concat(listarRecursivo(D('src/scss'), '.scss')).concat([D('src/index.html')]);
-const red = buscar(fuentes, /https?:\/\//, sinComentariosJS)
-  .filter((l) => !/boe\.es|localhost|w3\.org|claude/i.test(l))
-  .filter((l) => /src=|url\(|fetch|XMLHttpRequest/.test(l));
-juzgar(!red.length, 'ninguna petición de red en el código', 'hay referencias de red',
-  red.join('\n'));
+/* Rojo por defecto: antes el segundo filtro CONSERVABA solo cuatro grafias
+   (src=|url(|fetch|XHR), asi que href=, import(), sendBeacon o new WebSocket
+   pasaban en verde. Ahora toda URL externa es roja salvo cita legal conocida. */
+const red = buscar(fuentes, /\b(?:https?|wss?):\/\//, sinComentariosJS)
+  .filter((l) => !/boe\.es|localhost|w3\.org|claude/i.test(l));
+const redApi = buscar(fuentes,
+  /\b(?:fetch|XMLHttpRequest|sendBeacon|WebSocket|EventSource|importScripts)\s*\(/,
+  sinComentariosJS)
+  .filter((l) => !/serviceWorker/.test(l));
+juzgar(!red.length && !redApi.length, 'ninguna petición de red en el código',
+  'hay referencias de red', red.concat(redApi).join('\n'));
 
 /* 5. CONTRATO DE CARGA */
 titulo('5. Contrato de carga');
@@ -333,6 +407,12 @@ juzgar(enHtml.length === M.guiones.length,
 
 const nSec = (html.match(/<section id="p-/g) || []).length;
 juzgar(nSec === 18, '18 <section> de pantalla', 'hay ' + nSec + ' secciones, deben ser 18');
+/* E148 · el boton de sonido vive en los TRES pintores (partida, calibracion y
+   jefe): el combate fue la unica pantalla sin silencio hasta 3.4.5. Se cuentan
+   OCURRENCIAS, nunca lineas (el html minificado es una sola linea). */
+const nSonido = (html.match(/data-accion="sonido"/g) || []).length;
+juzgar(nSonido === 3, 'E148 · 3 botones de sonido: partida, calibracion y jefe',
+  'hay ' + nSonido + ' botones data-accion="sonido" (deben ser 3: el jefe era el que faltaba)');
 
 /* E101 · La AYUDA se comprueba aqui, no en el navegador */
 const secAyuda = (html.match(/<section id="p-ayuda"[\s\S]*?<\/section>/) || [])[0] || '';
@@ -611,11 +691,18 @@ if (process.argv.includes('--autoprueba')) {
     ['border-radius: 4px',        '.x{border-radius:4px}',                 'radios'],
     ['border-radius: 0.5rem',     '.x{border-radius:0.5rem}',              'radios'],
     ['border-radius: 50%',        '.x{border-radius:50%}',                 'radios'],
+    /* Las formas que hasta 3.4.6 escapaban de los greps (auditoria severa): */
+    ['el longhand border-top-left-radius', '.x{border-top-left-radius:4px}', 'radios'],
+    ['el longhand logico border-start-start-radius', '.x{border-start-start-radius:2px}', 'radios'],
     ['sombra difusa con 0 0 4px', '.x{box-shadow:0 0 4px #000}',           'difusas'],
     ['sombra difusa inset',       '.x{box-shadow:inset 0 0 8px #000}',     'difusas'],
+    ['text-shadow difusa',        '.x{text-shadow:0 0 8px #000}',          'difusas'],
+    ['drop-shadow difusa',        '.x{filter:drop-shadow(0 0 6px #000)}',  'difusas'],
+    ['sombra con el color primero (imparseable = roja)', '.x{box-shadow:#000 0 0 4px}', 'difusas'],
     ['transición con ease',       '.x{transition:opacity 90ms ease}',      'suaves'],
     ['transición sin función',    '.x{transition:opacity 90ms}',           'suaves'],
     ['animación con easing',      '.x{animation:late 1s ease-in infinite}', 'suaves'],
+    ['el longhand transition-timing-function: ease', '.x{transition-timing-function:ease}', 'suavesLargas'],
   ];
   for (const [nombre, css, cual] of inventadas) {
     juzgar(ESTILO[cual](css).length > 0, 'detecta ' + nombre,
@@ -627,8 +714,10 @@ if (process.argv.includes('--autoprueba')) {
   const legitimas = [
     ['border-radius: 0',      '.x{border-radius:0}',                       'radios'],
     ['sombra sin desenfoque', '.x{box-shadow:inset 0 -4px 0 #000}',        'difusas'],
+    ['text-shadow sin desenfoque', '.x{text-shadow:3px 3px 0 #000}',       'difusas'],
     ['transición con steps',  '.x{transition:opacity 90ms steps(2)}',      'suaves'],
     ['animation: none',       '.x{animation:none}',                        'suaves'],
+    ['transition-timing-function: steps', '.x{transition-timing-function:steps(3,end)}', 'suavesLargas'],
   ];
   for (const [nombre, css, cual] of legitimas) {
     juzgar(ESTILO[cual](css).length === 0, 'y NO se dispara con ' + nombre,
@@ -638,6 +727,11 @@ if (process.argv.includes('--autoprueba')) {
 
 /* RESULTADO */
 console.log('');
+if (FALLOS === 0 && SALTOS > 0) {
+  console.log('\x1b[33m════ AUDITORÍA INCOMPLETA: ' + SALTOS +
+    ' comprobaciones saltadas — un salto no es un verde. Construye dist (npm run build) y repite ════\x1b[0m\n');
+  process.exit(1);
+}
 if (FALLOS === 0) {
   console.log('\x1b[32m════ AUDITORÍA EN VERDE: el proyecto se puede entregar ════\x1b[0m\n');
   process.exit(0);

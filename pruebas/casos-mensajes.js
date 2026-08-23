@@ -125,7 +125,7 @@ CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
   const rng2 = CB.util.mulberry32(31415);
   const vistosPorCat = { A: [], B: [], C: [], D: [] };
   for (i = 0; i < 160; i++) {
-    const ctx2 = { perfil: perfil2, destreza: CB.adaptativo.SLUGS[i % 13], rng: rng2,
+    const ctx2 = { perfil: perfil2, destreza: CB.adaptativo.SLUGS[i % CB.adaptativo.SLUGS.length], rng: rng2,
                  racha: (i % 7 === 0) ? 4 : 0, reparacion: (i % 11 === 0) };
     const cat2 = CB.mensajes.categoriaAcierto(ctx2);
     vistosPorCat[cat2].push(CB.mensajes.acierto(ctx2).split('!')[0]);
@@ -152,7 +152,7 @@ CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
   const rng3 = CB.util.mulberry32(2718);
   const animoPorCat = { P1: [], P2: [] };
   for (i = 0; i < 96; i++) {
-    const ctx3 = { perfil: perfil3, destreza: CB.adaptativo.SLUGS[i % 13], rng: rng3 };
+    const ctx3 = { perfil: perfil3, destreza: CB.adaptativo.SLUGS[i % CB.adaptativo.SLUGS.length], rng: rng3 };
     const cat3 = CB.mensajes.categoriaAnimo(ctx3);
     animoPorCat[cat3].push(CB.mensajes.animo(ctx3).split('!')[0]);
   }

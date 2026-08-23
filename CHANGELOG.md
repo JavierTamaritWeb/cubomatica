@@ -12,6 +12,52 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.4.6] — 2026-08-23
+
+La otra mitad de la auditoría severa: las pruebas y la auditoría que podían
+pasar sin medir. Ningún cambio de comportamiento del juego.
+
+### Corregido
+- **Un salto ya no es un verde, en ninguna de las dos puertas.** El resumen del
+  navegador dice «INCOMPLETO» si hubo comprobaciones saltadas, y `auditar.mjs`
+  se niega al veredicto de entrega con saltos (antes, en una máquina sin build
+  desaparecía la sección 3 entera —reglas duras, suelo táctil, zoom 400 %— y el
+  veredicto seguía diciendo «se puede entregar»).
+- **El filtro de vocabulario de la pantalla de fin medía una cadena vacía desde
+  siempre**: hacía `split('var textos')` sobre el fuente y el código declara
+  `const textos`. Ahora PINTA la pantalla con los cinco motivos reales y lee el
+  DOM. Sembrado: «has perdido» en un texto lo pone en rojo.
+- **La frontera de pureza no miraba la mitad de los generadores**: la lista
+  PUROS se quedó en los 7 módulos de 2.º; ahora se deriva de `CB.gen` (20
+  módulos) y cuenta que lo son.
+- **E127 congelaba «las 92 betas de 2.º» y 2.º tiene 102 niveles**: las 10
+  betas de las fases 2-4 podían derivar sin guardián. El volcado cubre ahora
+  los 102 y el conteo se deriva del catálogo.
+- **Verdes vacuos cerrados con contadores**: `% 13` sobre la lista de 26 slugs
+  (dos sitios, en el fichero que documenta ese mismo defecto); la lista literal
+  de 4 mecánicas del jefe (ahora derivada de DEFINICION); pantallas saltadas en
+  silencio en los barridos de a11y; E142 sin contar reconstrucciones (destapó
+  que la variante b de U3 está exenta POR SU EXPR, no por ausencia del campo);
+  INV 10 sin contar sobrantes; E63 con centinela 99; E34 contando la palabra
+  «function» (ahora instala un register() que rechaza y deja que el oyente de
+  unhandledrejection juzgue); E38/pintarFin con negativos que pasaban sobre
+  funciones ausentes; `[].every` en E123; `x === x` en casos-motor; 'datos' en
+  la lista blanca de formatos sin existir; control negativo para
+  `variedadSuficiente`; conteo de 20 letras y 6 cursos.
+- **Los greps duros de la auditoría conocían una sola grafía**: ahora ven los
+  longhands de border-radius (por esquina y lógicos), `transition-timing-function`,
+  `text-shadow` y `drop-shadow` (con despiece por fichas: los offsets `var()`
+  del bisel son legales y el desenfoque debe ser el literal 0), los colores
+  `rgb()/hsl()/lab()` fuera de `_variables` (blanco y negro puros con alfa
+  exentos: son el sombreado del bisel), cualquier declaración no auditable de
+  `--lado-*`, y toda URL o API de red (antes el filtro solo CONSERVABA cuatro
+  grafías: `href=`, `import()`, `sendBeacon` o `WebSocket` pasaban). La marca
+  se busca también en `dist/` (lo que la gente recibe), salvo los dos paquetes
+  JS que heredan la declaración exenta de CB.LEGAL. Todos los casos nuevos
+  sembrados en la autoprueba.
+- Guardián E148-html en la auditoría: 3 botones de sonido (partida,
+  calibración y jefe).
+
 ## [3.4.5] — 2026-08-23
 
 Una auditoría severa con cuatro frentes: identidad de los ítems, paridad del

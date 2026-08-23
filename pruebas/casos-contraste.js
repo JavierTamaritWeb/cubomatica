@@ -210,13 +210,15 @@ CB.pruebas.suite('Contraste: el teclado bloqueado también se lee', function () 
      sin su propia línea, el bloqueado quedaría a 3,36:1. */
   const raiz = document.documentElement, tenia = raiz.classList.contains('alto-contraste');
   raiz.classList.add('alto-contraste');
-  let peorAC = 99;
+  let peorAC = 99, medidasAC = 0;
   for (i = 0; i < apagadas.length; i++) {
     cs = getComputedStyle(apagadas[i]);
     const fa = rgbAHex(cs.backgroundColor), ca = rgbAHex(cs.color);
-    if (fa && ca) peorAC = Math.min(peorAC, ratio(fa, ca));
+    if (fa && ca) { medidasAC++; peorAC = Math.min(peorAC, ratio(fa, ca)); }
   }
   if (!tenia) raiz.classList.remove('alto-contraste');
+  t.igual(medidasAC, apagadas.length,
+    'E63 · en alto contraste se han medido las ' + apagadas.length + ' teclas (el centinela 99 pasaba sin medir)');
   t.ok(peorAC >= 4.5, 'E63 · en alto contraste el bloqueado sigue por encima de 4,5:1',
     peorAC.toFixed(2) + ':1');
 });

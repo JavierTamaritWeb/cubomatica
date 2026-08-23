@@ -24,19 +24,32 @@ CB.pruebas.suite('Cursos: betas congeladas, mezcla 80/20 y promoción', function
     P9: 898, P10: 933, P11: 967, P12: 1002, P13: 1037, P14: 1072, P15: 1106,
     P16: 1141, P17: 1176, P18: 1211, P19: 1245, P20: 1280,
     E1: 400, E2: 491, E3: 583, E4: 674, E5: 766, E6: 857, E7: 949, E8: 1040,
-    V1: 320, V2: 406, V3: 491, V4: 577, V5: 663, V6: 749, V7: 834, V8: 920
+    V1: 320, V2: 406, V3: 491, V4: 577, V5: 663, V6: 749, V7: 834, V8: 920,
+    /* Los 10 niveles de 2.º llegados en las fases 2-4: el volcado congelaba
+       «los 92 originales» y 2.º ya tenia 102 — diez betas podian derivar sin
+       que E127 se enterase. Congeladas el 2026-08-23. */
+    B2: 400, B3: 530, H2: 380, G2: 380, G3: 510, A2: 420,
+    U2: 380, X2: 420, J2: 380, K2: 400
   };
   const betasMovidas = Object.keys(BETAS_2).filter(function (id) {
     const n = CB.catalogo.get(id);
     return !n || n.betaBase !== BETAS_2[id];
   });
   t.ok(betasMovidas.length === 0,
-    'E127 · las 92 betas de 2.º no se han movido ni un punto',
+    'E127 · las betas de 2.º no se han movido ni un punto',
     betasMovidas.map(function (id) {
       const n = CB.catalogo.get(id);
       return id + ': ' + (n ? n.betaBase : 'ausente') + ' ≠ ' + BETAS_2[id];
     }).join(', '));
-  t.ok(Object.keys(BETAS_2).length === 92, 'el volcado cubre los 92 niveles de 2.º');
+  /* El conteo se DERIVA del catalogo: «=== 92» siguio en verde cuando 2.º paso
+     a 102 niveles, porque seguia siendo verdad que el volcado tenia 92 filas. */
+  const nivelesC2 = CB.catalogo.ids().filter(function (id) {
+    return CB.catalogo.get(id).curso === 2;
+  });
+  t.igual(Object.keys(BETAS_2).length, nivelesC2.length,
+    'el volcado cubre TODOS los niveles de 2.º (' + nivelesC2.length + ')');
+  const sinCongelar = nivelesC2.filter(function (id) { return !(id in BETAS_2); });
+  t.ok(sinCongelar.length === 0, 'ningún nivel de 2.º queda sin congelar', sinCongelar.join(', '));
   t.igual(CB.catalogo.BETA_CURSO[2], 0, 'el desplazamiento de beta de 2.º es 0');
 
   /* E134 · el grafo y los cursos: lo de cursos anteriores se abre, lo de
@@ -534,10 +547,22 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
      consigna. Cincuenta semillas por regla. */
   (function () {
     let s, malSerie = 0, malHueco = 0, malAng = 0, malCua = 0;
+    let reconstruidas = 0;
     for (s = 0; s < 50; s++) {
       ['U1', 'U2', 'U3', 'U5'].forEach(function (id) {
         const it = CB.gen.patrones[id](CB.util.mulberry32(s * 37 + 1), 2);
-        if (typeof it.ultimoTermino !== 'number') return;
+        /* Un campo renombrado no exime: sin ultimoTermino la serie no se puede
+           reconstruir y eso ES el fallo (antes, el return dejaba el contador a
+           0 y el verde no habia medido nada). La UNICA exencion es la variante
+           b de U3 («¿De cuanto en cuanto va?»), cuya respuesta es el salto y
+           no el termino siguiente — y se reconoce por su expr, no por la
+           ausencia del campo. */
+        if (typeof it.ultimoTermino !== 'number') {
+          if (id === 'U3' && /^u3b_/.test(it.expr)) return;
+          malSerie++;
+          return;
+        }
+        reconstruidas++;
         const sig = (typeof it.factorSerie === 'number')
           ? it.ultimoTermino * it.factorSerie
           : it.ultimoTermino + it.salto;
@@ -566,6 +591,8 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
         if (todas.some(function (l) { return it.expr.indexOf(l) === -1; })) malCua++;
       });
     }
+    t.ok(reconstruidas >= 150,
+      'E142 · se han reconstruido de verdad ' + reconstruidas + ' series (≥150: U1/U2/U5 completos más la variante a de U3)');
     t.igual(malSerie, 0, 'E142 · toda serie se reconstruye desde sus campos en 50 semillas');
     t.igual(malHueco, 0, 'E142 · «sumar los dos números» nunca es la respuesta del hueco');
     t.igual(malAng, 0, 'E142 · los tres ángulos del triángulo suman 180 exactos');

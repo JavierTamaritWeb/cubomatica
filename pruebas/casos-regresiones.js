@@ -446,6 +446,8 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     const fuente = String(CB.pantallas.alEntrar[id]);
     if (fuente.indexOf('pantallas.ir') !== -1) navegantes.push(id);
   });
+  t.ok(Object.keys(CB.pantallas.alEntrar).length >= 5,
+    'E1 · hay handlers de alEntrar que mirar (un registro vacío era un verde falso)');
   t.ok(navegantes.length === 0,
     'E1 · ningún handler de alEntrar llama a CB.pantallas.ir()', navegantes.join(', '));
   t.ok(CB.pantallas._entrando === null,
@@ -535,11 +537,25 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
     'E34 · registrar() sin contexto seguro devuelve false y NO lanza',
     reventoRegistro ? 'lanzó una excepción' : 'devolvió ' + devolvio);
 
-  const fuenteReg = String(CB.offline.registrar);
-  t.ok(fuenteReg.indexOf('function') !== -1 &&
-       (fuenteReg.match(/function/g) || []).length >= 2,
-    'E34 · el rechazo de la promesa TAMBIÉN se recoge, no solo la excepción',
-    'sin el segundo callback de then(), la consola imprimiría «Uncaught (in promise)»');
+  /* Antes: contar >= 2 apariciones de la palabra «function» en el fuente —
+     cualquier segunda clausura lo ponia verde. Ahora se ejecuta de verdad con
+     un register() que RECHAZA: si el rechazo no se recoge, el oyente global de
+     unhandledrejection del ejecutor pone la suite en rojo por si mismo. */
+  const swPrevio34 = Object.getOwnPropertyDescriptor(navigator, 'serviceWorker');
+  let registroLlamado34 = false;
+  try {
+    Object.defineProperty(navigator, 'serviceWorker', {
+      configurable: true,
+      value: { register: function () { registroLlamado34 = true;
+        return Promise.reject(new Error('rechazo de prueba E34')); } }
+    });
+    const dev34 = CB.offline.registrar();
+    t.ok(registroLlamado34 || dev34 === false,
+      'E34 · registrar() llega hasta register() con el doble instalado');
+  } finally {
+    if (swPrevio34) Object.defineProperty(navigator, 'serviceWorker', swPrevio34);
+    else delete navigator.serviceWorker;
+  }
 
   /* E35 · La suite nunca registra un service worker */
   t.ok(typeof CB.offline.registrar === 'function',
@@ -627,9 +643,13 @@ CB.pruebas.suite('E38 · la lista de música tiene un solo dueño', function () 
   /* Y la comprobación que de verdad ata el fallo: que ninguna ruta esté escrita
      como literal en 45-offline.js. Se busca por nombre de FICHERO, que terser
      conserva por ser literal de cadena. */
-  const fuenteOffline = String(CB.offline.urlesPistas) + String(CB.offline.descargarMusica);
+  t.ok(typeof CB.offline.urlesPistas === 'function' &&
+       typeof CB.offline.descargarMusica === 'function',
+    'E38 · las dos funciones existen (String(undefined) hacía pasar el negativo)');
+  const fuenteOffline = (String(CB.offline.urlesPistas) + String(CB.offline.descargarMusica))
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
   t.ok(fuenteOffline.indexOf('.mp3') === -1,
-    'E38 · ningún nombre de mp3 escrito a mano en el código sin conexión');
+    'E38 · ningún nombre de mp3 escrito a mano en el código sin conexión (sin contar comentarios)');
 });
 
 /* E40 · El relleno de opciones del jefe no avanzaba */
@@ -1083,6 +1103,10 @@ CB.pruebas.suite('E47 · ninguna celebración invade la zona de respuesta', func
     arriba.join(' · '));
 
   /* Los dos que se superponen no interceptan toques, pase lo que pase. */
+  ['cinta', 'cartel-festejo'].forEach(function (id) {
+    t.ok(!!document.getElementById(id),
+      'E47 · #' + id + ' existe en la maqueta (su ausencia contaba como conforme)');
+  });
   const pasan = ['cinta', 'cartel-festejo'].filter(function (id) {
     const el = document.getElementById(id);
     return el && getComputedStyle(el).pointerEvents !== 'none';

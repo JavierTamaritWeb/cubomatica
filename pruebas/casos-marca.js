@@ -88,18 +88,23 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
     conInnerHTML.join(', '));
 
   /* Frontera: el motor y los generadores son PUROS */
+  /* Los generadores se DERIVAN de CB.gen: la lista a mano se quedo en los 7
+     de 2.º y la frontera de pureza nunca miro los 13 modulos de 19a-19i
+     (division, fracciones, decimales… espacio). Una lista escrita a mano
+     miente en cuanto el catalogo crece. */
   const PUROS = [
     ['CB.puntuacion', CB.puntuacion], ['CB.antiazar', CB.antiazar],
     ['CB.vidas', CB.vidas], ['CB.adaptativo', CB.adaptativo],
     ['CB.logros', CB.logros], ['CB.mensajes', CB.mensajes],
     ['CB.reparacion', CB.reparacion], ['CB.leitner', CB.leitner],
     ['CB.memoria', CB.memoria], ['CB.grafo', CB.grafo], ['CB.escalera', CB.escalera],
-    ['CB.gen.numeracion', CB.gen.numeracion], ['CB.gen.sumas', CB.gen.sumas],
-    ['CB.gen.restas', CB.gen.restas], ['CB.gen.multiplicacion', CB.gen.multiplicacion],
-    ['CB.gen.problemas', CB.gen.problemas], ['CB.gen.dinero', CB.gen.dinero],
-    ['CB.gen.vocabulario', CB.gen.vocabulario], ['CB.catalogo', CB.catalogo],
-    ['CB.distractores', CB.distractores]
+    ['CB.catalogo', CB.catalogo], ['CB.distractores', CB.distractores]
   ];
+  Object.keys(CB.gen).forEach(function (g) {
+    if (typeof CB.gen[g] === 'object' && CB.gen[g]) PUROS.push(['CB.gen.' + g, CB.gen[g]]);
+  });
+  t.ok(PUROS.length >= 13 + 20,
+    'la frontera de pureza cubre los ' + (PUROS.length - 13) + ' modulos de CB.gen (derivados, no a mano)');
   const impuros = [], conRandom = [], conISO = [];
   PUROS.forEach(function (par) {
     const nombre = par[0], mod = par[1];
@@ -148,15 +153,34 @@ CB.pruebas.suite('Marca y seguridad: comprobación en runtime (cobertura parcial
   t.ok(CB.antiazar.TEXTO_PERMITIDO.indexOf('Gluglú') !== -1,
     'Gluglú se presenta como accidente del entorno, no como juez');
 
-  /* Vocabulario prohibido en la pantalla de fin (§3.7) */
+  /* Vocabulario prohibido en la pantalla de fin (§3.7). Se PINTA de verdad y
+     se lee el DOM: la version anterior hacia split('var textos') sobre el
+     fuente, el codigo declara `const textos`, y la comprobacion llevaba toda
+     la vida midiendo una cadena vacia — verde sobre nada, en las DOS paginas. */
   const PROHIBIDO_FIN = ['has perdido', 'game over', 'fin de la partida', 'fallaste',
                        'te has quedado sin'];
-  const srcFin = Function.prototype.toString.call(CB.partida.pintarFin).toLowerCase();
-  /* Aparecen en el comentario que los prohíbe: se comprueba que no estén en los
-     textos reales de la tabla. */
-  const textosFin = srcFin.split('var textos')[1] || '';
-  const enTextos = PROHIBIDO_FIN.filter(function (p) { return textosFin.indexOf(p) !== -1; });
+  const finPerfilPrevio = CB.perfil;
+  const finEstadoPrevio = CB.partida.estado;
+  const finPantallaPrevia = CB.pantallas.actual;
+  CB.perfil = CB.pruebas.perfilNuevo();
+  const motivos = ['luces', 'guion', 'limiteSesion', 'salida', 'pausa'];
+  let textoFin = '', m;
+  for (m = 0; m < motivos.length; m++) {
+    CB.partida.estado = { destrezasMejoradas: [], gemas: 3, puntos: 100,
+                          respuestas: [], modoTiempo: 'normal', luces: { luces: 3 } };
+    try {
+      CB.partida.pintarFin(motivos[m], { total: 0, extras: [] }, {});
+    } catch (e) { /* un motivo no montable en la maqueta no exime a los demas */ }
+    const secFin = document.getElementById('p-fin');
+    if (secFin) textoFin += ' ' + secFin.textContent.toLowerCase();
+  }
+  if (finPantallaPrevia) CB.pantallas.ir(finPantallaPrevia);
+  t.ok(textoFin.length > 50,
+    'la pantalla de fin se ha pintado de verdad para medirla', 'longitud ' + textoFin.length);
+  const enTextos = PROHIBIDO_FIN.filter(function (p) { return textoFin.indexOf(p) !== -1; });
   t.ok(enTextos.length === 0,
     'la pantalla de fin no contiene «has perdido», «game over» ni «fallaste»',
     enTextos.join(', '));
+  CB.perfil = finPerfilPrevio;
+  CB.partida.estado = finEstadoPrevio;
 });
