@@ -227,6 +227,10 @@ CB.ui.pintarItem = function (item) {
     cont.appendChild(CB.ui.relojAnalogico(item.visual.horas, item.visual.minutos));
   }
 
+  if (item.visual && item.visual.tipo === 'barras') {
+    cont.appendChild(CB.ui.graficoBarras(item.visual.filas, item.visual.escala));
+  }
+
   if (item.preguntaPrevia) {
     cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
   }
@@ -340,6 +344,56 @@ CB.ui.relojAnalogico = function (horas, minutos) {
   caja.setAttribute('role', 'img');
   caja.setAttribute('aria-label', 'Reloj con la manecilla corta en las ' + horas +
     (minutos ? ' y la larga marcando ' + minutos + ' minutos' : ' en punto'));
+  return caja;
+};
+
+/* El gráfico de barras (3.3.0): una columna de bloques por categoría, con su
+   etiqueta debajo. Las barras se distinguen por su ETIQUETA, nunca por su
+   color (el color solo jamás lleva la información), y todo son rectángulos
+   con bisel: vóxel puro, sin border-radius y sin nada que se mueva. Como el
+   reloj canta su hora, el gráfico canta sus datos en el aria-label. */
+CB.ui.graficoBarras = function (filas, escala) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const grafico = CB.ui.crear('div');
+  grafico.style.display = 'flex';
+  grafico.style.alignItems = 'flex-end';
+  grafico.style.gap = '14px';
+
+  (filas || []).forEach(function (fila) {
+    const col = CB.ui.crear('div');
+    col.style.display = 'flex';
+    col.style.flexDirection = 'column';
+    col.style.alignItems = 'center';
+    col.style.gap = '3px';
+
+    let i;
+    const bloques = Math.min(fila.valor, 12);
+    for (i = 0; i < bloques; i++) {
+      const b = CB.ui.crear('span');
+      b.style.width = '26px'; b.style.height = '14px';
+      b.style.background = 'var(--deco-cristal)';
+      b.style.boxShadow = 'inset 3px 3px 0 0 var(--deco-cristal-cla), ' +
+                          'inset -3px -3px 0 0 var(--deco-cristal-osc)';
+      col.appendChild(b);
+    }
+
+    const etiqueta = CB.ui.crear('span', 'texto texto--menor', fila.nombre);
+    etiqueta.style.marginTop = '4px';
+    col.appendChild(etiqueta);
+    grafico.appendChild(col);
+  });
+
+  caja.appendChild(grafico);
+  if (escala && escala > 1) {
+    caja.appendChild(CB.ui.crear('p', 'texto texto--menor',
+      'Cada bloque vale ' + escala + '.'));
+  }
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label', 'Gráfico de barras: ' +
+    (filas || []).map(function (f) {
+      return f.nombre + ', ' + f.valor +
+        (escala && escala > 1 ? ' bloques de ' + escala : '');
+    }).join('; '));
   return caja;
 };
 

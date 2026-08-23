@@ -34,7 +34,9 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'porcentajes':
     case 'enteros':
     case 'medida':
-    case 'tiempo':             return 'rectaNumerica';
+    case 'tiempo':
+    case 'datos':              return 'rectaNumerica';
+    case 'azar':               return 'barrasComparativas';
     case 'problemas_comparacion':
     case 'problemas_igualacion':
     case 'problemas_cambio':

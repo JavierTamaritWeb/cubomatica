@@ -1,4 +1,4 @@
-/* casos-cursos.js — Cursos 1.º-6.º (3.0.0): E127-E135 */
+/* casos-cursos.js — Cursos 1.º-6.º (3.0.0): E127-E140 */
 
 CB.pruebas.suite('Cursos: betas congeladas, mezcla 80/20 y promoción', function () {
   const t = CB.pruebas;
@@ -347,7 +347,11 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
     const ops = itemHora.distractoresFijos.map(function (v) { return { valor: v }; })
       .concat([{ valor: itemHora.respuesta }]);
     CB.componentes.opciones4(itemHora, ops, function () {});
-    const rej = document.querySelector('.rejilla-respuestas');
+    /* Dentro del contenedor donde opciones4 ACABA de montar: el documento
+       entero puede tener rejillas viejas de otras suites, y en una SEGUNDA
+       pasada querySelector devolvía la primera de ellas (sin el modificador
+       de texto) — verde a la primera, rojo al repetir. */
+    const rej = CB.componentes.contenedor().querySelector('.rejilla-respuestas');
     if (!t.ok(!!rej, 'E138 · el componente de opciones se ha montado')) return;
     t.ok(rej.classList.contains('rejilla-respuestas--texto'),
       'E138 · las opciones-frase activan el modificador de texto');
@@ -377,4 +381,67 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
   } else {
     t.ok(false, 'E136 · falta #vitrina-premios en la página de pruebas');
   }
+
+  /* E139 · EL GRÁFICO DE BARRAS (3.3.0) pinta un bloque por unidad y una
+     columna por categoría, y canta sus datos en el aria-label. Se monta el
+     componente real y se CUENTAN los bloques: leer el código diría que sí. */
+  (function () {
+    const graf = CB.ui.graficoBarras(
+      [{ nombre: 'perros', valor: 4 }, { nombre: 'gatos', valor: 2 }], 1);
+    const columnas = graf.firstChild ? Array.from(graf.firstChild.children) : [];
+    t.igual(columnas.length, 2, 'E139 · una columna por categoría');
+    const bloquesDe = columnas.map(function (col) {
+      return Array.from(col.querySelectorAll('span')).filter(function (s) {
+        return !s.textContent;
+      }).length;
+    });
+    t.ok(bloquesDe[0] === 4 && bloquesDe[1] === 2,
+      'E139 · cada columna apila tantos bloques como vale su dato',
+      'bloques: ' + bloquesDe.join(', '));
+    const etiqueta = graf.getAttribute('aria-label') || '';
+    t.ok(graf.getAttribute('role') === 'img' &&
+         etiqueta.indexOf('perros, 4') !== -1 && etiqueta.indexOf('gatos, 2') !== -1,
+      'E139 · el aria-label del gráfico dice sus datos', etiqueta);
+    const picto = CB.ui.graficoBarras([{ nombre: 'peces', valor: 3 }], 5);
+    t.ok(picto.textContent.indexOf('Cada bloque vale 5') !== -1,
+      'E139 · el pictograma declara cuánto vale cada bloque');
+    const itemG1 = CB.gen.datos.G1(CB.util.mulberry32(11), 2);
+    const filaPreguntada = itemG1.visual.filas.filter(function (f) {
+      return itemG1.consigna.indexOf(f.nombre) !== -1;
+    })[0];
+    t.ok(!!filaPreguntada && filaPreguntada.valor === itemG1.respuesta,
+      'E139 · G1 pregunta por la barra que su propio gráfico pinta');
+  })();
+
+  /* E140 · EL AZAR ES INEQUÍVOCO (3.3.0). «Posible» a secas jamás es opción
+     (cuando algo es seguro también es posible), así que se mide lo único que
+     lo garantiza: en «más/menos probable» el recuento ganador es ESTRICTO, en
+     «imposible» el color de la respuesta no está en la bolsa, en «seguro» sí,
+     y toda probabilidad-fracción tiene los casos favorables arriba. */
+  (function () {
+    let s, malA3 = 0, malA1 = 0, malFrac = 0;
+    for (s = 0; s < 50; s++) {
+      const rng = CB.util.mulberry32(s * 131 + 7);
+      const a3 = CB.gen.azar.A3(rng, 2);
+      const tr = a3.expr.match(/^a3_(\d+)-(\d+)-(\d+)_(\d)$/);
+      if (!tr) { malA3++; continue; }
+      const cuentas = [+tr[1], +tr[2], +tr[3]];
+      const mejor = +tr[4];
+      if (!cuentas.every(function (c, j) { return j === mejor || cuentas[mejor] > c; })) malA3++;
+
+      const a1 = CB.gen.azar.A1(CB.util.mulberry32(s * 17 + 3), 2);
+      const sale = a1.consigna.indexOf(a1.respuesta) !== -1;
+      if (/IMPOSIBLE/.test(a1.consigna) ? sale : !sale) malA1++;
+
+      const a5 = CB.gen.azar.A5(CB.util.mulberry32(s * 23 + 5), 2);
+      const fr = String(a5.respuesta).split('/');
+      if (fr.length !== 2 || +fr[0] >= +fr[1]) malFrac++;
+      a5.distractoresFijos.forEach(function (f) {
+        if (!/^\d+\/\d+$/.test(f)) malFrac++;
+      });
+    }
+    t.igual(malA3, 0, 'E140 · en «más probable» el recuento ganador es estricto en 50 semillas');
+    t.igual(malA1, 0, 'E140 · «seguro» está en la bolsa e «imposible» no, en 50 semillas');
+    t.igual(malFrac, 0, 'E140 · toda probabilidad-fracción es propia y bien formada');
+  })();
 });

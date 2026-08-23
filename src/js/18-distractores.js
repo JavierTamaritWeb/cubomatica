@@ -528,3 +528,55 @@ CB.ERRORES['E-H-MEDIA-CONFUNDIDA'] = {
   pista: 'La manecilla corta dice la hora; la larga, los minutos.',
   reparacion: 'rectaNumerica'
 };
+
+/* ——— Sentido estocástico (3.3.0): datos (G) y azar (A). ——— */
+
+CB.ERRORES['E-G-BARRA-VECINA'] = {
+  familia: 'G', diagnostico: true,
+  pista: 'Sigue la barra con el dedo desde su etiqueta hasta arriba.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (!item.datosGrafico || !item.datosGrafico.length) return null;
+    let i;
+    for (i = 0; i < item.datosGrafico.length; i++) {
+      if (item.datosGrafico[i] !== item.respuesta) return item.datosGrafico[i];
+    }
+    return null;
+  }
+};
+
+CB.ERRORES['E-G-SIN-DIVIDIR'] = {
+  familia: 'G', diagnostico: true,
+  pista: 'La media se hace en dos pasos: primero sumar, después repartir.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.sumaDatos !== 'number' || item.sumaDatos === item.respuesta) return null;
+    return item.sumaDatos;
+  }
+};
+
+CB.ERRORES['E-G-RANGO-CONFUNDIDO'] = {
+  familia: 'G', diagnostico: true,
+  pista: 'El rango no es el mayor: es el mayor MENOS el menor.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.maxDato !== 'number' || item.maxDato === item.respuesta) return null;
+    return item.maxDato;
+  }
+};
+
+CB.ERRORES['E-A-FRACCION-VOLTEADA'] = {
+  familia: 'A', diagnostico: false,
+  pista: 'Arriba van los casos que quieres; abajo, todos los que hay.',
+  reparacion: 'barrasComparativas'
+};
+
+CB.ERRORES['E-A-OLVIDA-REPARTIR'] = {
+  familia: 'A', diagnostico: true,
+  pista: 'El azar reparte las tiradas entre todos los resultados por igual.',
+  reparacion: 'barrasComparativas',
+  simular: function (item) {
+    if (typeof item.totalTiradas !== 'number' || item.totalTiradas === item.respuesta) return null;
+    return item.totalTiradas;
+  }
+};

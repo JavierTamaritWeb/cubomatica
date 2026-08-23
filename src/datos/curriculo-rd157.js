@@ -92,7 +92,18 @@ CB.CURRICULO = {
     'B2.c': 'Medición (2.º ciclo). El perímetro de figuras sencillas en contextos de la vida cotidiana.',
     'B3.a': 'Magnitud (3.er ciclo). El sistema métrico decimal: equivalencias y conversiones entre unidades, con expresión decimal.',
     'B3.b': 'Medición (3.er ciclo). Áreas del cuadrado, del rectángulo y del triángulo en cuadrículas y en situaciones reales.',
-    'B3.c': 'Medición del tiempo (3.er ciclo). Horas, minutos y segundos: equivalencias y operaciones sencillas con tiempos.'
+    'B3.c': 'Medición del tiempo (3.er ciclo). Horas, minutos y segundos: equivalencias y operaciones sencillas con tiempos.',
+
+    /* SENTIDO ESTOCÁSTICO (bloque E), 3.3.0. Mismo criterio que A y B:
+       saberes resumidos con fidelidad por ciclo; secuenciación por curso
+       propia del proyecto. */
+    'E1.a': 'Organización y análisis de datos (1.er ciclo). Recogida y clasificación de datos del entorno; lectura de tablas de conteo y de gráficos de barras sencillos.',
+    'E1.b': 'Incertidumbre (1.er ciclo). Experiencias de azar en juegos y situaciones cotidianas: sucesos seguros, posibles e imposibles.',
+    'E2.a': 'Organización y análisis de datos (2.º ciclo). Gráficos de barras y pictogramas: lectura, comparación de categorías y frecuencias absolutas.',
+    'E2.b': 'Incertidumbre (2.º ciclo). Comparación intuitiva de probabilidades: sucesos más y menos probables en experiencias de azar.',
+    'E3.a': 'Organización y análisis de datos (3.er ciclo). Medidas de resumen de un conjunto de datos: media aritmética, moda y rango.',
+    'E3.b': 'Incertidumbre (3.er ciclo). La probabilidad de un suceso como fracción: casos favorables entre casos posibles en experimentos equiprobables.',
+    'E3.c': 'Incertidumbre (3.er ciclo). Experimentos aleatorios repetidos: frecuencia esperada de un resultado y su comparación con lo observado.'
   },
 
   /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */
@@ -108,7 +119,7 @@ CB.CURRICULO = {
     B: { nombre: 'Sentido de la medida',  cubierto: true  },   /* desde 3.2.0 */
     C: { nombre: 'Sentido espacial',      cubierto: false },
     D: { nombre: 'Sentido algebraico',    cubierto: false },
-    E: { nombre: 'Sentido estocástico',   cubierto: false },
+    E: { nombre: 'Sentido estocástico',   cubierto: true  },   /* desde 3.3.0 */
     F: { nombre: 'Sentido socioafectivo', cubierto: true, modo: 'transversal' }
   },
 

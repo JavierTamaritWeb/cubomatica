@@ -21,7 +21,10 @@ CB.catalogo.FAMILIAS = {
   Z: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [400, 1000] },
   /* Sentido de la medida (3.2.0): B magnitudes y H tiempo. */
   B: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [400, 1000] },
-  H: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] }
+  H: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] },
+  /* Sentido estocástico (3.3.0): G datos y A azar. */
+  G: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [380, 980] },
+  A: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [420, 1020] }
 };
 
 /* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
@@ -65,7 +68,10 @@ CB.catalogo.TABLAS = {
   ['E10','Pagar justo hasta 20 euros','dinero',0,20,0,3,'monedas','A.5',['2.1','2.2'],['E9'],19,false,null],
   /* Medida y tiempo (3.2.0): 2 */
   ['B1','Medir con bloques','medida',0,10,0,2,'teclado','B1.a',['5.2','1.2'],['N17'],6,false,null],
-  ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null]
+  ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null],
+  /* Datos y azar (3.3.0): 2 */
+  ['G1','El gráfico de los juguetes','datos',0,9,0,2,'teclado','E1.a',['1.2','5.2'],['N17'],1052,false,null],
+  ['A1','Seguro o imposible','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['N17'],19,false,null]
   ],
 
   /* ——— 2.º de Primaria: los 92 originales. ——— */
@@ -178,7 +184,11 @@ CB.catalogo.TABLAS = {
   /* Medida y tiempo (3.2.0): 3 */
   ['B2','Centímetros y metros','medida',0,900,0,3,'teclado','B1.a',['5.2','2.1'],['N9'],11,false,null],
   ['B3','¿Con qué se mide?','medida',0,0,0,3,'opciones4','B1.a',['5.2','6.1'],['E1'],4,false,null],
-  ['H2','En punto y y media','tiempo',0,12,0,3,'opciones4','B1.b',['5.2','6.1'],['H1'],16,false,null]
+  ['H2','En punto y y media','tiempo',0,12,0,3,'opciones4','B1.b',['5.2','6.1'],['H1'],16,false,null],
+  /* Datos y azar (3.3.0): 3 */
+  ['G2','Leer el gráfico de barras','datos',0,12,0,2,'teclado','E1.a',['1.2','6.1'],['G1'],5939,false,null],
+  ['G3','El que más y el que menos','datos',0,12,0,3,'opciones4','E1.a',['1.1','5.1'],['G2'],5184,false,null],
+  ['A2','La bolsa de las bolas','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['A1'],484,false,null]
   ],
 
   /* ——— 3.º de Primaria (3.1.0): 36 niveles. Techos 999 / 9.999 / 99.999. ——— */
@@ -223,7 +233,11 @@ CB.catalogo.TABLAS = {
   ['B4','De metros a centímetros','medida',0,900,0,1,'teclado','B2.a',['5.2','2.1'],['B2'],11,false,null],
   ['B5','Gramos y kilos','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
   ['B6','El perímetro','medida',0,100,0,3,'teclado','B2.c',['1.2','2.1'],['M13','B4'],44,false,null],
-  ['H3','Los cuartos','tiempo',0,12,0,2,'opciones4','B2.b',['5.2','6.1'],['H2'],33,false,null]
+  ['H3','Los cuartos','tiempo',0,12,0,2,'opciones4','B2.b',['5.2','6.1'],['H2'],33,false,null],
+  /* Datos y azar (3.3.0): 3 */
+  ['G4','Los votos de la clase','datos',0,24,0,1,'teclado','E2.a',['1.2','2.1'],['G2','S18'],6361,false,null],
+  ['G5','¿Cuántos más?','datos',0,12,0,2,'teclado','E2.a',['1.1','2.1'],['G4','R16'],6409,false,null],
+  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],352,false,null]
   ],
 
   /* ——— 4.º de Primaria: 34 niveles. Techos 99.999 / 499.999 / 999.999. ——— */
@@ -266,7 +280,11 @@ CB.catalogo.TABLAS = {
   ['B7','Kilómetros y metros','medida',0,9000,0,1,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
   ['B8','Litros y mililitros','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B5'],11,false,null],
   ['B9','Perímetros de figuras','medida',0,120,0,2,'teclado','B2.c',['2.1','3.1'],['B6'],32,false,null],
-  ['H4','El reloj de minutos','tiempo',0,12,0,3,'opciones4','B2.b',['5.2','6.1'],['H3'],92,false,null]
+  ['H4','El reloj de minutos','tiempo',0,12,0,3,'opciones4','B2.b',['5.2','6.1'],['H3'],92,false,null],
+  /* Datos y azar (3.3.0): 3 */
+  ['G6','El pictograma','datos',0,80,0,1,'teclado','E2.a',['1.2','5.1'],['G4','M13'],1933,false,null],
+  ['G7','La encuesta entera','datos',0,48,0,2,'teclado','E2.a',['1.1','2.1'],['G4'],3604,false,null],
+  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],352,false,null]
   ],
 
   /* ——— 5.º de Primaria: 29 niveles. Techos 999.999 / 9.999.999 / íd. ——— */
@@ -304,7 +322,12 @@ CB.catalogo.TABLAS = {
   ['B10','El sistema métrico','medida',0,9999,0,1,'teclado','B3.a',['5.2','2.1'],['B7','C1'],178,false,null],
   ['B11','El área del rectángulo','medida',0,81,0,2,'teclado','B3.b',['1.2','2.1'],['B6','M13'],44,false,null],
   ['B12','Masa y capacidad con coma','medida',0,9999,0,2,'teclado','B3.a',['5.2','2.1'],['B8'],118,false,null],
-  ['H5','Horas y minutos','tiempo',0,300,0,3,'teclado','B3.c',['2.1','5.2'],['H4','M13'],33,false,null]
+  ['H5','Horas y minutos','tiempo',0,300,0,3,'teclado','B3.c',['2.1','5.2'],['H4','M13'],33,false,null],
+  /* Datos y azar (3.3.0): 4 */
+  ['G8','La moda','datos',0,12,0,1,'teclado','E3.a',['1.1','6.1'],['G7'],4151,false,null],
+  ['G9','La media','datos',0,20,0,2,'teclado','E3.a',['2.1','5.1'],['G8','D3'],1695,false,null],
+  ['G10','El rango','datos',0,20,0,2,'teclado','E3.a',['2.1','6.1'],['G8'],6302,false,null],
+  ['A5','La probabilidad como fracción','azar',0,10,0,3,'opciones4','E3.b',['1.2','5.1'],['A4','F2'],176,false,null]
   ],
 
   /* ——— 6.º de Primaria: 31 niveles. Techo 9.999.999 en los tres. ——— */
@@ -344,7 +367,12 @@ CB.catalogo.TABLAS = {
   ['B13','Área del cuadrado y del triángulo','medida',0,144,0,1,'teclado','B3.b',['2.1'],['B11'],46,false,null],
   ['B14','Conversiones con coma','medida',0,9999,0,2,'teclado','B3.a',['2.1','5.2'],['B10','C2'],660,false,null],
   ['B15','Problemas de medida','medida',0,9999,0,3,'teclado','B2.c',['1.1','2.1'],['B9','D3'],239,false,null,'B3.a'],
-  ['H6','Minutos y segundos','tiempo',0,3600,0,2,'teclado','B3.c',['2.1','5.2'],['H5','M16'],11,false,null]
+  ['H6','Minutos y segundos','tiempo',0,3600,0,2,'teclado','B3.c',['2.1','5.2'],['H5','M16'],11,false,null],
+  /* Datos y azar (3.3.0): 4 */
+  ['G11','La media del gráfico','datos',0,20,0,1,'teclado','E3.a',['1.2','2.1'],['G9'],580,false,null],
+  ['G12','Media, moda y rango','datos',0,20,0,2,'teclado','E3.a',['2.1','6.1'],['G9','G10'],5623,false,null],
+  ['A6','La regla de Laplace','azar',0,10,0,2,'opciones4','E3.b',['1.2','5.1'],['A5'],19,false,null],
+  ['A7','Las veces que saldrá','azar',0,60,0,3,'teclado','E3.c',['2.1','3.1'],['A6','D3'],65,false,null]
   ]
 };
 
@@ -405,7 +433,8 @@ CB.catalogo.LIMITES_CURSO = {
                     P: 'problemas', E: 'dinero', V: 'vocabulario',
                     D: 'division', F: 'fracciones', C: 'decimales',
                     T: 'porcentajes', Z: 'enteros',
-                    B: 'medida', H: 'tiempo' };
+                    B: 'medida', H: 'tiempo',
+                    G: 'datos', A: 'azar' };
 
   const cursos = [];
   let c;
@@ -474,7 +503,8 @@ CB.catalogo.LIMITES_CURSO = {
                 E: CB.gen.dinero, V: CB.gen.vocabulario,
                 D: CB.gen.division, F: CB.gen.fracciones, C: CB.gen.decimales,
                 T: CB.gen.porcentajes, Z: CB.gen.enteros,
-                B: CB.gen.medida, H: CB.gen.tiempo }[letra];
+                B: CB.gen.medida, H: CB.gen.tiempo,
+                G: CB.gen.datos, A: CB.gen.azar }[letra];
 
     nivel.generar = (function (m, i) {
       return function (rng, D, ctx) {
@@ -634,7 +664,8 @@ CB.MUNDOS = [
               'N30','N31','N32','N33','S26','R23',
               'N34','N35','N36','N37','N38','N39',
               'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4',
-              'H1','H2','H3','H4','H5','H6'] },
+              'H1','H2','H3','H4','H5','H6',
+              'G1','G2','G3','A1','A2'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -648,7 +679,8 @@ CB.MUNDOS = [
               'S25','R22','C1','C2','C3','C4','C5','E13','E14',
               'C6','C7','C8','C9','C10','C11',
               'C12','C13','C14','C15',
-              'B2','B3','B5','B8','B12','B14'] },
+              'B2','B3','B5','B8','B12','B14',
+              'G4','G5','G7'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
@@ -660,7 +692,8 @@ CB.MUNDOS = [
               'F5','F6','F7','F8','F9','P30','P31','P32','P33','P34',
               'F10','F11','F12','F13','F14','F15','P35','P36','P37','P38','P39',
               'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44',
-              'B1','B4','B7','B10','B15'] },
+              'B1','B4','B7','B10','B15',
+              'A3','A4','A5','A6','A7'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
@@ -673,7 +706,8 @@ CB.MUNDOS = [
               'M17','M18','M19','M20','D7','D8','D9','D10','D11',
               'M21','M22','D12','D13','D14','D15',
               'T1','T2','T3','T4','T5','T6','D16','D17',
-              'B6','B9','B11','B13'] }
+              'B6','B9','B11','B13',
+              'G6','G8','G9','G10','G11','G12'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {

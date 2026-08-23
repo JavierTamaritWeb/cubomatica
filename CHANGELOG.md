@@ -12,6 +12,23 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.3.0] — 2026-08-23
+
+**Fase 3 de los cursos: el sentido estocástico (bloque E), en los seis
+cursos.** 19 niveles nuevos (catálogo: 283) en dos familias — **G** datos y
+**A** azar — con un guion nuevo (manifiesto 53 → 54): leer gráficos de barras
+y pictogramas, sumar y comparar sobre el gráfico, la media, la moda y el
+rango, y el azar desde «seguro o imposible» hasta la regla de Laplace y la
+frecuencia esperada de un experimento. El **gráfico de barras es un visual
+vóxel dibujado en DOM** — un bloque por unidad, una columna por etiqueta,
+nada que dependa del color — y canta sus datos en el aria-label (E139). Las
+preguntas de azar son **inequívocas por construcción**: «posible» a secas
+nunca es opción, los recuentos ganadores son estrictos y las bolsas dicen sus
+números con palabras (E140). **`CB.LEGAL.ALCANCE` y `bloques.E.cubierto`
+cambian juntos con su guardián**: el juego ya declara que cubre A, B y E y
+que NO cubre C ni D. 22 destrezas, 42 códigos de error. El esquema de perfil
+no cambia (v4).
+
 ## [3.2.0] — 2026-08-23
 
 **Fase 2 de los cursos: el sentido de la medida (bloque B), en los seis

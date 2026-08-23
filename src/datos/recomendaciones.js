@@ -225,6 +225,39 @@ CB.datos.RECOMENDACIONES['E-B-UNIDAD-CORRIDA'] = {
              'peldaño que se baja es UN cero más, y se baja con el dedo, peldaño a ' +
              'peldaño, contando los ceros en voz alta.'
 };
+CB.datos.RECOMENDACIONES['E-G-BARRA-VECINA'] = {
+  frase: 'Lee la barra de al lado en vez de la que le preguntan.',
+  actividad: 'Un gráfico de barras en papel cuadriculado con los datos de casa ' +
+             '(fruta de la semana, cuentos leídos). Antes de responder, se ' +
+             'subraya la etiqueta y se recorre SU barra con el dedo, de abajo ' +
+             'arriba, contando los cuadros en voz alta.'
+};
+CB.datos.RECOMENDACIONES['E-G-SIN-DIVIDIR'] = {
+  frase: 'En la media suma bien y se olvida de repartir entre todos.',
+  actividad: 'La media con fichas: se hacen montones desiguales, se juntan ' +
+             'todos y se reparten de uno en uno hasta que los montones quedan ' +
+             'iguales. La altura final ES la media, y el reparto es el paso ' +
+             'que la mano ya no puede saltarse.'
+};
+CB.datos.RECOMENDACIONES['E-G-RANGO-CONFUNDIDO'] = {
+  frase: 'Da el número mayor como rango en vez de restar el menor.',
+  actividad: 'Con las edades o las alturas de la familia: buscar el mayor, ' +
+             'buscar el menor, y preguntar «¿cuánto hay ENTRE ellos?». La ' +
+             'palabra «entre» pide una resta, no un número suelto.'
+};
+CB.datos.RECOMENDACIONES['E-A-FRACCION-VOLTEADA'] = {
+  frase: 'Escribe la probabilidad al revés: el total arriba y los casos abajo.',
+  actividad: 'Una bolsa real con bolas o botones de dos colores. Primero se ' +
+             'cuentan TODAS (ese número va abajo), luego las del color que se ' +
+             'busca (ese va arriba), y se comprueba sacando veinte veces con ' +
+             'devolución y anotando palotes.'
+};
+CB.datos.RECOMENDACIONES['E-A-OLVIDA-REPARTIR'] = {
+  frase: 'Responde con todas las tiradas sin repartirlas entre los resultados.',
+  actividad: 'Tirar un dado de verdad 30 veces y anotar una marca por cara. ' +
+             'Se ve que las 30 tiradas se reparten entre las seis caras, y que ' +
+             'a cada una le toca «más o menos» 30 entre 6, no 30.'
+};
 CB.datos.RECOMENDACIONES['E-H-MEDIA-CONFUNDIDA'] = {
   frase: 'Confunde las manecillas: lee la corta como minutos o la larga como horas.',
   actividad: 'Un reloj de cartón con las manecillas de dos colores. Primero solo la ' +

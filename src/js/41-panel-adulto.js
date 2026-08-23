@@ -125,6 +125,8 @@ CB.adulto.semaforo = function (perfil) {
     'Enteros': ['enteros'],
     'Medida': ['medida'],
     'El tiempo': ['tiempo'],
+    'Datos y gráficos': ['datos'],
+    'El azar': ['azar'],
     'Problemas': ['problemas_cambio', 'problemas_combinacion',
                   'problemas_comparacion', 'problemas_igualacion'],
     'Dinero': ['dinero'],

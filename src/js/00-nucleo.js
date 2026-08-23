@@ -237,7 +237,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.2.0';
+CB.VERSION = '3.3.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -250,12 +250,12 @@ CB.LEGAL = {
          'y las enseñanzas mínimas de la Educación Primaria (BOE núm. 52, de 2 de marzo ' +
          'de 2022; referencia BOE-A-2022-3296).',
 
-  ALCANCE: 'Cubomática trabaja los bloques A (Sentido numérico) y B (Sentido de la ' +
-           'medida) y, de forma transversal, el bloque F (Sentido socioafectivo) de los ' +
-           'saberes básicos de Matemáticas del Real Decreto 157/2022, en los seis cursos ' +
-           'de Primaria. NO trabaja los bloques C (sentido espacial), D (sentido ' +
-           'algebraico) ni E (sentido estocástico): esos saberes se trabajan en el aula ' +
-           'y este juego no los sustituye.',
+  ALCANCE: 'Cubomática trabaja los bloques A (Sentido numérico), B (Sentido de la ' +
+           'medida) y E (Sentido estocástico) y, de forma transversal, el bloque F ' +
+           '(Sentido socioafectivo) de los saberes básicos de Matemáticas del Real ' +
+           'Decreto 157/2022, en los seis cursos de Primaria. NO trabaja los bloques C ' +
+           '(sentido espacial) ni D (sentido algebraico): esos saberes se trabajan en ' +
+           'el aula y este juego no los sustituye.',
 
   SECUENCIACION: 'El Real Decreto fija los saberes por CICLO (1.º y 2.º juntos), no por ' +
                  'curso ni por trimestre. La distribución por curso y trimestre de este ' +

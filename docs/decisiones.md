@@ -4100,3 +4100,56 @@ magnitudes, H tiempo — repartidos por los seis cursos, con un guion nuevo
   consigna (2,5 m) con respuesta entera, y solo en 6.º la respuesta lleva coma
   (B14). El error de la unidad corrida (×10 por ×100) tiene código y
   recomendación propios.
+
+## D-3.3.0 · El sentido estocástico (Fase 3 de los cursos)
+
+El bloque E entra en el juego: 19 niveles (catálogo: 283) en dos familias — G
+datos, A azar — repartidos por los seis cursos, con un guion nuevo
+(manifiesto 53 → 54) y dos destrezas nuevas (22). Decisiones:
+
+- **`CB.LEGAL.ALCANCE` y `bloques.E.cubierto` cambiaron JUNTOS con su
+  guardián**, como manda la regla desde 3.2.0: el texto legal dice ahora que
+  se cubren A, B y E y que NO se cubren C ni D, y `casos-curriculo.js`
+  comprueba las dos mitades en la misma aserción. Los saberes E1.a-E3.c son
+  resúmenes fieles por ciclo del RD 157/2022; el reparto por curso es
+  secuenciación propia, la misma doctrina de A y B.
+- **El gráfico de barras es un visual DOM (`CB.ui.graficoBarras`), no una
+  imagen**: un bloque por unidad, una columna por categoría con su etiqueta
+  debajo, y el aria-label canta los datos (E139), como el reloj canta su hora.
+  El color NUNCA lleva la información: las barras se distinguen por etiqueta y
+  altura, y las bolsas de bolas dicen sus recuentos con palabras en la
+  consigna. El pictograma es el mismo visual con una escala declarada («cada
+  bloque vale 5»), que es exactamente lo que un pictograma es.
+- **Toda pregunta de azar es inequívoca por construcción (E140)**. «Posible» a
+  secas jamás es opción: cuando algo es seguro, también es posible, y un niño
+  que razona bien no puede quedar atrapado entre dos verdades. Por eso las
+  respuestas del azar de 1.º-4.º son COLORES (el que falta en la bolsa, el del
+  recuento estrictamente mayor…), no adverbios de modalidad; los recuentos
+  ganadores son estrictos por construcción (valores distintos barajados) y las
+  probabilidades de 5.º-6.º son fracciones-cadena por el mecanismo 'c20', sin
+  simplificar (la fracción que se LEE del experimento).
+- **`listaConMedia` reparte en pares (+d, −d) en vez de cerrar la suma con el
+  último valor**: la primera versión (cazada por el arnés de 10.000 tiradas
+  antes de llegar a la suite) podía pintar una barra de 0 o de 14 bloques en
+  G11 — un gráfico que miente — y valores negativos en las listas de 5.º. Con
+  pares, la media es exacta y todos los valores viven en [1, tope] sin bucles
+  de rechazo. `listaConModa` baraja tres valores distintos por la misma razón:
+  ni un while sin cota en todo el guion.
+- **Los 5 códigos de error nuevos (42 = 32 con simular + 10 sin diagnóstico)**
+  cubren los errores con estructura: leer la barra vecina (E-G-BARRA-VECINA),
+  sumar sin repartir en la media (E-G-SIN-DIVIDIR), dar el máximo como rango
+  (E-G-RANGO-CONFUNDIDO), la fracción de probabilidad volteada
+  (E-A-FRACCION-VOLTEADA, sin diagnóstico: las opciones son fijas) y responder
+  con el total de tiradas (E-A-OLVIDA-REPARTIR). Los ítems llevan los campos
+  que simular() necesita (`datosGrafico`, `sumaDatos`, `maxDato`,
+  `totalTiradas`): el diagnóstico se fabrica del ítem real, no de una copia.
+- **Cardinalidades MEDIDAS** con el arnés Node de la Fase 1 (10.000
+  generaciones por nivel, tope conservador contra `variedadSuficiente` a 400 y
+  a 10.000 tiradas). A1 y A6 son deliberadamente pequeños (19): sus casos son
+  una lista cerrada, y está bien que lo sean.
+- **Deuda declarada**: los criterios de evaluación de 2.º y 3.er ciclo siguen
+  citados por número de competencia (la transcripción literal sigue
+  pendiente, como en D-3.1.0); no hay construcción de gráficos (solo lectura
+  e interpretación: construir pide arrastrar, y el juego no arrastra); la
+  frecuencia relativa se trabaja solo como frecuencia esperada (A7), no como
+  tabla de resultados observados.

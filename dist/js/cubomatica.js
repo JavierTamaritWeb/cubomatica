@@ -92,7 +92,18 @@ CB.CURRICULO = {
     'B2.c': 'Medición (2.º ciclo). El perímetro de figuras sencillas en contextos de la vida cotidiana.',
     'B3.a': 'Magnitud (3.er ciclo). El sistema métrico decimal: equivalencias y conversiones entre unidades, con expresión decimal.',
     'B3.b': 'Medición (3.er ciclo). Áreas del cuadrado, del rectángulo y del triángulo en cuadrículas y en situaciones reales.',
-    'B3.c': 'Medición del tiempo (3.er ciclo). Horas, minutos y segundos: equivalencias y operaciones sencillas con tiempos.'
+    'B3.c': 'Medición del tiempo (3.er ciclo). Horas, minutos y segundos: equivalencias y operaciones sencillas con tiempos.',
+
+    /* SENTIDO ESTOCÁSTICO (bloque E), 3.3.0. Mismo criterio que A y B:
+       saberes resumidos con fidelidad por ciclo; secuenciación por curso
+       propia del proyecto. */
+    'E1.a': 'Organización y análisis de datos (1.er ciclo). Recogida y clasificación de datos del entorno; lectura de tablas de conteo y de gráficos de barras sencillos.',
+    'E1.b': 'Incertidumbre (1.er ciclo). Experiencias de azar en juegos y situaciones cotidianas: sucesos seguros, posibles e imposibles.',
+    'E2.a': 'Organización y análisis de datos (2.º ciclo). Gráficos de barras y pictogramas: lectura, comparación de categorías y frecuencias absolutas.',
+    'E2.b': 'Incertidumbre (2.º ciclo). Comparación intuitiva de probabilidades: sucesos más y menos probables en experiencias de azar.',
+    'E3.a': 'Organización y análisis de datos (3.er ciclo). Medidas de resumen de un conjunto de datos: media aritmética, moda y rango.',
+    'E3.b': 'Incertidumbre (3.er ciclo). La probabilidad de un suceso como fracción: casos favorables entre casos posibles en experimentos equiprobables.',
+    'E3.c': 'Incertidumbre (3.er ciclo). Experimentos aleatorios repetidos: frecuencia esperada de un resultado y su comparación con lo observado.'
   },
 
   /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */
@@ -108,7 +119,7 @@ CB.CURRICULO = {
     B: { nombre: 'Sentido de la medida',  cubierto: true  },   /* desde 3.2.0 */
     C: { nombre: 'Sentido espacial',      cubierto: false },
     D: { nombre: 'Sentido algebraico',    cubierto: false },
-    E: { nombre: 'Sentido estocástico',   cubierto: false },
+    E: { nombre: 'Sentido estocástico',   cubierto: true  },   /* desde 3.3.0 */
     F: { nombre: 'Sentido socioafectivo', cubierto: true, modo: 'transversal' }
   },
 
@@ -1052,6 +1063,39 @@ CB.datos.RECOMENDACIONES['E-B-UNIDAD-CORRIDA'] = {
              'peldaño que se baja es UN cero más, y se baja con el dedo, peldaño a ' +
              'peldaño, contando los ceros en voz alta.'
 };
+CB.datos.RECOMENDACIONES['E-G-BARRA-VECINA'] = {
+  frase: 'Lee la barra de al lado en vez de la que le preguntan.',
+  actividad: 'Un gráfico de barras en papel cuadriculado con los datos de casa ' +
+             '(fruta de la semana, cuentos leídos). Antes de responder, se ' +
+             'subraya la etiqueta y se recorre SU barra con el dedo, de abajo ' +
+             'arriba, contando los cuadros en voz alta.'
+};
+CB.datos.RECOMENDACIONES['E-G-SIN-DIVIDIR'] = {
+  frase: 'En la media suma bien y se olvida de repartir entre todos.',
+  actividad: 'La media con fichas: se hacen montones desiguales, se juntan ' +
+             'todos y se reparten de uno en uno hasta que los montones quedan ' +
+             'iguales. La altura final ES la media, y el reparto es el paso ' +
+             'que la mano ya no puede saltarse.'
+};
+CB.datos.RECOMENDACIONES['E-G-RANGO-CONFUNDIDO'] = {
+  frase: 'Da el número mayor como rango en vez de restar el menor.',
+  actividad: 'Con las edades o las alturas de la familia: buscar el mayor, ' +
+             'buscar el menor, y preguntar «¿cuánto hay ENTRE ellos?». La ' +
+             'palabra «entre» pide una resta, no un número suelto.'
+};
+CB.datos.RECOMENDACIONES['E-A-FRACCION-VOLTEADA'] = {
+  frase: 'Escribe la probabilidad al revés: el total arriba y los casos abajo.',
+  actividad: 'Una bolsa real con bolas o botones de dos colores. Primero se ' +
+             'cuentan TODAS (ese número va abajo), luego las del color que se ' +
+             'busca (ese va arriba), y se comprueba sacando veinte veces con ' +
+             'devolución y anotando palotes.'
+};
+CB.datos.RECOMENDACIONES['E-A-OLVIDA-REPARTIR'] = {
+  frase: 'Responde con todas las tiradas sin repartirlas entre los resultados.',
+  actividad: 'Tirar un dado de verdad 30 veces y anotar una marca por cara. ' +
+             'Se ve que las 30 tiradas se reparten entre las seis caras, y que ' +
+             'a cada una le toca «más o menos» 30 entre 6, no 30.'
+};
 CB.datos.RECOMENDACIONES['E-H-MEDIA-CONFUNDIDA'] = {
   frase: 'Confunde las manecillas: lee la corta como minutos o la larga como horas.',
   actividad: 'Un reloj de cartón con las manecillas de dos colores. Primero solo la ' +
@@ -1298,7 +1342,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.2.0';
+CB.VERSION = '3.3.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -1311,12 +1355,12 @@ CB.LEGAL = {
          'y las enseñanzas mínimas de la Educación Primaria (BOE núm. 52, de 2 de marzo ' +
          'de 2022; referencia BOE-A-2022-3296).',
 
-  ALCANCE: 'Cubomática trabaja los bloques A (Sentido numérico) y B (Sentido de la ' +
-           'medida) y, de forma transversal, el bloque F (Sentido socioafectivo) de los ' +
-           'saberes básicos de Matemáticas del Real Decreto 157/2022, en los seis cursos ' +
-           'de Primaria. NO trabaja los bloques C (sentido espacial), D (sentido ' +
-           'algebraico) ni E (sentido estocástico): esos saberes se trabajan en el aula ' +
-           'y este juego no los sustituye.',
+  ALCANCE: 'Cubomática trabaja los bloques A (Sentido numérico), B (Sentido de la ' +
+           'medida) y E (Sentido estocástico) y, de forma transversal, el bloque F ' +
+           '(Sentido socioafectivo) de los saberes básicos de Matemáticas del Real ' +
+           'Decreto 157/2022, en los seis cursos de Primaria. NO trabaja los bloques C ' +
+           '(sentido espacial) ni D (sentido algebraico): esos saberes se trabajan en ' +
+           'el aula y este juego no los sustituye.',
 
   SECUENCIACION: 'El Real Decreto fija los saberes por CICLO (1.º y 2.º juntos), no por ' +
                  'curso ni por trimestre. La distribución por curso y trimestre de este ' +
@@ -7092,6 +7136,582 @@ CB.gen.tiempo.H6 = function (rng, D) {
   };
 };
 
+/* 19g-gen-datos.js — Sentido estocástico (3.3.0): G1…G12 (CB.gen.datos) y
+   A1…A7 (CB.gen.azar). Dos reglas de la casa: el color NUNCA lleva la
+   información él solo (la consigna dice los recuentos con palabras, y las
+   barras del gráfico se distinguen por su etiqueta, no por su tinte), y toda
+   pregunta de azar tiene UNA respuesta inequívoca — «posible» a secas nunca es
+   opción, porque cuando algo es seguro también es posible. */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.datos = {};
+CB.gen.azar = {};
+
+/* Temas de los gráficos: 4 categorías por tema, en plural. Lista CERRADA. */
+const TEMAS_DATOS = [
+  ['perros', 'gatos', 'peces', 'pájaros'],
+  ['manzanas', 'peras', 'plátanos', 'fresas'],
+  ['canicas', 'cromos', 'puzles', 'cuentos'],
+  ['coches', 'trenes', 'barcos', 'aviones']
+];
+
+/* Colores de las bolas de la bolsa, en femenino singular («bola roja»). */
+const COLORES_BOLA = ['roja', 'azul', 'verde', 'amarilla', 'naranja', 'morada'];
+
+/* Un gráfico de barras: nCats categorías de un tema, con valores DISTINTOS
+   entre minV y maxV (distintos para que «el que más» y «el que menos» sean
+   siempre inequívocos). Devuelve { filas, valores, nombres }. */
+function hacerGrafico(rng, nCats, minV, maxV) {
+  const tema = CB.util.elegir(rng, TEMAS_DATOS);
+  const nombres = CB.util.barajar(tema.slice(), rng).slice(0, nCats);
+  const posibles = [];
+  let v;
+  for (v = minV; v <= maxV; v++) posibles.push(v);
+  const valores = CB.util.barajar(posibles, rng).slice(0, nCats);
+  const filas = nombres.map(function (n, i) {
+    return { nombre: n, valor: valores[i] };
+  });
+  return { filas: filas, valores: valores, nombres: nombres };
+}
+CB.gen.datos._hacerGrafico = hacerGrafico;
+
+/* G1 El gráfico de los juguetes (1.º): leer una barra, valores pequeños. */
+CB.gen.datos.G1 = function (rng, D) {
+  const g = hacerGrafico(rng, 3, 1, (D === 1) ? 6 : 9);
+  const i = CB.util.ent(rng, 0, 2);
+  return {
+    formato: 'teclado',
+    consigna: 'Mira el gráfico. ¿Cuántos ' + g.nombres[i] + ' hay?',
+    visual: { tipo: 'barras', filas: g.filas },
+    respuesta: g.valores[i],
+    datosGrafico: g.valores.slice(),
+    expr: 'g1_' + g.valores.join('-') + '_' + i,
+    diagnostico: true
+  };
+};
+
+/* G2 Leer el gráfico de barras (2.º): cuatro barras, valores mayores. */
+CB.gen.datos.G2 = function (rng, D) {
+  const g = hacerGrafico(rng, 4, 1, (D === 1) ? 8 : 12);
+  const i = CB.util.ent(rng, 0, 3);
+  return {
+    formato: 'teclado',
+    consigna: 'Mira el gráfico. ¿Cuántos ' + g.nombres[i] + ' hay?',
+    visual: { tipo: 'barras', filas: g.filas },
+    respuesta: g.valores[i],
+    datosGrafico: g.valores.slice(),
+    expr: 'g2_' + g.valores.join('-') + '_' + i,
+    diagnostico: true
+  };
+};
+
+/* G3 El que más y el que menos (2.º): la respuesta es una CATEGORÍA (cadena,
+   mecanismo 'c20'), y los valores distintos garantizan que es única. */
+CB.gen.datos.G3 = function (rng, D) {
+  const g = hacerGrafico(rng, 4, 1, (D === 1) ? 8 : 12);
+  const buscaMax = rng() < 0.5;
+  let mejor = 0, i;
+  for (i = 1; i < 4; i++) {
+    if (buscaMax ? g.valores[i] > g.valores[mejor]
+                 : g.valores[i] < g.valores[mejor]) mejor = i;
+  }
+  return {
+    formato: 'opciones4',
+    consigna: 'Mira el gráfico. ¿De qué hay ' + (buscaMax ? 'MÁS' : 'MENOS') + '?',
+    visual: { tipo: 'barras', filas: g.filas },
+    respuesta: g.nombres[mejor],
+    respuestaFraccion: true,
+    distractoresFijos: g.nombres.filter(function (n, j) { return j !== mejor; }),
+    expr: 'g3_' + g.valores.join('-') + (buscaMax ? 'M' : 'm'),
+    diagnostico: false
+  };
+};
+
+/* G4 Los votos de la clase (3.º): sumar dos barras. */
+CB.gen.datos.G4 = function (rng, D) {
+  const g = hacerGrafico(rng, 4, 2, (D === 1) ? 8 : 12);
+  const par = CB.util.barajar([0, 1, 2, 3], rng).slice(0, 2);
+  const a = par[0], b = par[1];
+  return {
+    formato: 'teclado',
+    consigna: 'Mira el gráfico. ¿Cuántos ' + g.nombres[a] + ' y ' +
+              g.nombres[b] + ' hay entre los dos?',
+    visual: { tipo: 'barras', filas: g.filas },
+    operacion: '+', operandos: [g.valores[a], g.valores[b]],
+    respuesta: g.valores[a] + g.valores[b],
+    datosGrafico: g.valores.slice(),
+    expr: 'g4_' + g.valores.join('-') + '_' + a + b,
+    diagnostico: true
+  };
+};
+
+/* G5 ¿Cuántos más? (3.º): la diferencia entre dos barras. */
+CB.gen.datos.G5 = function (rng, D) {
+  const g = hacerGrafico(rng, 4, 1, (D === 1) ? 9 : 12);
+  const par = CB.util.barajar([0, 1, 2, 3], rng).slice(0, 2);
+  const a = (g.valores[par[0]] > g.valores[par[1]]) ? par[0] : par[1];
+  const b = (a === par[0]) ? par[1] : par[0];
+  return {
+    formato: 'teclado',
+    consigna: 'Mira el gráfico. ¿Cuántos ' + g.nombres[a] + ' hay MÁS que ' +
+              g.nombres[b] + '?',
+    visual: { tipo: 'barras', filas: g.filas },
+    operacion: '−', operandos: [g.valores[a], g.valores[b]],
+    respuesta: g.valores[a] - g.valores[b],
+    datosGrafico: g.valores.slice(),
+    expr: 'g5_' + g.valores.join('-') + '_' + a + b,
+    diagnostico: true
+  };
+};
+
+/* G6 El pictograma (4.º): cada bloque vale 2, 5 o 10. */
+CB.gen.datos.G6 = function (rng, D) {
+  const escala = CB.util.elegir(rng, (D === 1) ? [2, 10] : [2, 5, 10]);
+  const g = hacerGrafico(rng, 3, 1, (D === 1) ? 6 : 8);
+  const i = CB.util.ent(rng, 0, 2);
+  return {
+    formato: 'teclado',
+    consigna: 'En este gráfico cada bloque vale ' + escala +
+              '. ¿Cuántos ' + g.nombres[i] + ' hay de verdad?',
+    visual: { tipo: 'barras', filas: g.filas, escala: escala },
+    operacion: '×', operandos: [g.valores[i], escala],
+    respuesta: g.valores[i] * escala,
+    tablasCompletas: true,
+    expr: 'g6_' + escala + '_' + g.valores.join('-') + '_' + i,
+    diagnostico: true
+  };
+};
+
+/* G7 La encuesta entera (4.º): el total de las cuatro barras. */
+CB.gen.datos.G7 = function (rng, D) {
+  const g = hacerGrafico(rng, 4, 2, (D === 1) ? 9 : 12);
+  const total = g.valores[0] + g.valores[1] + g.valores[2] + g.valores[3];
+  return {
+    formato: 'teclado',
+    consigna: 'Mira el gráfico. ¿Cuántos hay en total, sumando las cuatro barras?',
+    visual: { tipo: 'barras', filas: g.filas },
+    respuesta: total,
+    datosGrafico: g.valores.slice(),
+    expr: 'g7_' + g.valores.join('-'),
+    diagnostico: false
+  };
+};
+
+/* ——— Ciclo 3: la media, la moda y el rango. ——— */
+
+/* Una lista con moda ÚNICA: la moda aparece 3 veces y otros dos valores una.
+   Los tres valores distintos salen de una baraja, no de un bucle de rechazo:
+   todo while de src/ necesita cota, y aquí ni hace falta el while. */
+function listaConModa(rng, maxV) {
+  const posibles = [];
+  let v;
+  for (v = 1; v <= maxV; v++) posibles.push(v);
+  const tres = CB.util.barajar(posibles, rng).slice(0, 3);
+  const lista = CB.util.barajar([tres[0], tres[0], tres[0], tres[1], tres[2]], rng);
+  return { lista: lista, moda: tres[0] };
+}
+CB.gen.datos._listaConModa = listaConModa;
+
+/* Una lista de `k` valores cuya media es un entero EXACTO y cuyos valores se
+   quedan todos en [1, topeValor]. Se separa en PARES (+d, −d): la suma no se
+   mueve, así que nunca hace falta un valor «de cierre» que pueda salirse
+   (la primera versión cerraba la suma con el último valor, y en un gráfico
+   salían barras de 0 o de 14 bloques: una barra que miente). */
+function listaConMedia(rng, k, maxMedia, topeValor) {
+  const media = CB.util.ent(rng, 2, maxMedia);
+  const holgura = Math.min(media - 1, topeValor - media);
+  const lista = [];
+  let i, d;
+  for (i = 0; i < k; i++) lista.push(media);
+  for (i = 0; i + 1 < k; i += 2) {
+    d = holgura > 0 ? CB.util.ent(rng, 0, holgura) : 0;
+    lista[i] += d;
+    lista[i + 1] -= d;
+  }
+  return { lista: CB.util.barajar(lista, rng), media: media, suma: media * k };
+}
+CB.gen.datos._listaConMedia = listaConMedia;
+
+function enLista(lista) {
+  const partes = lista.map(String);
+  return partes.slice(0, -1).join(', ') + ' y ' + partes[partes.length - 1];
+}
+
+/* G8 La moda (5.º) */
+CB.gen.datos.G8 = function (rng, D) {
+  const l = listaConModa(rng, (D === 1) ? 6 : 12);
+  return {
+    formato: 'teclado',
+    consigna: 'Los goles de cinco partidos: ' + enLista(l.lista) +
+              '. ¿Cuál es la moda, el número que más se repite?',
+    respuesta: l.moda,
+    datosGrafico: l.lista.slice(),
+    expr: 'g8_' + l.lista.join('-'),
+    diagnostico: true
+  };
+};
+
+/* G9 La media (5.º) */
+CB.gen.datos.G9 = function (rng, D) {
+  const k = (D === 1) ? 3 : CB.util.elegir(rng, [3, 4, 5]);
+  const l = listaConMedia(rng, k, (D === 1) ? 8 : 12, 20);
+  return {
+    formato: 'teclado',
+    consigna: 'Los puntos de ' + k + ' partidas: ' + enLista(l.lista) +
+              '. ¿Cuál es la media?',
+    operacion: '÷', operandos: [l.suma, k],
+    respuesta: l.media,
+    sumaDatos: l.suma,
+    expr: 'g9_' + l.lista.join('-'),
+    diagnostico: true
+  };
+};
+
+/* G10 El rango (5.º) */
+CB.gen.datos.G10 = function (rng, D) {
+  const posibles = [];
+  let v;
+  for (v = 2; v <= ((D === 1) ? 12 : 20); v++) posibles.push(v);
+  const lista = CB.util.barajar(posibles, rng).slice(0, 4);
+  const max = Math.max.apply(null, lista);
+  const min = Math.min.apply(null, lista);
+  return {
+    formato: 'teclado',
+    consigna: 'Las temperaturas de cuatro días: ' + enLista(lista) +
+              ' grados. ¿Cuál es el rango: el mayor menos el menor?',
+    operacion: '−', operandos: [max, min],
+    respuesta: max - min,
+    maxDato: max,
+    expr: 'g10_' + lista.join('-'),
+    diagnostico: true
+  };
+};
+
+/* G11 La media del gráfico (6.º): la media de las barras, exacta. */
+CB.gen.datos.G11 = function (rng, D) {
+  const k = (D === 1) ? 3 : CB.util.elegir(rng, [3, 4]);
+  const l = listaConMedia(rng, k, (D === 1) ? 8 : 11, 12);
+  const tema = CB.util.elegir(rng, TEMAS_DATOS);
+  const nombres = CB.util.barajar(tema.slice(), rng).slice(0, k);
+  const filas = nombres.map(function (n, i) {
+    return { nombre: n, valor: l.lista[i] };
+  });
+  return {
+    formato: 'teclado',
+    consigna: 'Mira el gráfico. ¿Cuál es la media de las ' + k + ' barras?',
+    visual: { tipo: 'barras', filas: filas },
+    operacion: '÷', operandos: [l.suma, k],
+    respuesta: l.media,
+    sumaDatos: l.suma,
+    expr: 'g11_' + l.lista.join('-'),
+    diagnostico: true
+  };
+};
+
+/* G12 Media, moda y rango (6.º): una de las tres, dicha por su nombre. */
+CB.gen.datos.G12 = function (rng, D) {
+  const modo = CB.util.ent(rng, 1, 3);
+  if (modo === 1) {
+    const m = listaConMedia(rng, 4, (D === 1) ? 9 : 12, 20);
+    return {
+      formato: 'teclado',
+      consigna: 'Estos son los datos: ' + enLista(m.lista) +
+                '. ¿Cuál es la MEDIA?',
+      operacion: '÷', operandos: [m.suma, 4],
+      respuesta: m.media,
+      sumaDatos: m.suma,
+      expr: 'g12a_' + m.lista.join('-'),
+      diagnostico: true
+    };
+  }
+  if (modo === 2) {
+    const mo = listaConModa(rng, 12);
+    return {
+      formato: 'teclado',
+      consigna: 'Estos son los datos: ' + enLista(mo.lista) +
+                '. ¿Cuál es la MODA?',
+      respuesta: mo.moda,
+      datosGrafico: mo.lista.slice(),
+      expr: 'g12b_' + mo.lista.join('-'),
+      diagnostico: true
+    };
+  }
+  const posibles = [];
+  let v;
+  for (v = 3; v <= 20; v++) posibles.push(v);
+  const lista = CB.util.barajar(posibles, rng).slice(0, 4);
+  const max = Math.max.apply(null, lista);
+  const min = Math.min.apply(null, lista);
+  return {
+    formato: 'teclado',
+    consigna: 'Estos son los datos: ' + enLista(lista) +
+              '. ¿Cuál es el RANGO?',
+    operacion: '−', operandos: [max, min],
+    respuesta: max - min,
+    maxDato: max,
+    expr: 'g12c_' + lista.join('-'),
+    diagnostico: true
+  };
+};
+
+/* ——— El azar: A1…A7. ——— */
+
+/* A1 Seguro o imposible (1.º): la respuesta es un COLOR, nunca la palabra
+   «posible» (cuando algo es seguro, también es posible: sería ambiguo). */
+CB.gen.azar.A1 = function (rng, D) {
+  const colores = CB.util.barajar(COLORES_BOLA.slice(0, 4), rng);
+  if (D === 1 || rng() < 0.5) {
+    return {
+      formato: 'opciones4',
+      consigna: 'En la bolsa todas las bolas son de color ' + colores[0] +
+                '. Sacas una sin mirar. ¿De qué color saldrá SEGURO?',
+      respuesta: colores[0],
+      respuestaFraccion: true,
+      distractoresFijos: [colores[1], colores[2], colores[3]],
+      expr: 'a1s_' + colores[0],
+      diagnostico: false
+    };
+  }
+  return {
+    formato: 'opciones4',
+    consigna: 'En la bolsa hay bolas de color ' + colores[0] + ', ' +
+              colores[1] + ' y ' + colores[2] +
+              '. ¿De qué color es IMPOSIBLE que salga una bola?',
+    respuesta: colores[3],
+    respuestaFraccion: true,
+    distractoresFijos: [colores[0], colores[1], colores[2]],
+    expr: 'a1i_' + colores.join(''),
+    diagnostico: false
+  };
+};
+
+/* A2 La bolsa de las bolas (2.º): seguro, imposible o puede salir. En el modo
+   «puede salir» la bolsa tiene DOS colores pero las opciones solo enseñan uno
+   de ellos: la respuesta sigue siendo única. */
+CB.gen.azar.A2 = function (rng, D) {
+  const colores = CB.util.barajar(COLORES_BOLA.slice(), rng);
+  const modo = CB.util.ent(rng, 1, (D === 1) ? 2 : 3);
+  if (modo === 1) {
+    return {
+      formato: 'opciones4',
+      consigna: 'Todas las bolas de la bolsa son de color ' + colores[0] +
+                '. ¿De qué color saldrá SEGURO?',
+      respuesta: colores[0],
+      respuestaFraccion: true,
+      distractoresFijos: [colores[1], colores[2], colores[3]],
+      expr: 'a2s_' + colores[0],
+      diagnostico: false
+    };
+  }
+  if (modo === 2) {
+    return {
+      formato: 'opciones4',
+      consigna: 'En la bolsa hay bolas de color ' + colores[0] + ', ' +
+                colores[1] + ' y ' + colores[2] +
+                '. ¿Qué color es IMPOSIBLE?',
+      respuesta: colores[3],
+      respuestaFraccion: true,
+      distractoresFijos: [colores[0], colores[1], colores[2]],
+      expr: 'a2i_' + colores.slice(0, 4).join(''),
+      diagnostico: false
+    };
+  }
+  return {
+    formato: 'opciones4',
+    consigna: 'En la bolsa hay bolas de color ' + colores[0] + ' y ' +
+              colores[1] + '. ¿Cuál de estos colores PUEDE salir?',
+    respuesta: colores[1],
+    respuestaFraccion: true,
+    distractoresFijos: [colores[2], colores[3], colores[4]],
+    expr: 'a2p_' + colores.slice(0, 5).join(''),
+    diagnostico: false
+  };
+};
+
+/* Una bolsa con recuentos DISTINTOS de tres colores: el más y el menos
+   probable son únicos. */
+function bolsaConCuentas(rng, maxN) {
+  const colores = CB.util.barajar(COLORES_BOLA.slice(0, 4), rng);
+  const posibles = [];
+  let v;
+  for (v = 1; v <= maxN; v++) posibles.push(v);
+  const cuentas = CB.util.barajar(posibles, rng).slice(0, 3);
+  return { colores: colores, cuentas: cuentas };
+}
+CB.gen.azar._bolsaConCuentas = bolsaConCuentas;
+
+function fraseBolsa(b) {
+  return 'En la bolsa hay ' + b.cuentas[0] + ' bolas de color ' + b.colores[0] +
+         ', ' + b.cuentas[1] + ' de color ' + b.colores[1] +
+         ' y ' + b.cuentas[2] + ' de color ' + b.colores[2] + '.';
+}
+
+/* A3 Más probable (3.º) */
+CB.gen.azar.A3 = function (rng, D) {
+  const b = bolsaConCuentas(rng, (D === 1) ? 6 : 9);
+  let mejor = 0, i;
+  for (i = 1; i < 3; i++) if (b.cuentas[i] > b.cuentas[mejor]) mejor = i;
+  return {
+    formato: 'opciones4',
+    consigna: fraseBolsa(b) + ' Sacas una sin mirar. ¿Qué color es MÁS probable?',
+    respuesta: b.colores[mejor],
+    respuestaFraccion: true,
+    distractoresFijos: b.colores.filter(function (c, j) { return j !== mejor; }),
+    expr: 'a3_' + b.cuentas.join('-') + '_' + mejor,
+    diagnostico: false
+  };
+};
+
+/* A4 Menos probable (4.º): siempre entre colores que SÍ están en la bolsa
+   (un color con cero bolas no es «menos probable»: es imposible). */
+CB.gen.azar.A4 = function (rng, D) {
+  const b = bolsaConCuentas(rng, (D === 1) ? 6 : 9);
+  let peor = 0, i;
+  for (i = 1; i < 3; i++) if (b.cuentas[i] < b.cuentas[peor]) peor = i;
+  return {
+    formato: 'opciones4',
+    consigna: fraseBolsa(b) + ' Sacas una sin mirar. ¿Qué color es MENOS probable?',
+    respuesta: b.colores[peor],
+    respuestaFraccion: true,
+    distractoresFijos: b.colores.filter(function (c, j) { return j !== peor; }),
+    expr: 'a4_' + b.cuentas.join('-') + '_' + peor,
+    diagnostico: false
+  };
+};
+
+/* Tres distractores de fracción DISTINTOS de la respuesta, sin repetirse:
+   el mismo cierre con relleno que usa itemFrac en 19b. */
+function fijosFraccion(resp, candidatos, num, den) {
+  const fijos = [];
+  let i, k = 1;
+  for (i = 0; i < candidatos.length && fijos.length < 3; i++) {
+    if (candidatos[i] !== resp && fijos.indexOf(candidatos[i]) === -1) {
+      fijos.push(candidatos[i]);
+    }
+  }
+  for (k = 1; k <= 20 && fijos.length < 3; k++) {   // cota: todo while/for la lleva
+    const relleno = CB.gen.motor.fstr(num + k, den + k + 1);
+    if (relleno !== resp && fijos.indexOf(relleno) === -1) fijos.push(relleno);
+  }
+  return fijos;
+}
+CB.gen.azar._fijosFraccion = fijosFraccion;
+
+/* A5 La probabilidad como fracción (5.º) */
+CB.gen.azar.A5 = function (rng, D) {
+  const total = CB.util.ent(rng, 4, (D === 1) ? 6 : 10);
+  const fav = CB.util.ent(rng, 1, total - 1);
+  const color = CB.util.elegir(rng, COLORES_BOLA);
+  const resp = CB.gen.motor.fstr(fav, total);
+  const fijos = fijosFraccion(resp, [
+    CB.gen.motor.fstr(total - fav, total),
+    CB.gen.motor.fstr(total, fav),
+    CB.gen.motor.fstr(fav, total - fav),
+    CB.gen.motor.fstr(fav + 1, total)
+  ], fav, total);
+  return {
+    formato: 'opciones4',
+    consigna: 'En la bolsa hay ' + total + ' bolas y ' + fav +
+              (fav === 1 ? ' es' : ' son') + ' de color ' + color +
+              '. ¿Qué fracción dice la probabilidad de sacar una bola ' +
+              color + '?',
+    respuesta: resp,
+    respuestaFraccion: true,
+    distractoresFijos: fijos,
+    expr: 'a5_' + fav + '_' + total + '_' + color,
+    diagnostico: false
+  };
+};
+
+/* A6 La regla de Laplace (6.º): dado o ruleta, casos favorables entre casos
+   posibles, SIN simplificar (la fracción que se lee directamente). */
+CB.gen.azar.A6 = function (rng, D) {
+  if (D === 1 || rng() < 0.5) {
+    const casos = CB.util.elegir(rng, [
+      ['sacar un 6', 1], ['sacar un número par', 3], ['sacar más de 4', 2],
+      ['sacar menos de 3', 2], ['sacar un 1 o un 2', 2]
+    ]);
+    const resp = CB.gen.motor.fstr(casos[1], 6);
+    return {
+      formato: 'opciones4',
+      consigna: 'Tiras un dado del 1 al 6. ¿Qué probabilidad tiene ' +
+                casos[0] + '? Escribe los casos favorables entre los posibles.',
+      respuesta: resp,
+      respuestaFraccion: true,
+      distractoresFijos: fijosFraccion(resp, [
+        CB.gen.motor.fstr(6 - casos[1], 6),
+        CB.gen.motor.fstr(6, casos[1]),
+        CB.gen.motor.fstr(casos[1] + 1, 6)
+      ], casos[1], 6),
+      expr: 'a6d_' + casos[1] + '_' + casos[0].replace(/ /g, ''),
+      diagnostico: false
+    };
+  }
+  const partes = CB.util.elegir(rng, [4, 5, 8, 10]);
+  const pintadas = CB.util.ent(rng, 1, partes - 1);
+  const resp = CB.gen.motor.fstr(pintadas, partes);
+  return {
+    formato: 'opciones4',
+    consigna: 'Una ruleta tiene ' + partes + ' partes iguales y ' + pintadas +
+              (pintadas === 1 ? ' está pintada' : ' están pintadas') +
+              '. ¿Qué probabilidad hay de que pare en una parte pintada?',
+    respuesta: resp,
+    respuestaFraccion: true,
+    distractoresFijos: fijosFraccion(resp, [
+      CB.gen.motor.fstr(partes - pintadas, partes),
+      CB.gen.motor.fstr(partes, pintadas),
+      CB.gen.motor.fstr(pintadas + 1, partes)
+    ], pintadas, partes),
+    expr: 'a6r_' + pintadas + '_' + partes,
+    diagnostico: false
+  };
+};
+
+/* A7 Las veces que saldrá (6.º): frecuencia esperada de un experimento. */
+CB.gen.azar.A7 = function (rng, D) {
+  const modo = CB.util.ent(rng, 1, (D === 1) ? 2 : 3);
+  if (modo === 1) {
+    const k = CB.util.ent(rng, 5, 30) * 2;
+    return {
+      formato: 'teclado',
+      consigna: 'Tiras una moneda ' + k + ' veces. Si el azar reparte por ' +
+                'igual, ¿cuántas caras te tocan?',
+      operacion: '÷', operandos: [k, 2],
+      respuesta: k / 2,
+      totalTiradas: k,
+      expr: 'a7m_' + k,
+      diagnostico: true
+    };
+  }
+  if (modo === 2) {
+    const k6 = CB.util.ent(rng, 2, 10) * 6;
+    const cara = CB.util.ent(rng, 1, 6);
+    return {
+      formato: 'teclado',
+      consigna: 'Tiras un dado ' + k6 + ' veces. Si el azar reparte por ' +
+                'igual, ¿cuántas veces te toca el ' + cara + '?',
+      operacion: '÷', operandos: [k6, 6],
+      respuesta: k6 / 6,
+      totalTiradas: k6,
+      expr: 'a7d_' + k6 + '_' + cara,
+      diagnostico: true
+    };
+  }
+  const k4 = CB.util.ent(rng, 3, 15) * 4;
+  return {
+    formato: 'teclado',
+    consigna: 'Una ruleta tiene 4 partes iguales y la giras ' + k4 +
+              ' veces. Si el azar reparte por igual, ¿cuántas veces para ' +
+              'en cada parte?',
+    operacion: '÷', operandos: [k4, 4],
+    respuesta: k4 / 4,
+    totalTiradas: k4,
+    expr: 'a7r_' + k4,
+    diagnostico: true
+  };
+};
+
 /* 17-catalogo.js — Los 92 niveles y los 4 mundos. ESTE FICHERO ES UN CONTRATO. */
 
 var CB = CB || {};
@@ -7115,7 +7735,10 @@ CB.catalogo.FAMILIAS = {
   Z: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [400, 1000] },
   /* Sentido de la medida (3.2.0): B magnitudes y H tiempo. */
   B: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [400, 1000] },
-  H: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] }
+  H: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] },
+  /* Sentido estocástico (3.3.0): G datos y A azar. */
+  G: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [380, 980] },
+  A: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [420, 1020] }
 };
 
 /* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
@@ -7159,7 +7782,10 @@ CB.catalogo.TABLAS = {
   ['E10','Pagar justo hasta 20 euros','dinero',0,20,0,3,'monedas','A.5',['2.1','2.2'],['E9'],19,false,null],
   /* Medida y tiempo (3.2.0): 2 */
   ['B1','Medir con bloques','medida',0,10,0,2,'teclado','B1.a',['5.2','1.2'],['N17'],6,false,null],
-  ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null]
+  ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null],
+  /* Datos y azar (3.3.0): 2 */
+  ['G1','El gráfico de los juguetes','datos',0,9,0,2,'teclado','E1.a',['1.2','5.2'],['N17'],1052,false,null],
+  ['A1','Seguro o imposible','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['N17'],19,false,null]
   ],
 
   /* ——— 2.º de Primaria: los 92 originales. ——— */
@@ -7272,7 +7898,11 @@ CB.catalogo.TABLAS = {
   /* Medida y tiempo (3.2.0): 3 */
   ['B2','Centímetros y metros','medida',0,900,0,3,'teclado','B1.a',['5.2','2.1'],['N9'],11,false,null],
   ['B3','¿Con qué se mide?','medida',0,0,0,3,'opciones4','B1.a',['5.2','6.1'],['E1'],4,false,null],
-  ['H2','En punto y y media','tiempo',0,12,0,3,'opciones4','B1.b',['5.2','6.1'],['H1'],16,false,null]
+  ['H2','En punto y y media','tiempo',0,12,0,3,'opciones4','B1.b',['5.2','6.1'],['H1'],16,false,null],
+  /* Datos y azar (3.3.0): 3 */
+  ['G2','Leer el gráfico de barras','datos',0,12,0,2,'teclado','E1.a',['1.2','6.1'],['G1'],5939,false,null],
+  ['G3','El que más y el que menos','datos',0,12,0,3,'opciones4','E1.a',['1.1','5.1'],['G2'],5184,false,null],
+  ['A2','La bolsa de las bolas','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['A1'],484,false,null]
   ],
 
   /* ——— 3.º de Primaria (3.1.0): 36 niveles. Techos 999 / 9.999 / 99.999. ——— */
@@ -7317,7 +7947,11 @@ CB.catalogo.TABLAS = {
   ['B4','De metros a centímetros','medida',0,900,0,1,'teclado','B2.a',['5.2','2.1'],['B2'],11,false,null],
   ['B5','Gramos y kilos','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
   ['B6','El perímetro','medida',0,100,0,3,'teclado','B2.c',['1.2','2.1'],['M13','B4'],44,false,null],
-  ['H3','Los cuartos','tiempo',0,12,0,2,'opciones4','B2.b',['5.2','6.1'],['H2'],33,false,null]
+  ['H3','Los cuartos','tiempo',0,12,0,2,'opciones4','B2.b',['5.2','6.1'],['H2'],33,false,null],
+  /* Datos y azar (3.3.0): 3 */
+  ['G4','Los votos de la clase','datos',0,24,0,1,'teclado','E2.a',['1.2','2.1'],['G2','S18'],6361,false,null],
+  ['G5','¿Cuántos más?','datos',0,12,0,2,'teclado','E2.a',['1.1','2.1'],['G4','R16'],6409,false,null],
+  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],352,false,null]
   ],
 
   /* ——— 4.º de Primaria: 34 niveles. Techos 99.999 / 499.999 / 999.999. ——— */
@@ -7360,7 +7994,11 @@ CB.catalogo.TABLAS = {
   ['B7','Kilómetros y metros','medida',0,9000,0,1,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
   ['B8','Litros y mililitros','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B5'],11,false,null],
   ['B9','Perímetros de figuras','medida',0,120,0,2,'teclado','B2.c',['2.1','3.1'],['B6'],32,false,null],
-  ['H4','El reloj de minutos','tiempo',0,12,0,3,'opciones4','B2.b',['5.2','6.1'],['H3'],92,false,null]
+  ['H4','El reloj de minutos','tiempo',0,12,0,3,'opciones4','B2.b',['5.2','6.1'],['H3'],92,false,null],
+  /* Datos y azar (3.3.0): 3 */
+  ['G6','El pictograma','datos',0,80,0,1,'teclado','E2.a',['1.2','5.1'],['G4','M13'],1933,false,null],
+  ['G7','La encuesta entera','datos',0,48,0,2,'teclado','E2.a',['1.1','2.1'],['G4'],3604,false,null],
+  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],352,false,null]
   ],
 
   /* ——— 5.º de Primaria: 29 niveles. Techos 999.999 / 9.999.999 / íd. ——— */
@@ -7398,7 +8036,12 @@ CB.catalogo.TABLAS = {
   ['B10','El sistema métrico','medida',0,9999,0,1,'teclado','B3.a',['5.2','2.1'],['B7','C1'],178,false,null],
   ['B11','El área del rectángulo','medida',0,81,0,2,'teclado','B3.b',['1.2','2.1'],['B6','M13'],44,false,null],
   ['B12','Masa y capacidad con coma','medida',0,9999,0,2,'teclado','B3.a',['5.2','2.1'],['B8'],118,false,null],
-  ['H5','Horas y minutos','tiempo',0,300,0,3,'teclado','B3.c',['2.1','5.2'],['H4','M13'],33,false,null]
+  ['H5','Horas y minutos','tiempo',0,300,0,3,'teclado','B3.c',['2.1','5.2'],['H4','M13'],33,false,null],
+  /* Datos y azar (3.3.0): 4 */
+  ['G8','La moda','datos',0,12,0,1,'teclado','E3.a',['1.1','6.1'],['G7'],4151,false,null],
+  ['G9','La media','datos',0,20,0,2,'teclado','E3.a',['2.1','5.1'],['G8','D3'],1695,false,null],
+  ['G10','El rango','datos',0,20,0,2,'teclado','E3.a',['2.1','6.1'],['G8'],6302,false,null],
+  ['A5','La probabilidad como fracción','azar',0,10,0,3,'opciones4','E3.b',['1.2','5.1'],['A4','F2'],176,false,null]
   ],
 
   /* ——— 6.º de Primaria: 31 niveles. Techo 9.999.999 en los tres. ——— */
@@ -7438,7 +8081,12 @@ CB.catalogo.TABLAS = {
   ['B13','Área del cuadrado y del triángulo','medida',0,144,0,1,'teclado','B3.b',['2.1'],['B11'],46,false,null],
   ['B14','Conversiones con coma','medida',0,9999,0,2,'teclado','B3.a',['2.1','5.2'],['B10','C2'],660,false,null],
   ['B15','Problemas de medida','medida',0,9999,0,3,'teclado','B2.c',['1.1','2.1'],['B9','D3'],239,false,null,'B3.a'],
-  ['H6','Minutos y segundos','tiempo',0,3600,0,2,'teclado','B3.c',['2.1','5.2'],['H5','M16'],11,false,null]
+  ['H6','Minutos y segundos','tiempo',0,3600,0,2,'teclado','B3.c',['2.1','5.2'],['H5','M16'],11,false,null],
+  /* Datos y azar (3.3.0): 4 */
+  ['G11','La media del gráfico','datos',0,20,0,1,'teclado','E3.a',['1.2','2.1'],['G9'],580,false,null],
+  ['G12','Media, moda y rango','datos',0,20,0,2,'teclado','E3.a',['2.1','6.1'],['G9','G10'],5623,false,null],
+  ['A6','La regla de Laplace','azar',0,10,0,2,'opciones4','E3.b',['1.2','5.1'],['A5'],19,false,null],
+  ['A7','Las veces que saldrá','azar',0,60,0,3,'teclado','E3.c',['2.1','3.1'],['A6','D3'],65,false,null]
   ]
 };
 
@@ -7499,7 +8147,8 @@ CB.catalogo.LIMITES_CURSO = {
                     P: 'problemas', E: 'dinero', V: 'vocabulario',
                     D: 'division', F: 'fracciones', C: 'decimales',
                     T: 'porcentajes', Z: 'enteros',
-                    B: 'medida', H: 'tiempo' };
+                    B: 'medida', H: 'tiempo',
+                    G: 'datos', A: 'azar' };
 
   const cursos = [];
   let c;
@@ -7568,7 +8217,8 @@ CB.catalogo.LIMITES_CURSO = {
                 E: CB.gen.dinero, V: CB.gen.vocabulario,
                 D: CB.gen.division, F: CB.gen.fracciones, C: CB.gen.decimales,
                 T: CB.gen.porcentajes, Z: CB.gen.enteros,
-                B: CB.gen.medida, H: CB.gen.tiempo }[letra];
+                B: CB.gen.medida, H: CB.gen.tiempo,
+                G: CB.gen.datos, A: CB.gen.azar }[letra];
 
     nivel.generar = (function (m, i) {
       return function (rng, D, ctx) {
@@ -7728,7 +8378,8 @@ CB.MUNDOS = [
               'N30','N31','N32','N33','S26','R23',
               'N34','N35','N36','N37','N38','N39',
               'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4',
-              'H1','H2','H3','H4','H5','H6'] },
+              'H1','H2','H3','H4','H5','H6',
+              'G1','G2','G3','A1','A2'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -7742,7 +8393,8 @@ CB.MUNDOS = [
               'S25','R22','C1','C2','C3','C4','C5','E13','E14',
               'C6','C7','C8','C9','C10','C11',
               'C12','C13','C14','C15',
-              'B2','B3','B5','B8','B12','B14'] },
+              'B2','B3','B5','B8','B12','B14',
+              'G4','G5','G7'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
@@ -7754,7 +8406,8 @@ CB.MUNDOS = [
               'F5','F6','F7','F8','F9','P30','P31','P32','P33','P34',
               'F10','F11','F12','F13','F14','F15','P35','P36','P37','P38','P39',
               'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44',
-              'B1','B4','B7','B10','B15'] },
+              'B1','B4','B7','B10','B15',
+              'A3','A4','A5','A6','A7'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
@@ -7767,7 +8420,8 @@ CB.MUNDOS = [
               'M17','M18','M19','M20','D7','D8','D9','D10','D11',
               'M21','M22','D12','D13','D14','D15',
               'T1','T2','T3','T4','T5','T6','D16','D17',
-              'B6','B9','B11','B13'] }
+              'B6','B9','B11','B13',
+              'G6','G8','G9','G10','G11','G12'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {
@@ -8364,6 +9018,58 @@ CB.ERRORES['E-H-MEDIA-CONFUNDIDA'] = {
   reparacion: 'rectaNumerica'
 };
 
+/* ——— Sentido estocástico (3.3.0): datos (G) y azar (A). ——— */
+
+CB.ERRORES['E-G-BARRA-VECINA'] = {
+  familia: 'G', diagnostico: true,
+  pista: 'Sigue la barra con el dedo desde su etiqueta hasta arriba.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (!item.datosGrafico || !item.datosGrafico.length) return null;
+    let i;
+    for (i = 0; i < item.datosGrafico.length; i++) {
+      if (item.datosGrafico[i] !== item.respuesta) return item.datosGrafico[i];
+    }
+    return null;
+  }
+};
+
+CB.ERRORES['E-G-SIN-DIVIDIR'] = {
+  familia: 'G', diagnostico: true,
+  pista: 'La media se hace en dos pasos: primero sumar, después repartir.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.sumaDatos !== 'number' || item.sumaDatos === item.respuesta) return null;
+    return item.sumaDatos;
+  }
+};
+
+CB.ERRORES['E-G-RANGO-CONFUNDIDO'] = {
+  familia: 'G', diagnostico: true,
+  pista: 'El rango no es el mayor: es el mayor MENOS el menor.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.maxDato !== 'number' || item.maxDato === item.respuesta) return null;
+    return item.maxDato;
+  }
+};
+
+CB.ERRORES['E-A-FRACCION-VOLTEADA'] = {
+  familia: 'A', diagnostico: false,
+  pista: 'Arriba van los casos que quieres; abajo, todos los que hay.',
+  reparacion: 'barrasComparativas'
+};
+
+CB.ERRORES['E-A-OLVIDA-REPARTIR'] = {
+  familia: 'A', diagnostico: true,
+  pista: 'El azar reparte las tiradas entre todos los resultados por igual.',
+  reparacion: 'barrasComparativas',
+  simular: function (item) {
+    if (typeof item.totalTiradas !== 'number' || item.totalTiradas === item.respuesta) return null;
+    return item.totalTiradas;
+  }
+};
+
 /* 20-puntuacion.js — Requisitos 6 y 7 del usuario */
 
 var CB = CB || {};
@@ -8810,9 +9516,9 @@ CB.vidas.PRECEDENCIA_FIN = {
 var CB = CB || {};
 CB.adaptativo = CB.adaptativo || {};
 
-/* Lista CERRADA de los 18 slugs. casos-curriculo.js (CU6) comprueba que todos
-   los niveles del catálogo apuntan a uno de estos. Los cinco últimos llegan
-   con los cursos 3.º-6.º (3.1.0). */
+/* Lista CERRADA de los 22 slugs. casos-curriculo.js (CU6) comprueba que todos
+   los niveles del catálogo apuntan a uno de estos. Los de 3.º-6.º llegan en
+   3.1.0; medida y tiempo en 3.2.0; datos y azar en 3.3.0. */
 CB.adaptativo.SLUGS = [
   'numeracion', 'valor_posicional',
   'suma_sin_llevar', 'suma_llevada',
@@ -8822,7 +9528,8 @@ CB.adaptativo.SLUGS = [
   'problemas_comparacion', 'problemas_igualacion',
   'dinero', 'vocabulario',
   'division', 'fracciones', 'decimales', 'porcentajes', 'enteros',
-  'medida', 'tiempo'
+  'medida', 'tiempo',
+  'datos', 'azar'
 ];
 
 CB.adaptativo.THETA_INICIAL = 1000;
@@ -9406,7 +10113,9 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'porcentajes':
     case 'enteros':
     case 'medida':
-    case 'tiempo':             return 'rectaNumerica';
+    case 'tiempo':
+    case 'datos':              return 'rectaNumerica';
+    case 'azar':               return 'barrasComparativas';
     case 'problemas_comparacion':
     case 'problemas_igualacion':
     case 'problemas_cambio':
@@ -10391,6 +11100,10 @@ CB.ui.pintarItem = function (item) {
     cont.appendChild(CB.ui.relojAnalogico(item.visual.horas, item.visual.minutos));
   }
 
+  if (item.visual && item.visual.tipo === 'barras') {
+    cont.appendChild(CB.ui.graficoBarras(item.visual.filas, item.visual.escala));
+  }
+
   if (item.preguntaPrevia) {
     cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
   }
@@ -10504,6 +11217,56 @@ CB.ui.relojAnalogico = function (horas, minutos) {
   caja.setAttribute('role', 'img');
   caja.setAttribute('aria-label', 'Reloj con la manecilla corta en las ' + horas +
     (minutos ? ' y la larga marcando ' + minutos + ' minutos' : ' en punto'));
+  return caja;
+};
+
+/* El gráfico de barras (3.3.0): una columna de bloques por categoría, con su
+   etiqueta debajo. Las barras se distinguen por su ETIQUETA, nunca por su
+   color (el color solo jamás lleva la información), y todo son rectángulos
+   con bisel: vóxel puro, sin border-radius y sin nada que se mueva. Como el
+   reloj canta su hora, el gráfico canta sus datos en el aria-label. */
+CB.ui.graficoBarras = function (filas, escala) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const grafico = CB.ui.crear('div');
+  grafico.style.display = 'flex';
+  grafico.style.alignItems = 'flex-end';
+  grafico.style.gap = '14px';
+
+  (filas || []).forEach(function (fila) {
+    const col = CB.ui.crear('div');
+    col.style.display = 'flex';
+    col.style.flexDirection = 'column';
+    col.style.alignItems = 'center';
+    col.style.gap = '3px';
+
+    let i;
+    const bloques = Math.min(fila.valor, 12);
+    for (i = 0; i < bloques; i++) {
+      const b = CB.ui.crear('span');
+      b.style.width = '26px'; b.style.height = '14px';
+      b.style.background = 'var(--deco-cristal)';
+      b.style.boxShadow = 'inset 3px 3px 0 0 var(--deco-cristal-cla), ' +
+                          'inset -3px -3px 0 0 var(--deco-cristal-osc)';
+      col.appendChild(b);
+    }
+
+    const etiqueta = CB.ui.crear('span', 'texto texto--menor', fila.nombre);
+    etiqueta.style.marginTop = '4px';
+    col.appendChild(etiqueta);
+    grafico.appendChild(col);
+  });
+
+  caja.appendChild(grafico);
+  if (escala && escala > 1) {
+    caja.appendChild(CB.ui.crear('p', 'texto texto--menor',
+      'Cada bloque vale ' + escala + '.'));
+  }
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label', 'Gráfico de barras: ' +
+    (filas || []).map(function (f) {
+      return f.nombre + ', ' + f.valor +
+        (escala && escala > 1 ? ' bloques de ' + escala : '');
+    }).join('; '));
   return caja;
 };
 
@@ -12206,7 +12969,7 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   /* 3) CUOTA: al menos 1 ítem de cada bloque desbloqueado. Las cinco letras
      nuevas solo existen desde 3.º: en los cursos bajos su lista sale vacía y
      el bucle las salta solo. */
-  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V', 'D', 'F', 'C', 'T', 'Z', 'B', 'H'];
+  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V', 'D', 'F', 'C', 'T', 'Z', 'B', 'H', 'G', 'A'];
   for (i = 0; i < letras.length; i++) {
     (function (letra) {
       const deLaLetra = nivelesMundo.filter(function (id) {
@@ -13488,7 +14251,8 @@ CB.partida.NOMBRES_DESTREZA = {
   division: 'La división', fracciones: 'Las fracciones',
   decimales: 'Los números con coma', porcentajes: 'El tanto por ciento',
   enteros: 'Los números bajo cero',
-  medida: 'Las medidas', tiempo: 'El reloj y el tiempo'
+  medida: 'Las medidas', tiempo: 'El reloj y el tiempo',
+  datos: 'Los datos y los gráficos', azar: 'El azar'
 };
 CB.partida.nombreDestreza = function (slug) {
   return CB.partida.NOMBRES_DESTREZA[slug] || slug;
@@ -13756,6 +14520,8 @@ CB.adulto.semaforo = function (perfil) {
     'Enteros': ['enteros'],
     'Medida': ['medida'],
     'El tiempo': ['tiempo'],
+    'Datos y gráficos': ['datos'],
+    'El azar': ['azar'],
     'Problemas': ['problemas_cambio', 'problemas_combinacion',
                   'problemas_comparacion', 'problemas_igualacion'],
     'Dinero': ['dinero'],
