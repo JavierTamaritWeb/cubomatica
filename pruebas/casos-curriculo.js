@@ -59,14 +59,26 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
     'CU4 · los ' + saberesA.length + ' saberes del bloque A tienen al menos un nivel',
     sinNivel.join(', '));
 
-  /* Y la contrapartida honesta: los bloques B-E NO están cubiertos y se declara */
-  t.ok(CB.CURRICULO.bloques.B.cubierto === false &&
-       CB.CURRICULO.bloques.C.cubierto === false &&
+  /* Y la contrapartida honesta: B está cubierto desde 3.2.0; C, D y E no, y
+     se declara. El texto legal y esta aserción cambian JUNTOS, siempre. */
+  t.ok(CB.CURRICULO.bloques.B.cubierto === true,
+    'el bloque B (medida) se declara cubierto desde 3.2.0');
+  t.ok(CB.CURRICULO.bloques.C.cubierto === false &&
        CB.CURRICULO.bloques.D.cubierto === false &&
        CB.CURRICULO.bloques.E.cubierto === false,
-    'los bloques B, C, D y E se declaran expresamente NO cubiertos');
-  t.ok(CB.LEGAL.ALCANCE.indexOf('NO trabaja los bloques B') !== -1,
-    'el alcance declarado dice literalmente qué NO cubre el juego');
+    'los bloques C, D y E se declaran expresamente NO cubiertos');
+  t.ok(CB.LEGAL.ALCANCE.indexOf('NO trabaja los bloques C') !== -1 &&
+       CB.LEGAL.ALCANCE.indexOf('B (Sentido de la medida)') !== -1,
+    'el alcance declarado dice literalmente qué cubre y qué no');
+
+  /* Todos los saberes de bloque B declarados tienen al menos un nivel. */
+  const saberesB = Object.keys(CB.CURRICULO.saberes).filter(function (k) {
+    return k.charAt(0) === 'B';
+  });
+  const sinNivelB = saberesB.filter(function (k) { return !usados[k]; });
+  t.ok(saberesB.length >= 8 && sinNivelB.length === 0,
+    'los ' + saberesB.length + ' saberes del bloque B tienen al menos un nivel',
+    sinNivelB.join(', '));
 
   /* CU5 — ninguna ampliación es prerrequisito de una nuclear */
   t.igual(CB.grafo.ampliacionesComoPrerrequisito().length, 0,
@@ -76,7 +88,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   const malSlug = niveles.filter(function (n) {
     return CB.adaptativo.SLUGS.indexOf(n.destreza) === -1;
   });
-  t.igual(CB.adaptativo.SLUGS.length, 18, 'CU6 · hay 18 slugs de destreza (13 + los 5 de 3.º-6.º)');
+  t.igual(CB.adaptativo.SLUGS.length, 20, 'CU6 · hay 20 slugs de destreza (18 + medida y tiempo)');
   t.ok(malSlug.length === 0,
     'CU6 · los ' + niveles.length + ' niveles apuntan a uno de los ' +
     CB.adaptativo.SLUGS.length + ' slugs de destreza',
@@ -92,7 +104,7 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   });
   const huerfanos = CB.catalogo.ids().filter(function (id) { return union.indexOf(id) === -1; });
   const fantasmas = union.filter(function (id) { return !CB.catalogo.get(id); });
-  t.igual(union.length, 243, 'CU7a · los mundos suman 243 niveles (los seis cursos)');
+  t.igual(union.length, 264, 'CU7a · los mundos suman 264 niveles (los seis cursos, con medida y tiempo)');
   t.ok(repes.length === 0, 'CU7b · ningún nivel aparece en dos mundos', repes.join(', '));
   t.ok(huerfanos.length === 0, 'CU7c · ningún nivel se queda fuera de los mundos',
        huerfanos.join(', '));
@@ -102,8 +114,8 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   /* CU8 — CB.ERRORES y recomendaciones comparten el conjunto de claves */
   const ce = Object.keys(CB.ERRORES).sort();
   const cr = Object.keys(CB.datos.RECOMENDACIONES).sort();
-  t.igual(ce.length, 35, 'CU8a · hay 35 códigos de error (24 + los 11 de 3.º-6.º)');
-  t.igual(cr.length, 35, 'CU8b · hay 35 recomendaciones');
+  t.igual(ce.length, 37, 'CU8a · hay 37 códigos de error (35 + los 2 de medida y tiempo)');
+  t.igual(cr.length, 37, 'CU8b · hay 37 recomendaciones');
   t.ok(ce.join('|') === cr.join('|'),
     'CU8c · CB.ERRORES y datos/recomendaciones.js tienen el MISMO conjunto de claves',
     'solo en errores: ' + ce.filter(function (k) { return cr.indexOf(k) === -1; }).join(',') +
@@ -118,8 +130,8 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
 
   const conSimular = ce.filter(function (k) { return typeof CB.ERRORES[k].simular === 'function'; });
   const sinDiag = ce.filter(function (k) { return CB.ERRORES[k].diagnostico === false; });
-  t.igual(conSimular.length, 27, '27 códigos tienen simular()');
-  t.igual(sinDiag.length, 8, 'los 8 restantes declaran diagnostico:false');
+  t.igual(conSimular.length, 28, '28 códigos tienen simular()');
+  t.igual(sinDiag.length, 9, 'los 9 restantes declaran diagnostico:false');
   const incoherentes = ce.filter(function (k) {
     return (typeof CB.ERRORES[k].simular === 'function') === (CB.ERRORES[k].diagnostico === false);
   });
@@ -189,15 +201,15 @@ CB.pruebas.suite('Currículo: CU1-CU8', function () {
   t.ok(cuenta.N === 44 && cuenta.S === 26 && cuenta.R === 23 && cuenta.M === 22 &&
        cuenta.P === 44 && cuenta.E === 14 && cuenta.V === 8 &&
        cuenta.D === 17 && cuenta.F === 20 && cuenta.C === 15 &&
-       cuenta.T === 6 && cuenta.Z === 4,
-    'reparto 44 N · 26 S · 23 R · 22 M · 44 P · 14 E · 8 V · 17 D · 20 F · 15 C · 6 T · 4 Z = 243',
+       cuenta.T === 6 && cuenta.Z === 4 && cuenta.B === 15 && cuenta.H === 6,
+    'reparto 44 N · 26 S · 23 R · 22 M · 44 P · 14 E · 8 V · 17 D · 20 F · 15 C · 6 T · 4 Z · 15 B · 6 H = 264',
     JSON.stringify(cuenta));
 
   const porCurso = {};
   niveles.forEach(function (n) { porCurso[n.curso] = (porCurso[n.curso] || 0) + 1; });
-  t.ok(porCurso[1] === 21 && porCurso[2] === 92 && porCurso[3] === 36 &&
-       porCurso[4] === 34 && porCurso[5] === 29 && porCurso[6] === 31,
-    'por curso: 21 · 92 · 36 · 34 · 29 · 31 (los 92 de 2.º, intactos)',
+  t.ok(porCurso[1] === 23 && porCurso[2] === 95 && porCurso[3] === 40 &&
+       porCurso[4] === 38 && porCurso[5] === 33 && porCurso[6] === 35,
+    'por curso: 23 · 95 · 40 · 38 · 33 · 35 (los 92 numéricos de 2.º, intactos)',
     JSON.stringify(porCurso));
 
   /* La cita de la norma es completa dondequiera que aparezca */

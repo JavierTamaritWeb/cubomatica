@@ -12,6 +12,21 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.2.0] — 2026-08-23
+
+**Fase 2 de los cursos: el sentido de la medida (bloque B), en los seis
+cursos.** 21 niveles nuevos (catálogo: 264) en dos familias — **B** magnitudes
+y **H** tiempo — con un guion nuevo (manifiesto 52 → 53): comparar y medir,
+conversiones de longitud, masa y capacidad por curso (con coma desde 5.º),
+perímetro y área, y la lectura del reloj desde «en punto» hasta los minutos,
+más horas↔minutos↔segundos. El **reloj analógico es un visual vóxel dibujado
+en DOM** — esfera cuadrada con bisel, manecillas como rectángulos girados con
+transform estático (nada se anima) — y canta su hora en el aria-label, como
+el conteo canta sus bloques (E137). **`CB.LEGAL.ALCANCE` y
+`bloques.B.cubierto` cambian juntos con su guardián**: el juego ya declara
+que cubre A y B y que NO cubre C, D ni E. 20 destrezas, 37 códigos de error.
+El esquema de perfil no cambia (v4).
+
 ## [3.1.0] — 2026-08-23
 
 **Fase 1 de los cursos: el sentido numérico de 3.º a 6.º.** 130 niveles nuevos

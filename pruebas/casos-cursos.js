@@ -309,6 +309,58 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
   t.ok(conPremios.some(function (p) { return p.tiene && p.nombre === 'Diploma de 1.º'; }),
     'E136 · el diploma de curso existe y nombra su curso');
 
+  /* E137 · EL RELOJ ANALÓGICO (3.2.0) pinta sus manecillas con el ángulo del
+     ítem: a las 3:30, la corta va en 105° (90 + media hora de arrastre) y la
+     larga en 180°. Se mide el transform REAL, no se lee el código. Y como el
+     conteo canta sus bloques, el reloj canta su hora en el aria-label: para
+     quien no ve la esfera, la etiqueta es la esfera. */
+  const reloj = CB.ui.relojAnalogico(3, 30);
+  const manecillas = Array.from(reloj.querySelectorAll('span')).filter(function (s) {
+    return /rotate\(/.test(s.style.transform || '');
+  });
+  const angulos = manecillas.map(function (s) {
+    return parseFloat((s.style.transform.match(/rotate\(([-\d.]+)deg\)/) || [])[1]);
+  }).sort(function (a, b) { return a - b; });
+  t.ok(angulos.length === 2 && angulos[0] === 105 && angulos[1] === 180,
+    'E137 · a las 3:30 la manecilla corta va en 105° y la larga en 180°',
+    'ángulos: ' + angulos.join(', '));
+  t.ok(/3/.test(reloj.getAttribute('aria-label')) &&
+       /30/.test(reloj.getAttribute('aria-label')),
+    'E137 · el aria-label del reloj dice la hora que marca',
+    reloj.getAttribute('aria-label'));
+  const item = CB.gen.tiempo.H1(CB.util.mulberry32(7), 2);
+  t.ok(item.visual && item.visual.tipo === 'reloj' &&
+       item.respuesta === item.visual.horas,
+    'E137 · H1 pregunta la hora que su propio reloj marca');
+
+  /* E138 · Las OPCIONES-FRASE no desbordan su botón (3.2.0). «10 y media» en
+     la celda cuadrada de una cifra se salía por los lados sin que nada
+     fallara. Se monta el componente real y se MIDE el desbordamiento; leer el
+     CSS diría «auto» y se quedaría tan ancho. */
+  (function () {
+    const itemHora = {
+      formato: 'opciones4',
+      consigna: '¿Qué hora marca el reloj?',
+      respuesta: '10 y media', respuestaFraccion: true,
+      distractoresFijos: ['10 en punto', '11 y media', '11 en punto']
+    };
+    const ops = itemHora.distractoresFijos.map(function (v) { return { valor: v }; })
+      .concat([{ valor: itemHora.respuesta }]);
+    CB.componentes.opciones4(itemHora, ops, function () {});
+    const rej = document.querySelector('.rejilla-respuestas');
+    if (!t.ok(!!rej, 'E138 · el componente de opciones se ha montado')) return;
+    t.ok(rej.classList.contains('rejilla-respuestas--texto'),
+      'E138 · las opciones-frase activan el modificador de texto');
+    const desbordados = Array.from(rej.querySelectorAll('button')).filter(function (b) {
+      return b.scrollWidth > b.clientWidth + 1;
+    });
+    t.ok(desbordados.length === 0,
+      'E138 · ninguna opción-frase desborda su botón',
+      desbordados.map(function (b) {
+        return b.textContent + ' (' + b.scrollWidth + '>' + b.clientWidth + ')';
+      }).join(', '));
+  })();
+
   const contV = document.getElementById('vitrina-premios');
   if (contV) {
     CB.casa.pintarVitrina(pV);

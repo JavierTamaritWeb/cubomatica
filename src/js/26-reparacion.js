@@ -32,7 +32,9 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'fracciones':         return 'barrasComparativas';
     case 'decimales':
     case 'porcentajes':
-    case 'enteros':            return 'rectaNumerica';
+    case 'enteros':
+    case 'medida':
+    case 'tiempo':             return 'rectaNumerica';
     case 'problemas_comparacion':
     case 'problemas_igualacion':
     case 'problemas_cambio':

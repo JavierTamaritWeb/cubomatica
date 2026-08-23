@@ -223,6 +223,10 @@ CB.ui.pintarItem = function (item) {
     cont.appendChild(CB.ui.barraFraccion(item.visual.partes, item.visual.sombreadas));
   }
 
+  if (item.visual && item.visual.tipo === 'reloj') {
+    cont.appendChild(CB.ui.relojAnalogico(item.visual.horas, item.visual.minutos));
+  }
+
   if (item.preguntaPrevia) {
     cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
   }
@@ -283,6 +287,59 @@ CB.ui.barraFraccion = function (partes, sombreadas) {
   caja.appendChild(rej);
   caja.setAttribute('aria-label',
     sombreadas + ' de ' + partes + ' partes pintadas');
+  return caja;
+};
+
+/* El reloj analógico (3.2.0): esfera CUADRADA con bisel — un reloj vóxel no
+   pide disculpas por no ser redondo, y border-radius está prohibido. Las
+   manecillas son rectángulos girados con transform estático: la regla de
+   steps() gobierna el MOVIMIENTO, y aquí no se mueve nada. Como el conteo
+   canta sus bloques, el reloj canta su hora en el aria-label: para quien no
+   ve la esfera, la etiqueta ES la esfera. */
+CB.ui.relojAnalogico = function (horas, minutos) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const esfera = CB.ui.crear('div');
+  esfera.style.position = 'relative';
+  esfera.style.width = '140px'; esfera.style.height = '140px';
+  esfera.style.background = 'var(--bg-caja, #FFF8E7)';
+  esfera.style.boxShadow = 'inset 4px 4px 0 0 var(--deco-piedra-cla), ' +
+                           'inset -4px -4px 0 0 var(--deco-piedra-osc)';
+
+  [['12', '50%', '8px'], ['3', 'calc(100% - 16px)', '50%'],
+   ['6', '50%', 'calc(100% - 22px)'], ['9', '8px', '50%']].forEach(function (n) {
+    const cifra = CB.ui.crear('span', null, n[0]);
+    cifra.style.position = 'absolute';
+    cifra.style.left = n[1]; cifra.style.top = n[2];
+    cifra.style.transform = 'translate(-50%, 0)';
+    cifra.style.fontSize = '18px';
+    esfera.appendChild(cifra);
+  });
+
+  function manecilla(largo, grosor, grados) {
+    const m = CB.ui.crear('span');
+    m.style.position = 'absolute';
+    m.style.left = '50%'; m.style.top = '50%';
+    m.style.width = grosor + 'px'; m.style.height = largo + 'px';
+    m.style.background = 'var(--texto-principal, #2B2118)';
+    m.style.transformOrigin = '50% 100%';
+    m.style.transform = 'translate(-50%, -100%) rotate(' + grados + 'deg)';
+    return m;
+  }
+  esfera.appendChild(manecilla(34, 8, ((horas % 12) * 30) + (minutos * 0.5)));
+  esfera.appendChild(manecilla(52, 4, minutos * 6));
+
+  const centro = CB.ui.crear('span');
+  centro.style.position = 'absolute';
+  centro.style.left = '50%'; centro.style.top = '50%';
+  centro.style.width = '10px'; centro.style.height = '10px';
+  centro.style.transform = 'translate(-50%, -50%)';
+  centro.style.background = 'var(--texto-principal, #2B2118)';
+  esfera.appendChild(centro);
+
+  caja.appendChild(esfera);
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label', 'Reloj con la manecilla corta en las ' + horas +
+    (minutos ? ' y la larga marcando ' + minutos + ' minutos' : ' en punto'));
   return caja;
 };
 

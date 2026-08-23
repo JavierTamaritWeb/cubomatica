@@ -879,6 +879,19 @@ button:disabled {
   grid-template-columns: repeat(2, auto);
 }
 
+.rejilla-respuestas--texto {
+  grid-template-columns: repeat(2, auto);
+}
+
+.rejilla-respuestas--texto .rejilla-respuestas__opcion {
+  width: auto;
+  min-width: var(--lado);
+  height: auto;
+  min-height: var(--lado);
+  padding: var(--e2) var(--e3);
+  font-size: var(--tam-texto-min);
+}
+
 .teclado-bloques {
   display: grid;
   grid-template-columns: repeat(3, var(--lado-respuesta));

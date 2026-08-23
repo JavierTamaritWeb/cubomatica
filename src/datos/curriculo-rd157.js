@@ -80,7 +80,19 @@ CB.CURRICULO = {
     'A3.5': 'Cantidad (3.er ciclo). Fracciones: equivalencia, comparación, número mixto y operaciones sencillas.',
     'A3.6': 'Cantidad (3.er ciclo). Números decimales: comparación, redondeo y las cuatro operaciones en contextos cotidianos.',
     'A3.7': 'Relaciones (3.er ciclo). Porcentajes y proporcionalidad directa en situaciones de compra y de la vida cotidiana.',
-    'A3.8': 'Cantidad (3.er ciclo). Números enteros negativos en contextos cotidianos: temperaturas, alturas y plantas de un edificio.'
+    'A3.8': 'Cantidad (3.er ciclo). Números enteros negativos en contextos cotidianos: temperaturas, alturas y plantas de un edificio.',
+
+    /* SENTIDO DE LA MEDIDA (bloque B), 3.2.0. Mismo criterio que el bloque A:
+       saberes resumidos con fidelidad por ciclo; secuenciación por curso
+       propia del proyecto. */
+    'B1.a': 'Magnitud (1.er ciclo). Comparación y medición de longitudes con unidades naturales y convencionales en situaciones cotidianas.',
+    'B1.b': 'Medición del tiempo (1.er ciclo). Lectura del reloj analógico y digital: horas en punto y medias horas. El calendario.',
+    'B2.a': 'Magnitud (2.º ciclo). Longitud, masa y capacidad: unidades convencionales (km, m, cm; kg, g; l, ml) y conversiones sencillas.',
+    'B2.b': 'Medición del tiempo (2.º ciclo). Lectura del reloj hasta cuartos y minutos; relación entre horas y minutos.',
+    'B2.c': 'Medición (2.º ciclo). El perímetro de figuras sencillas en contextos de la vida cotidiana.',
+    'B3.a': 'Magnitud (3.er ciclo). El sistema métrico decimal: equivalencias y conversiones entre unidades, con expresión decimal.',
+    'B3.b': 'Medición (3.er ciclo). Áreas del cuadrado, del rectángulo y del triángulo en cuadrículas y en situaciones reales.',
+    'B3.c': 'Medición del tiempo (3.er ciclo). Horas, minutos y segundos: equivalencias y operaciones sencillas con tiempos.'
   },
 
   /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */
@@ -93,7 +105,7 @@ CB.CURRICULO = {
   /* Bloques del área y qué cubre este juego */
   bloques: {
     A: { nombre: 'Sentido numérico',      cubierto: true  },
-    B: { nombre: 'Sentido de la medida',  cubierto: false },
+    B: { nombre: 'Sentido de la medida',  cubierto: true  },   /* desde 3.2.0 */
     C: { nombre: 'Sentido espacial',      cubierto: false },
     D: { nombre: 'Sentido algebraico',    cubierto: false },
     E: { nombre: 'Sentido estocástico',   cubierto: false },

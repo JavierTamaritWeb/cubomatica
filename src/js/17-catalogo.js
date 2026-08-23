@@ -18,7 +18,10 @@ CB.catalogo.FAMILIAS = {
   F: { puntosBase: 120, tIdeal: 10000, tLimite: 30000, beta: [450, 1050] },
   C: { puntosBase: 110, tIdeal: 9000,  tLimite: 27000, beta: [450, 1050] },
   T: { puntosBase: 130, tIdeal: 12000, tLimite: 36000, beta: [500, 1100] },
-  Z: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [400, 1000] }
+  Z: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [400, 1000] },
+  /* Sentido de la medida (3.2.0): B magnitudes y H tiempo. */
+  B: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [400, 1000] },
+  H: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] }
 };
 
 /* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
@@ -59,7 +62,10 @@ CB.catalogo.TABLAS = {
 
   /* Dinero: 2 */
   ['E9','Contar monedas hasta 10 euros','dinero',0,10,0,2,'monedas','A.5',['2.1','5.2'],['S17'],40,false,null],
-  ['E10','Pagar justo hasta 20 euros','dinero',0,20,0,3,'monedas','A.5',['2.1','2.2'],['E9'],19,false,null]
+  ['E10','Pagar justo hasta 20 euros','dinero',0,20,0,3,'monedas','A.5',['2.1','2.2'],['E9'],19,false,null],
+  /* Medida y tiempo (3.2.0): 2 */
+  ['B1','Medir con bloques','medida',0,10,0,2,'teclado','B1.a',['5.2','1.2'],['N17'],6,false,null],
+  ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null]
   ],
 
   /* ——— 2.º de Primaria: los 92 originales. ——— */
@@ -168,7 +174,11 @@ CB.catalogo.TABLAS = {
   ['V5','Orden y posición','vocabulario',1,20,0,3,'ordenar','A.4.b',['6.1'],['N14'],28,false,null],
   ['V6','Las palabras del dinero','vocabulario',0,0,0,3,'opciones4','A.5',['6.1','5.2'],['E1'],6,false,null],
   ['V7','Veces, doble y mitad','vocabulario',0,0,0,3,'opciones4','A.3.a',['6.1'],['M1'],6,false,null],
-  ['V8','Las palabras de los problemas','vocabulario',0,0,0,3,'opciones4','A.3.b',['6.1','1.1'],['P1'],6,false,null]
+  ['V8','Las palabras de los problemas','vocabulario',0,0,0,3,'opciones4','A.3.b',['6.1','1.1'],['P1'],6,false,null],
+  /* Medida y tiempo (3.2.0): 3 */
+  ['B2','Centímetros y metros','medida',0,900,0,3,'teclado','B1.a',['5.2','2.1'],['N9'],11,false,null],
+  ['B3','¿Con qué se mide?','medida',0,0,0,3,'opciones4','B1.a',['5.2','6.1'],['E1'],4,false,null],
+  ['H2','En punto y y media','tiempo',0,12,0,3,'opciones4','B1.b',['5.2','6.1'],['H1'],16,false,null]
   ],
 
   /* ——— 3.º de Primaria (3.1.0): 36 niveles. Techos 999 / 9.999 / 99.999. ——— */
@@ -208,7 +218,12 @@ CB.catalogo.TABLAS = {
   ['P28','Comparar: referente con más (3.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
   ['P29','Comparar: referente con menos (3.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P10'],600,false,null],
   ['E11','Céntimos: contar y equivaler','dinero',0,300,0,2,'teclado','A2.6',['2.1','5.2'],['E4'],16,false,null],
-  ['E12','La compra grande','dinero',0,999,0,3,'teclado','A2.6',['2.1','2.2'],['E7'],1481,false,null]
+  ['E12','La compra grande','dinero',0,999,0,3,'teclado','A2.6',['2.1','2.2'],['E7'],1481,false,null],
+  /* Medida y tiempo (3.2.0): 4 */
+  ['B4','De metros a centímetros','medida',0,900,0,1,'teclado','B2.a',['5.2','2.1'],['B2'],11,false,null],
+  ['B5','Gramos y kilos','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
+  ['B6','El perímetro','medida',0,100,0,3,'teclado','B2.c',['1.2','2.1'],['M13','B4'],44,false,null],
+  ['H3','Los cuartos','tiempo',0,12,0,2,'opciones4','B2.b',['5.2','6.1'],['H2'],33,false,null]
   ],
 
   /* ——— 4.º de Primaria: 34 niveles. Techos 99.999 / 499.999 / 999.999. ——— */
@@ -246,7 +261,12 @@ CB.catalogo.TABLAS = {
   ['P33','Cuánto tenía antes (4.º)','problemas_cambio',0,999,0,3,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
   ['P34','Comparar: referente con más (4.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
   ['E13','El cambio con céntimos','dinero',0,10,0,3,'teclado','A2.6',['2.1','2.2'],['C4','E6'],10,false,null,'A2.5'],
-  ['E14','El presupuesto','dinero',0,999,0,2,'teclado','A2.6',['2.1','2.2'],['E12'],6001,false,null]
+  ['E14','El presupuesto','dinero',0,999,0,2,'teclado','A2.6',['2.1','2.2'],['E12'],6001,false,null],
+  /* Medida y tiempo (3.2.0): 4 */
+  ['B7','Kilómetros y metros','medida',0,9000,0,1,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
+  ['B8','Litros y mililitros','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B5'],11,false,null],
+  ['B9','Perímetros de figuras','medida',0,120,0,2,'teclado','B2.c',['2.1','3.1'],['B6'],32,false,null],
+  ['H4','El reloj de minutos','tiempo',0,12,0,3,'opciones4','B2.b',['5.2','6.1'],['H3'],92,false,null]
   ],
 
   /* ——— 5.º de Primaria: 29 niveles. Techos 999.999 / 9.999.999 / íd. ——— */
@@ -279,7 +299,12 @@ CB.catalogo.TABLAS = {
   ['P36','Igualar: referente, quitar (5.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
   ['P37','Cuánto tenía antes de perder (5.º)','problemas_cambio',0,999,0,2,'teclado','A.4.c',['1.1','2.1','2.3'],['P8'],600,false,null],
   ['P38','Comparar: referente con menos (5.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P10'],600,false,null],
-  ['P39','Juntar: el total (5.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P3'],600,false,null]
+  ['P39','Juntar: el total (5.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P3'],600,false,null],
+  /* Medida y tiempo (3.2.0): 4 */
+  ['B10','El sistema métrico','medida',0,9999,0,1,'teclado','B3.a',['5.2','2.1'],['B7','C1'],178,false,null],
+  ['B11','El área del rectángulo','medida',0,81,0,2,'teclado','B3.b',['1.2','2.1'],['B6','M13'],44,false,null],
+  ['B12','Masa y capacidad con coma','medida',0,9999,0,2,'teclado','B3.a',['5.2','2.1'],['B8'],118,false,null],
+  ['H5','Horas y minutos','tiempo',0,300,0,3,'teclado','B3.c',['2.1','5.2'],['H4','M13'],33,false,null]
   ],
 
   /* ——— 6.º de Primaria: 31 niveles. Techo 9.999.999 en los tres. ——— */
@@ -314,7 +339,12 @@ CB.catalogo.TABLAS = {
   ['P41','Igualar: referente, quitar (6.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
   ['P42','Comparar: referente con más (6.º)','problemas_comparacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
   ['P43','Cuánto tenía antes (6.º)','problemas_cambio',0,999,0,3,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
-  ['P44','Juntar: la otra parte (6.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P4'],600,false,null]
+  ['P44','Juntar: la otra parte (6.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P4'],600,false,null],
+  /* Medida y tiempo (3.2.0): 4 */
+  ['B13','Área del cuadrado y del triángulo','medida',0,144,0,1,'teclado','B3.b',['2.1'],['B11'],46,false,null],
+  ['B14','Conversiones con coma','medida',0,9999,0,2,'teclado','B3.a',['2.1','5.2'],['B10','C2'],660,false,null],
+  ['B15','Problemas de medida','medida',0,9999,0,3,'teclado','B2.c',['1.1','2.1'],['B9','D3'],239,false,null,'B3.a'],
+  ['H6','Minutos y segundos','tiempo',0,3600,0,2,'teclado','B3.c',['2.1','5.2'],['H5','M16'],11,false,null]
   ]
 };
 
@@ -348,6 +378,14 @@ CB.catalogo.BETA_CURSO = { 1: -160, 2: 0, 3: 150, 4: 300, 5: 450, 6: 600 };
    en 1 — sus 92 betas no se mueven (E127). */
 CB.catalogo.ANCHO_BETA_CURSO = { 1: 0.4, 2: 1, 3: 0.8, 4: 0.8, 5: 0.8, 6: 0.8 };
 
+/* Tope del SALTO de beta entre niveles consecutivos de una familia×curso
+   (3.2.0). Sin él, una familia con dos niveles en un curso repartía el rango
+   ENTERO entre ambos: «¿Con qué se mide?» (B3, 2.º) salía con β1000 — más
+   difícil que una suma de tres cifras con llevada — y el niño sintético flojo
+   caía por debajo del 75 %. En las familias pobladas de 2.º el salto real es
+   de 45-91 puntos, así que este tope no las toca: E127 lo certifica. */
+CB.catalogo.PASO_BETA_MAX = 130;
+
 CB.catalogo.CURSOS = [];
 
 /* Lo que cada curso tiene PERMITIDO en sus números (3.1.0). La comparten la
@@ -366,7 +404,8 @@ CB.catalogo.LIMITES_CURSO = {
   const familiaDe = { N: 'numeracion', S: 'sumas', R: 'restas', M: 'multiplicacion',
                     P: 'problemas', E: 'dinero', V: 'vocabulario',
                     D: 'division', F: 'fracciones', C: 'decimales',
-                    T: 'porcentajes', Z: 'enteros' };
+                    T: 'porcentajes', Z: 'enteros',
+                    B: 'medida', H: 'tiempo' };
 
   const cursos = [];
   let c;
@@ -393,7 +432,9 @@ CB.catalogo.LIMITES_CURSO = {
     }).length;
     const pos = (total > 1) ? (contadorFamilia[letra] - 1) / (total - 1) : 0;
     const ancho = CB.catalogo.ANCHO_BETA_CURSO[curso] || 1;
-    const beta = Math.round(fam.beta[0] + pos * ancho * (fam.beta[1] - fam.beta[0])) +
+    const spanEfectivo = Math.min(ancho * (fam.beta[1] - fam.beta[0]),
+                                  CB.catalogo.PASO_BETA_MAX * Math.max(1, total - 1));
+    const beta = Math.round(fam.beta[0] + pos * spanEfectivo) +
                  (CB.catalogo.BETA_CURSO[curso] || 0);
 
     const tI = fam.tIdeal;
@@ -432,7 +473,8 @@ CB.catalogo.LIMITES_CURSO = {
                 M: CB.gen.multiplicacion, P: CB.gen.problemas,
                 E: CB.gen.dinero, V: CB.gen.vocabulario,
                 D: CB.gen.division, F: CB.gen.fracciones, C: CB.gen.decimales,
-                T: CB.gen.porcentajes, Z: CB.gen.enteros }[letra];
+                T: CB.gen.porcentajes, Z: CB.gen.enteros,
+                B: CB.gen.medida, H: CB.gen.tiempo }[letra];
 
     nivel.generar = (function (m, i) {
       return function (rng, D, ctx) {
@@ -591,7 +633,8 @@ CB.MUNDOS = [
               'N23','N24','N25','N26','N27','N28','N29','S24','R21',
               'N30','N31','N32','N33','S26','R23',
               'N34','N35','N36','N37','N38','N39',
-              'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4'] },
+              'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4',
+              'H1','H2','H3','H4','H5','H6'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -604,7 +647,8 @@ CB.MUNDOS = [
               'S22','S23','R19','R20','E11','E12',
               'S25','R22','C1','C2','C3','C4','C5','E13','E14',
               'C6','C7','C8','C9','C10','C11',
-              'C12','C13','C14','C15'] },
+              'C12','C13','C14','C15',
+              'B2','B3','B5','B8','B12','B14'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
@@ -615,7 +659,8 @@ CB.MUNDOS = [
               'F1','F2','F3','F4','P25','P26','P27','P28','P29',
               'F5','F6','F7','F8','F9','P30','P31','P32','P33','P34',
               'F10','F11','F12','F13','F14','F15','P35','P36','P37','P38','P39',
-              'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44'] },
+              'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44',
+              'B1','B4','B7','B10','B15'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
@@ -627,7 +672,8 @@ CB.MUNDOS = [
               'M11','M12','M13','M14','M15','M16','D1','D2','D3','D4','D5','D6',
               'M17','M18','M19','M20','D7','D8','D9','D10','D11',
               'M21','M22','D12','D13','D14','D15',
-              'T1','T2','T3','T4','T5','T6','D16','D17'] }
+              'T1','T2','T3','T4','T5','T6','D16','D17',
+              'B6','B9','B11','B13'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {

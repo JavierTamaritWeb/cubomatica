@@ -14,7 +14,8 @@ CB.adaptativo.SLUGS = [
   'problemas_cambio', 'problemas_combinacion',
   'problemas_comparacion', 'problemas_igualacion',
   'dinero', 'vocabulario',
-  'division', 'fracciones', 'decimales', 'porcentajes', 'enteros'
+  'division', 'fracciones', 'decimales', 'porcentajes', 'enteros',
+  'medida', 'tiempo'
 ];
 
 CB.adaptativo.THETA_INICIAL = 1000;

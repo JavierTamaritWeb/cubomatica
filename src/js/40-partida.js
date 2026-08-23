@@ -150,7 +150,7 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   /* 3) CUOTA: al menos 1 ítem de cada bloque desbloqueado. Las cinco letras
      nuevas solo existen desde 3.º: en los cursos bajos su lista sale vacía y
      el bucle las salta solo. */
-  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V', 'D', 'F', 'C', 'T', 'Z'];
+  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V', 'D', 'F', 'C', 'T', 'Z', 'B', 'H'];
   for (i = 0; i < letras.length; i++) {
     (function (letra) {
       const deLaLetra = nivelesMundo.filter(function (id) {
@@ -1431,7 +1431,8 @@ CB.partida.NOMBRES_DESTREZA = {
   vocabulario: 'Las palabras',
   division: 'La división', fracciones: 'Las fracciones',
   decimales: 'Los números con coma', porcentajes: 'El tanto por ciento',
-  enteros: 'Los números bajo cero'
+  enteros: 'Los números bajo cero',
+  medida: 'Las medidas', tiempo: 'El reloj y el tiempo'
 };
 CB.partida.nombreDestreza = function (slug) {
   return CB.partida.NOMBRES_DESTREZA[slug] || slug;

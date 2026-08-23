@@ -510,3 +510,21 @@ CB.ERRORES['E-C-ALINEACION'] = {
   pista: 'Coloca coma debajo de coma antes de operar.',
   reparacion: 'rectaNumerica'
 };
+
+/* ——— Medida y tiempo (3.2.0): 2 códigos más ——— */
+
+CB.ERRORES['E-B-UNIDAD-CORRIDA'] = {
+  familia: 'B', diagnostico: true,
+  pista: 'Cuenta bien los ceros del cambio de unidad.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.respuesta !== 'number' || item.respuesta < 10) return null;
+    return (item.respuesta % 10 === 0) ? item.respuesta / 10 : item.respuesta * 10;
+  }
+};
+
+CB.ERRORES['E-H-MEDIA-CONFUNDIDA'] = {
+  familia: 'H', diagnostico: false,
+  pista: 'La manecilla corta dice la hora; la larga, los minutos.',
+  reparacion: 'rectaNumerica'
+};

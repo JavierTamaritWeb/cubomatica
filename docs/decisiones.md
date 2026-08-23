@@ -4064,3 +4064,39 @@ decisiones que hay que conocer:
   guion. Queda margen (432 de 480) para las fases B-E.
 - **3.1.0, no 4.0.0**: el esquema de perfil no cambia (v4). La regla escrita
   del proyecto manda.
+
+---
+
+## D-3.2.0 · El sentido de la medida (Fase 2 de los cursos)
+
+El bloque B entra en el juego: 21 niveles (catálogo: 264) en dos familias — B
+magnitudes, H tiempo — repartidos por los seis cursos, con un guion nuevo
+(manifiesto 52 → 53) y dos destrezas nuevas (20). Decisiones:
+
+- **`CB.LEGAL.ALCANCE` y `bloques.B.cubierto` cambiaron JUNTOS con su
+  guardián**, como manda la regla: el texto legal dice ahora que se cubren A y
+  B y que NO se cubren C, D ni E, y `casos-curriculo.js` comprueba las dos
+  mitades. Los ocho saberes de bloque B declarados tienen nivel.
+- **El reloj analógico es un visual, no una imagen**: esfera CUADRADA con
+  bisel (border-radius no existe en este proyecto y un reloj vóxel no pide
+  disculpas), manecillas como rectángulos con transform ESTÁTICO — la regla de
+  steps() gobierna el movimiento y aquí nada se mueve — y el aria-label canta
+  la hora, como el conteo canta sus bloques (E137, que mide los ángulos
+  reales).
+- **La lectura del reloj se responde con FRASES** («10 y media», «4 menos
+  cuarto»): cadenas con el mismo mecanismo que 'c20' y '3/4'. Eso destapó que
+  la celda de opciones estaba dimensionada para UNA CIFRA: «10 en punto»
+  desbordaba el botón sin que nada fallara. El modificador
+  `rejilla-respuestas--texto` deja que el contenido mande el ancho, y E138 lo
+  MIDE (scrollWidth contra clientWidth) en el componente real: leer el CSS
+  habría dicho «auto» y se habría quedado tan ancho.
+- **El tope del salto de beta** (`PASO_BETA_MAX = 130`): una familia con dos
+  niveles en un curso repartía el rango entero entre ambos y «¿Con qué se
+  mide?» salía con β1000 — el niño sintético flojo cayó al 70 % y lo cantó. En
+  las familias pobladas de 2.º el salto real es de 45-91, así que el tope no
+  las toca (E127 lo certifica). Es la MISMA lección que S21 en 3.0.0, ahora
+  resuelta en general y no caso a caso.
+- **Conversiones**: enteras hasta 4.º; desde 5.º el decimal aparece en la
+  consigna (2,5 m) con respuesta entera, y solo en 6.º la respuesta lleva coma
+  (B14). El error de la unidad corrida (×10 por ×100) tiene código y
+  recomendación propios.

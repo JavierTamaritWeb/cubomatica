@@ -216,3 +216,18 @@ CB.datos.RECOMENDACIONES['E-C-ALINEACION'] = {
              'Primero solo COLOCAR cinco sumas con la coma en su columna, sin ' +
              'resolver ninguna. Colocar es la mitad de la cuenta.'
 };
+
+/* ——— Medida y tiempo (3.2.0) ——— */
+
+CB.datos.RECOMENDACIONES['E-B-UNIDAD-CORRIDA'] = {
+  frase: 'Convierte con un cero de más o de menos: pasa de metros a centímetros multiplicando por 10.',
+  actividad: 'La escalera de unidades en papel: km, m, cm, mm en peldaños. Cada ' +
+             'peldaño que se baja es UN cero más, y se baja con el dedo, peldaño a ' +
+             'peldaño, contando los ceros en voz alta.'
+};
+CB.datos.RECOMENDACIONES['E-H-MEDIA-CONFUNDIDA'] = {
+  frase: 'Confunde las manecillas: lee la corta como minutos o la larga como horas.',
+  actividad: 'Un reloj de cartón con las manecillas de dos colores. Primero solo la ' +
+             'corta («¿qué hora es, sin minutos?») durante un día entero; la larga se ' +
+             'añade al día siguiente. Una manecilla cada vez.'
+};

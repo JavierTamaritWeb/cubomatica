@@ -80,7 +80,19 @@ CB.CURRICULO = {
     'A3.5': 'Cantidad (3.er ciclo). Fracciones: equivalencia, comparación, número mixto y operaciones sencillas.',
     'A3.6': 'Cantidad (3.er ciclo). Números decimales: comparación, redondeo y las cuatro operaciones en contextos cotidianos.',
     'A3.7': 'Relaciones (3.er ciclo). Porcentajes y proporcionalidad directa en situaciones de compra y de la vida cotidiana.',
-    'A3.8': 'Cantidad (3.er ciclo). Números enteros negativos en contextos cotidianos: temperaturas, alturas y plantas de un edificio.'
+    'A3.8': 'Cantidad (3.er ciclo). Números enteros negativos en contextos cotidianos: temperaturas, alturas y plantas de un edificio.',
+
+    /* SENTIDO DE LA MEDIDA (bloque B), 3.2.0. Mismo criterio que el bloque A:
+       saberes resumidos con fidelidad por ciclo; secuenciación por curso
+       propia del proyecto. */
+    'B1.a': 'Magnitud (1.er ciclo). Comparación y medición de longitudes con unidades naturales y convencionales en situaciones cotidianas.',
+    'B1.b': 'Medición del tiempo (1.er ciclo). Lectura del reloj analógico y digital: horas en punto y medias horas. El calendario.',
+    'B2.a': 'Magnitud (2.º ciclo). Longitud, masa y capacidad: unidades convencionales (km, m, cm; kg, g; l, ml) y conversiones sencillas.',
+    'B2.b': 'Medición del tiempo (2.º ciclo). Lectura del reloj hasta cuartos y minutos; relación entre horas y minutos.',
+    'B2.c': 'Medición (2.º ciclo). El perímetro de figuras sencillas en contextos de la vida cotidiana.',
+    'B3.a': 'Magnitud (3.er ciclo). El sistema métrico decimal: equivalencias y conversiones entre unidades, con expresión decimal.',
+    'B3.b': 'Medición (3.er ciclo). Áreas del cuadrado, del rectángulo y del triángulo en cuadrículas y en situaciones reales.',
+    'B3.c': 'Medición del tiempo (3.er ciclo). Horas, minutos y segundos: equivalencias y operaciones sencillas con tiempos.'
   },
 
   /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */
@@ -93,7 +105,7 @@ CB.CURRICULO = {
   /* Bloques del área y qué cubre este juego */
   bloques: {
     A: { nombre: 'Sentido numérico',      cubierto: true  },
-    B: { nombre: 'Sentido de la medida',  cubierto: false },
+    B: { nombre: 'Sentido de la medida',  cubierto: true  },   /* desde 3.2.0 */
     C: { nombre: 'Sentido espacial',      cubierto: false },
     D: { nombre: 'Sentido algebraico',    cubierto: false },
     E: { nombre: 'Sentido estocástico',   cubierto: false },
@@ -1032,6 +1044,21 @@ CB.datos.RECOMENDACIONES['E-C-ALINEACION'] = {
              'resolver ninguna. Colocar es la mitad de la cuenta.'
 };
 
+/* ——— Medida y tiempo (3.2.0) ——— */
+
+CB.datos.RECOMENDACIONES['E-B-UNIDAD-CORRIDA'] = {
+  frase: 'Convierte con un cero de más o de menos: pasa de metros a centímetros multiplicando por 10.',
+  actividad: 'La escalera de unidades en papel: km, m, cm, mm en peldaños. Cada ' +
+             'peldaño que se baja es UN cero más, y se baja con el dedo, peldaño a ' +
+             'peldaño, contando los ceros en voz alta.'
+};
+CB.datos.RECOMENDACIONES['E-H-MEDIA-CONFUNDIDA'] = {
+  frase: 'Confunde las manecillas: lee la corta como minutos o la larga como horas.',
+  actividad: 'Un reloj de cartón con las manecillas de dos colores. Primero solo la ' +
+             'corta («¿qué hora es, sin minutos?») durante un día entero; la larga se ' +
+             'añade al día siguiente. Una manecilla cada vez.'
+};
+
 /* 00-nucleo.js — CB.util y CB.LEGAL */
 
 var CB = CB || {};
@@ -1271,7 +1298,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.1.0';
+CB.VERSION = '3.2.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -1284,11 +1311,12 @@ CB.LEGAL = {
          'y las enseñanzas mínimas de la Educación Primaria (BOE núm. 52, de 2 de marzo ' +
          'de 2022; referencia BOE-A-2022-3296).',
 
-  ALCANCE: 'Cubomática trabaja el bloque A (Sentido numérico) y, de forma transversal, ' +
-           'el bloque F (Sentido socioafectivo) de los saberes básicos del primer ciclo ' +
-           'de Matemáticas del Real Decreto 157/2022. NO trabaja los bloques B (sentido ' +
-           'de la medida), C (sentido espacial), D (sentido algebraico) ni E (sentido ' +
-           'estocástico): esos saberes se trabajan en el aula y este juego no los sustituye.',
+  ALCANCE: 'Cubomática trabaja los bloques A (Sentido numérico) y B (Sentido de la ' +
+           'medida) y, de forma transversal, el bloque F (Sentido socioafectivo) de los ' +
+           'saberes básicos de Matemáticas del Real Decreto 157/2022, en los seis cursos ' +
+           'de Primaria. NO trabaja los bloques C (sentido espacial), D (sentido ' +
+           'algebraico) ni E (sentido estocástico): esos saberes se trabajan en el aula ' +
+           'y este juego no los sustituye.',
 
   SECUENCIACION: 'El Real Decreto fija los saberes por CICLO (1.º y 2.º juntos), no por ' +
                  'curso ni por trimestre. La distribución por curso y trimestre de este ' +
@@ -6676,6 +6704,394 @@ CB.gen.enteros.Z4 = function (rng, D) {
   };
 };
 
+/* 19f-gen-medida.js — Sentido de la medida (3.2.0): B1…B15 (CB.gen.medida) y
+   H1…H6 (CB.gen.tiempo). Regla de la casa: los decimales solo aparecen en la
+   CONSIGNA desde 4.º-5.º y solo son RESPUESTA con conComa; el resto de
+   respuestas son enteros. El reloj es un visual, nunca una imagen. */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.medida = {};
+CB.gen.tiempo = {};
+
+/* Conversión entre dos unidades con factor entero: la mitad de las veces se
+   pregunta en un sentido y la mitad en el otro. */
+function itemConversion(rng, grande, chica, factor, nMax, D) {
+  const alReves = rng() < 0.5;
+  const n = CB.util.ent(rng, 2, (D === 1) ? Math.max(2, Math.ceil(nMax / 2)) : nMax);
+  if (alReves) {
+    return {
+      formato: 'teclado',
+      consigna: '¿Cuántos ' + grande + ' son ' + CB.gen.motor.sep(n * factor) + ' ' + chica + '?',
+      operacion: '÷', operandos: [n * factor, factor],
+      respuesta: n,
+      expr: 'cv' + grande + n + 'r',
+      diagnostico: true
+    };
+  }
+  return {
+    formato: 'teclado',
+    consigna: n + ' ' + grande + ' son… ¿cuántos ' + chica + '?',
+    operacion: '×', operandos: [n, factor],
+    respuesta: n * factor,
+    expr: 'cv' + grande + n,
+    diagnostico: true,
+    tablasCompletas: true
+  };
+}
+CB.gen.medida._itemConversion = itemConversion;
+
+/* B1 Medir con bloques (1.º) */
+CB.gen.medida.B1 = function (rng, D) {
+  const n = CB.util.ent(rng, 2, (D === 1) ? 6 : 10);
+  return {
+    formato: 'teclado',
+    consigna: 'Cada bloque mide 1 centímetro. ¿Cuántos centímetros mide la barra?',
+    visual: { tipo: 'fraccion', partes: n, sombreadas: n },
+    respuesta: n,
+    expr: 'b1_' + n,
+    diagnostico: false
+  };
+};
+
+/* B2 Centímetros y metros (2.º) */
+CB.gen.medida.B2 = function (rng, D) {
+  return itemConversion(rng, 'metros', 'centímetros', 100, 9, D);
+};
+
+/* B3 ¿Con qué se mide? (2.º) */
+CB.gen.medida.B3 = function (rng, D) {
+  const casos = [
+    ['el agua de una botella', 'litros'],
+    ['lo que pesa una sandía', 'kilos'],
+    ['el largo de una cuerda', 'metros'],
+    ['lo que dura el recreo', 'minutos'],
+    ['lo que pesa una carta', 'gramos'],
+    ['el alto de una puerta', 'metros'],
+    ['la leche de una jarra', 'litros']
+  ];
+  const c = CB.util.elegir(rng, casos);
+  const todas = ['litros', 'kilos', 'metros', 'minutos', 'gramos'];
+  const fijos = CB.util.barajar(
+    todas.filter(function (u) { return u !== c[1]; }), rng).slice(0, 3);
+  return {
+    formato: 'opciones4',
+    consigna: '¿Con qué medirías ' + c[0] + '?',
+    respuesta: c[1],
+    respuestaFraccion: true,
+    distractoresFijos: fijos,
+    expr: 'b3_' + c[0].replace(/ /g, ''),
+    diagnostico: false
+  };
+};
+
+/* B4 De metros a centímetros (3.º) */
+CB.gen.medida.B4 = function (rng, D) {
+  return itemConversion(rng, 'metros', 'centímetros', 100, 9, D);
+};
+
+/* B5 Gramos y kilos (3.º) */
+CB.gen.medida.B5 = function (rng, D) {
+  return itemConversion(rng, 'kilos', 'gramos', 1000, 9, D);
+};
+
+/* B6 El perímetro (3.º) */
+CB.gen.medida.B6 = function (rng, D) {
+  const a = CB.util.ent(rng, 2, (D === 1) ? 5 : 9);
+  const b = CB.util.ent(rng, 2, (D === 1) ? 5 : 9);
+  return {
+    formato: 'teclado',
+    consigna: 'Un rectángulo mide ' + a + ' cm de largo y ' + b +
+              ' cm de alto. ¿Cuántos centímetros mide su borde entero?',
+    visual: { tipo: 'matriz', filas: b, columnas: a },
+    respuesta: 2 * (a + b),
+    expr: 'b6_' + a + '_' + b,
+    diagnostico: false
+  };
+};
+
+/* B7 Kilómetros y metros (4.º) */
+CB.gen.medida.B7 = function (rng, D) {
+  return itemConversion(rng, 'kilómetros', 'metros', 1000, 9, D);
+};
+
+/* B8 Litros y mililitros (4.º) */
+CB.gen.medida.B8 = function (rng, D) {
+  return itemConversion(rng, 'litros', 'mililitros', 1000, 9, D);
+};
+
+/* B9 Perímetros de figuras (4.º) */
+CB.gen.medida.B9 = function (rng, D) {
+  const n = CB.util.ent(rng, 3, (D === 1) ? 9 : 25);
+  const figura = CB.util.elegir(rng, [
+    ['un cuadrado', 4], ['un triángulo de lados iguales', 3],
+    ['un rombo de lados iguales', 4]
+  ]);
+  return {
+    formato: 'teclado',
+    consigna: 'Cada lado de ' + figura[0] + ' mide ' + n +
+              ' cm. ¿Cuál es su perímetro?',
+    operacion: '×', operandos: [figura[1], n],
+    respuesta: figura[1] * n,
+    expr: 'b9_' + figura[1] + '_' + n,
+    diagnostico: true,
+    tablasCompletas: true
+  };
+};
+
+/* B10 El sistema métrico (5.º): decimal en la pregunta, entero en la respuesta */
+CB.gen.medida.B10 = function (rng, D) {
+  const casos = [
+    ['m', 'cm', 100, 10], ['km', 'm', 1000, 10], ['cm', 'mm', 10, 10]
+  ];
+  const c = CB.util.elegir(rng, casos);
+  const decimas = CB.util.ent(rng, 11, (D === 1) ? 45 : 95);   // x,y
+  return {
+    formato: 'teclado',
+    consigna: CB.gen.motor.coma(decimas, 10) + ' ' + c[0] + ' son… ¿cuántos ' +
+              c[1] + '?',
+    respuesta: (decimas * c[2]) / 10,
+    expr: 'b10_' + c[0] + '_' + decimas,
+    diagnostico: false
+  };
+};
+
+/* B11 El área del rectángulo (5.º) */
+CB.gen.medida.B11 = function (rng, D) {
+  const a = CB.util.ent(rng, 2, (D === 1) ? 5 : 9);
+  const b = CB.util.ent(rng, 2, (D === 1) ? 5 : 9);
+  return {
+    formato: 'teclado',
+    consigna: 'Un rectángulo mide ' + a + ' cm por ' + b +
+              ' cm. ¿Cuántos cuadrados de 1 cm caben dentro?',
+    visual: { tipo: 'matriz', filas: b, columnas: a },
+    operacion: '×', operandos: [a, b],
+    respuesta: a * b,
+    expr: 'b11_' + a + '_' + b,
+    diagnostico: true,
+    tablasCompletas: true
+  };
+};
+
+/* B12 Masa y capacidad con coma (5.º) */
+CB.gen.medida.B12 = function (rng, D) {
+  const c = CB.util.elegir(rng, [['kg', 'gramos', 1000], ['l', 'mililitros', 1000]]);
+  const decimas = CB.util.ent(rng, 11, (D === 1) ? 45 : 95);
+  return {
+    formato: 'teclado',
+    consigna: CB.gen.motor.coma(decimas, 10) + ' ' + c[0] + ' son… ¿cuántos ' +
+              c[1] + '?',
+    respuesta: decimas * 100,
+    expr: 'b12_' + c[0] + '_' + decimas,
+    diagnostico: false
+  };
+};
+
+/* B13 Área del cuadrado y del triángulo (6.º) */
+CB.gen.medida.B13 = function (rng, D) {
+  if (rng() < 0.5) {
+    const l = CB.util.ent(rng, 2, (D === 1) ? 8 : 12);
+    return {
+      formato: 'teclado',
+      consigna: 'Un cuadrado tiene lados de ' + l +
+                ' cm. ¿Cuál es su área, en centímetros cuadrados?',
+      respuesta: l * l,
+      expr: 'b13c_' + l,
+      diagnostico: false
+    };
+  }
+  const base = CB.util.ent(rng, 2, (D === 1) ? 5 : 8) * 2;
+  const altura = CB.util.ent(rng, 2, 9);
+  return {
+    formato: 'teclado',
+    consigna: 'Un triángulo tiene ' + base + ' cm de base y ' + altura +
+              ' cm de altura. ¿Cuál es su área, en centímetros cuadrados?',
+    respuesta: (base * altura) / 2,
+    expr: 'b13t_' + base + '_' + altura,
+    diagnostico: false
+  };
+};
+
+/* B14 Conversiones con coma (6.º): aquí la respuesta SÍ puede llevarla */
+CB.gen.medida.B14 = function (rng, D) {
+  if (rng() < 0.5) {
+    const g = CB.util.ent(rng, 2, 9) * 100 + CB.util.ent(rng, 1, 9) * 10;
+    return {
+      formato: 'teclado', conComa: true,
+      consigna: g + ' gramos son… ¿cuántos kilos?',
+      respuesta: CB.gen.motor.dec(g, 1000) * 1,
+      expr: 'b14g_' + g,
+      diagnostico: false
+    };
+  }
+  const centesimas = CB.util.ent(rng, 105, (D === 1) ? 500 : 985);
+  return {
+    formato: 'teclado',
+    consigna: CB.gen.motor.coma(centesimas, 100) + ' km son… ¿cuántos metros?',
+    respuesta: centesimas * 10,
+    expr: 'b14k_' + centesimas,
+    diagnostico: false
+  };
+};
+
+/* B15 Problemas de medida (6.º) */
+CB.gen.medida.B15 = function (rng, D) {
+  const modo = CB.util.ent(rng, 1, 3);
+  if (modo === 1) {
+    const a = CB.util.ent(rng, 4, 30);
+    const b = CB.util.ent(rng, 3, 20);
+    return {
+      formato: 'teclado',
+      consigna: 'Un huerto rectangular mide ' + a + ' m por ' + b +
+                ' m. ¿Cuántos metros de valla hacen falta para rodearlo?',
+      respuesta: 2 * (a + b),
+      expr: 'b15v_' + a + '_' + b,
+      diagnostico: false
+    };
+  }
+  if (modo === 2) {
+    const vasos = CB.util.elegir(rng, [[1500, 250, 6], [1000, 250, 4], [1500, 500, 3], [2000, 250, 8], [1000, 200, 5]]);
+    return {
+      formato: 'teclado',
+      consigna: 'Una botella tiene ' + CB.gen.motor.coma(vasos[0] / 100, 10) +
+                ' litros. ¿Cuántos vasos de ' + vasos[1] + ' ml se pueden llenar?',
+      respuesta: vasos[2],
+      expr: 'b15b_' + vasos[0] + '_' + vasos[1],
+      diagnostico: false
+    };
+  }
+  const cajas = CB.util.ent(rng, 2, 9);
+  const peso = CB.util.elegir(rng, [250, 500, 750]);
+  return {
+    formato: 'teclado',
+    consigna: 'Cada caja pesa ' + peso + ' gramos. ¿Cuántos gramos pesan ' +
+              cajas + ' cajas?',
+    respuesta: cajas * peso,
+    expr: 'b15c_' + cajas + '_' + peso,
+    diagnostico: false
+  };
+};
+
+/* ——— El tiempo: H1…H6 ——— */
+
+function nombreHora(h, m) {
+  if (m === 0) return h + ' en punto';
+  if (m === 15) return h + ' y cuarto';
+  if (m === 30) return h + ' y media';
+  return (h % 12 + 1) + ' menos cuarto';
+}
+CB.gen.tiempo._nombreHora = nombreHora;
+
+/* H1 La hora en punto (1.º) */
+CB.gen.tiempo.H1 = function (rng, D) {
+  const h = CB.util.ent(rng, 1, (D === 1) ? 6 : 12);
+  return {
+    formato: 'teclado',
+    consigna: 'Mira el reloj. ¿Qué hora es? Escribe solo el número.',
+    visual: { tipo: 'reloj', horas: h, minutos: 0 },
+    respuesta: h,
+    expr: 'h1_' + h,
+    diagnostico: false
+  };
+};
+
+/* H2 En punto y y media (2.º) */
+CB.gen.tiempo.H2 = function (rng, D) {
+  const h = CB.util.ent(rng, 1, 12);
+  const m = (D === 1 || rng() < 0.5) ? 0 : 30;
+  const resp = nombreHora(h, m);
+  const fijos = [nombreHora(h, m === 0 ? 30 : 0),
+                 nombreHora(h % 12 + 1, m),
+                 nombreHora(h % 12 + 1, m === 0 ? 30 : 0)];
+  return {
+    formato: 'opciones4',
+    consigna: '¿Qué hora marca el reloj?',
+    visual: { tipo: 'reloj', horas: h, minutos: m },
+    respuesta: resp,
+    respuestaFraccion: true,
+    distractoresFijos: fijos,
+    expr: 'h2_' + h + '_' + m,
+    diagnostico: false
+  };
+};
+
+/* H3 Los cuartos (3.º) */
+CB.gen.tiempo.H3 = function (rng, D) {
+  const h = CB.util.ent(rng, 1, 12);
+  const m = CB.util.elegir(rng, (D === 1) ? [15, 30] : [0, 15, 30, 45]);
+  const resp = nombreHora(h, m);
+  const otras = [0, 15, 30, 45].filter(function (x) { return x !== m; });
+  const fijos = otras.map(function (x) { return nombreHora(h, x); });
+  return {
+    formato: 'opciones4',
+    consigna: '¿Qué hora marca el reloj?',
+    visual: { tipo: 'reloj', horas: h, minutos: m },
+    respuesta: resp,
+    respuestaFraccion: true,
+    distractoresFijos: fijos,
+    expr: 'h3_' + h + '_' + m,
+    diagnostico: false
+  };
+};
+
+/* H4 El reloj de minutos (4.º) */
+CB.gen.tiempo.H4 = function (rng, D) {
+  const h = CB.util.ent(rng, 1, 12);
+  const m = CB.util.ent(rng, 1, 11) * 5;
+  function txt(hh, mm) { return hh + ':' + (mm < 10 ? '0' : '') + mm; }
+  const resp = txt(h, m);
+  const fijos = [txt(h % 12 + 1, m), txt(h, (m + 5) % 60), txt(h, (m + 55) % 60)];
+  return {
+    formato: 'opciones4',
+    consigna: '¿Qué hora marca el reloj?',
+    visual: { tipo: 'reloj', horas: h, minutos: m },
+    respuesta: resp,
+    respuestaFraccion: true,
+    distractoresFijos: fijos,
+    expr: 'h4_' + h + '_' + m,
+    diagnostico: false
+  };
+};
+
+/* H5 Horas y minutos (5.º) */
+CB.gen.tiempo.H5 = function (rng, D) {
+  const h = CB.util.ent(rng, 1, (D === 1) ? 2 : 4);
+  const m = CB.util.ent(rng, 0, 11) * 5;
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuántos minutos son ' + h + (h === 1 ? ' hora' : ' horas') +
+              (m ? ' y ' + m + ' minutos' : '') + '?',
+    operacion: '×', operandos: [h, 60],
+    respuesta: h * 60 + m,
+    expr: 'h5_' + h + '_' + m,
+    diagnostico: false
+  };
+};
+
+/* H6 Minutos y segundos (6.º) */
+CB.gen.tiempo.H6 = function (rng, D) {
+  if (rng() < 0.5) {
+    const min = CB.util.ent(rng, 2, (D === 1) ? 5 : 10);
+    return {
+      formato: 'teclado',
+      consigna: '¿Cuántos segundos son ' + min + ' minutos?',
+      operacion: '×', operandos: [min, 60],
+      respuesta: min * 60,
+      expr: 'h6s_' + min,
+      diagnostico: false
+    };
+  }
+  const min2 = CB.util.ent(rng, 2, 9);
+  return {
+    formato: 'teclado',
+    consigna: '¿Cuántos minutos son ' + (min2 * 60) + ' segundos?',
+    operacion: '÷', operandos: [min2 * 60, 60],
+    respuesta: min2,
+    expr: 'h6m_' + min2,
+    diagnostico: false
+  };
+};
+
 /* 17-catalogo.js — Los 92 niveles y los 4 mundos. ESTE FICHERO ES UN CONTRATO. */
 
 var CB = CB || {};
@@ -6696,7 +7112,10 @@ CB.catalogo.FAMILIAS = {
   F: { puntosBase: 120, tIdeal: 10000, tLimite: 30000, beta: [450, 1050] },
   C: { puntosBase: 110, tIdeal: 9000,  tLimite: 27000, beta: [450, 1050] },
   T: { puntosBase: 130, tIdeal: 12000, tLimite: 36000, beta: [500, 1100] },
-  Z: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [400, 1000] }
+  Z: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [400, 1000] },
+  /* Sentido de la medida (3.2.0): B magnitudes y H tiempo. */
+  B: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [400, 1000] },
+  H: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] }
 };
 
 /* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
@@ -6737,7 +7156,10 @@ CB.catalogo.TABLAS = {
 
   /* Dinero: 2 */
   ['E9','Contar monedas hasta 10 euros','dinero',0,10,0,2,'monedas','A.5',['2.1','5.2'],['S17'],40,false,null],
-  ['E10','Pagar justo hasta 20 euros','dinero',0,20,0,3,'monedas','A.5',['2.1','2.2'],['E9'],19,false,null]
+  ['E10','Pagar justo hasta 20 euros','dinero',0,20,0,3,'monedas','A.5',['2.1','2.2'],['E9'],19,false,null],
+  /* Medida y tiempo (3.2.0): 2 */
+  ['B1','Medir con bloques','medida',0,10,0,2,'teclado','B1.a',['5.2','1.2'],['N17'],6,false,null],
+  ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null]
   ],
 
   /* ——— 2.º de Primaria: los 92 originales. ——— */
@@ -6846,7 +7268,11 @@ CB.catalogo.TABLAS = {
   ['V5','Orden y posición','vocabulario',1,20,0,3,'ordenar','A.4.b',['6.1'],['N14'],28,false,null],
   ['V6','Las palabras del dinero','vocabulario',0,0,0,3,'opciones4','A.5',['6.1','5.2'],['E1'],6,false,null],
   ['V7','Veces, doble y mitad','vocabulario',0,0,0,3,'opciones4','A.3.a',['6.1'],['M1'],6,false,null],
-  ['V8','Las palabras de los problemas','vocabulario',0,0,0,3,'opciones4','A.3.b',['6.1','1.1'],['P1'],6,false,null]
+  ['V8','Las palabras de los problemas','vocabulario',0,0,0,3,'opciones4','A.3.b',['6.1','1.1'],['P1'],6,false,null],
+  /* Medida y tiempo (3.2.0): 3 */
+  ['B2','Centímetros y metros','medida',0,900,0,3,'teclado','B1.a',['5.2','2.1'],['N9'],11,false,null],
+  ['B3','¿Con qué se mide?','medida',0,0,0,3,'opciones4','B1.a',['5.2','6.1'],['E1'],4,false,null],
+  ['H2','En punto y y media','tiempo',0,12,0,3,'opciones4','B1.b',['5.2','6.1'],['H1'],16,false,null]
   ],
 
   /* ——— 3.º de Primaria (3.1.0): 36 niveles. Techos 999 / 9.999 / 99.999. ——— */
@@ -6886,7 +7312,12 @@ CB.catalogo.TABLAS = {
   ['P28','Comparar: referente con más (3.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
   ['P29','Comparar: referente con menos (3.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P10'],600,false,null],
   ['E11','Céntimos: contar y equivaler','dinero',0,300,0,2,'teclado','A2.6',['2.1','5.2'],['E4'],16,false,null],
-  ['E12','La compra grande','dinero',0,999,0,3,'teclado','A2.6',['2.1','2.2'],['E7'],1481,false,null]
+  ['E12','La compra grande','dinero',0,999,0,3,'teclado','A2.6',['2.1','2.2'],['E7'],1481,false,null],
+  /* Medida y tiempo (3.2.0): 4 */
+  ['B4','De metros a centímetros','medida',0,900,0,1,'teclado','B2.a',['5.2','2.1'],['B2'],11,false,null],
+  ['B5','Gramos y kilos','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
+  ['B6','El perímetro','medida',0,100,0,3,'teclado','B2.c',['1.2','2.1'],['M13','B4'],44,false,null],
+  ['H3','Los cuartos','tiempo',0,12,0,2,'opciones4','B2.b',['5.2','6.1'],['H2'],33,false,null]
   ],
 
   /* ——— 4.º de Primaria: 34 niveles. Techos 99.999 / 499.999 / 999.999. ——— */
@@ -6924,7 +7355,12 @@ CB.catalogo.TABLAS = {
   ['P33','Cuánto tenía antes (4.º)','problemas_cambio',0,999,0,3,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
   ['P34','Comparar: referente con más (4.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
   ['E13','El cambio con céntimos','dinero',0,10,0,3,'teclado','A2.6',['2.1','2.2'],['C4','E6'],10,false,null,'A2.5'],
-  ['E14','El presupuesto','dinero',0,999,0,2,'teclado','A2.6',['2.1','2.2'],['E12'],6001,false,null]
+  ['E14','El presupuesto','dinero',0,999,0,2,'teclado','A2.6',['2.1','2.2'],['E12'],6001,false,null],
+  /* Medida y tiempo (3.2.0): 4 */
+  ['B7','Kilómetros y metros','medida',0,9000,0,1,'teclado','B2.a',['5.2','2.1'],['B4'],11,false,null],
+  ['B8','Litros y mililitros','medida',0,9000,0,2,'teclado','B2.a',['5.2','2.1'],['B5'],11,false,null],
+  ['B9','Perímetros de figuras','medida',0,120,0,2,'teclado','B2.c',['2.1','3.1'],['B6'],32,false,null],
+  ['H4','El reloj de minutos','tiempo',0,12,0,3,'opciones4','B2.b',['5.2','6.1'],['H3'],92,false,null]
   ],
 
   /* ——— 5.º de Primaria: 29 niveles. Techos 999.999 / 9.999.999 / íd. ——— */
@@ -6957,7 +7393,12 @@ CB.catalogo.TABLAS = {
   ['P36','Igualar: referente, quitar (5.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
   ['P37','Cuánto tenía antes de perder (5.º)','problemas_cambio',0,999,0,2,'teclado','A.4.c',['1.1','2.1','2.3'],['P8'],600,false,null],
   ['P38','Comparar: referente con menos (5.º)','problemas_comparacion',0,999,0,3,'teclado','A.4.b',['1.1','2.1','2.3'],['P10'],600,false,null],
-  ['P39','Juntar: el total (5.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P3'],600,false,null]
+  ['P39','Juntar: el total (5.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P3'],600,false,null],
+  /* Medida y tiempo (3.2.0): 4 */
+  ['B10','El sistema métrico','medida',0,9999,0,1,'teclado','B3.a',['5.2','2.1'],['B7','C1'],178,false,null],
+  ['B11','El área del rectángulo','medida',0,81,0,2,'teclado','B3.b',['1.2','2.1'],['B6','M13'],44,false,null],
+  ['B12','Masa y capacidad con coma','medida',0,9999,0,2,'teclado','B3.a',['5.2','2.1'],['B8'],118,false,null],
+  ['H5','Horas y minutos','tiempo',0,300,0,3,'teclado','B3.c',['2.1','5.2'],['H4','M13'],33,false,null]
   ],
 
   /* ——— 6.º de Primaria: 31 niveles. Techo 9.999.999 en los tres. ——— */
@@ -6992,7 +7433,12 @@ CB.catalogo.TABLAS = {
   ['P41','Igualar: referente, quitar (6.º)','problemas_igualacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P12'],600,false,null],
   ['P42','Comparar: referente con más (6.º)','problemas_comparacion',0,999,0,2,'teclado','A.4.b',['1.1','2.1','2.3'],['P9'],600,false,null],
   ['P43','Cuánto tenía antes (6.º)','problemas_cambio',0,999,0,3,'teclado','A.4.c',['1.1','2.1','2.3'],['P7'],600,false,null],
-  ['P44','Juntar: la otra parte (6.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P4'],600,false,null]
+  ['P44','Juntar: la otra parte (6.º)','problemas_combinacion',0,999,0,3,'teclado','A.3.b',['1.1','2.1','2.2'],['P4'],600,false,null],
+  /* Medida y tiempo (3.2.0): 4 */
+  ['B13','Área del cuadrado y del triángulo','medida',0,144,0,1,'teclado','B3.b',['2.1'],['B11'],46,false,null],
+  ['B14','Conversiones con coma','medida',0,9999,0,2,'teclado','B3.a',['2.1','5.2'],['B10','C2'],660,false,null],
+  ['B15','Problemas de medida','medida',0,9999,0,3,'teclado','B2.c',['1.1','2.1'],['B9','D3'],239,false,null,'B3.a'],
+  ['H6','Minutos y segundos','tiempo',0,3600,0,2,'teclado','B3.c',['2.1','5.2'],['H5','M16'],11,false,null]
   ]
 };
 
@@ -7026,6 +7472,14 @@ CB.catalogo.BETA_CURSO = { 1: -160, 2: 0, 3: 150, 4: 300, 5: 450, 6: 600 };
    en 1 — sus 92 betas no se mueven (E127). */
 CB.catalogo.ANCHO_BETA_CURSO = { 1: 0.4, 2: 1, 3: 0.8, 4: 0.8, 5: 0.8, 6: 0.8 };
 
+/* Tope del SALTO de beta entre niveles consecutivos de una familia×curso
+   (3.2.0). Sin él, una familia con dos niveles en un curso repartía el rango
+   ENTERO entre ambos: «¿Con qué se mide?» (B3, 2.º) salía con β1000 — más
+   difícil que una suma de tres cifras con llevada — y el niño sintético flojo
+   caía por debajo del 75 %. En las familias pobladas de 2.º el salto real es
+   de 45-91 puntos, así que este tope no las toca: E127 lo certifica. */
+CB.catalogo.PASO_BETA_MAX = 130;
+
 CB.catalogo.CURSOS = [];
 
 /* Lo que cada curso tiene PERMITIDO en sus números (3.1.0). La comparten la
@@ -7044,7 +7498,8 @@ CB.catalogo.LIMITES_CURSO = {
   const familiaDe = { N: 'numeracion', S: 'sumas', R: 'restas', M: 'multiplicacion',
                     P: 'problemas', E: 'dinero', V: 'vocabulario',
                     D: 'division', F: 'fracciones', C: 'decimales',
-                    T: 'porcentajes', Z: 'enteros' };
+                    T: 'porcentajes', Z: 'enteros',
+                    B: 'medida', H: 'tiempo' };
 
   const cursos = [];
   let c;
@@ -7071,7 +7526,9 @@ CB.catalogo.LIMITES_CURSO = {
     }).length;
     const pos = (total > 1) ? (contadorFamilia[letra] - 1) / (total - 1) : 0;
     const ancho = CB.catalogo.ANCHO_BETA_CURSO[curso] || 1;
-    const beta = Math.round(fam.beta[0] + pos * ancho * (fam.beta[1] - fam.beta[0])) +
+    const spanEfectivo = Math.min(ancho * (fam.beta[1] - fam.beta[0]),
+                                  CB.catalogo.PASO_BETA_MAX * Math.max(1, total - 1));
+    const beta = Math.round(fam.beta[0] + pos * spanEfectivo) +
                  (CB.catalogo.BETA_CURSO[curso] || 0);
 
     const tI = fam.tIdeal;
@@ -7110,7 +7567,8 @@ CB.catalogo.LIMITES_CURSO = {
                 M: CB.gen.multiplicacion, P: CB.gen.problemas,
                 E: CB.gen.dinero, V: CB.gen.vocabulario,
                 D: CB.gen.division, F: CB.gen.fracciones, C: CB.gen.decimales,
-                T: CB.gen.porcentajes, Z: CB.gen.enteros }[letra];
+                T: CB.gen.porcentajes, Z: CB.gen.enteros,
+                B: CB.gen.medida, H: CB.gen.tiempo }[letra];
 
     nivel.generar = (function (m, i) {
       return function (rng, D, ctx) {
@@ -7269,7 +7727,8 @@ CB.MUNDOS = [
               'N23','N24','N25','N26','N27','N28','N29','S24','R21',
               'N30','N31','N32','N33','S26','R23',
               'N34','N35','N36','N37','N38','N39',
-              'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4'] },
+              'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4',
+              'H1','H2','H3','H4','H5','H6'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -7282,7 +7741,8 @@ CB.MUNDOS = [
               'S22','S23','R19','R20','E11','E12',
               'S25','R22','C1','C2','C3','C4','C5','E13','E14',
               'C6','C7','C8','C9','C10','C11',
-              'C12','C13','C14','C15'] },
+              'C12','C13','C14','C15',
+              'B2','B3','B5','B8','B12','B14'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
@@ -7293,7 +7753,8 @@ CB.MUNDOS = [
               'F1','F2','F3','F4','P25','P26','P27','P28','P29',
               'F5','F6','F7','F8','F9','P30','P31','P32','P33','P34',
               'F10','F11','F12','F13','F14','F15','P35','P36','P37','P38','P39',
-              'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44'] },
+              'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44',
+              'B1','B4','B7','B10','B15'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
@@ -7305,7 +7766,8 @@ CB.MUNDOS = [
               'M11','M12','M13','M14','M15','M16','D1','D2','D3','D4','D5','D6',
               'M17','M18','M19','M20','D7','D8','D9','D10','D11',
               'M21','M22','D12','D13','D14','D15',
-              'T1','T2','T3','T4','T5','T6','D16','D17'] }
+              'T1','T2','T3','T4','T5','T6','D16','D17',
+              'B6','B9','B11','B13'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {
@@ -7884,6 +8346,24 @@ CB.ERRORES['E-C-ALINEACION'] = {
   reparacion: 'rectaNumerica'
 };
 
+/* ——— Medida y tiempo (3.2.0): 2 códigos más ——— */
+
+CB.ERRORES['E-B-UNIDAD-CORRIDA'] = {
+  familia: 'B', diagnostico: true,
+  pista: 'Cuenta bien los ceros del cambio de unidad.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.respuesta !== 'number' || item.respuesta < 10) return null;
+    return (item.respuesta % 10 === 0) ? item.respuesta / 10 : item.respuesta * 10;
+  }
+};
+
+CB.ERRORES['E-H-MEDIA-CONFUNDIDA'] = {
+  familia: 'H', diagnostico: false,
+  pista: 'La manecilla corta dice la hora; la larga, los minutos.',
+  reparacion: 'rectaNumerica'
+};
+
 /* 20-puntuacion.js — Requisitos 6 y 7 del usuario */
 
 var CB = CB || {};
@@ -8341,7 +8821,8 @@ CB.adaptativo.SLUGS = [
   'problemas_cambio', 'problemas_combinacion',
   'problemas_comparacion', 'problemas_igualacion',
   'dinero', 'vocabulario',
-  'division', 'fracciones', 'decimales', 'porcentajes', 'enteros'
+  'division', 'fracciones', 'decimales', 'porcentajes', 'enteros',
+  'medida', 'tiempo'
 ];
 
 CB.adaptativo.THETA_INICIAL = 1000;
@@ -8923,7 +9404,9 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'fracciones':         return 'barrasComparativas';
     case 'decimales':
     case 'porcentajes':
-    case 'enteros':            return 'rectaNumerica';
+    case 'enteros':
+    case 'medida':
+    case 'tiempo':             return 'rectaNumerica';
     case 'problemas_comparacion':
     case 'problemas_igualacion':
     case 'problemas_cambio':
@@ -9904,6 +10387,10 @@ CB.ui.pintarItem = function (item) {
     cont.appendChild(CB.ui.barraFraccion(item.visual.partes, item.visual.sombreadas));
   }
 
+  if (item.visual && item.visual.tipo === 'reloj') {
+    cont.appendChild(CB.ui.relojAnalogico(item.visual.horas, item.visual.minutos));
+  }
+
   if (item.preguntaPrevia) {
     cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
   }
@@ -9964,6 +10451,59 @@ CB.ui.barraFraccion = function (partes, sombreadas) {
   caja.appendChild(rej);
   caja.setAttribute('aria-label',
     sombreadas + ' de ' + partes + ' partes pintadas');
+  return caja;
+};
+
+/* El reloj analógico (3.2.0): esfera CUADRADA con bisel — un reloj vóxel no
+   pide disculpas por no ser redondo, y border-radius está prohibido. Las
+   manecillas son rectángulos girados con transform estático: la regla de
+   steps() gobierna el MOVIMIENTO, y aquí no se mueve nada. Como el conteo
+   canta sus bloques, el reloj canta su hora en el aria-label: para quien no
+   ve la esfera, la etiqueta ES la esfera. */
+CB.ui.relojAnalogico = function (horas, minutos) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const esfera = CB.ui.crear('div');
+  esfera.style.position = 'relative';
+  esfera.style.width = '140px'; esfera.style.height = '140px';
+  esfera.style.background = 'var(--bg-caja, #FFF8E7)';
+  esfera.style.boxShadow = 'inset 4px 4px 0 0 var(--deco-piedra-cla), ' +
+                           'inset -4px -4px 0 0 var(--deco-piedra-osc)';
+
+  [['12', '50%', '8px'], ['3', 'calc(100% - 16px)', '50%'],
+   ['6', '50%', 'calc(100% - 22px)'], ['9', '8px', '50%']].forEach(function (n) {
+    const cifra = CB.ui.crear('span', null, n[0]);
+    cifra.style.position = 'absolute';
+    cifra.style.left = n[1]; cifra.style.top = n[2];
+    cifra.style.transform = 'translate(-50%, 0)';
+    cifra.style.fontSize = '18px';
+    esfera.appendChild(cifra);
+  });
+
+  function manecilla(largo, grosor, grados) {
+    const m = CB.ui.crear('span');
+    m.style.position = 'absolute';
+    m.style.left = '50%'; m.style.top = '50%';
+    m.style.width = grosor + 'px'; m.style.height = largo + 'px';
+    m.style.background = 'var(--texto-principal, #2B2118)';
+    m.style.transformOrigin = '50% 100%';
+    m.style.transform = 'translate(-50%, -100%) rotate(' + grados + 'deg)';
+    return m;
+  }
+  esfera.appendChild(manecilla(34, 8, ((horas % 12) * 30) + (minutos * 0.5)));
+  esfera.appendChild(manecilla(52, 4, minutos * 6));
+
+  const centro = CB.ui.crear('span');
+  centro.style.position = 'absolute';
+  centro.style.left = '50%'; centro.style.top = '50%';
+  centro.style.width = '10px'; centro.style.height = '10px';
+  centro.style.transform = 'translate(-50%, -50%)';
+  centro.style.background = 'var(--texto-principal, #2B2118)';
+  esfera.appendChild(centro);
+
+  caja.appendChild(esfera);
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label', 'Reloj con la manecilla corta en las ' + horas +
+    (minutos ? ' y la larga marcando ' + minutos + ' minutos' : ' en punto'));
   return caja;
 };
 
@@ -11067,6 +11607,12 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
      estrecha son 64 px; un billete mide 128×64 y desbordaría su celda. Con las
      piezas, el ancho de columna lo manda el contenido. */
   if (item.piezasDinero) rej.classList.add('rejilla-respuestas--dinero');
+  /* Opciones-frase (3.2.0): «10 y media» o «litros» no caben en la celda
+     cuadrada de una cifra. El modificador deja que el contenido mande. */
+  const hayTexto = opcionesValores.some(function (o) {
+    return o.texto != null || (typeof o.valor === 'string' && !item.piezasDinero);
+  });
+  if (hayTexto) rej.classList.add('rejilla-respuestas--texto');
   let i;
 
   for (i = 0; i < opcionesValores.length; i++) {
@@ -11087,7 +11633,6 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
       } else {
         const etiqueta = (op.texto != null) ? op.texto : String(op.valor);
         b = CB.ui.boton(etiqueta, 'rejilla-respuestas__opcion', elegir, { posicion: idx });
-        if (op.texto != null) b.style.fontSize = 'var(--tam-texto-min)';
       }
       rej.appendChild(b);
     })(opcionesValores[i], i);
@@ -11661,7 +12206,7 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   /* 3) CUOTA: al menos 1 ítem de cada bloque desbloqueado. Las cinco letras
      nuevas solo existen desde 3.º: en los cursos bajos su lista sale vacía y
      el bucle las salta solo. */
-  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V', 'D', 'F', 'C', 'T', 'Z'];
+  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V', 'D', 'F', 'C', 'T', 'Z', 'B', 'H'];
   for (i = 0; i < letras.length; i++) {
     (function (letra) {
       const deLaLetra = nivelesMundo.filter(function (id) {
@@ -12942,7 +13487,8 @@ CB.partida.NOMBRES_DESTREZA = {
   vocabulario: 'Las palabras',
   division: 'La división', fracciones: 'Las fracciones',
   decimales: 'Los números con coma', porcentajes: 'El tanto por ciento',
-  enteros: 'Los números bajo cero'
+  enteros: 'Los números bajo cero',
+  medida: 'Las medidas', tiempo: 'El reloj y el tiempo'
 };
 CB.partida.nombreDestreza = function (slug) {
   return CB.partida.NOMBRES_DESTREZA[slug] || slug;
@@ -13208,6 +13754,8 @@ CB.adulto.semaforo = function (perfil) {
     'Decimales': ['decimales'],
     'Porcentajes y proporción': ['porcentajes'],
     'Enteros': ['enteros'],
+    'Medida': ['medida'],
+    'El tiempo': ['tiempo'],
     'Problemas': ['problemas_cambio', 'problemas_combinacion',
                   'problemas_comparacion', 'problemas_igualacion'],
     'Dinero': ['dinero'],

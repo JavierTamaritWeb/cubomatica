@@ -298,6 +298,20 @@
 
 .rejilla-respuestas--dinero { grid-template-columns: repeat(2, auto); }
 
+// Opciones que son FRASES («10 y media», «litros»), no cifras (3.2.0): la
+// celda cuadrada de --lado está pensada para un número y una frase la
+// desborda. Aquí el contenido manda el ancho y la letra es de texto.
+.rejilla-respuestas--texto { grid-template-columns: repeat(2, auto); }
+
+.rejilla-respuestas--texto .rejilla-respuestas__opcion {
+  width: auto;
+  min-width: var(--lado);
+  height: auto;
+  min-height: var(--lado);
+  padding: var(--e2) var(--e3);
+  font-size: var(--tam-texto-min);
+}
+
 .teclado-bloques {
   display: grid;
   grid-template-columns: repeat(3, var(--lado-respuesta));

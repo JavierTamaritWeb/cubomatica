@@ -228,6 +228,12 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
      estrecha son 64 px; un billete mide 128×64 y desbordaría su celda. Con las
      piezas, el ancho de columna lo manda el contenido. */
   if (item.piezasDinero) rej.classList.add('rejilla-respuestas--dinero');
+  /* Opciones-frase (3.2.0): «10 y media» o «litros» no caben en la celda
+     cuadrada de una cifra. El modificador deja que el contenido mande. */
+  const hayTexto = opcionesValores.some(function (o) {
+    return o.texto != null || (typeof o.valor === 'string' && !item.piezasDinero);
+  });
+  if (hayTexto) rej.classList.add('rejilla-respuestas--texto');
   let i;
 
   for (i = 0; i < opcionesValores.length; i++) {
@@ -248,7 +254,6 @@ CB.componentes.opciones4 = function (item, opcionesValores, alResponder, opcione
       } else {
         const etiqueta = (op.texto != null) ? op.texto : String(op.valor);
         b = CB.ui.boton(etiqueta, 'rejilla-respuestas__opcion', elegir, { posicion: idx });
-        if (op.texto != null) b.style.fontSize = 'var(--tam-texto-min)';
       }
       rej.appendChild(b);
     })(opcionesValores[i], i);

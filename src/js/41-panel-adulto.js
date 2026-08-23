@@ -123,6 +123,8 @@ CB.adulto.semaforo = function (perfil) {
     'Decimales': ['decimales'],
     'Porcentajes y proporción': ['porcentajes'],
     'Enteros': ['enteros'],
+    'Medida': ['medida'],
+    'El tiempo': ['tiempo'],
     'Problemas': ['problemas_cambio', 'problemas_combinacion',
                   'problemas_comparacion', 'problemas_igualacion'],
     'Dinero': ['dinero'],
