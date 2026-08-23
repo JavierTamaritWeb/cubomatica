@@ -283,11 +283,31 @@ function servirFichero(raiz, req, res, opciones) {
 
 /* El servidor de las pruebas. Sin dependencias y sin inyectar nada: lo que llega
    al navegador es exactamente el fichero del disco. */
+/* Un puerto ocupado es casi siempre otro `npm run dev` de este mismo proyecto,
+   ya sirviendo lo mismo. Antes la excepcion de EADDRINUSE viajaba sin manejador,
+   abortaba la serie entera y se llevaba por delante a `vigilar`, que corre en el
+   mismo `parallel` y es lo unico que no se puede sustituir: el servidor viejo
+   sigue sirviendo, pero nadie reconstruye. El aviso basta y el vigilante queda. */
+function escuchar(srv, puerto, nombre, cb, alArrancar) {
+  srv.once('error', (e) => {
+    if (e.code !== 'EADDRINUSE') { cb(e); return; }
+    console.log('');
+    console.log('  AVISO: el puerto ' + puerto + ' (' + nombre + ') ya esta ocupado.');
+    console.log('  Suele ser otro "npm run dev" vivo. Para verlo:');
+    console.log('    lsof -nP -iTCP:' + puerto + ' -sTCP:LISTEN');
+    console.log('  Sigo sin ese servidor: el vigilante de cambios SI queda activo.');
+    console.log('');
+    cb();
+  });
+  srv.listen(puerto, alArrancar || cb);
+}
+
 function servidorPruebas(cb) {
   const raiz = path.resolve('.');
-  http.createServer((req, res) => {
+  const srv = http.createServer((req, res) => {
     servirFichero(raiz, req, res);
-  }).listen(PUERTO_PRUEBAS, cb);
+  });
+  escuchar(srv, PUERTO_PRUEBAS, 'pruebas', cb);
 }
 
 const CLIENTE_RECARGA = '<script>(function(){var e=new EventSource("/__recarga");' +
@@ -300,7 +320,7 @@ function recargarNavegadores() {
 
 function servidor(cb) {
   const raiz = path.resolve(RUTAS.salida);
-  http.createServer((req, res) => {
+  const srv = http.createServer((req, res) => {
     const url = req.url.split('?')[0];
     if (url === '/__recarga') {
       res.writeHead(200, {
@@ -322,7 +342,9 @@ function servidor(cb) {
       return;
     }
     servirFichero(raiz, req, res, { inyectarRecarga: true });
-  }).listen(PUERTO_JUEGO, () => {
+  });
+
+  escuchar(srv, PUERTO_JUEGO, 'juego', cb, () => {
     console.log('');
     console.log('  juego (recarga sola):  http://localhost:' + PUERTO_JUEGO + '/');
     console.log('  pruebas:               http://localhost:' + PUERTO_PRUEBAS + '/pruebas/pruebas.html');
