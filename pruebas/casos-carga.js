@@ -24,7 +24,7 @@ CB.pruebas.suite('Carga: contrato del bundle y las 18 pantallas', function () {
     'CURRICULO', 'puntuacion', 'antiazar', 'vidas', 'adaptativo', 'logros', 'mensajes',
     'reparacion', 'leitner', 'memoria', 'grafo', 'escalera', 'ui', 'pantallas',
     'componentes', 'partida', 'adulto', 'jefes', 'mapaDestrezas', 'casa', 'arranque',
-    'musica', 'pruebas'];
+    'musica', 'modos', 'pruebas'];
   const ausentes = espacios.filter(function (k) { return CB[k] === undefined; });
   t.ok(ausentes.length === 0, 'los ' + espacios.length + ' espacios de nombre de CB existen',
        ausentes.join(', '));

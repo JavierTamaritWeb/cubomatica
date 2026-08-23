@@ -12,6 +12,71 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [2.0.0] — 2026-08-23
+
+**Primera cifra**, y por la única razón que la sube: **cambia el formato del
+perfil guardado**. `VERSION_ESQUEMA` pasa a 3 y `js/01-almacen.js` migra los
+perfiles existentes. Ningún niño pierde progreso ni récords.
+
+### Añadido
+
+- **Tres modos de juego** — Fácil (sin reloj), Normal (2 min) y Experto (30 s).
+  El eje ya existía con tres valores, pero dos daban los mismos 30 s desde que se
+  pusieron planos; §11.4 de `docs/decisiones.md` ya avisaba de que recuperar la
+  diferencia era cambiar un número.
+- `src/js/2B-modos.js` (fuente 46) — **fuente única** de los tres modos: los
+  segundos, los rótulos y las cinco palancas de recompensa. Antes los segundos
+  estaban en `40-partida.js` y los rótulos escritos a mano en `99-arranque.js` y
+  `41-panel-adulto.js` a la vez.
+- **Cinco palancas de recompensa**, mejores y más frecuentes cuanto más corto el
+  reloj: una gema extra por acertar a la primera, un punto más de bono de
+  rapidez, la probabilidad del bloque raro (3 % / 5 % / 9 %), la del reto bonus
+  (15 % / 25 % / 40 %) y un extra de bono final con su rótulo en `p-fin`.
+- **Botón de modo en el mapa** (`#btn-modo`): elegir cómo se cava, en la misma
+  pantalla donde se elige dónde. También se cambia desde Ajustes y desde la pausa.
+- **«Quitar el reloj sin cambiar de modo»** en el panel del adulto: apaga la
+  cuenta atrás en cualquiera de los tres modos **sin bajar las recompensas**.
+  Necesitar más tiempo no es elegir menos reto.
+- `historial` guarda ahora el modo de cada sesión: sin él, el adulto veía
+  puntuaciones que no podía comparar entre sí.
+- Guardianes **E114-E125**, en `pruebas/casos-modos.js` y `pruebas/auditar.mjs`.
+
+### Cambiado
+
+- La ventaja del modo vive **fuera** de `CB.puntuacion.calcular()`. Los 30 casos
+  exactos de §11.7 dan los mismos valores y Fácil conserva su multiplicador fijo
+  de 0,85: el antifarmeo de §11.3 y la aserción A3 siguen significando lo mismo.
+- `bonoFinal` gana un sexto parámetro **opcional**; sin él devuelve exactamente
+  lo que devolvía, que es lo que permite que A6 siga valiendo sin tocarla.
+- `.reloj__cifra` pasa de `2.2ch` a `3.2ch`: Normal empieza en 120 y son tres
+  dígitos donde la caja medía dos. A 320 px eso no lanzaba ningún error, se
+  recortaba contra el borde.
+- La pantalla de ayuda explica los tres modos. E124 comprueba que nombra los tres
+  y que los tiempos que promete son los de la tabla.
+
+### Corregido
+
+- **La migración de un nombre que significa dos cosas.** `normal` era el modo de
+  30 s y ahora es el de 120. Una sola función que intentara ser idempotente y
+  migrar a la vez elegía mal en silencio: el niño del viejo «Normal» se quedaba
+  en el nuevo Normal —con 90 s de más— y su récord se comparaba contra otro modo.
+  Están separadas: `migrarDesdeV2()` corre una vez tras `perfil.version < 3`, y
+  `normalizar()` es defensiva y no sabe nada de la migración.
+
+### Migración del perfil (v2 → v3)
+
+Una sola regla la ordena: **a nadie se le acorta el reloj**.
+
+| Antes | Reloj | Después | Reloj |
+|---|---|---|---|
+| `sinPrisa` | 0 | `facil` | 0 |
+| `conCalma` | 30 s | `normal` | **120 s** |
+| `normal` | 30 s | `experto` | 30 s |
+
+`mejorPuntuacion` viaja con el mismo mapa: ningún récord se pierde.
+
+---
+
 ## [1.23.7] — 2026-08-23
 
 **Tercera cifra.** Las vetas activas, que era lo que 1.23.6 dejó declarado como

@@ -265,13 +265,11 @@ CB.ajustesNino = function (props) {
   });
 
   if (perfil) {
-    /* Los tres modos de tiempo se pueden cambiar también desde la pausa. */
-    const nombres = { conCalma: 'Con calma', normal: 'Normal', sinPrisa: 'Sin prisa' };
-    const orden = ['conCalma', 'normal', 'sinPrisa'];
-    fila('El reloj', nombres[perfil.ajustes.modoTiempo] || 'Con calma', function (b) {
-      const i = orden.indexOf(perfil.ajustes.modoTiempo);
-      perfil.ajustes.modoTiempo = orden[(i + 1) % orden.length];
-      b.textContent = nombres[perfil.ajustes.modoTiempo];
+    /* Los tres modos se pueden cambiar también desde la pausa. Los rótulos y el
+       orden salen de CB.modos: aquí vivía una copia a mano de los tres nombres. */
+    fila('Modo de juego', CB.modos.etiqueta(perfil.ajustes.modoTiempo), function (b) {
+      perfil.ajustes.modoTiempo = CB.modos.siguiente(perfil.ajustes.modoTiempo);
+      b.textContent = CB.modos.etiqueta(perfil.ajustes.modoTiempo);
       if (CB.partida.estado) CB.partida.estado.modoTiempo = perfil.ajustes.modoTiempo;
       CB.almacen.guardarPerfil(perfil);
     });
@@ -349,7 +347,18 @@ CB.creditos = function () {
 };
 
 /* Enganches de pantalla */
+/* El rotulo del boton de modo. Se pinta al entrar y tras cada toque: el modo
+   tambien se cambia desde Ajustes, desde la pausa y desde el panel del adulto,
+   asi que el mapa no puede darlo por sabido. */
+CB.pintarBotonModo = function () {
+  const b = document.getElementById('btn-modo');
+  if (!b || !CB.perfil) return null;
+  b.textContent = 'Modo: ' + CB.modos.etiqueta(CB.perfil.ajustes.modoTiempo);
+  return b;
+};
+
 CB.pantallas.alEntrar['p-mapa'] = function () {
+  CB.pintarBotonModo();
   CB.mapaDestrezas.pintarMundos();
   /* Con un solo mundo abierto, el foco va al único botón que hace algo. */
   const abiertos = CB.MUNDOS.filter(function (m) {
@@ -423,6 +432,19 @@ CB.arranque = function () {
         return;
       }
       CB.pantallas.ir('p-mapa');
+    });
+  }
+
+  const btnModo = document.getElementById('btn-modo');
+  if (btnModo) {
+    btnModo.addEventListener('click', function () {
+      if (!CB.perfil) return;
+      CB.perfil.ajustes.modoTiempo = CB.modos.siguiente(CB.perfil.ajustes.modoTiempo);
+      CB.almacen.guardarPerfil(CB.perfil);
+      CB.pintarBotonModo();
+      /* El lector de pantalla no ve el rotulo cambiar solo: el boton se queda
+         enfocado y su nombre accesible ES su texto, asi que hay que decirlo. */
+      CB.a11y.anunciar('Modo ' + CB.modos.etiqueta(CB.perfil.ajustes.modoTiempo));
     });
   }
 

@@ -456,8 +456,15 @@ CB.adulto.NOMBRE_SUBTIPO = {
 
 /* Ajustes pedagógicos (viven en perfil.ajustes, §15.2) */
 CB.adulto.AJUSTES = [
-  { k: 'modoTiempo', t: 'Reloj', tipo: 'opciones',
-    ops: [['conCalma', 'Con calma (recomendado)'], ['normal', 'Normal'], ['sinPrisa', 'Sin prisa']] },
+  { k: 'modoTiempo', t: 'Modo de juego', tipo: 'opciones',
+    /* Los rótulos son de CB.modos.TABLA: estaban escritos a mano aquí y en
+       99-arranque.js a la vez, y renombrar uno dejaba el otro mintiendo. */
+    ops: function () {
+      return CB.modos.ORDEN.map(function (m) { return [m, CB.modos.etiqueta(m)]; });
+    } },
+  { k: 'sinLimiteTiempo', t: 'Quitar el reloj sin cambiar de modo', tipo: 'bool',
+    nota: 'Para quien necesita jugar sin cuenta atrás. No baja las recompensas ' +
+          'del modo elegido: necesitar más tiempo no es elegir menos reto.' },
   { k: 'noPuntuarVelocidadProblemas', t: 'No puntuar la velocidad en los problemas', tipo: 'bool' },
   { k: 'voz', t: 'Lectura en voz alta', tipo: 'bool' },
   { k: 'letraGrande', t: 'Letra grande', tipo: 'bool' },
@@ -502,7 +509,10 @@ CB.adulto.cajaAjustes = function (perfil) {
       const sel = CB.ui.crear('span');
       sel.setAttribute('role', 'group');
       sel.setAttribute('aria-labelledby', rotulo.id);
-      a.ops.forEach(function (op, indice) {
+      /* ops puede ser una función: así los modos se leen en tiempo de LLAMADA y
+         esta tabla no se convierte en un cuarto borde duro del orden de carga. */
+      const ops = (typeof a.ops === 'function') ? a.ops() : a.ops;
+      ops.forEach(function (op, indice) {
         const b2 = CB.ui.crear('button', 'btn-adulto', op[1]);
         b2.type = 'button';
         b2.id = 'adulto-ajuste-' + a.k + '-opcion-' + indice;

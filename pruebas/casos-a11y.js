@@ -113,8 +113,8 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
     sinEstado.length + ' sin declararlo');
 
   /* 7. El movimiento se puede apagar y el reloj también */
-  t.igual(CB.partida.SEGUNDOS_ITEM.sinPrisa, 0,
-    'el modo sin prisa deja el límite de tiempo en cero, no en «mucho»');
+  t.igual(CB.modos.TABLA.facil.segundos, 0,
+    'el modo Fácil deja el límite de tiempo en cero, no en «mucho»');
   t.ok(typeof CB.a11y.aplicarAjustes === 'function',
     'existe el punto donde se aplican los ajustes de accesibilidad del perfil');
 

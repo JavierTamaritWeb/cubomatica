@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Cubomática 1.23.7** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
+**Cubomática 2.0.0** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
 
 ## A build step, but the same target: double-click, no network
 
@@ -49,12 +49,12 @@ Both need `npm run build` first; without it they say so instead of hanging on "P
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **883 checks, 0 failures** (deterministic). Three E90 assertions go red in a throttled background tab — they wait 990 ms for a setTimeout-stepped count that Chrome then paces at one step per second; that is the environment, not a defect.
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **931 checks, 0 failures** (deterministic). Three E90 assertions go red in a throttled background tab — they wait 990 ms for a setTimeout-stepped count that Chrome then paces at one step per second; that is the environment, not a defect.
 - **The page auto-runs on load.** Filtering `CB.pruebas.suites` while that run is in flight truncates the list *mid-race*: the runner stops early and prints a green summary for a subset — 248/0 instead of 489. Wait for the `· NNNN ms` suffix before touching the array.
 - **Serve the test pages with `Cache-Control: no-store`.** Chrome will happily reuse a cached `dist/js/cubomatica.js` or `casos-*.js` across a reload, so a green summary can be measuring code from three edits ago — and the check count won't necessarily change, which is what makes it invisible. Before trusting a run, assert something about the bundle you just built (`/paso <= 20/.test(String(CB.jefes.opciones))`, a function that should now exist) rather than assuming the reload did it.
 - **Run it in a foreground tab.** Chrome throttles `setTimeout` in a background tab, and the suites are chained with `setTimeout(…, 0)`: backgrounded, a 10 s run stretches past 80 s or stalls outright. A partial `resumen` is easy to mistake for a finished one — the `· NNNN ms` suffix is only appended when the last suite ends, so a summary without it is still running.
 
-**Every bug ever fixed has a guard, and `pruebas/casos-regresiones.js` is where most of them live.** One hundred and thirteen found so far (E1-E113). The newest ones do not all sit in that file: a defect is guarded wherever it can actually be measured, so E109-E113 live in `pruebas/auditar.mjs`, `pruebas/casos-a11y.js`, `pruebas/casos-musica.js` and `pruebas/casos-contraste.js` — `grep -rl E1NN pruebas/` is how you find one. The rule has not changed: a bug fixed without a test comes back. Add the guard before closing any defect.
+**Every bug ever fixed has a guard, and `pruebas/casos-regresiones.js` is where most of them live.** One hundred and twenty-five found so far (E1-E125). The newest ones do not all sit in that file: a defect is guarded wherever it can actually be measured, so E109-E125 live in `pruebas/auditar.mjs`, `pruebas/casos-a11y.js`, `pruebas/casos-musica.js`, `pruebas/casos-contraste.js` and `pruebas/casos-modos.js` — `grep -rl E1NN pruebas/` is how you find one. The rule has not changed: a bug fixed without a test comes back. Add the guard before closing any defect.
 
 **Celebration is a table of vehicles, not a table of trajectories** (`CB.ui.festejo.CELEBRACIONES`, 1.8.1). 1.8.0 shipped nine choreographies that were all the same band — same width, same place, same type — and varying the path does not vary what a child recognises. Worse, the E47 guard written alongside it forbade any modifier from repositioning the band, so the monotony was *held in place by a test*. When a check blocks the fix, the check is part of the bug. The rule that orders the table only works once the vehicle differs: spectacle is inversely proportional to frequency, so the 60 %-case is a one-line `+1` beside the gem counter and the band is reserved for three rare moments.
 
@@ -141,7 +141,7 @@ Reordering is what breaks; concatenating is safe. There are exactly **three hard
 
 Changing any of these numbers means changing the test that asserts it, on purpose:
 
-- **45 sources** on disk *and* in `manifiesto.json` — equality is checked both ways, so a new file nobody declared is a failure · **18 screens** · **10 SCSS partials** in the manifest, **12 `.scss` files** on disk (the manifest owns the ten that get `@use`d, in order; `app.scss` and `abstracts/_mixins.scss` are the entry point and the mixins) · **9 music tracks** · **13 SFX** · **12 money pieces** in `dist/img/`, listed identically in `gulpfile.js` (service-worker shell) and `auditar.mjs`
+- **46 sources** on disk *and* in `manifiesto.json` — equality is checked both ways, so a new file nobody declared is a failure · **18 screens** · **10 SCSS partials** in the manifest, **12 `.scss` files** on disk (the manifest owns the ten that get `@use`d, in order; `app.scss` and `abstracts/_mixins.scss` are the entry point and the mixins) · **9 music tracks** · **13 SFX** · **12 money pieces** in `dist/img/`, listed identically in `gulpfile.js` (service-worker shell) and `auditar.mjs`
 - **92 levels** across **4 worlds**, no repeats and no orphans (`casos-curriculo.js`, CU1–CU8)
 - **24 error codes = 24 recommendations**, same key set
 - **30 exact scoring cases**, no tolerance (`casos-formulas.js`)
@@ -160,7 +160,16 @@ Changing any of these numbers means changing the test that asserts it, on purpos
 **Reading a function's source (`fn.toString().indexOf(…)`) is only valid for string literals and property names.** Terser preserves those (`mangle.properties` is forbidden — it would rewrite the localStorage keys of every saved profile). It does not preserve variable names, spacing or quote style. The dangerous case is a *negative* assertion: `indexOf("crear('h3'") === -1` passed for years and then passed for the wrong reason, because terser writes double quotes. Assert behaviour instead. And `toString()` **includes comments** in the readable bundle but not in the minified one, so `!/mundoId/.test(String(fn))` went red against correct code the moment the fix's own comment explained what `mundoId` used to be — a negative source assertion that disagrees between the two test pages is the same trap wearing a different hat.
 - **The version string**: `CB.VERSION` in `js/00-nucleo.js` is the single source. `README.md`, `CHANGELOG.md` and `LEEME.txt` repeat it and `auditar.mjs` fails if they drift. Bump the major only when the saved-profile format changes, because that forces a migration in `01-almacen.js`.
 
-`js/17-catalogo.js` is the single source of truth for the 92 levels and 4 worlds and is explicitly a contract file.
+`js/17-catalogo.js` is the single source of truth for the 92 levels and 4 worlds and is explicitly a contract file. `js/2B-modos.js` is the same kind of file for the three game modes: their seconds, their labels and their five reward levers.
+
+**The mode measures the challenge accepted; the formula measures the answer** (2.0.0). Three game modes — Fácil (no clock), Normal (120 s), Experto (30 s) — with rewards deliberately better and more frequent the shorter the clock. That request collides head-on with a closed decision: `js/20-puntuacion.js` says the mode changes *when* time runs out and never *how* you score, and A3 in `casos-formulas.js` guards it, because the clockless mode is the WCAG 2.2.1 escape hatch and docking it points docks the child who needs it. **The collision was avoidable and that is the structural point.** `calcular()` is untouched — the 30 exact cases of §11.7 give the same values and Fácil keeps its fixed 0,85, so A3 still means what it always meant. The mode's advantage lives *outside*, in `js/2B-modos.js`, as five additive levers: a gem for a first-try answer, one more speed gem, the rare-block and reto-bonus probabilities, and an end-of-run bonus with its own label on `p-fin`. Two consequences worth carrying forward:
+
+- **Fácil is now the least-rewarding path, and it is also the accessibility exit.** The letter of 2.2.1 is met; equity is not, so `ajustes.sinLimiteTiempo` exists (see below). When a design makes the accessible option the poorest one, the fix is a second route, not a smaller gap.
+- **The five levers are declared in `CB.modos.PALANCAS` and E115 walks that list.** A sixth lever added out of order fails on its own; a guard that enumerated the five by hand would only ever see the five it already knew.
+
+**A name that means two things cannot be migrated by one function** (2.0.0). `normal` was the 30 s mode and is now the 120 s one. `CB.modos.normalizar()` was written to be idempotent *and* to migrate, which forced it to choose, and it chose wrong **in silence**: the child on the old «Normal» stayed on the new Normal — 90 s more than before — and their record was compared against a different mode. Its own migration test caught it the first afternoon. There are two functions now: `migrarDesdeV2()`, which runs once behind the `perfil.version < 3` guard and therefore needs no idempotence, and `normalizar()`, which is defensive and knows nothing about migration. The migration map itself obeys one rule — **nobody's clock gets shorter** — which is what makes `conCalma` → Normal (a 90 s gift) and old `normal` → Experto (an identical clock) the only defensible pairing.
+
+**A label may not name something an accessibility setting can remove.** The end-of-run extra read «Reto de 30 segundos», but with `sinLimiteTiempo` on, the child collects that extra having had no countdown at all. It names the mode now, which is true in both cases. Same family as the veta surfaces of 1.23.7: the moment a setting can remove a thing, no text may assume it is there.
 
 ## Two rules that look like style and are not
 
@@ -180,7 +189,7 @@ Music is driven off `CB.bus.emitir('pantalla', id)`, emitted by `CB.pantallas.ir
 
 This is school material subject to **EN 301 549 / WCAG 2.2 AA**:
 
-- Any time limit must be disableable — `CB.partida.SEGUNDOS_ITEM.sinPrisa === 0` is asserted by `casos-reloj.js`.
+- Any time limit must be disableable — `CB.modos.TABLA.facil.segundos === 0` is asserted by `casos-modos.js` and `casos-a11y.js`. Since 2.0.0 there is a second route: `ajustes.sinLimiteTiempo` zeroes the clock in **all three** modes without lowering a single reward lever, because Fácil is now the least-rewarding path and it is also the WCAG 2.2.1 escape hatch. **Needing more time is not choosing less challenge**, so the flag lives in the adult panel behind the parental gate — two decisions by two different people. E123 measures the property that matters: only `msDeItem` reads the flag, so no lever can consult it.
 - Never colour alone: every state that uses colour also changes shape, size, text or motion.
 - `prefers-reduced-motion` and `:root.sin-movimiento` must both be handled, at the end of `src/scss/base/_animaciones.scss`. They come from **one list** through `desactivar-movimiento()` emitted twice, because for months they were two hand-kept lists and the in-game setting silently missed ten animations (E27). Removing motion may not remove information.
 - Contrast pairs are measured against computed CSS variables in `casos-contraste.js`, not asserted by hand.

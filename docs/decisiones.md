@@ -3888,3 +3888,68 @@ convierten en invisibles.
 
 Con esto no queda texto activo por debajo del mínimo en ninguna de las 18
 pantallas, en ninguno de los dos modos.
+
+---
+
+## D-2.0.0 · Tres modos de juego, y la ventaja fuera de la fórmula
+
+Se pidió partir el juego en tres modos —Fácil sin reloj, Normal con dos minutos,
+Experto con treinta segundos— y que las recompensas fueran **mejores y más
+frecuentes** cuanto más corto el reloj. La mitad de eso era recuperar algo
+perdido: el eje ya existía con tres valores, dos de los cuales daban los mismos
+30 s desde que se pusieron planos, y el párrafo de §11.4 de este mismo documento
+ya avisaba de que recuperar la diferencia era cambiar un número.
+
+La otra mitad chocaba de frente con una decisión cerrada. `js/20-puntuacion.js`
+dice, y `casos-formulas.js` vigila con su aserción A3, que **el modo solo cambia
+cuándo se agota el tiempo, nunca cómo se puntúa**, y que el modo sin reloj no
+puede ser ni el que más puntúa ni el que menos. Su motivo no es de gusto: el
+modo sin reloj es la salida que exige la WCAG 2.2.1, y castigarlo con puntos
+castiga al niño que lo necesita, no al que lo elige.
+
+**No hacía falta romperla, y esa es la decisión estructural.** `calcular()` no se
+ha tocado: los 30 casos exactos de §11.7 dan los mismos valores y Fácil conserva
+dentro de la fórmula su multiplicador fijo de 0,85, que sigue sin ser ni el
+máximo ni el mínimo. La ventaja del modo vive **fuera**, en `js/2B-modos.js`,
+como cinco palancas aditivas y visibles: una gema por acertar a la primera, un
+punto más de bono de rapidez, dos probabilidades de sorpresa y un extra de bono
+final con su propio rótulo en la pantalla de fin. La fórmula mide la respuesta;
+el modo mide el reto aceptado. Son dos cosas distintas y ahora se calculan en dos
+sitios distintos.
+
+Tres cosas que no se deducen del código:
+
+**Por qué existe «Quitar el reloj sin cambiar de modo».** Con las cinco palancas,
+Fácil pasa a ser el camino que menos recompensa, y Fácil es a la vez la salida
+obligatoria de la 2.2.1. La letra de la norma se cumple —el límite se puede
+desactivar—, pero la equidad no: un niño con dislexia o con lentitud de
+procesamiento no elige Fácil, lo necesita. El ajuste vive en el panel del
+adulto, detrás de la puerta parental, porque **necesitar más tiempo no es elegir
+menos reto**, y son dos decisiones de personas distintas. E123 comprueba que
+apaga el reloj en los tres modos y que ninguna palanca lo consulta.
+
+**Por qué la migración es la que es.** El mapa lo ordena una sola regla: a nadie
+se le acorta el reloj. `sinPrisa` → Fácil es idéntico; el viejo `conCalma` —el
+que traía casi todo el mundo— gana 90 s al pasar a Normal; y el viejo `normal`
+conserva sus 30 s exactos al pasar a Experto.
+
+Eso último obligó a partir en dos una función que había nacido siendo una.
+`normal` existe en los dos vocabularios con dos significados: era el modo de 30 s
+y ahora es el de 120. Una `normalizar()` que intentara ser idempotente y migrar a
+la vez tenía que elegir, y elegía mal **en silencio**: el niño que jugaba en el
+viejo «Normal» se quedaba en el nuevo Normal, con 90 s de más, y su récord se
+comparaba contra otro modo. Lo cazó la propia prueba de la migración el primer
+día. Hay ahora `migrarDesdeV2()`, que corre una vez detrás de la guarda
+`perfil.version < 3`, y `normalizar()`, que es defensiva y no sabe nada de la
+migración. **Cuando un nombre significa dos cosas, una sola función no puede
+servir para las dos.**
+
+**Por qué el rótulo del extra no nombra un reloj.** Decía «Reto de 30 segundos», y
+con el ajuste de accesibilidad activado el niño recibe el extra de su modo sin
+haber tenido ninguna cuenta atrás. Nombra el modo, que es siempre cierto.
+
+Y una que sí se ve, pero solo si se mide: Normal empieza en **120**, que son tres
+dígitos donde `.reloj__cifra` medía dos. A 320 px eso no lanza ningún error —la
+cifra empuja la fila del HUD y se recorta contra el borde—, que es exactamente la
+familia de E99-E100. El ancho se calcula ahora contra el modo más largo de la
+tabla y lo comprueba E125.

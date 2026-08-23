@@ -349,6 +349,42 @@ juzgar(mundosCat.length === 4 && !sinNombrar.length,
   'E101 · la ayuda nombra los cuatro mundos tal y como los declara el catalogo',
   'la ayuda no nombra: ' + sinNombrar.join(', '));
 
+/* E124 · La ayuda nombra los TRES modos, igual que nombra los cuatro mundos.
+   Misma razon: renombrar un modo y dejar el nombre viejo en la ayuda no lanza
+   ningun error, solo deja a un nino leyendo instrucciones de un juego que ya no
+   existe. Se leen los rotulos de la tabla, no una lista escrita aqui. */
+const modosTabla = [...leer(D('src/js/2B-modos.js'))
+  .matchAll(/etiqueta: '([^']+)', segundos: (\d+)/g)].map((m) => [m[1], Number(m[2])]);
+const modosSinNombrar = modosTabla.filter(([n]) => !secAyuda.includes(n));
+juzgar(modosTabla.length === 3 && !modosSinNombrar.length,
+  'E124 · la ayuda nombra los tres modos tal y como los declara CB.modos.TABLA',
+  'la ayuda no nombra: ' + modosSinNombrar.map(([n]) => n).join(', '));
+
+/* Y los minutos que promete: el texto dice «2 minutos» y «30 segundos», y esos
+   dos numeros salen de la misma tabla. Un cambio de reloj sin tocar la ayuda
+   deja al nino con una promesa falsa. */
+const seg = Object.fromEntries(modosTabla);
+juzgar(secAyuda.includes(String(seg.Experto) + ' segundos') &&
+       secAyuda.includes(String(seg.Normal / 60) + ' minuto'),
+  'E124 · y los tiempos que promete la ayuda son los de la tabla',
+  'la ayuda promete un reloj distinto del que da CB.modos.TABLA');
+
+/* El literal de segundos vuelve a la maqueta del HUD: solo era cierto en uno de
+   los tres modos, y en los otros dos parpadeaba un numero falso al arrancar. */
+juzgar(/<span id="hud-segundos" class="reloj__cifra"><\/span>/.test(html),
+  'E124 · el HUD no trae un numero de segundos escrito a mano',
+  '#hud-segundos vuelve a nacer con un literal que solo vale para un modo');
+
+/* E125 · Normal empieza en 120: TRES digitos donde la caja media dos. A 320 px
+   eso no lanza ningun error, se recorta contra el borde y no lo ve nadie. */
+const cssComp = leer(D('src/scss/components/_componentes.scss'));
+const anchoCifra = (cssComp.match(/\.reloj__cifra\s*\{[\s\S]*?min-width:\s*([\d.]+)ch/) || [])[1];
+const digitos = Math.max(...modosTabla.map(([, s2]) => String(s2).length));
+juzgar(!!anchoCifra && Number(anchoCifra) >= digitos + 0.2,
+  'E125 · la cifra del reloj cabe con ' + digitos + ' digitos (min-width: ' + anchoCifra + 'ch)',
+  'min-width de .reloj__cifra es ' + anchoCifra + 'ch y el reloj mas largo tiene ' +
+  digitos + ' digitos: se recorta sin avisar');
+
 /* E110-E111 · Los atributos que viven en la maqueta se protegen aquí; la suite
    del navegador cubre después el nombre y el estado que genera JavaScript. */
 const campoAdulto = (html.match(/<input id="adulto-respuesta"[\s\S]*?>/) || [])[0] || '';

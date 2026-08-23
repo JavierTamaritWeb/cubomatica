@@ -120,6 +120,12 @@
   <div class="contenido">
     <h1>La Cantera</h1>
     <p id="mapa-saludo" class="texto texto--menor"></p>
+    <!-- Elegir CÓMO se cava, en la misma pantalla donde se elige DÓNDE. El modo
+         tambien se cambia desde Ajustes y desde la pausa; el rotulo lo pinta
+         alEntrar, porque el adulto puede haberlo cambiado desde su panel. -->
+    <div class="fila fila--centro">
+      <button id="btn-modo" class="btn-bloque"></button>
+    </div>
     <div id="rejilla-mundos" class="rejilla-mundos"></div>
     <div class="fila fila--centro">
       <button class="btn-bloque" data-ir="p-cantera">Mis vetas</button>
@@ -155,7 +161,9 @@
          decoración y la información tiene que estar en texto. -->
     <div id="hud-galeria" class="galeria-avance" role="img" aria-label="Bloque 0 de 0"></div>
 
-    <!-- Cuenta atrás de 30 s. El reloj de arena es decoración (aria-hidden): la
+    <!-- Cuenta atrás. Los segundos son del modo (CB.modos.TABLA) y la cifra se
+         pinta al arrancar: escribir aquí un número solo era cierto en uno de los
+         tres modos. El reloj de arena es decoración (aria-hidden): la
          información va en la cifra, que es texto de verdad. -->
     <div id="hud-reloj" class="reloj" hidden>
       <div class="reloj__arena" aria-hidden="true">
@@ -165,7 +173,7 @@
         <span class="reloj__bulbo reloj__bulbo--bajo"><i id="ra-baja" class="reloj__grano"></i></span>
         <span class="reloj__tapa reloj__tapa--baja"></span>
       </div>
-      <span id="hud-segundos" class="reloj__cifra">30</span>
+      <span id="hud-segundos" class="reloj__cifra"></span>
     </div>
 
     <!-- La insignia «+1» brota aquí, junto al contador. Es la celebración del
@@ -477,11 +485,17 @@
     </div>
 
     <div class="panel-bloque">
-      <h2>El reloj de arena</h2>
-      <p class="texto texto--lectura">A veces verás un reloj de arena con 30 segundos.</p>
-      <p class="texto texto--lectura">Si te pone nervioso, se puede quitar. Ve a Ajustes y
-        toca «El reloj» hasta que ponga «Sin prisa». Entonces tienes todo el
-        tiempo que necesites.</p>
+      <h2>Los tres modos de juego</h2>
+      <p class="texto texto--lectura">Puedes jugar de tres maneras. Ve a Ajustes y toca
+        «Modo de juego» hasta que ponga la que quieras.</p>
+      <ul class="texto texto--lectura">
+        <li><b>Fácil</b>: no hay reloj. Todo el tiempo que necesites.</li>
+        <li><b>Normal</b>: un reloj de arena con 2 minutos para cada pregunta.</li>
+        <li><b>Experto</b>: un reloj de arena con 30 segundos. Es el que más
+          gemas y más sorpresas da.</li>
+      </ul>
+      <p class="texto texto--lectura">El reloj nunca apaga una luz. Si se acaba, pasas a
+        la siguiente pregunta y ya está.</p>
     </div>
 
     <div class="panel-bloque">
@@ -558,7 +572,7 @@
       <ul class="texto texto--lectura">
         <li>Sonido: sí o no.</li>
         <li>Música: más alta, más baja o nada.</li>
-        <li>El reloj: «Con calma», «Normal» o «Sin prisa».</li>
+        <li>Modo de juego: «Fácil», «Normal» o «Experto».</li>
         <li>Letra grande: si las letras te parecen pequeñas.</li>
         <li>Leer en voz alta: el juego te lee las preguntas.</li>
       </ul>
@@ -657,6 +671,7 @@
 <script src="js/28-memoria.js"></script>
 <script src="js/29-grafo.js"></script>
 <script src="js/2A-escalera.js"></script>
+<script src="js/2B-modos.js"></script>
 
 <!-- 36-44  interfaz  -->
 <script src="js/30-ui.js"></script>

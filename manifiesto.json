@@ -36,6 +36,7 @@
     "js/28-memoria.js",
     "js/29-grafo.js",
     "js/2A-escalera.js",
+    "js/2B-modos.js",
     "js/30-ui.js",
     "js/31-pantallas.js",
     "js/32-componentes.js",
@@ -80,7 +81,8 @@
     "js/27-repaso.js",
     "js/28-memoria.js",
     "js/29-grafo.js",
-    "js/2A-escalera.js"
+    "js/2A-escalera.js",
+    "js/2B-modos.js"
   ],
   "entradaEstilos": "scss/app.scss"
 }

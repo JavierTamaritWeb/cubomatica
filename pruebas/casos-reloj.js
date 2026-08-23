@@ -1,23 +1,13 @@
-/* casos-reloj.js — La cuenta atrás de 30 s */
+/* casos-reloj.js — La cuenta atrás */
 
-CB.pruebas.suite('Reloj: cuenta atrás de 30 s', function () {
+CB.pruebas.suite('Reloj: la cuenta atrás', function () {
   const t = CB.pruebas;
 
-  /* Los segundos */
-  const modos = Object.keys(CB.partida.SEGUNDOS_ITEM).sort();
-  t.ok(modos.join('|') === 'conCalma|normal|sinPrisa',
-    'SEGUNDOS_ITEM declara los tres modos de tiempo y solo esos', modos.join(','));
-
-  t.igual(CB.partida.msDeItem('normal'), 30000, 'el modo normal da 30 s');
-  t.igual(CB.partida.msDeItem('conCalma'), 30000, 'el modo con calma da 30 s');
-
-  /* LA salvaguarda legal: sin esto el juego incumple la WCAG 2.2.1, que exige
-     poder desactivar un límite de tiempo, y con ello la EN 301 549. */
-  t.igual(CB.partida.msDeItem('sinPrisa'), 0,
-    '«Sin prisa» apaga la cuenta atrás: un límite de tiempo tiene que poder quitarse');
-
-  t.igual(CB.partida.msDeItem('modoQueNoExiste'), 30000,
-    'un modo desconocido no deja el ítem sin límite ni con límite cero');
+  /* Los segundos los declara CB.modos y los comprueba casos-modos.js. Aquí solo
+     queda que la partida no se guarde una copia: si SEGUNDOS_ITEM vuelve, vuelve
+     el número duplicado que este proyecto lleva tres versiones persiguiendo. */
+  t.ok(CB.partida.SEGUNDOS_ITEM === undefined && CB.partida.msDeItem === undefined,
+    'la partida no tiene su propia copia de los segundos: son de CB.modos');
 
   /* Quedarse sin tiempo no castiga */
   const est = { luces: 3, timeoutsConsecutivos: 0, timeoutsPartida: 0 };

@@ -3,7 +3,7 @@
 var CB = CB || {};
 CB.almacen = CB.almacen || {};
 
-CB.almacen.VERSION_ESQUEMA = 2;
+CB.almacen.VERSION_ESQUEMA = 3;
 CB.almacen.PREFIJO = 'cubomatica.';
 CB.almacen.memoria = {};          // respaldo si localStorage está bloqueado
 CB.almacen.sinDisco = false;
@@ -170,13 +170,16 @@ CB.almacen.perfilNuevo = function (id, mote, avatar, hoyISO, ajustesPrevios) {
     calibrado: false,
     grupo: null,
     ajustes: ajustesPrevios || {
-      modoTiempo: 'conCalma',        // por defecto PERMANENTE (§11.3)
+      modoTiempo: 'normal',          // por defecto PERMANENTE (§11.3)
+      /* Apaga el reloj SIN bajar de modo. Vive en el panel del adulto porque
+         necesitar jugar sin reloj y elegir jugar sin reloj no son lo mismo. */
+      sinLimiteTiempo: false,
       voz: true, letraGrande: false, altoContraste: false, reduceMotion: 'auto',
       tablas69: false, centimos: false, restasDobleLlevada: false, division: false,
       limiteSesionMin: 20, noPuntuarVelocidadProblemas: false
     },
     gemas: 0, puntosTotales: 0,
-    mejorPuntuacion: { normal: 0, conCalma: 0, sinPrisa: 0 },
+    mejorPuntuacion: { facil: 0, normal: 0, experto: 0 },
     vidasReserva: 0,
     componentesVistos: [],
     destrezas: {}, niveles: {},
@@ -266,6 +269,28 @@ CB.almacen.migrar = function (perfil) {
         perfil.mejorPuntuacion = { normal: 0, conCalma: 0, sinPrisa: 0 };
       }
       perfil.version = 2;
+    }
+
+    if (perfil.version < 3) {
+      /* Los tres modos de tiempo se renombran a los tres modos de juego. El mapa
+         lo ordena una sola regla —a nadie se le acorta el reloj—, y vive entero
+         en CB.modos.MIGRACION para no tener aquí una segunda copia. */
+      const aj = perfil.ajustes || (perfil.ajustes = {});
+      aj.modoTiempo = CB.modos.migrarDesdeV2(aj.modoTiempo);
+      if (aj.sinLimiteTiempo == null) aj.sinLimiteTiempo = false;
+
+      /* El récord de cada modo viaja con su modo: si se perdiera aquí, el niño
+         vería su mejor marca a cero sin haber hecho nada. */
+      const mpViejo = perfil.mejorPuntuacion || {};
+      const mp = { facil: 0, normal: 0, experto: 0 };
+      Object.keys(mpViejo).forEach(function (k) {
+        const destino = CB.modos.migrarDesdeV2(k);
+        const v = mpViejo[k];
+        if (isFinite(v) && v > mp[destino]) mp[destino] = v;
+      });
+      perfil.mejorPuntuacion = mp;
+
+      perfil.version = 3;
     }
 
     CB.almacen.recortarFechasFuturas(perfil);

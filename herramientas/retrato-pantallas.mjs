@@ -33,7 +33,7 @@ const PREPARAR = `(async function () {
   const p = CB.almacen.perfilNuevo('p-retrato', 'Topo Cavador', 0, '2026-01-01', null);
   p.calibrado = true;
   p.trimestreDeducido = 3;
-  p.ajustes.modoTiempo = 'sinPrisa';
+  p.ajustes.modoTiempo = 'facil';
   CB.perfil = p;
   CB.almacen.guardarPerfil(p);
   CB.adulto.desbloqueado = true;

@@ -25,10 +25,10 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
     ['C08','S9',12000,'normal',  2,1,0, 1.20,  48, 1],
     ['C09','S9',12000,'normal',  1,0,0, 1.20,   0, 0],
     ['C10','S9',  900,'normal',  1,0,1, 1.40,   0, 0],
-    ['C11','S9',12000,'conCalma',1,1,0, 1.20, 120, 2],
-    ['C12','S9',12000,'sinPrisa',1,1,0, 0.85,  85, 2],
-    ['C13','S9', 4000,'sinPrisa',1,1,0, 0.85,  85, 2],
-    ['C14','S9',30000,'sinPrisa',1,1,0, 0.85,  85, 2],
+    ['C11','S9',12000,'experto',1,1,0, 1.20, 120, 2],
+    ['C12','S9',12000,'facil',  1,1,0, 0.85,  85, 2],
+    ['C13','S9', 4000,'facil',  1,1,0, 0.85,  85, 2],
+    ['C14','S9',30000,'facil',  1,1,0, 0.85,  85, 2],
     ['C15','N3', 6000,'normal',  1,1,0, 1.40, 112, 2],
     ['C16','N3',12000,'normal',  1,1,0, 1.00,  80, 2],
     ['C17','N3',18000,'normal',  1,1,0, 0.60,  48, 1],
@@ -86,12 +86,14 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
        'A2 · acierto en 600 ms = 140 puntos y azar === false',
        'puntos ' + c03.puntos + ', azar ' + az.azar);
 
-  /* A3 — «Sin prisa» no es ni el que más puntúa ni el que menos */
+  /* A3 — Fácil (sin reloj) no es ni el que más puntúa ni el que menos DENTRO de
+     la fórmula. La ventaja de los modos con reloj vive fuera, en CB.modos, y por
+     eso esta aserción sigue midiendo lo que medía. */
   const c01 = CB.puntuacion.calcular(it, 8000,  { correcto: true, intento: 1, modoTiempo: 'normal' });
-  const c12 = CB.puntuacion.calcular(it, 12000, { correcto: true, intento: 1, modoTiempo: 'sinPrisa' });
+  const c12 = CB.puntuacion.calcular(it, 12000, { correcto: true, intento: 1, modoTiempo: 'facil' });
   const c06 = CB.puntuacion.calcular(it, 24000, { correcto: true, intento: 1, modoTiempo: 'normal' });
   t.ok(c12.puntos < c01.puntos && c12.puntos > c06.puntos,
-       'A3 · 85 < 140 y 85 > 60 (antifarmeo del modo accesible)',
+       'A3 · 85 < 140 y 85 > 60 (antifarmeo del modo sin reloj)',
        c12.puntos + ' vs ' + c01.puntos + ' / ' + c06.puntos);
 
   /* A4 — salir en el primer ítem no produce NaN */
@@ -101,7 +103,7 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
 
   /* A5 — los casos de penalización dan exactamente 0, jamás negativo */
   let negativos = 0;
-  ['normal', 'conCalma', 'sinPrisa'].forEach(function (m) {
+  CB.modos.ORDEN.forEach(function (m) {
     [true, false].forEach(function (azar) {
       const r2 = CB.puntuacion.calcular(it, 12000,
         { correcto: false, azar: azar, intento: 1, modoTiempo: m });
@@ -120,7 +122,7 @@ CB.pruebas.suite('Puntuación: los 30 casos exactos (§11.7)', function () {
   let neg = 0, rt, intento;
   for (rt = 0; rt <= 60000; rt += 2500) {
     for (intento = 1; intento <= 2; intento++) {
-      ['normal', 'conCalma', 'sinPrisa'].forEach(function (m2) {
+      CB.modos.ORDEN.forEach(function (m2) {
         [true, false].forEach(function (c2) {
           [true, false].forEach(function (a2) {
             const x = CB.puntuacion.calcular(it, rt,

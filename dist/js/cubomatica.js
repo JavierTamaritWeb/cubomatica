@@ -1165,7 +1165,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '1.23.7';
+CB.VERSION = '2.0.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -1208,7 +1208,7 @@ CB.LEGAL = {
 var CB = CB || {};
 CB.almacen = CB.almacen || {};
 
-CB.almacen.VERSION_ESQUEMA = 2;
+CB.almacen.VERSION_ESQUEMA = 3;
 CB.almacen.PREFIJO = 'cubomatica.';
 CB.almacen.memoria = {};          // respaldo si localStorage está bloqueado
 CB.almacen.sinDisco = false;
@@ -1375,13 +1375,16 @@ CB.almacen.perfilNuevo = function (id, mote, avatar, hoyISO, ajustesPrevios) {
     calibrado: false,
     grupo: null,
     ajustes: ajustesPrevios || {
-      modoTiempo: 'conCalma',        // por defecto PERMANENTE (§11.3)
+      modoTiempo: 'normal',          // por defecto PERMANENTE (§11.3)
+      /* Apaga el reloj SIN bajar de modo. Vive en el panel del adulto porque
+         necesitar jugar sin reloj y elegir jugar sin reloj no son lo mismo. */
+      sinLimiteTiempo: false,
       voz: true, letraGrande: false, altoContraste: false, reduceMotion: 'auto',
       tablas69: false, centimos: false, restasDobleLlevada: false, division: false,
       limiteSesionMin: 20, noPuntuarVelocidadProblemas: false
     },
     gemas: 0, puntosTotales: 0,
-    mejorPuntuacion: { normal: 0, conCalma: 0, sinPrisa: 0 },
+    mejorPuntuacion: { facil: 0, normal: 0, experto: 0 },
     vidasReserva: 0,
     componentesVistos: [],
     destrezas: {}, niveles: {},
@@ -1471,6 +1474,28 @@ CB.almacen.migrar = function (perfil) {
         perfil.mejorPuntuacion = { normal: 0, conCalma: 0, sinPrisa: 0 };
       }
       perfil.version = 2;
+    }
+
+    if (perfil.version < 3) {
+      /* Los tres modos de tiempo se renombran a los tres modos de juego. El mapa
+         lo ordena una sola regla —a nadie se le acorta el reloj—, y vive entero
+         en CB.modos.MIGRACION para no tener aquí una segunda copia. */
+      const aj = perfil.ajustes || (perfil.ajustes = {});
+      aj.modoTiempo = CB.modos.migrarDesdeV2(aj.modoTiempo);
+      if (aj.sinLimiteTiempo == null) aj.sinLimiteTiempo = false;
+
+      /* El récord de cada modo viaja con su modo: si se perdiera aquí, el niño
+         vería su mejor marca a cero sin haber hecho nada. */
+      const mpViejo = perfil.mejorPuntuacion || {};
+      const mp = { facil: 0, normal: 0, experto: 0 };
+      Object.keys(mpViejo).forEach(function (k) {
+        const destino = CB.modos.migrarDesdeV2(k);
+        const v = mpViejo[k];
+        if (isFinite(v) && v > mp[destino]) mp[destino] = v;
+      });
+      perfil.mejorPuntuacion = mp;
+
+      perfil.version = 3;
     }
 
     CB.almacen.recortarFechasFuturas(perfil);
@@ -5517,8 +5542,10 @@ CB.distractores.registrar = function (perfil, item, valorDado) {
 var CB = CB || {};
 CB.puntuacion = CB.puntuacion || {};
 
-/* Punto medio del rango 0,6-1,4. Ni premia ni castiga: el modo accesible no
-   puede ser ni el que más puntúa ni el que menos (antifarmeo, §11.3). */
+/* Punto medio del rango 0,6-1,4. Ni premia ni castiga: el modo sin reloj no
+   puede ser ni el que más puntúa ni el que menos (antifarmeo, §11.3). La ventaja
+   de los modos con reloj vive FUERA de esta fórmula, en CB.modos, y por eso esta
+   regla sigue significando lo mismo que el primer día. */
 CB.puntuacion.M_SIN_PRISA = 0.85;
 CB.puntuacion.M_MIN = 0.6;
 CB.puntuacion.M_MAX = 1.4;
@@ -5547,10 +5574,10 @@ CB.puntuacion.calcular = function (item, rtMs, estado) {
   if (!isFinite(rtMs) || rtMs < 0) rtMs = tI;
 
   let mT;
-  if (estado.modoTiempo === 'sinPrisa') {
+  if (estado.modoTiempo === 'facil') {
     mT = CB.puntuacion.M_SIN_PRISA;
   } else {
-    /* El modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta regla, «Con calma» con la d duplicada regalaba multiplicadores altos por respuestas lentas y era el modo que más puntuaba. */
+    /* El modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta regla, un modo con el doble de reloj regalaba multiplicadores altos por respuestas lentas y era el que más puntuaba. */
     mT = CB.util.clamp(
       CB.puntuacion.M_MAX - 0.8 * (rtMs - tI) / (tL - tI),
       CB.puntuacion.M_MIN, CB.puntuacion.M_MAX
@@ -5605,8 +5632,15 @@ CB.puntuacion.acumular = function (estado, delta) {
  * @param maraton       true si ha resuelto ≥ 15 ítems
  * @param preguntas     nº de ítems servidos
  * @param puntosSesion  puntos acumulados
+ * @param modoTiempo    OPCIONAL. Sin él la función devuelve exactamente lo que
+ *                      devolvía antes, que es lo que permite que las llamadas y
+ *                      los guardianes viejos —A6 entre ellos— sigan valiendo.
+ *                      Con él suma el extra del modo: es la única de las cinco
+ *                      palancas que multiplica, y multiplica sobre lo YA ganado,
+ *                      así que no puede convertir una sesión floja en un número
+ *                      grande.
  */
-CB.puntuacion.bonoFinal = function (precision1er, sinDanio, maraton, preguntas, puntosSesion) {
+CB.puntuacion.bonoFinal = function (precision1er, sinDanio, maraton, preguntas, puntosSesion, modoTiempo) {
   /* El niño pulsa Salir en el primer ítem: sin esta guarda salían NaN, y
      JSON.stringify convierte NaN en null; a partir de ahí toda la aritmética
      del perfil da NaN para siempre (§11.2). */
@@ -5622,18 +5656,37 @@ CB.puntuacion.bonoFinal = function (precision1er, sinDanio, maraton, preguntas, 
   if (sinDanio)       { factor += 0.15; extras.push('sinDanio'); }
   if (maraton)        { factor += 0.10; extras.push('maraton'); }
 
+  /* El extra del modo va CON SU RÓTULO en la lista de extras de p-fin: el niño
+     tiene que poder ver por qué ha ganado más, no solo que ha ganado más.
+     La clave se DECLARA, no se compone: 'modo_' + modo era un literal terminado
+     en guion bajo, y el cruce de clases lo tomaba por un prefijo de clases
+     dinamicas y dejaba de mirar todo lo que empezara por ahi. */
+  const extraModo = CB.modos.extraBonoFinal(modoTiempo);
+  const claveModo = CB.puntuacion.CLAVE_MODO[modoTiempo];
+  if (extraModo > 0 && claveModo) { factor += extraModo; extras.push(claveModo); }
+
   let total = Math.max(0, Math.round(ps * (factor - 1)));
   if (!isFinite(total)) total = 0;
 
   return { factor: factor, extras: extras, total: total };
 };
 
-/* Etiquetas en español para la pantalla de fin. */
+/* Qué extra añade cada modo. Solo los que dan bono: Fácil no aparece porque no
+   suma nada, y una clave sin extra sería un rótulo que no se gana nunca. */
+CB.puntuacion.CLAVE_MODO = {
+  normal:  'modoNormal',
+  experto: 'modoExperto'
+};
+
+/* Etiquetas en español para la pantalla de fin. Una clave sin rótulo aquí se
+   pinta cruda en p-fin: el niño leería «modoExperto». */
 CB.puntuacion.ETIQUETA_EXTRA = {
-  precision90: 'Casi todo a la primera',
-  precision75: 'Muchas a la primera',
-  sinDanio:    'Las tres luces encendidas',
-  maraton:     'Expedición larga'
+  precision90:  'Casi todo a la primera',
+  precision75:  'Muchas a la primera',
+  sinDanio:     'Las tres luces encendidas',
+  maraton:      'Expedición larga',
+  modoNormal:   'Reto del modo Normal',
+  modoExperto:  'Reto del modo Experto'
 };
 
 /* 21-antiazar.js — Requisito 7: penalizar responder al azar */
@@ -7116,6 +7169,130 @@ CB.escalera.registrarFallo = function (contador, destreza) {
 
 CB.escalera.fallosDe = function (contador, destreza) {
   return contador[destreza] || 0;
+};
+
+/* 2B-modos.js — Los tres modos de juego */
+
+var CB = CB || {};
+CB.modos = CB.modos || {};
+
+/* FUENTE ÚNICA de los tres modos: los segundos del reloj, el rótulo que ve el
+   niño y las cinco palancas de recompensa. Antes los segundos vivían en
+   40-partida.js y los rótulos estaban escritos a mano en 99-arranque.js y en
+   41-panel-adulto.js a la vez. Aquí cada número y cada nombre existe una vez.
+
+   LAS RECOMPENSAS NO ENTRAN EN LA FÓRMULA. CB.puntuacion.calcular() sigue sin
+   saber que esto existe: la fórmula mide la respuesta y el modo mide el reto
+   aceptado, y por eso el antifarmeo de §11.3 —el modo sin reloj no puede ser ni
+   el que más puntúa ni el que menos— sigue en pie dentro de calcular(). */
+CB.modos.TABLA = {
+  facil: {
+    etiqueta: 'Fácil', segundos: 0,
+    gemaPrimera: 0, rapidezExtra: 0, probCromo: 0.03, probReto: 0.15, bonoFinal: 0
+  },
+  normal: {
+    etiqueta: 'Normal', segundos: 120,
+    gemaPrimera: 0, rapidezExtra: 0, probCromo: 0.05, probReto: 0.25, bonoFinal: 0.10
+  },
+  experto: {
+    etiqueta: 'Experto', segundos: 30,
+    gemaPrimera: 1, rapidezExtra: 1, probCromo: 0.09, probReto: 0.40, bonoFinal: 0.25
+  }
+};
+
+/* De menos a más reto. El orden lo consumen la rueda de ajustes, el panel del
+   adulto y el guardián que comprueba que ninguna palanca esté del revés. */
+CB.modos.ORDEN = ['facil', 'normal', 'experto'];
+
+CB.modos.POR_DEFECTO = 'normal';
+
+/* Las cinco palancas, declaradas. Un guardián que las recorra ve una palanca
+   nueva desordenada; uno escrito a mano solo ve las que ya conocía. */
+CB.modos.PALANCAS = ['gemaPrimera', 'rapidezExtra', 'probCromo', 'probReto', 'bonoFinal'];
+
+/* Un modo que no existe cae al de por defecto, NUNCA a cero: un límite de cero
+   es la salida de accesibilidad y tiene que llegar por decisión, no por
+   despiste. */
+CB.modos.get = function (id) {
+  return CB.modos.TABLA[id] || CB.modos.TABLA[CB.modos.POR_DEFECTO];
+};
+
+CB.modos.etiqueta = function (id) {
+  return CB.modos.get(id).etiqueta;
+};
+
+CB.modos.siguiente = function (id) {
+  const i = CB.modos.ORDEN.indexOf(id);
+  return CB.modos.ORDEN[(i + 1) % CB.modos.ORDEN.length];
+};
+
+/**
+ * Milisegundos de cuenta atrás. 0 = sin reloj.
+ * @param ajustes opcional: si trae sinLimiteTiempo, apaga el reloj SIN tocar
+ *                las recompensas. Es la salida para el niño que no puede jugar
+ *                con reloj, y por eso vive en el panel del adulto: la necesidad
+ *                y la elección son cosas distintas (WCAG 2.2.1 / EN 301 549).
+ */
+CB.modos.msDeItem = function (id, ajustes) {
+  if (ajustes && ajustes.sinLimiteTiempo) return 0;
+  return CB.modos.get(id).segundos * 1000;
+};
+
+CB.modos.probCromo = function (id) { return CB.modos.get(id).probCromo; };
+CB.modos.probReto  = function (id) { return CB.modos.get(id).probReto; };
+
+/**
+ * Gemas EXTRA del modo en un acierto. Se suman a las que ya devuelve
+ * CB.puntuacion.calcular(); no las sustituyen.
+ * @param estado {correcto, azar, intento}
+ */
+CB.modos.gemasDeAcierto = function (id, estado) {
+  estado = estado || {};
+  /* Ni al azar ni en segundo intento: la ventaja del modo premia resolverlo a
+     la primera, que es lo que el reto corto de verdad exige. */
+  if (!estado.correcto || estado.azar || estado.intento !== 1) return 0;
+  return CB.modos.get(id).gemaPrimera;
+};
+
+/**
+ * Bono de rapidez del modo, sobre el que ya calculó CB.puntuacion.gemasDeRapidez.
+ * SOLO SUMA SI EL BASE YA ERA > 0: si no, una respuesta lenta cobraría bono por
+ * el hecho de estar en Experto, que es justo lo que esta palanca no debe hacer.
+ */
+CB.modos.rapidezDe = function (id, bonoBase) {
+  const b = (isFinite(bonoBase) && bonoBase > 0) ? bonoBase : 0;
+  if (b <= 0) return 0;
+  return b + CB.modos.get(id).rapidezExtra;
+};
+
+CB.modos.extraBonoFinal = function (id) {
+  return CB.modos.TABLA[id] ? CB.modos.TABLA[id].bonoFinal : 0;
+};
+
+/* MIGRACIÓN. Una sola regla la ordena: a nadie se le acorta el reloj.
+   «Con calma» (30 s, el de por defecto) gana 90 s al pasar a Normal, y el viejo
+   «Normal» conserva sus 30 s exactos al pasar a Experto. */
+CB.modos.MIGRACION = {
+  sinPrisa: 'facil',
+  conCalma: 'normal',
+  normal: 'experto'
+};
+
+/* DOS FUNCIONES Y NO UNA, porque «normal» existe en los dos vocabularios con
+   dos significados: era el modo de 30 s y ahora es el de 120. Una sola función
+   que intentara ser idempotente y migrar a la vez tenía que elegir, y elegía
+   mal en silencio: el niño que jugaba en el viejo «Normal» se quedaba en el
+   nuevo Normal —con 90 s de más— y su récord se comparaba contra otro modo.
+   Aquí no hace falta idempotencia: el bloque que la llama está detrás de la
+   guarda `perfil.version < 3` y por tanto corre una vez. */
+CB.modos.migrarDesdeV2 = function (id) {
+  return CB.modos.MIGRACION[id] || CB.modos.POR_DEFECTO;
+};
+
+/* Defensiva, para leer un ajuste que puede venir de cualquier sitio. No sabe
+   nada de la migración: un nombre que no está en la tabla cae al de por defecto. */
+CB.modos.normalizar = function (id) {
+  return CB.modos.TABLA[id] ? id : CB.modos.POR_DEFECTO;
 };
 
 /* 30-ui.js — Pintado. Toca el DOM (serie 30-, fuera de la regla de frontera) */
@@ -8893,7 +9070,7 @@ CB.partida.MIN_ITEMS = 8;
 CB.partida.MAX_ITEMS = 20;
 CB.partida.EST_S = { operacion: 12, problema: 35, vocabulario: 8 };
 CB.partida.CADA_DESCANSO = [6, 7, 8];
-CB.partida.PROB_BLOQUE_RARO = 0.05;   // ~1 de cada 20
+/* La probabilidad del bloque raro es de CB.modos.TABLA: cambia con el modo. */
 
 CB.partida.estado = null;
 CB.partida.bloqueado = false;
@@ -9069,7 +9246,7 @@ CB.partida.iniciar = function (opciones) {
     inicioTs: Date.now(),
     finTrasEsteItem: false,
     motivoFin: null,
-    modoTiempo: (modo === 'tranquila') ? 'sinPrisa' : (perfil.ajustes.modoTiempo || 'conCalma'),
+    modoTiempo: (modo === 'tranquila') ? 'facil' : (perfil.ajustes.modoTiempo || CB.modos.POR_DEFECTO),
     pausada: false,
     avisoLimiteDado: false
   };
@@ -9169,8 +9346,13 @@ CB.partida.servirItem = function () {
 
   item.itemId = nivelId + '#' + item.expr + '@' + e.semilla + '.' + e.indice;
   item.repaso = !!reinsertado;
-  item.esRetoBonus = (estadoNivel.D === 3) && (e.rng() < 0.25) && nivel.retoBonus;
-  item.esBloqueRaro = (e.rng() < CB.partida.PROB_BLOQUE_RARO);
+  /* Las dos sorpresas del juego. Su frecuencia es del MODO: es la mitad de «más
+     recompensas en Experto», y la mitad que no toca ningún número de la fórmula.
+     El álbum tiene once cromos y darCromo() devuelve null cuando están todos, así
+     que subir la probabilidad acelera una colección finita, no infla nada. */
+  item.esRetoBonus = (estadoNivel.D === 3) &&
+                     (e.rng() < CB.modos.probReto(e.modoTiempo)) && nivel.retoBonus;
+  item.esBloqueRaro = (e.rng() < CB.modos.probCromo(e.modoTiempo));
 
   e.itemActual = item;
   e.intento = 1;
@@ -9315,14 +9497,9 @@ CB.partida.pintarRespuesta = function (item) {
 };
 
 /* Cronómetro */
-/* Un solo número para todo el juego: 30, que es lo pedido. */
-CB.partida.SEGUNDOS_ITEM = { normal: 30, conCalma: 30, sinPrisa: 0 };
-
-CB.partida.msDeItem = function (modoTiempo) {
-  let s = CB.partida.SEGUNDOS_ITEM[modoTiempo];
-  if (s == null) s = CB.partida.SEGUNDOS_ITEM.conCalma;
-  return s * 1000;
-};
+/* Los segundos son de CB.modos.TABLA y de ningún otro sitio. Aquí vivía una
+   copia —SEGUNDOS_ITEM— que además de duplicar el número no sabía nada del
+   ajuste «sin límite de tiempo» del panel del adulto. */
 
 CB.partida.iniciarCronometro = function (esProblema) {
   const e = CB.partida.estado;
@@ -9336,8 +9513,8 @@ CB.partida.iniciarCronometro = function (esProblema) {
     e.t0 = CB.util.ahora() + CB.componentes.MS_CONSTRUCCION;
   }
 
-  const limite = CB.partida.msDeItem(e.modoTiempo);
-  if (limite <= 0) { CB.ui.reloj.arrancar(0); return; }   // «Sin prisa»
+  const limite = CB.modos.msDeItem(e.modoTiempo, CB.perfil && CB.perfil.ajustes);
+  if (limite <= 0) { CB.ui.reloj.arrancar(0); return; }   // Fácil, o sin límite de tiempo
 
   /* La cuenta atrás empieza cuando los botones terminan de construirse: los
      800 ms de construcción no se le descuentan a nadie. */
@@ -9376,12 +9553,12 @@ CB.partida.tiempoAgotado = function () {
 
   if (e.itemActual) e.vetasSinCerrar[e.itemActual.nivelId] = true;
 
-  if (r.cambiaModo && e.modoTiempo !== 'sinPrisa') {
-    e.modoTiempo = 'sinPrisa';
+  if (r.cambiaModo && e.modoTiempo !== 'facil') {
+    e.modoTiempo = 'facil';
     CB.ui.mensaje('Vamos con más calma.', 'animo');
     CB.a11y.anunciar('Vamos con más calma.');
   }
-  /* A los 3 tiempos agotados seguidos, r.cambiaModo pone la partida en «Sin prisa», y ese modo apaga el cronómetro del todo: a partir de ahí no puede volver a agotarse el tiempo, así que timeoutsPartida se queda clavado en 3 y nunca llega a… */
+  /* A los 3 tiempos agotados seguidos, r.cambiaModo pone la partida en Fácil, y ese modo apaga el cronómetro del todo: a partir de ahí no puede volver a agotarse el tiempo, así que timeoutsPartida se queda clavado en 3 y nunca llega a… */
   if (r.finAmable) { CB.partida.finalizar('pausa'); return; }
 
   CB.ui.mensaje(CB.mensajes.animo({
@@ -9454,14 +9631,24 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   else e.rachaPrimerIntento = 0;
 
   CB.puntuacion.acumular(e, punt.puntos);
-  e.gemas += punt.gemas;
-  perfil.gemas = (perfil.gemas || 0) + punt.gemas;
+
+  /* LA GEMA EXTRA DEL MODO SE SUMA UNA VEZ Y EN UN SITIO. e.gemas y perfil.gemas
+     son dos contadores del mismo hecho: sumarles a mano por separado es como se
+     descuadra un marcador y no lo nota nadie hasta que el niño compara. */
+  const gemas = punt.gemas +
+    CB.modos.gemasDeAcierto(e.modoTiempo,
+      { correcto: true, azar: false, intento: e.intento });
+  e.gemas += gemas;
+  perfil.gemas = (perfil.gemas || 0) + gemas;
 
   CB.vidas.acierto(e.luces, e.intento === 1);
 
   /* El bono de rapidez se muestra RETROSPECTIVAMENTE, como ganancia. Nunca como
-     una cuenta atrás corriendo mientras el niño piensa (§3.4). */
-  const bono = CB.puntuacion.gemasDeRapidez(punt.mTiempo);
+     una cuenta atrás corriendo mientras el niño piensa (§3.4). El extra del modo
+     solo suma si el bono base ya era mayor que cero: no puede convertir una
+     respuesta lenta en premio por el hecho de estar en Experto. */
+  const bono = CB.modos.rapidezDe(e.modoTiempo,
+    CB.puntuacion.gemasDeRapidez(punt.mTiempo));
   CB.ui.hileraBono(bono);
 
   const vetaNueva = CB.partida.actualizarDestreza(item, nivel, true);
@@ -9972,7 +10159,7 @@ CB.partida.finalizar = function (motivo) {
   const precision1er = e.preguntas ? (e.aciertos1er / e.preguntas) : 0;
   const bono = CB.puntuacion.bonoFinal(
     precision1er, e.luces.luces >= CB.vidas.INICIALES, e.preguntas >= 15,
-    e.preguntas, e.puntos
+    e.preguntas, e.puntos, e.modoTiempo
   );
   e.puntos += bono.total;
   e.gemas += Math.max(0, Math.round(bono.total / 50));
@@ -9982,14 +10169,16 @@ CB.partida.finalizar = function (motivo) {
   /* EL RÉCORD SE LEE ANTES DE PISARLO. Si se lee después, `e.puntos > récord`
      es falso siempre y la celebración no se dispara nunca. Y se compara SIEMPRE
      contra el récord del MISMO modo: el antifarmeo cerrado en 24-logros.js. */
-  const claveModo = (e.modo === 'tranquila') ? 'sinPrisa' : e.modoTiempo;
+  const claveModo = (e.modo === 'tranquila') ? 'facil' : e.modoTiempo;
   if (!perfil.mejorPuntuacion[claveModo]) perfil.mejorPuntuacion[claveModo] = 0;
   const esRecord = e.preguntas > 0 && e.puntos > perfil.mejorPuntuacion[claveModo];
   if (esRecord) perfil.mejorPuntuacion[claveModo] = e.puntos;
 
   const hoy = CB.util.hoyISO();
   perfil.historial.push({
-    fechaISO: hoy, modo: e.modo, mundo: e.mundo.id,
+    /* Sin el modo, el adulto ve puntuaciones que no puede comparar entre si y no
+       sabe por que una sesion dio el doble que otra. */
+    fechaISO: hoy, modo: e.modo, modoTiempo: e.modoTiempo, mundo: e.mundo.id,
     seg: Math.round((Date.now() - e.inicioTs) / 1000),
     preguntas: e.preguntas, aciertos: e.aciertos, aciertos1erIntento: e.aciertos1er,
     precision1er: precision1er,
@@ -10765,8 +10954,15 @@ CB.adulto.NOMBRE_SUBTIPO = {
 
 /* Ajustes pedagógicos (viven en perfil.ajustes, §15.2) */
 CB.adulto.AJUSTES = [
-  { k: 'modoTiempo', t: 'Reloj', tipo: 'opciones',
-    ops: [['conCalma', 'Con calma (recomendado)'], ['normal', 'Normal'], ['sinPrisa', 'Sin prisa']] },
+  { k: 'modoTiempo', t: 'Modo de juego', tipo: 'opciones',
+    /* Los rótulos son de CB.modos.TABLA: estaban escritos a mano aquí y en
+       99-arranque.js a la vez, y renombrar uno dejaba el otro mintiendo. */
+    ops: function () {
+      return CB.modos.ORDEN.map(function (m) { return [m, CB.modos.etiqueta(m)]; });
+    } },
+  { k: 'sinLimiteTiempo', t: 'Quitar el reloj sin cambiar de modo', tipo: 'bool',
+    nota: 'Para quien necesita jugar sin cuenta atrás. No baja las recompensas ' +
+          'del modo elegido: necesitar más tiempo no es elegir menos reto.' },
   { k: 'noPuntuarVelocidadProblemas', t: 'No puntuar la velocidad en los problemas', tipo: 'bool' },
   { k: 'voz', t: 'Lectura en voz alta', tipo: 'bool' },
   { k: 'letraGrande', t: 'Letra grande', tipo: 'bool' },
@@ -10811,7 +11007,10 @@ CB.adulto.cajaAjustes = function (perfil) {
       const sel = CB.ui.crear('span');
       sel.setAttribute('role', 'group');
       sel.setAttribute('aria-labelledby', rotulo.id);
-      a.ops.forEach(function (op, indice) {
+      /* ops puede ser una función: así los modos se leen en tiempo de LLAMADA y
+         esta tabla no se convierte en un cuarto borde duro del orden de carga. */
+      const ops = (typeof a.ops === 'function') ? a.ops() : a.ops;
+      ops.forEach(function (op, indice) {
         const b2 = CB.ui.crear('button', 'btn-adulto', op[1]);
         b2.type = 'button';
         b2.id = 'adulto-ajuste-' + a.k + '-opcion-' + indice;
@@ -11998,13 +12197,11 @@ CB.ajustesNino = function (props) {
   });
 
   if (perfil) {
-    /* Los tres modos de tiempo se pueden cambiar también desde la pausa. */
-    const nombres = { conCalma: 'Con calma', normal: 'Normal', sinPrisa: 'Sin prisa' };
-    const orden = ['conCalma', 'normal', 'sinPrisa'];
-    fila('El reloj', nombres[perfil.ajustes.modoTiempo] || 'Con calma', function (b) {
-      const i = orden.indexOf(perfil.ajustes.modoTiempo);
-      perfil.ajustes.modoTiempo = orden[(i + 1) % orden.length];
-      b.textContent = nombres[perfil.ajustes.modoTiempo];
+    /* Los tres modos se pueden cambiar también desde la pausa. Los rótulos y el
+       orden salen de CB.modos: aquí vivía una copia a mano de los tres nombres. */
+    fila('Modo de juego', CB.modos.etiqueta(perfil.ajustes.modoTiempo), function (b) {
+      perfil.ajustes.modoTiempo = CB.modos.siguiente(perfil.ajustes.modoTiempo);
+      b.textContent = CB.modos.etiqueta(perfil.ajustes.modoTiempo);
       if (CB.partida.estado) CB.partida.estado.modoTiempo = perfil.ajustes.modoTiempo;
       CB.almacen.guardarPerfil(perfil);
     });
@@ -12082,7 +12279,18 @@ CB.creditos = function () {
 };
 
 /* Enganches de pantalla */
+/* El rotulo del boton de modo. Se pinta al entrar y tras cada toque: el modo
+   tambien se cambia desde Ajustes, desde la pausa y desde el panel del adulto,
+   asi que el mapa no puede darlo por sabido. */
+CB.pintarBotonModo = function () {
+  const b = document.getElementById('btn-modo');
+  if (!b || !CB.perfil) return null;
+  b.textContent = 'Modo: ' + CB.modos.etiqueta(CB.perfil.ajustes.modoTiempo);
+  return b;
+};
+
 CB.pantallas.alEntrar['p-mapa'] = function () {
+  CB.pintarBotonModo();
   CB.mapaDestrezas.pintarMundos();
   /* Con un solo mundo abierto, el foco va al único botón que hace algo. */
   const abiertos = CB.MUNDOS.filter(function (m) {
@@ -12156,6 +12364,19 @@ CB.arranque = function () {
         return;
       }
       CB.pantallas.ir('p-mapa');
+    });
+  }
+
+  const btnModo = document.getElementById('btn-modo');
+  if (btnModo) {
+    btnModo.addEventListener('click', function () {
+      if (!CB.perfil) return;
+      CB.perfil.ajustes.modoTiempo = CB.modos.siguiente(CB.perfil.ajustes.modoTiempo);
+      CB.almacen.guardarPerfil(CB.perfil);
+      CB.pintarBotonModo();
+      /* El lector de pantalla no ve el rotulo cambiar solo: el boton se queda
+         enfocado y su nombre accesible ES su texto, asi que hay que decirlo. */
+      CB.a11y.anunciar('Modo ' + CB.modos.etiqueta(CB.perfil.ajustes.modoTiempo));
     });
   }
 

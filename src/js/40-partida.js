@@ -9,7 +9,7 @@ CB.partida.MIN_ITEMS = 8;
 CB.partida.MAX_ITEMS = 20;
 CB.partida.EST_S = { operacion: 12, problema: 35, vocabulario: 8 };
 CB.partida.CADA_DESCANSO = [6, 7, 8];
-CB.partida.PROB_BLOQUE_RARO = 0.05;   // ~1 de cada 20
+/* La probabilidad del bloque raro es de CB.modos.TABLA: cambia con el modo. */
 
 CB.partida.estado = null;
 CB.partida.bloqueado = false;
@@ -185,7 +185,7 @@ CB.partida.iniciar = function (opciones) {
     inicioTs: Date.now(),
     finTrasEsteItem: false,
     motivoFin: null,
-    modoTiempo: (modo === 'tranquila') ? 'sinPrisa' : (perfil.ajustes.modoTiempo || 'conCalma'),
+    modoTiempo: (modo === 'tranquila') ? 'facil' : (perfil.ajustes.modoTiempo || CB.modos.POR_DEFECTO),
     pausada: false,
     avisoLimiteDado: false
   };
@@ -285,8 +285,13 @@ CB.partida.servirItem = function () {
 
   item.itemId = nivelId + '#' + item.expr + '@' + e.semilla + '.' + e.indice;
   item.repaso = !!reinsertado;
-  item.esRetoBonus = (estadoNivel.D === 3) && (e.rng() < 0.25) && nivel.retoBonus;
-  item.esBloqueRaro = (e.rng() < CB.partida.PROB_BLOQUE_RARO);
+  /* Las dos sorpresas del juego. Su frecuencia es del MODO: es la mitad de «más
+     recompensas en Experto», y la mitad que no toca ningún número de la fórmula.
+     El álbum tiene once cromos y darCromo() devuelve null cuando están todos, así
+     que subir la probabilidad acelera una colección finita, no infla nada. */
+  item.esRetoBonus = (estadoNivel.D === 3) &&
+                     (e.rng() < CB.modos.probReto(e.modoTiempo)) && nivel.retoBonus;
+  item.esBloqueRaro = (e.rng() < CB.modos.probCromo(e.modoTiempo));
 
   e.itemActual = item;
   e.intento = 1;
@@ -431,14 +436,9 @@ CB.partida.pintarRespuesta = function (item) {
 };
 
 /* Cronómetro */
-/* Un solo número para todo el juego: 30, que es lo pedido. */
-CB.partida.SEGUNDOS_ITEM = { normal: 30, conCalma: 30, sinPrisa: 0 };
-
-CB.partida.msDeItem = function (modoTiempo) {
-  let s = CB.partida.SEGUNDOS_ITEM[modoTiempo];
-  if (s == null) s = CB.partida.SEGUNDOS_ITEM.conCalma;
-  return s * 1000;
-};
+/* Los segundos son de CB.modos.TABLA y de ningún otro sitio. Aquí vivía una
+   copia —SEGUNDOS_ITEM— que además de duplicar el número no sabía nada del
+   ajuste «sin límite de tiempo» del panel del adulto. */
 
 CB.partida.iniciarCronometro = function (esProblema) {
   const e = CB.partida.estado;
@@ -452,8 +452,8 @@ CB.partida.iniciarCronometro = function (esProblema) {
     e.t0 = CB.util.ahora() + CB.componentes.MS_CONSTRUCCION;
   }
 
-  const limite = CB.partida.msDeItem(e.modoTiempo);
-  if (limite <= 0) { CB.ui.reloj.arrancar(0); return; }   // «Sin prisa»
+  const limite = CB.modos.msDeItem(e.modoTiempo, CB.perfil && CB.perfil.ajustes);
+  if (limite <= 0) { CB.ui.reloj.arrancar(0); return; }   // Fácil, o sin límite de tiempo
 
   /* La cuenta atrás empieza cuando los botones terminan de construirse: los
      800 ms de construcción no se le descuentan a nadie. */
@@ -492,12 +492,12 @@ CB.partida.tiempoAgotado = function () {
 
   if (e.itemActual) e.vetasSinCerrar[e.itemActual.nivelId] = true;
 
-  if (r.cambiaModo && e.modoTiempo !== 'sinPrisa') {
-    e.modoTiempo = 'sinPrisa';
+  if (r.cambiaModo && e.modoTiempo !== 'facil') {
+    e.modoTiempo = 'facil';
     CB.ui.mensaje('Vamos con más calma.', 'animo');
     CB.a11y.anunciar('Vamos con más calma.');
   }
-  /* A los 3 tiempos agotados seguidos, r.cambiaModo pone la partida en «Sin prisa», y ese modo apaga el cronómetro del todo: a partir de ahí no puede volver a agotarse el tiempo, así que timeoutsPartida se queda clavado en 3 y nunca llega a… */
+  /* A los 3 tiempos agotados seguidos, r.cambiaModo pone la partida en Fácil, y ese modo apaga el cronómetro del todo: a partir de ahí no puede volver a agotarse el tiempo, así que timeoutsPartida se queda clavado en 3 y nunca llega a… */
   if (r.finAmable) { CB.partida.finalizar('pausa'); return; }
 
   CB.ui.mensaje(CB.mensajes.animo({
@@ -570,14 +570,24 @@ CB.partida.trasAcierto = function (item, nivel, punt, rt, extra) {
   else e.rachaPrimerIntento = 0;
 
   CB.puntuacion.acumular(e, punt.puntos);
-  e.gemas += punt.gemas;
-  perfil.gemas = (perfil.gemas || 0) + punt.gemas;
+
+  /* LA GEMA EXTRA DEL MODO SE SUMA UNA VEZ Y EN UN SITIO. e.gemas y perfil.gemas
+     son dos contadores del mismo hecho: sumarles a mano por separado es como se
+     descuadra un marcador y no lo nota nadie hasta que el niño compara. */
+  const gemas = punt.gemas +
+    CB.modos.gemasDeAcierto(e.modoTiempo,
+      { correcto: true, azar: false, intento: e.intento });
+  e.gemas += gemas;
+  perfil.gemas = (perfil.gemas || 0) + gemas;
 
   CB.vidas.acierto(e.luces, e.intento === 1);
 
   /* El bono de rapidez se muestra RETROSPECTIVAMENTE, como ganancia. Nunca como
-     una cuenta atrás corriendo mientras el niño piensa (§3.4). */
-  const bono = CB.puntuacion.gemasDeRapidez(punt.mTiempo);
+     una cuenta atrás corriendo mientras el niño piensa (§3.4). El extra del modo
+     solo suma si el bono base ya era mayor que cero: no puede convertir una
+     respuesta lenta en premio por el hecho de estar en Experto. */
+  const bono = CB.modos.rapidezDe(e.modoTiempo,
+    CB.puntuacion.gemasDeRapidez(punt.mTiempo));
   CB.ui.hileraBono(bono);
 
   const vetaNueva = CB.partida.actualizarDestreza(item, nivel, true);
@@ -1088,7 +1098,7 @@ CB.partida.finalizar = function (motivo) {
   const precision1er = e.preguntas ? (e.aciertos1er / e.preguntas) : 0;
   const bono = CB.puntuacion.bonoFinal(
     precision1er, e.luces.luces >= CB.vidas.INICIALES, e.preguntas >= 15,
-    e.preguntas, e.puntos
+    e.preguntas, e.puntos, e.modoTiempo
   );
   e.puntos += bono.total;
   e.gemas += Math.max(0, Math.round(bono.total / 50));
@@ -1098,14 +1108,16 @@ CB.partida.finalizar = function (motivo) {
   /* EL RÉCORD SE LEE ANTES DE PISARLO. Si se lee después, `e.puntos > récord`
      es falso siempre y la celebración no se dispara nunca. Y se compara SIEMPRE
      contra el récord del MISMO modo: el antifarmeo cerrado en 24-logros.js. */
-  const claveModo = (e.modo === 'tranquila') ? 'sinPrisa' : e.modoTiempo;
+  const claveModo = (e.modo === 'tranquila') ? 'facil' : e.modoTiempo;
   if (!perfil.mejorPuntuacion[claveModo]) perfil.mejorPuntuacion[claveModo] = 0;
   const esRecord = e.preguntas > 0 && e.puntos > perfil.mejorPuntuacion[claveModo];
   if (esRecord) perfil.mejorPuntuacion[claveModo] = e.puntos;
 
   const hoy = CB.util.hoyISO();
   perfil.historial.push({
-    fechaISO: hoy, modo: e.modo, mundo: e.mundo.id,
+    /* Sin el modo, el adulto ve puntuaciones que no puede comparar entre si y no
+       sabe por que una sesion dio el doble que otra. */
+    fechaISO: hoy, modo: e.modo, modoTiempo: e.modoTiempo, mundo: e.mundo.id,
     seg: Math.round((Date.now() - e.inicioTs) / 1000),
     preguntas: e.preguntas, aciertos: e.aciertos, aciertos1erIntento: e.aciertos1er,
     precision1er: precision1er,

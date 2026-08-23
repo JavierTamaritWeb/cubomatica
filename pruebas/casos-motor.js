@@ -34,8 +34,8 @@ CB.pruebas.suite('Motor: grafo, luces, azar y escalera', function () {
   t.ok(CB.vidas.TIMEOUTS_CAMBIA_MODO < CB.vidas.TIMEOUTS_FIN,
        'el cambio de modo llega ANTES que el fin amable, y por eso lo hace inalcanzable',
        CB.vidas.TIMEOUTS_CAMBIA_MODO + ' < ' + CB.vidas.TIMEOUTS_FIN);
-  t.igual(CB.partida.msDeItem('sinPrisa'), 0,
-       'y «Sin prisa» apaga el reloj: por eso, tras el cambio de modo, ya no puede haber más tiempos agotados');
+  t.igual(CB.modos.msDeItem('facil'), 0,
+       'y Fácil apaga el reloj: por eso, tras el cambio de modo, ya no puede haber más tiempos agotados');
 
   const est2 = CB.vidas.nuevoEstado(0);
   let c3 = null;
@@ -248,14 +248,16 @@ CB.pruebas.suite('Motor: fechas, memoria, cuota y almacenamiento', function () {
     diario: { diasJugados: ['2026-07-20'] }, respuestas: []
   };
   const mig = CB.almacen.migrar(JSON.parse(JSON.stringify(v1)));
-  t.igual(mig.version, 2, 'migrar lleva el perfil a la versión 2');
+  t.igual(mig.version, 3, 'migrar lleva el perfil a la versión de esquema vigente');
   t.igual(mig.gemas, 1240, 'la migración NO pierde ni una gema');
   t.igual(Object.keys(mig.logros).length, 3, 'la migración NO pierde ni un logro');
   t.igual(mig.cromos.length, 2, 'la migración NO pierde ni un cromo');
   t.igual(Object.keys(mig.problemas).length, 20, 'la migración añade las 20 claves de problemas');
   t.igual(mig.destrezas.suma_llevada.estabilidadDias, 1, 'añade estabilidadDias por defecto');
   t.igual(mig.destrezas.suma_llevada.estado, 'nuevo', 'añade estado por defecto');
-  t.igual(mig.mejorPuntuacion.normal, 2640, 'mejorPuntuacion se desglosa por modo');
+  /* El único récord de un perfil v1 se ganó con 30 s de reloj, que es lo que
+     hoy es Experto: se desglosa por modo en v2 y viaja con su reloj en v3. */
+  t.igual(mig.mejorPuntuacion.experto, 2640, 'mejorPuntuacion se desglosa por modo');
   t.ok(mig.historial[0].precision1er === 0.73 && mig.historial[0].precisionTotal != null,
     'el campo ambiguo «precision» de v1 se desdobla');
 

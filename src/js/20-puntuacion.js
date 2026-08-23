@@ -3,8 +3,10 @@
 var CB = CB || {};
 CB.puntuacion = CB.puntuacion || {};
 
-/* Punto medio del rango 0,6-1,4. Ni premia ni castiga: el modo accesible no
-   puede ser ni el que más puntúa ni el que menos (antifarmeo, §11.3). */
+/* Punto medio del rango 0,6-1,4. Ni premia ni castiga: el modo sin reloj no
+   puede ser ni el que más puntúa ni el que menos (antifarmeo, §11.3). La ventaja
+   de los modos con reloj vive FUERA de esta fórmula, en CB.modos, y por eso esta
+   regla sigue significando lo mismo que el primer día. */
 CB.puntuacion.M_SIN_PRISA = 0.85;
 CB.puntuacion.M_MIN = 0.6;
 CB.puntuacion.M_MAX = 1.4;
@@ -33,10 +35,10 @@ CB.puntuacion.calcular = function (item, rtMs, estado) {
   if (!isFinite(rtMs) || rtMs < 0) rtMs = tI;
 
   let mT;
-  if (estado.modoTiempo === 'sinPrisa') {
+  if (estado.modoTiempo === 'facil') {
     mT = CB.puntuacion.M_SIN_PRISA;
   } else {
-    /* El modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta regla, «Con calma» con la d duplicada regalaba multiplicadores altos por respuestas lentas y era el modo que más puntuaba. */
+    /* El modo solo cambia CUÁNDO se agota el tiempo, no CÓMO se puntúa: sin esta regla, un modo con el doble de reloj regalaba multiplicadores altos por respuestas lentas y era el que más puntuaba. */
     mT = CB.util.clamp(
       CB.puntuacion.M_MAX - 0.8 * (rtMs - tI) / (tL - tI),
       CB.puntuacion.M_MIN, CB.puntuacion.M_MAX
@@ -91,8 +93,15 @@ CB.puntuacion.acumular = function (estado, delta) {
  * @param maraton       true si ha resuelto ≥ 15 ítems
  * @param preguntas     nº de ítems servidos
  * @param puntosSesion  puntos acumulados
+ * @param modoTiempo    OPCIONAL. Sin él la función devuelve exactamente lo que
+ *                      devolvía antes, que es lo que permite que las llamadas y
+ *                      los guardianes viejos —A6 entre ellos— sigan valiendo.
+ *                      Con él suma el extra del modo: es la única de las cinco
+ *                      palancas que multiplica, y multiplica sobre lo YA ganado,
+ *                      así que no puede convertir una sesión floja en un número
+ *                      grande.
  */
-CB.puntuacion.bonoFinal = function (precision1er, sinDanio, maraton, preguntas, puntosSesion) {
+CB.puntuacion.bonoFinal = function (precision1er, sinDanio, maraton, preguntas, puntosSesion, modoTiempo) {
   /* El niño pulsa Salir en el primer ítem: sin esta guarda salían NaN, y
      JSON.stringify convierte NaN en null; a partir de ahí toda la aritmética
      del perfil da NaN para siempre (§11.2). */
@@ -108,16 +117,35 @@ CB.puntuacion.bonoFinal = function (precision1er, sinDanio, maraton, preguntas, 
   if (sinDanio)       { factor += 0.15; extras.push('sinDanio'); }
   if (maraton)        { factor += 0.10; extras.push('maraton'); }
 
+  /* El extra del modo va CON SU RÓTULO en la lista de extras de p-fin: el niño
+     tiene que poder ver por qué ha ganado más, no solo que ha ganado más.
+     La clave se DECLARA, no se compone: 'modo_' + modo era un literal terminado
+     en guion bajo, y el cruce de clases lo tomaba por un prefijo de clases
+     dinamicas y dejaba de mirar todo lo que empezara por ahi. */
+  const extraModo = CB.modos.extraBonoFinal(modoTiempo);
+  const claveModo = CB.puntuacion.CLAVE_MODO[modoTiempo];
+  if (extraModo > 0 && claveModo) { factor += extraModo; extras.push(claveModo); }
+
   let total = Math.max(0, Math.round(ps * (factor - 1)));
   if (!isFinite(total)) total = 0;
 
   return { factor: factor, extras: extras, total: total };
 };
 
-/* Etiquetas en español para la pantalla de fin. */
+/* Qué extra añade cada modo. Solo los que dan bono: Fácil no aparece porque no
+   suma nada, y una clave sin extra sería un rótulo que no se gana nunca. */
+CB.puntuacion.CLAVE_MODO = {
+  normal:  'modoNormal',
+  experto: 'modoExperto'
+};
+
+/* Etiquetas en español para la pantalla de fin. Una clave sin rótulo aquí se
+   pinta cruda en p-fin: el niño leería «modoExperto». */
 CB.puntuacion.ETIQUETA_EXTRA = {
-  precision90: 'Casi todo a la primera',
-  precision75: 'Muchas a la primera',
-  sinDanio:    'Las tres luces encendidas',
-  maraton:     'Expedición larga'
+  precision90:  'Casi todo a la primera',
+  precision75:  'Muchas a la primera',
+  sinDanio:     'Las tres luces encendidas',
+  maraton:      'Expedición larga',
+  modoNormal:   'Reto del modo Normal',
+  modoExperto:  'Reto del modo Experto'
 };

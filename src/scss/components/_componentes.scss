@@ -187,7 +187,10 @@
 }
 
 .reloj__cifra {
-  min-width: 2.2ch;
+  // 3,2ch y no 2,2: Normal empieza en 120 y son TRES digitos. Con la caja medida
+  // para dos, la cifra empuja la fila del HUD y a 320 px eso no lanza ningun
+  // error, se recorta contra el borde y no se ve (E125).
+  min-width: 3.2ch;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
