@@ -287,13 +287,18 @@
   font-size: min(var(--tam-numero-opcion), calc(var(--lado) * 0.46));
 }
 
-@media (orientation: landscape) and (max-height: 420px) {
-  .rejilla-respuestas { grid-template-columns: repeat(4, 1fr); }
-  .enunciado { max-height: 5.5em; overflow: auto; }
+@media (orientation: landscape) {
+  @include m.hasta-alto(minima) {
+    .rejilla-respuestas { grid-template-columns: repeat(4, 1fr); }
+    .enunciado { max-height: 5.5em; overflow: auto; }
+  }
 }
 
-@media (min-width: 1024px) and (min-height: 620px) {
-  .rejilla-respuestas { grid-template-columns: repeat(4, var(--lado)); }
+@include m.desde(portatil) {
+  // 620px no está en $alturas: es un mínimo de altura, no un techo.
+  @media (min-height: 620px) {
+    .rejilla-respuestas { grid-template-columns: repeat(4, var(--lado)); }
+  }
 }
 
 .rejilla-respuestas--dinero { grid-template-columns: repeat(2, auto); }
@@ -335,14 +340,15 @@
   @include m.apagado;
 }
 
-@include m.hasta-alto(alta)  { :root, :root.modo-proyeccion { --lado-techo: 80px; } }
-@include m.hasta-alto(media) { :root, :root.modo-proyeccion { --lado-techo: 72px; }
-                             .respuesta__visor { min-height: 60px; font-size: 36px; } }
-@include m.hasta-alto(baja)  { :root, :root.modo-proyeccion { --lado-techo: 64px; } }
+// Los escalones de --lado-techo viven en base/_raiz.scss con el resto de
+// tokens condicionales; aquí queda solo el ajuste del visor a esa altura.
+@include m.hasta-alto(media) { .respuesta__visor { min-height: 60px; font-size: 36px; } }
 
 // La disposición 6×2 solo se activa cuando también cabe horizontalmente.
-@media (max-height: 660px) and (min-width: 480px) {
-  .teclado-bloques { grid-template-columns: repeat(6, var(--lado-respuesta)); }
+@include m.hasta-alto(baja) {
+  @include m.desde(movil) {
+    .teclado-bloques { grid-template-columns: repeat(6, var(--lado-respuesta)); }
+  }
 }
 
 .respuesta__visor {

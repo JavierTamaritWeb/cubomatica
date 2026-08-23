@@ -1,0 +1,49 @@
+@use '../abstracts/mixins' as m;
+
+// La raíz según el entorno y los ajustes: todo lo que reescribe los tokens de
+// _variables.scss cuando cambia el viewport, un ajuste del niño o una
+// preferencia del sistema. Vive aparte porque _variables.scss no puede usar
+// los mixins de breakpoint sin ciclo variables↔mixins. El ORDEN interno es
+// carga útil: entre selectores de igual especificidad decide el orden.
+
+// Escalones de anchura: la anchura propone --lado-deseado, 1:1 con $puntos.
+@include m.desde(movil)      { :root { --lado-deseado: 80px; } }
+@include m.desde(tableta)    { :root { --lado-deseado: 96px; } }
+@include m.desde(portatil)   { :root { --lado-deseado: 96px; } }
+@include m.desde(escritorio) { :root { --lado-deseado: 112px; } }
+@include m.desde(ancho)      { :root { --lado-deseado: 128px; } }
+
+:root.letra-grande {
+  --tam-enunciado:     34px;
+  --tam-texto-min:     24px;
+  --tam-numero-opcion: 52px;
+  --tam-titulo:        46px;
+}
+
+// Proyección escribe los DOS ejes (E96): fijar solo el resultado dejaría los
+// escalones de altura sin nada que recortar en un proyector 1200×700.
+:root.modo-proyeccion {
+  --tam-enunciado:     45px;
+  --tam-texto-min:     32px;
+  --tam-numero-opcion: 70px;
+  --tam-titulo:        64px;
+
+  --lado-deseado:      150px;
+  --lado-techo:        150px;
+}
+
+// Escalones de altura: la altura impone el techo. Nombran también
+// :root.modo-proyeccion porque una clase gana a :root por ESPECIFICIDAD, no
+// por orden (E96); y van tras el bloque de arriba porque con él sí empatan
+// a especificidad y ahí decide el orden.
+@include m.hasta-alto(alta)  { :root, :root.modo-proyeccion { --lado-techo: 80px; } }
+@include m.hasta-alto(media) { :root, :root.modo-proyeccion { --lado-techo: 72px; } }
+@include m.hasta-alto(baja)  { :root, :root.modo-proyeccion { --lado-techo: 64px; } }
+
+:root.alto-contraste { @include m.alto-contraste; }
+
+// Este :root empata a especificidad con los tokens base de _variables.scss y
+// gana porque este parcial carga después.
+@media (prefers-contrast: more) {
+  :root { @include m.alto-contraste; }
+}

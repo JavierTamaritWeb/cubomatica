@@ -71,7 +71,7 @@
 }
 
 .rotulo-veta__mundo { @include m.oculto-visual; }
-@media (max-width: 479px) {
+@include m.hasta(movil) {
 
   .portada__titulo { padding: var(--e3); }
 

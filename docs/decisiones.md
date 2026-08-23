@@ -4392,3 +4392,50 @@ función mide dónde están escritas las líneas, no lo que hacen, y este proyec
 ya lo tenía documentado. Reescrito para medir el efecto: los números del jefe
 de 6.º superan a los del de 1.º, y los de 1.º se quedan dentro de la fila que
 declara su curso.
+
+## D-3.4.7 · Lo incondicional en `_variables.scss`, lo condicional en `base/_raiz.scss`
+
+`_variables.scss` mezclaba cuatro cosas: configuración Sass, tokens `:root`,
+el único `@mixin` fuera de `_mixins.scss` (`alto-contraste`) y seis `@media`
+— cinco de las cuales repetían en píxeles literales los cinco valores del
+mapa `$puntos` declarado 130 líneas más arriba. La repetición no era pereza:
+`_mixins.scss` hace `@use 'variables'`, así que `_variables.scss` no puede
+importar los mixins sin un ciclo `variables↔mixins`. **Nada que necesite
+`m.desde()` puede vivir en `_variables.scss`**; lo que sí podía era irse.
+
+El reparto queda así, y las dos primeras líneas son la regla:
+
+- **`_variables.scss` solo declara lo incondicional**: mapas Sass, tokens
+  `:root`, las piezas de dinero y la paleta de alto contraste como DATOS
+  (`$paleta-contraste`, `$contraste-veta`) — sigue siendo el único fichero
+  que puede escribir un color, y la auditoría lo sigue exigiendo.
+- **`base/_raiz.scss` posee todo lo que reescribe esos tokens** según
+  viewport, ajuste del niño o preferencia del sistema: los escalones de
+  anchura de `--lado-deseado` (vía `m.desde`, 1:1 con `$puntos`),
+  `:root.letra-grande`, `:root.modo-proyeccion`, los escalones de altura de
+  `--lado-techo` — que llevaban tres versiones escondidos en
+  `_componentes.scss` contra D-1.23.1 — y las dos emisiones de la paleta
+  (`:root.alto-contraste` y `prefers-contrast: more`) a través de
+  `m.alto-contraste`.
+
+El ORDEN interno de `_raiz.scss` es carga útil y está comentado en el propio
+fichero: los escalones de altura nombran `:root.modo-proyeccion` porque una
+clase gana a `:root` por especificidad (E96) y van tras el bloque de
+proyección porque con él sí empatan; el `@media (prefers-contrast: more)`
+empata con los tokens base de `_variables.scss` y gana por orden de carga.
+
+Tres consecuencias menores. Primera: `m.hasta($punto)` existe (max-width,
+punto − 1px) y los breakpoints literales de `_pantallas.scss` y
+`_componentes.scss` pasaron a mixins — un píxel de breakpoint ya solo se
+escribe en `$puntos`/`$alturas`, con dos excepciones deliberadas comentadas
+en su sitio (los 299/419 px de E31 y el mínimo de altura de 620 px, que no es
+un techo). Segunda: cayó una declaración muerta — el bloque grande de `:root`
+decía `--lado-deseado: 96px` y otro bloque lo pisaba con el valor móvil de
+64 px desde siempre; queda una sola declaración. Tercera: el manifiesto pasa
+de 10 a 11 parciales (13 `.scss` en disco) y `comprobar-dist.mjs`, las
+huellas y el vigilante lo absorben solos porque derivan del manifiesto.
+
+La verificación fue la de un cambio que promete no cambiar nada: los 54
+retratos idénticos píxel a píxel, el volcado CSS declaración a declaración
+equivalente (las únicas diferencias, dos espacios tras dos puntos), la suite
+completa en las dos páginas y `npm run entregar` en verde.

@@ -1,6 +1,6 @@
 # Cubomática
 
-**Versión 3.4.6**
+**Versión 3.4.7**
 
 **Juego educativo de matemáticas para 2.º de Educación Primaria (7-8 años).**
 Lema: *«las Matemáticas son muy divertidas»*. Aprender divirtiéndose.

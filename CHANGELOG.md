@@ -12,6 +12,33 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.4.7] — 2026-08-24
+
+Factorización de los SCSS: `_variables.scss` queda solo con lo incondicional.
+Ningún cambio de comportamiento — el CSS computado es idéntico (54 retratos
+sin un píxel cambiado, volcado declaración a declaración equivalente).
+
+### Cambiado
+
+- `abstracts/_variables.scss` ya no contiene mixins ni media queries: solo
+  configuración Sass, tokens `:root` incondicionales, las piezas de dinero y
+  la paleta de alto contraste como datos (`$paleta-contraste`,
+  `$contraste-veta`).
+- Nuevo parcial `base/_raiz.scss` (3.º de la cascada, 11 en el manifiesto):
+  agrupa todo lo que reescribe tokens de la raíz — escalones de anchura
+  (`--lado-deseado`, ahora vía `m.desde` en vez de cinco píxeles literales que
+  duplicaban `$puntos`), `:root.letra-grande`, `:root.modo-proyeccion`, los
+  escalones de altura de `--lado-techo` (antes escondidos en
+  `_componentes.scss`) y las dos emisiones de alto contraste.
+- `@mixin alto-contraste` vive en `abstracts/_mixins.scss` y consume la paleta
+  de `_variables.scss`, que sigue siendo el único fichero con colores.
+- Nuevo `m.hasta($punto)` (max-width) simétrico de `m.desde`; las media
+  queries con breakpoints literales de `_pantallas.scss` y `_componentes.scss`
+  pasan a los mixins. Quedan, comentadas en su sitio, las deliberadas: los
+  299/419 px de E31 y el mínimo de altura de 620 px.
+- Retirada una declaración muerta: `--lado-deseado: 96px` en el bloque grande
+  de `:root`, pisada desde siempre por el valor móvil de 64 px.
+
 ## [3.4.6] — 2026-08-23
 
 La otra mitad de la auditoría severa: las pruebas y la auditoría que podían

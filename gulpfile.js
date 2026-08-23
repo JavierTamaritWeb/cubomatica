@@ -163,7 +163,7 @@ async function huellas() {
   const crypto = require('node:crypto');
   const sha = (f) => crypto.createHash('sha1').update(fs.readFileSync(f)).digest('hex');
   const fuentes = {};
-  for (const f of RUTAS.estilos) {          // los 12: los 10 parciales, la entrada y los mixins
+  for (const f of RUTAS.estilos) {          // los 13: los 11 parciales, la entrada y los mixins
     if (fs.existsSync(f)) fuentes[f] = sha(f);
   }
   await fsp.writeFile(path.join(RUTAS.salida, '.huellas.json'),

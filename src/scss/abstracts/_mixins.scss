@@ -10,6 +10,13 @@
   @media (min-width: map.get(v.$puntos, $punto)) { @content; }
 }
 
+@mixin hasta($punto) {
+  @if not map.has-key(v.$puntos, $punto) {
+    @error 'Punto de ruptura desconocido: #{$punto}. Validos: #{map.keys(v.$puntos)}.';
+  }
+  @media (max-width: (map.get(v.$puntos, $punto) - 1px)) { @content; }
+}
+
 @mixin hasta-alto($punto) {
   @if not map.has-key(v.$alturas, $punto) {
     @error 'Altura desconocida: #{$punto}. Validas: #{map.keys(v.$alturas)}.';
@@ -95,5 +102,18 @@
   #{$prefijo}.zona-juego.zona-juego--sacude {
     transform: none;
     box-shadow: inset 0 0 0 8px var(--deco-oro);
+  }
+}
+
+// La misma paleta se aplica al ajuste interno y a la preferencia del sistema
+// (base/_raiz.scss la emite dos veces). Los colores viven en v.$paleta-contraste:
+// la auditoría solo admite un color escrito en _variables.scss.
+@mixin alto-contraste {
+  @each $prop, $valor in v.$paleta-contraste {
+    --#{$prop}: #{$valor};
+  }
+
+  @each $estado, $tono in v.$estados-veta {
+    --bg-veta-#{$estado}: #{v.$contraste-veta};
   }
 }

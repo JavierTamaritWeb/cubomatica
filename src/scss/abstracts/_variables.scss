@@ -1,5 +1,6 @@
 @use 'sass:list';
 
+// ······ 1 · Configuración Sass ······
 // Configuración Sass compartida. Las variables temporales permanecen dentro de sus mixins.
 $materiales: (
   piedra:  (#8C8C8C, #6E6E6E, #ADADAD),
@@ -45,7 +46,11 @@ $animados:
   '.cifra-viva.cifra-viva--sube',
   '.zona-juego.zona-juego--sacude';
 
-// Tokens globales. Las custom properties privadas de componentes conservan su alcance local.
+// ······ 2 · Tokens globales ······
+// Este fichero solo declara lo INCONDICIONAL: todo lo que reescribe estos
+// tokens según viewport, ajuste o preferencia vive en base/_raiz.scss (este
+// fichero no puede usar los mixins de breakpoint sin ciclo variables↔mixins).
+// Las custom properties privadas de componentes conservan su alcance local.
 :root {
 
   --fuente-pixel: 'Bloque Pixel', 'Silkscreen', 'Press Start 2P',
@@ -73,7 +78,10 @@ $animados:
   --espaciado-palabra: .16em;
   --ancho-lectura: 34ch;
 
-  --lado-deseado: 96px;
+  // La anchura propone un tamaño y la altura impone el techo en componentes.
+  // Móvil primero: base/_raiz.scss sube --lado-deseado y recorta --lado-techo
+  // por escalones de viewport.
+  --lado-deseado: 64px;
   --lado-techo:   96px;
   --lado-respuesta: min(var(--lado-deseado), var(--lado-techo));
   --lado-icono: 64px;
@@ -160,15 +168,7 @@ $animados:
   @each $m in $texturados { --tex-#{$m}: var(--deco-#{$m}); }
 }
 
-// La anchura propone un tamaño y la altura impone el techo en componentes.
-:root { --lado-deseado: 64px; }
-
-@media (min-width: 480px)  { :root { --lado-deseado: 80px;  } }
-@media (min-width: 768px)  { :root { --lado-deseado: 96px;  } }
-@media (min-width: 1024px) { :root { --lado-deseado: 96px;  } }
-@media (min-width: 1200px) { :root { --lado-deseado: 112px; } }
-@media (min-width: 1400px) { :root { --lado-deseado: 128px; } }
-
+// ······ 3 · Piezas de dinero ······
 // Recursos de las piezas de dinero; las rutas son relativas al CSS compilado.
 :root {
   --pieza-c1:  url('../img/pieza-c1.webp');
@@ -185,58 +185,38 @@ $animados:
   --pieza-100: url('../img/pieza-100.webp');
 }
 
-:root.letra-grande {
-  --tam-enunciado:     34px;
-  --tam-texto-min:     24px;
-  --tam-numero-opcion: 52px;
-  --tam-titulo:        46px;
-}
+// ······ 4 · Paleta de alto contraste ······
+// La misma paleta se aplica al ajuste interno y a la preferencia del sistema:
+// base/_raiz.scss la emite dos veces a través de m.alto-contraste. Aquí viven
+// solo los DATOS, porque la auditoría exige todo color en este fichero.
+// Cada clave es una custom property global sin su prefijo.
+$paleta-contraste: (
+  bg-texto-panel:    #000000,
+  bg-texto-crema:    #000000,
+  bg-pantalla:       #000000,
+  texto-principal:   #FFFFFF,
+  texto-secundario:  #FFFFFF,
+  btn-fondo:         #000000,
+  btn-fondo-hundido: #333333,
+  btn-texto:         #FFFFFF,
 
-:root.modo-proyeccion {
-  --tam-enunciado:     45px;
-  --tam-texto-min:     32px;
-  --tam-numero-opcion: 70px;
-  --tam-titulo:        64px;
-
-  --lado-deseado:      150px;
-  --lado-techo:        150px;
-}
-
-// La misma paleta se aplica al ajuste interno y a la preferencia del sistema.
-@mixin alto-contraste {
-  --bg-texto-panel:   #000000;
-  --bg-texto-crema:   #000000;
-  --bg-pantalla:      #000000;
-  --texto-principal:  #FFFFFF;
-  --texto-secundario: #FFFFFF;
-  --btn-fondo:        #000000;
-  --btn-fondo-hundido:#333333;
-  --btn-texto:        #FFFFFF;
-
-  --btn-fondo-desactivado: #333333;
-  --btn-texto-desactivado: #FFFFFF;
-  --btn-borde-luz:    #FFFFFF;
-  --btn-borde-sombra: #FFFFFF;
-  --btn-primario:     #000000;
-  --btn-primario-texto:#FFFFFF;
-  --ok-fondo:         #000000;
-  --ok-texto:         #FFFFFF;
-  --mal-fondo:        #000000;
-  --mal-texto:        #FFFFFF;
+  btn-fondo-desactivado: #333333,
+  btn-texto-desactivado: #FFFFFF,
+  btn-borde-luz:     #FFFFFF,
+  btn-borde-sombra:  #FFFFFF,
+  btn-primario:      #000000,
+  btn-primario-texto: #FFFFFF,
+  ok-fondo:          #000000,
+  ok-texto:          #FFFFFF,
+  mal-fondo:         #000000,
+  mal-texto:         #FFFFFF,
 
   // Superficies claras fijas. Sin esto la tinta pasa a blanca y el fondo se
   // queda claro: el panel adulto entero era blanco sobre blanco (E112).
-  --bg-caja:          #000000;
+  bg-caja:           #000000,
+  crema-fila:        #1A1A1A,
+  peligro-suave:     #000000
+);
 
-  @each $estado, $tono in $estados-veta {
-    --bg-veta-#{$estado}: #000000;
-  }
-  --crema-fila:       #1A1A1A;
-  --peligro-suave:    #000000;
-}
-
-:root.alto-contraste { @include alto-contraste; }
-
-@media (prefers-contrast: more) {
-  :root { @include alto-contraste; }
-}
+// Las superficies de veta (E113) se apagan todas al mismo negro.
+$contraste-veta: #000000;

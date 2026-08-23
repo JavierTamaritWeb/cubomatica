@@ -26,7 +26,7 @@
   --espaciado-letra: .05em;
   --espaciado-palabra: .16em;
   --ancho-lectura: 34ch;
-  --lado-deseado: 96px;
+  --lado-deseado: 64px;
   --lado-techo: 96px;
   --lado-respuesta: min(var(--lado-deseado), var(--lado-techo));
   --lado-icono: 64px;
@@ -139,7 +139,18 @@
 }
 
 :root {
-  --lado-deseado: 64px;
+  --pieza-c1: url('../img/pieza-c1.webp');
+  --pieza-c5: url('../img/pieza-c5.webp');
+  --pieza-c10: url('../img/pieza-c10.webp');
+  --pieza-c20: url('../img/pieza-c20.webp');
+  --pieza-c50: url('../img/pieza-c50.webp');
+  --pieza-1: url('../img/pieza-1.webp');
+  --pieza-2: url('../img/pieza-2.webp');
+  --pieza-5: url('../img/pieza-5.webp');
+  --pieza-10: url('../img/pieza-10.webp');
+  --pieza-20: url('../img/pieza-20.webp');
+  --pieza-50: url('../img/pieza-50.webp');
+  --pieza-100: url('../img/pieza-100.webp');
 }
 
 @media (min-width: 480px) {
@@ -167,21 +178,6 @@
     --lado-deseado: 128px;
   }
 }
-:root {
-  --pieza-c1: url('../img/pieza-c1.webp');
-  --pieza-c5: url('../img/pieza-c5.webp');
-  --pieza-c10: url('../img/pieza-c10.webp');
-  --pieza-c20: url('../img/pieza-c20.webp');
-  --pieza-c50: url('../img/pieza-c50.webp');
-  --pieza-1: url('../img/pieza-1.webp');
-  --pieza-2: url('../img/pieza-2.webp');
-  --pieza-5: url('../img/pieza-5.webp');
-  --pieza-10: url('../img/pieza-10.webp');
-  --pieza-20: url('../img/pieza-20.webp');
-  --pieza-50: url('../img/pieza-50.webp');
-  --pieza-100: url('../img/pieza-100.webp');
-}
-
 :root.letra-grande {
   --tam-enunciado: 34px;
   --tam-texto-min: 24px;
@@ -198,6 +194,21 @@
   --lado-techo: 150px;
 }
 
+@media (max-height: 900px) {
+  :root, :root.modo-proyeccion {
+    --lado-techo: 80px;
+  }
+}
+@media (max-height: 780px) {
+  :root, :root.modo-proyeccion {
+    --lado-techo: 72px;
+  }
+}
+@media (max-height: 660px) {
+  :root, :root.modo-proyeccion {
+    --lado-techo: 64px;
+  }
+}
 :root.alto-contraste {
   --bg-texto-panel: #000000;
   --bg-texto-crema: #000000;
@@ -205,27 +216,27 @@
   --texto-principal: #FFFFFF;
   --texto-secundario: #FFFFFF;
   --btn-fondo: #000000;
-  --btn-fondo-hundido:#333333;
+  --btn-fondo-hundido: #333333;
   --btn-texto: #FFFFFF;
   --btn-fondo-desactivado: #333333;
   --btn-texto-desactivado: #FFFFFF;
   --btn-borde-luz: #FFFFFF;
   --btn-borde-sombra: #FFFFFF;
   --btn-primario: #000000;
-  --btn-primario-texto:#FFFFFF;
+  --btn-primario-texto: #FFFFFF;
   --ok-fondo: #000000;
   --ok-texto: #FFFFFF;
   --mal-fondo: #000000;
   --mal-texto: #FFFFFF;
   --bg-caja: #000000;
+  --crema-fila: #1A1A1A;
+  --peligro-suave: #000000;
   --bg-veta-bloqueado: #000000;
   --bg-veta-nuevo: #000000;
   --bg-veta-aprendiendo: #000000;
   --bg-veta-afianzada: #000000;
   --bg-veta-dominada: #000000;
   --bg-veta-oxidada: #000000;
-  --crema-fila: #1A1A1A;
-  --peligro-suave: #000000;
 }
 
 @media (prefers-contrast: more) {
@@ -236,27 +247,27 @@
     --texto-principal: #FFFFFF;
     --texto-secundario: #FFFFFF;
     --btn-fondo: #000000;
-    --btn-fondo-hundido:#333333;
+    --btn-fondo-hundido: #333333;
     --btn-texto: #FFFFFF;
     --btn-fondo-desactivado: #333333;
     --btn-texto-desactivado: #FFFFFF;
     --btn-borde-luz: #FFFFFF;
     --btn-borde-sombra: #FFFFFF;
     --btn-primario: #000000;
-    --btn-primario-texto:#FFFFFF;
+    --btn-primario-texto: #FFFFFF;
     --ok-fondo: #000000;
     --ok-texto: #FFFFFF;
     --mal-fondo: #000000;
     --mal-texto: #FFFFFF;
     --bg-caja: #000000;
+    --crema-fila: #1A1A1A;
+    --peligro-suave: #000000;
     --bg-veta-bloqueado: #000000;
     --bg-veta-nuevo: #000000;
     --bg-veta-aprendiendo: #000000;
     --bg-veta-afianzada: #000000;
     --bg-veta-dominada: #000000;
     --bg-veta-oxidada: #000000;
-    --crema-fila: #1A1A1A;
-    --peligro-suave: #000000;
   }
 }
 *, *::before, *::after {
@@ -917,23 +928,10 @@ button:disabled {
   color: var(--btn-texto-desactivado);
 }
 
-@media (max-height: 900px) {
-  :root, :root.modo-proyeccion {
-    --lado-techo: 80px;
-  }
-}
 @media (max-height: 780px) {
-  :root, :root.modo-proyeccion {
-    --lado-techo: 72px;
-  }
   .respuesta__visor {
     min-height: 60px;
     font-size: 36px;
-  }
-}
-@media (max-height: 660px) {
-  :root, :root.modo-proyeccion {
-    --lado-techo: 64px;
   }
 }
 @media (max-height: 660px) and (min-width: 480px) {

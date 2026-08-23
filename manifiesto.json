@@ -61,6 +61,7 @@
   "estilos": [
     "scss/base/_fuentes.scss",
     "scss/abstracts/_variables.scss",
+    "scss/base/_raiz.scss",
     "scss/base/_base.scss",
     "scss/components/_componentes.scss",
     "scss/layout/_pantallas.scss",

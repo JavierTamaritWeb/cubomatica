@@ -172,7 +172,7 @@ El orden importa, y no es opinable:
    `etiqueta`, `dato`, `grupo`, `ico`, `entra`, `viva`, `gira` y `operacion` son
    palabras corrientes y propiedades de objeto.
 5. **A mano, porque ningún analizador las ve**: la lista `$animados` de
-   `_animaciones.scss` (son selectores en texto), las animaciones de criatura
+   `_variables.scss` (son selectores en texto), las animaciones de criatura
    de `js/30-ui.js` (salen de un array y de una tabla de consulta), el
    `'btn-bloque '` que `CB.ui.boton` antepone siempre, y las familias que se
    construyen concatenando (`bioma--`, `cielo--`, `cinta--`).
