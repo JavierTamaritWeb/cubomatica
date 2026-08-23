@@ -277,11 +277,49 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
     CB.almacen.fijarUltimoPerfil = fijarPrevio;
   }
 
-  /* Los jefes leen la tabla de rangos por curso. */
+  /* Los jefes leen la tabla de rangos por curso. Se mide el EFECTO, y no el
+     código: esto era `/rangos/.test(String(CB.jefes.turno))` y se puso rojo al
+     mover las mecánicas a su propia función, con el juego intacto y el mismo
+     comportamiento. Leer el fuente de una función mide dónde están escritas
+     las líneas, no lo que hacen. */
   t.ok(!!CB.jefes.RANGO_CURSO[1] && !!CB.jefes.RANGO_CURSO[2],
     'los jefes declaran rangos para 1.º y 2.º');
-  t.ok(/rangos/.test(String(CB.jefes.turno)) && /RANGO_CURSO/.test(String(CB.jefes.rangos)),
-    'las mecánicas de jefe piden sus rangos por curso');
+
+  const perfilJefePrevio = CB.perfil;
+  const estadoJefePrevio = CB.jefes.estado;
+  const cajaJefe = document.getElementById('jefe-enunciado');
+  if (!cajaJefe) {
+    t.ok(false, 'falta #jefe-enunciado para medir los rangos del jefe');
+  } else {
+    const mayorEn = function (curso) {
+      CB.perfil = { curso: curso, ajustes: {} };
+      let mayor = 0, v;
+      for (v = 0; v < 12; v++) {
+        CB.jefes.estado = {
+          mundo: CB.MUNDOS[0], jefe: 'prueba',
+          def: { mecanica: 'nenufares', icono: '🐸' },
+          bloques: CB.jefes.BLOQUES, turno: 0, sinFallos: true, respondido: false,
+          rng: CB.util.mulberry32(v * 31 + 3)
+        };
+        CB.jefes.turno();
+        (cajaJefe.textContent.match(/\d+/g) || []).forEach(function (n) {
+          if (Number(n) > mayor) mayor = Number(n);
+        });
+      }
+      return mayor;
+    };
+    const enPrimero = mayorEn(1);
+    const enSexto = mayorEn(6);
+    t.ok(enSexto > enPrimero,
+      'las mecánicas de jefe piden sus rangos por curso: el jefe de 6.º usa números mayores que el de 1.º',
+      '1.º ' + enPrimero + ' · 6.º ' + enSexto);
+    t.ok(enPrimero > 0 && enPrimero <= CB.jefes.RANGO_CURSO[1].nenufar * 4,
+      'y el de 1.º se queda dentro de la fila que declara su curso', String(enPrimero));
+    CB.ui.vaciar(cajaJefe);
+    CB.ui.vaciar(document.getElementById('jefe-opciones'));
+  }
+  CB.perfil = perfilJefePrevio;
+  CB.jefes.estado = estadoJefePrevio;
 
   /* La calibración tiene banco por curso y el de 2.º es el original. */
   t.ok(!!CB.calibracion.BANCOS[1] && CB.calibracion.BANCOS[1].length === 4,

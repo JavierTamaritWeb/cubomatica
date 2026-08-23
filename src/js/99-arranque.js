@@ -98,12 +98,12 @@ CB.calibracion.servir = function () {
   CB.ui.vaciar(enun);
   enun.appendChild(CB.ui.crear('p',
     'enunciado' + (it.teclado ? ' enunciado--operacion' : ''), it.consigna));
-  /* El altavoz, construido por el mismo sitio que el de la partida. Va DENTRO
-     de #cal-enunciado, que se vacía en cada pregunta: así no hay que
+  /* El altavoz, por el mismo dueño que el de la partida y el del jefe. Va
+     DENTRO de #cal-enunciado, que se vacía en cada pregunta: así no hay que
      desconectar nada ni se acumulan oyentes. */
-  enun.appendChild(CB.ui.altavozEnunciado(function () {
+  CB.ui.ponerAltavoz(enun, it.consigna, function () {
     if (CB.partida && CB.partida.accionLeer) CB.partida.accionLeer();
-  }));
+  });
 
   /* Voz automática: la consigna se lee sola. En la primera partida de su vida,
      el niño no tiene por qué saber que existe el botón del altavoz. */

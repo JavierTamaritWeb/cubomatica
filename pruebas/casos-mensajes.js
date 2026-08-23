@@ -37,8 +37,14 @@ CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
   const conProc = M.acierto.filter(function (m) { return m.indexOf('{proc}') !== -1; });
   t.ok(conProc.length >= 20,
     'M4 · ' + conProc.length + ' de los 84 nombran el procedimiento concreto (≥20)');
+  /* Una por destreza, y la cuenta la manda la lista CERRADA de destrezas, no
+     un número escrito a mano: cuando el catálogo pasó de 13 a 26 slugs esta
+     línea siguió diciendo 13 y nadie se enteró de que la mitad de los niveles
+     se habían quedado sin elogio propio (E146). */
   const slugs = Object.keys(CB.datos.MENSAJES.PROCEDIMIENTOS);
-  t.igual(slugs.length, 13, 'hay una frase de procedimiento para cada una de las 13 destrezas');
+  t.igual(slugs.length, CB.adaptativo.SLUGS.length,
+    'hay una frase de procedimiento para cada una de las ' +
+    CB.adaptativo.SLUGS.length + ' destrezas');
   const sinTres = slugs.filter(function (s) {
     return CB.datos.MENSAJES.PROCEDIMIENTOS[s].length < 3;
   });
@@ -201,4 +207,63 @@ CB.pruebas.suite('Mensajes: M1-M10 (requisitos 4 y 5)', function () {
   });
   t.ok(sinTilde.length === 0, 'ninguna forma que exige tilde aparece sin ella',
        sinTilde.slice(0, 3).join(' | '));
+});
+
+/* E146 · TODA DESTREZA TIENE PISTA Y ELOGIO PROPIOS (3.4.4). Las dos tablas se
+   escribieron con los 13 slugs de 2.º y no crecieron con el catálogo: en 127 de
+   los 308 niveles el botón «Pista» contestaba «Léelo otra vez con calma» —que
+   no es una pista— y el elogio decía «Has resuelto el bloque», que no nombra
+   ningún procedimiento y por tanto no enseña nada. Se comprueba contra la lista
+   CERRADA de destrezas y EN LOS DOS SENTIDOS, como CU8 con los códigos de
+   error: una destreza nueva sin pista se pone roja el día que se declara. */
+CB.pruebas.suite('E146 · toda destreza tiene pista y elogio propios', function () {
+  const t = CB.pruebas;
+  const slugs = CB.adaptativo.SLUGS;
+
+  [['PISTAS', 2], ['PROCEDIMIENTOS', 3]].forEach(function (par) {
+    const tabla = CB.datos.MENSAJES[par[0]];
+    const claves = Object.keys(tabla);
+    const faltan = slugs.filter(function (s) { return claves.indexOf(s) === -1; });
+    const sobran = claves.filter(function (s) { return slugs.indexOf(s) === -1; });
+    t.igual(faltan.length, 0,
+      'E146 · ' + par[0] + ' cubre las ' + slugs.length + ' destrezas', faltan.join(', '));
+    t.igual(sobran.length, 0,
+      'E146 · y no habla de ninguna que no exista', sobran.join(', '));
+    const flojas = claves.filter(function (s) {
+      const f = tabla[s];
+      return !Array.isArray(f) || f.length < par[1] ||
+             f.some(function (x) { return typeof x !== 'string' || x.trim().length < 12; });
+    });
+    t.igual(flojas.length, 0,
+      'E146 · cada entrada de ' + par[0] + ' trae sus ' + par[1] + ' frases llanas',
+      flojas.join(', '));
+  });
+
+  /* Y lo que ve el niño: el botón da LA pista de SU destreza, no una genérica.
+     Se pulsa la acción de verdad y se lee el nodo de mensaje. */
+  const estadoPrevio = CB.partida.estado;
+  const genericas = [];
+  slugs.forEach(function (slug) {
+    CB.partida.estado = { itemActual: { destreza: slug, consigna: '1 + 1' } };
+    CB.partida.accionPista();
+    const nodo = CB.ui.nodoMensaje();
+    const texto = nodo ? nodo.textContent || '' : '';
+    const suya = CB.datos.MENSAJES.PISTAS[slug];
+    if (!suya || texto.indexOf(suya[1]) === -1) genericas.push(slug);
+  });
+  t.igual(genericas.length, 0,
+    'E146 · el botón de pista da la pista de esa destreza en las ' + slugs.length,
+    genericas.join(', '));
+  CB.partida.estado = estadoPrevio;
+  CB.ui.ocultarMensaje();
+
+  /* Y el elogio nombra el procedimiento en vez del comodín. */
+  const sinProc = slugs.filter(function (slug) {
+    const frase = CB.mensajes.rellenar('{proc}', { destreza: slug },
+      CB.util.mulberry32(3));
+    return !frase || frase === 'Has resuelto el bloque.';
+  });
+  t.igual(sinProc.length, 0,
+    'E146 · el elogio nombra el procedimiento en las ' + slugs.length + ' destrezas',
+    sinProc.join(', '));
 });

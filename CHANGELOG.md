@@ -12,6 +12,53 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.4.4] — 2026-08-23
+
+**El botón «Pista» no daba ninguna pista en 127 de los 308 niveles, y el jefe
+no tenía botón de leer.** Dos defectos de la misma forma: una tabla que se
+escribió para el juego de un solo curso y no creció con el catálogo, y una
+regla puesta en dos sitios de tres.
+
+### Corregido
+
+- `MENSAJES.PISTAS` y `MENSAJES.PROCEDIMIENTOS` tenían 13 de las 26 destrezas.
+  En las otras trece —división, fracciones, decimales, porcentajes, enteros,
+  medida, tiempo, datos, azar, patrones, álgebra, geometría y espacio— el botón
+  contestaba «Léelo otra vez con calma», que no es una pista, y el elogio decía
+  «Has resuelto el bloque», que no nombra ningún procedimiento y por tanto no
+  enseña nada. Son 127 niveles, todo lo añadido desde 3.1.0. Escritas las 26
+  pistas y los 26 elogios que faltaban.
+- El altavoz «Leer» se puso en 3.4.2 en la partida y en la calibración, y el
+  **jefe** se quedó mudo: sus cuatro mecánicas pintan la pregunta por su
+  cuenta. Ahora hay un dueño único, `CB.ui.ponerAltavoz()`, que decide a la vez
+  si hay algo que leer y qué se pronuncia; `CB.jefes.turno()` lo llama UNA vez
+  para las cuatro mecánicas (extraídas a `CB.jefes.pintarMecanica`), así que
+  una quinta que se añada mañana lo hereda sin acordarse de nada.
+- La lectura guiada acepta ahora el contenedor donde resaltar, en vez de tener
+  clavado `#item-enunciado`: sin eso, el altavoz del jefe habría hablado sin
+  resaltar nada para quien no tiene voz española instalada.
+
+### Añadido
+
+- Guardián **E146**: las dos tablas de mensajes se comprueban contra la lista
+  CERRADA de destrezas y EN LOS DOS SENTIDOS (nada que falte, nada que sobre),
+  como CU8 con los códigos de error, y además se pulsa la acción real del botón
+  para las 26 y se comprueba que sale la pista de ESA destreza.
+- **E143** recorre ahora los tres pintores de preguntas, con las cuatro
+  mecánicas del jefe una por una.
+
+### Cambiado
+
+- `t.igual(slugs.length, 13, …)` derivaba de un número escrito a mano y siguió
+  diciendo 13 mientras el catálogo pasaba a 26; ahora deriva de
+  `CB.adaptativo.SLUGS.length`, que es la lista cerrada de verdad.
+- El guardián de los rangos del jefe hacía `/rangos/.test(String(CB.jefes.turno))`
+  y se puso rojo al mover las mecánicas a su propia función, con el juego
+  intacto. Reescrito para medir el efecto: los números del jefe de 6.º superan
+  a los del de 1.º y los de 1.º se quedan dentro de su fila.
+
+---
+
 ## [3.4.3] — 2026-08-23
 
 **Un botón pulsado con el ratón se quedaba plano y hundido para siempre.** La

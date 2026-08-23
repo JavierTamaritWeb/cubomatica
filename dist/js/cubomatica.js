@@ -532,6 +532,77 @@ CB.datos.MENSAJES.PROCEDIMIENTOS = {
     'Has recordado qué significa esa palabra de matemáticas.',
     'Has usado la palabra exacta.',
     'Has reconocido el término a la primera.'
+  ],
+
+  /* Cursos 3.º-6.º y bloques B, E, D y C. Se añadieron en 3.4.4: la tabla se
+     escribió con los 13 slugs de 2.º y no creció con el catálogo, así que en
+     127 de los 308 niveles el elogio decía «Has resuelto el bloque» —un elogio
+     de procedimiento que no nombra el procedimiento no enseña nada— y la pista
+     era «Léelo otra vez con calma». */
+  division: [
+    'Has repartido en partes iguales, sin que sobre nadie.',
+    'Has buscado cuántas veces cabe un número dentro del otro.',
+    'Has usado la tabla al revés para encontrar el cociente.'
+  ],
+  fracciones: [
+    'Has mirado en cuántas partes iguales está partido el todo.',
+    'Has contado las partes que se toman y las que hay en total.',
+    'Has comparado las fracciones fijándote en sus partes.'
+  ],
+  decimales: [
+    'Has puesto la coma en su sitio antes de operar.',
+    'Has colocado las décimas debajo de las décimas.',
+    'Has leído el número con coma sin perder ninguna cifra.'
+  ],
+  porcentajes: [
+    'Has calculado la parte que le toca a cada cien.',
+    'Has sacado el tanto por ciento paso a paso.',
+    'Has visto qué parte del total te pedían.'
+  ],
+  enteros: [
+    'Has sabido a qué lado del cero cae cada número.',
+    'Has contado hacia abajo del cero sin perderte.',
+    'Has usado la recta para moverte entre los positivos y los negativos.'
+  ],
+  medida: [
+    'Has usado la unidad que le va bien a lo que se mide.',
+    'Has cambiado de unidad contando bien los ceros.',
+    'Has medido primero y comparado después, en ese orden.'
+  ],
+  tiempo: [
+    'Has mirado primero la manecilla corta y después la larga.',
+    'Has pasado de horas a minutos sin liarte.',
+    'Has leído el reloj entero antes de responder.'
+  ],
+  datos: [
+    'Has seguido la barra desde su etiqueta hasta arriba.',
+    'Has contado los bloques uno a uno, sin saltarte ninguno.',
+    'Has comparado las barras mirando su altura.'
+  ],
+  azar: [
+    'Has mirado cuántas hay de cada color antes de decidir.',
+    'Has separado lo que es seguro de lo que es imposible.',
+    'Has contado los casos que valen entre todos los que hay.'
+  ],
+  patrones: [
+    'Has descubierto de cuánto en cuánto va la serie.',
+    'Has aplicado el salto al último número, sin repetirlo.',
+    'Has seguido las instrucciones en orden, una a una.'
+  ],
+  algebra: [
+    'Has buscado el número que deja la igualdad verdadera.',
+    'Has comprobado los dos lados del igual.',
+    'Has despejado la incógnita paso a paso.'
+  ],
+  geometria: [
+    'Has contado los lados y los vértices sin repetir ninguno.',
+    'Has reconocido la figura por cómo es, no por cómo está puesta.',
+    'Has mirado la abertura del ángulo antes de darle nombre.'
+  ],
+  espacio: [
+    'Has dicho primero la columna y después la fila.',
+    'Has localizado la casilla siguiendo las dos referencias.',
+    'Has movido el punto en la dirección que te decían.'
   ]
 };
 
@@ -588,6 +659,62 @@ CB.datos.MENSAJES.PISTAS = {
   vocabulario: [
     'Piensa qué operación te pide esa palabra.',
     'Lee la palabra otra vez, sin prisa.'
+  ],
+
+  /* Las mismas 13 que en PROCEDIMIENTOS, y por el mismo motivo (3.4.4). La
+     primera señala DÓNDE mirar; la segunda empuja un paso, sin dar la
+     respuesta: una pista que resuelve el ítem no es una pista. */
+  division: [
+    'Piensa cuántas veces cabe el número pequeño en el grande.',
+    'Repártelo en partes iguales y cuenta cuánto va en cada una.'
+  ],
+  fracciones: [
+    'Mira en cuántas partes iguales está partido el todo.',
+    'Abajo van todas las partes; arriba, las que se toman.'
+  ],
+  decimales: [
+    'Coloca las comas una debajo de otra antes de operar.',
+    'La primera cifra después de la coma son las décimas.'
+  ],
+  porcentajes: [
+    'El tanto por ciento es lo que le toca a cada cien.',
+    'Busca primero el 10 % o la mitad, y sigue desde ahí.'
+  ],
+  enteros: [
+    'Mira a qué lado del cero está cada número.',
+    'Bajar del cero es seguir contando hacia el otro lado.'
+  ],
+  medida: [
+    'Piensa qué unidad le va bien a eso que se mide.',
+    'Al cambiar de unidad, cuenta bien los ceros.'
+  ],
+  tiempo: [
+    'La manecilla corta dice la hora; la larga, los minutos.',
+    'Una hora entera son sesenta minutos.'
+  ],
+  datos: [
+    'Busca la etiqueta y sube por SU barra con el dedo.',
+    'Cuenta los bloques de uno en uno, sin saltarte ninguno.'
+  ],
+  azar: [
+    'Cuenta cuántas hay de cada color antes de decidir.',
+    'Lo que no está en la bolsa no puede salir nunca.'
+  ],
+  patrones: [
+    'Mira cuánto va de un número al siguiente.',
+    'Ese mismo salto se lo aplicas al último número.'
+  ],
+  algebra: [
+    'Prueba un número y comprueba si los dos lados valen igual.',
+    'El hueco es lo que falta para llegar al otro lado.'
+  ],
+  geometria: [
+    'Cuenta los lados siguiendo el borde con el dedo.',
+    'El ángulo recto es el de la esquina de un folio.'
+  ],
+  espacio: [
+    'Primero la columna, después la fila. La fila 1 es la de abajo.',
+    'Recorre la columna con un dedo y la fila con el otro.'
   ]
 };
 
@@ -1398,7 +1525,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.4.3';
+CB.VERSION = '3.4.4';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -11922,7 +12049,8 @@ CB.ui.pintarItem = function (item) {
       caja.appendChild(p);
     }
     cont.appendChild(caja);
-    cont.appendChild(CB.ui.altavozEnunciado());
+    CB.ui.ponerAltavoz(cont, item.enunciado || item.consigna,
+      function () { if (CB.partida) CB.partida.accionLeerSuave(); });
     return;
   }
 
@@ -11983,9 +12111,31 @@ CB.ui.pintarItem = function (item) {
      no hay nada que leer: pero entre el problema y la operación pelada están
      las otras trescientas preguntas —«¿Qué letra está en la columna 2?», «¿De
      qué hay MÁS?»— que son texto puro, y un niño con dislexia o afasia no
-     podía hacerse leer ninguna. La regla es «si hay algo que leer, hay botón»,
-     no «botón siempre»: un ítem que fuera solo dibujo no lo lleva. */
-  if (CB.voz.textoDeItem(item)) cont.appendChild(CB.ui.altavozEnunciado());
+     podía hacerse leer ninguna. */
+  CB.ui.ponerAltavoz(cont, item.consigna,
+    function () { if (CB.partida) CB.partida.accionLeerSuave(); });
+};
+
+/* PONER EL ALTAVOZ es de un solo sitio, y con él la decisión de si hay algo
+   que leer: «si hay algo que leer, hay botón», nunca «botón siempre» —un ítem
+   que fuese solo dibujo no lo lleva—. Lo llaman los TRES pintores de preguntas
+   del juego (la partida, la calibración y el jefe) porque en 3.4.2 el botón se
+   puso en dos de los tres y el jefe se quedó mudo: es la regla aplicada en un
+   sitio de tres, otra vez. Quien pinte una pregunta nueva llama aquí y hereda
+   el botón, el texto hablado y el resaltado sin acordarse de nada.
+   @param textoCrudo lo que se ve; lo que se PRONUNCIA lo decide CB.voz. */
+CB.ui.ponerAltavoz = function (contenedor, textoCrudo, alPulsar) {
+  if (!contenedor) return null;
+  const texto = CB.voz.textoDeItem({ consigna: textoCrudo || '' });
+  if (!texto) return null;
+  const boton = CB.ui.altavozEnunciado(alPulsar || function () {
+    CB.voz.cancelar();
+    CB.voz.leerOGuiar(texto,
+      function (i, palabra) { CB.ui.resaltarPalabra(i, palabra, contenedor); },
+      function () { CB.ui.resaltarLinea(-1, contenedor); });
+  });
+  contenedor.appendChild(boton);
+  return boton;
 };
 
 /* El altavoz del enunciado. Vive DENTRO del enunciado, donde se lee, y nunca en
@@ -12449,31 +12599,33 @@ CB.ui.ocultarPersonaje = function (quien) {
    —el camino que se usa cuando el aparato no tiene voz española instalada— no
    resaltaba absolutamente nada fuera de los problemas: el botón parecía roto
    justo para quien más lo necesita. */
-CB.ui.lineasDelEnunciado = function () {
-  const frases = document.querySelectorAll('#item-enunciado .enunciado__frase');
+CB.ui.lineasDelEnunciado = function (contenedor) {
+  const caja = contenedor || document.getElementById('item-enunciado');
+  if (!caja) return [];
+  const frases = caja.querySelectorAll('.enunciado__frase');
   if (frases.length) return [].slice.call(frases);
-  const una = document.querySelector('#item-enunciado .enunciado');
+  const una = caja.querySelector('.enunciado');
   return una ? [una] : [];
 };
 
-CB.ui.resaltarLinea = function (indice) {
-  const lineas = CB.ui.lineasDelEnunciado();
+CB.ui.resaltarLinea = function (indice, contenedor) {
+  const lineas = CB.ui.lineasDelEnunciado(contenedor);
   let i;
   for (i = 0; i < lineas.length; i++) {
     lineas[i].classList.toggle('enunciado__linea--activa', i === indice);
   }
 };
 
-CB.ui.resaltarPalabra = function (indice, texto) {
-  const lineas = CB.ui.lineasDelEnunciado();
+CB.ui.resaltarPalabra = function (indice, texto, contenedor) {
+  const lineas = CB.ui.lineasDelEnunciado(contenedor);
   if (!lineas.length) return;
-  if (indice < 0) { CB.ui.resaltarLinea(-1); return; }
+  if (indice < 0) { CB.ui.resaltarLinea(-1, contenedor); return; }
   /* Se resalta la frase que contiene esa palabra: resaltar palabra a palabra
      exigiría reconstruir el DOM en cada paso, y eso rompe el lector de pantalla. */
   let acumulado = 0, i;
   for (i = 0; i < lineas.length; i++) {
     const n = CB.util.palabras(lineas[i].textContent).length;
-    if (indice < acumulado + n) { CB.ui.resaltarLinea(i); return; }
+    if (indice < acumulado + n) { CB.ui.resaltarLinea(i, contenedor); return; }
     acumulado += n;
   }
 };
@@ -16363,6 +16515,17 @@ CB.jefes.turno = function () {
   CB.ui.vaciar(enun);
   CB.ui.vaciar(opc);
 
+  CB.jefes.pintarMecanica(e, enun, opc);
+
+  /* El altavoz del jefe, en UN solo sitio para las cuatro mecánicas. Cada una
+     de ellas sale por su propio `return`, así que ponerlo dentro habría sido
+     escribirlo cuatro veces y olvidarlo en la quinta que se añada: aquí lo
+     heredan todas. Lee lo que hay pintado, que es justo lo que el niño ve. */
+  CB.ui.ponerAltavoz(enun, enun ? enun.textContent : '');
+};
+
+/* Cada jefe tiene su mecánica, y cada mecánica pinta su propia pregunta. */
+CB.jefes.pintarMecanica = function (e, enun, opc) {
   const m = e.def.mecanica;
 
   if (m === 'ramas') {
@@ -17102,12 +17265,12 @@ CB.calibracion.servir = function () {
   CB.ui.vaciar(enun);
   enun.appendChild(CB.ui.crear('p',
     'enunciado' + (it.teclado ? ' enunciado--operacion' : ''), it.consigna));
-  /* El altavoz, construido por el mismo sitio que el de la partida. Va DENTRO
-     de #cal-enunciado, que se vacía en cada pregunta: así no hay que
+  /* El altavoz, por el mismo dueño que el de la partida y el del jefe. Va
+     DENTRO de #cal-enunciado, que se vacía en cada pregunta: así no hay que
      desconectar nada ni se acumulan oyentes. */
-  enun.appendChild(CB.ui.altavozEnunciado(function () {
+  CB.ui.ponerAltavoz(enun, it.consigna, function () {
     if (CB.partida && CB.partida.accionLeer) CB.partida.accionLeer();
-  }));
+  });
 
   /* Voz automática: la consigna se lee sola. En la primera partida de su vida,
      el niño no tiene por qué saber que existe el botón del altavoz. */

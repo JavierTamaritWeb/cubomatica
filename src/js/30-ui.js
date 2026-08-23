@@ -189,7 +189,8 @@ CB.ui.pintarItem = function (item) {
       caja.appendChild(p);
     }
     cont.appendChild(caja);
-    cont.appendChild(CB.ui.altavozEnunciado());
+    CB.ui.ponerAltavoz(cont, item.enunciado || item.consigna,
+      function () { if (CB.partida) CB.partida.accionLeerSuave(); });
     return;
   }
 
@@ -250,9 +251,31 @@ CB.ui.pintarItem = function (item) {
      no hay nada que leer: pero entre el problema y la operación pelada están
      las otras trescientas preguntas —«¿Qué letra está en la columna 2?», «¿De
      qué hay MÁS?»— que son texto puro, y un niño con dislexia o afasia no
-     podía hacerse leer ninguna. La regla es «si hay algo que leer, hay botón»,
-     no «botón siempre»: un ítem que fuera solo dibujo no lo lleva. */
-  if (CB.voz.textoDeItem(item)) cont.appendChild(CB.ui.altavozEnunciado());
+     podía hacerse leer ninguna. */
+  CB.ui.ponerAltavoz(cont, item.consigna,
+    function () { if (CB.partida) CB.partida.accionLeerSuave(); });
+};
+
+/* PONER EL ALTAVOZ es de un solo sitio, y con él la decisión de si hay algo
+   que leer: «si hay algo que leer, hay botón», nunca «botón siempre» —un ítem
+   que fuese solo dibujo no lo lleva—. Lo llaman los TRES pintores de preguntas
+   del juego (la partida, la calibración y el jefe) porque en 3.4.2 el botón se
+   puso en dos de los tres y el jefe se quedó mudo: es la regla aplicada en un
+   sitio de tres, otra vez. Quien pinte una pregunta nueva llama aquí y hereda
+   el botón, el texto hablado y el resaltado sin acordarse de nada.
+   @param textoCrudo lo que se ve; lo que se PRONUNCIA lo decide CB.voz. */
+CB.ui.ponerAltavoz = function (contenedor, textoCrudo, alPulsar) {
+  if (!contenedor) return null;
+  const texto = CB.voz.textoDeItem({ consigna: textoCrudo || '' });
+  if (!texto) return null;
+  const boton = CB.ui.altavozEnunciado(alPulsar || function () {
+    CB.voz.cancelar();
+    CB.voz.leerOGuiar(texto,
+      function (i, palabra) { CB.ui.resaltarPalabra(i, palabra, contenedor); },
+      function () { CB.ui.resaltarLinea(-1, contenedor); });
+  });
+  contenedor.appendChild(boton);
+  return boton;
 };
 
 /* El altavoz del enunciado. Vive DENTRO del enunciado, donde se lee, y nunca en
@@ -716,31 +739,33 @@ CB.ui.ocultarPersonaje = function (quien) {
    —el camino que se usa cuando el aparato no tiene voz española instalada— no
    resaltaba absolutamente nada fuera de los problemas: el botón parecía roto
    justo para quien más lo necesita. */
-CB.ui.lineasDelEnunciado = function () {
-  const frases = document.querySelectorAll('#item-enunciado .enunciado__frase');
+CB.ui.lineasDelEnunciado = function (contenedor) {
+  const caja = contenedor || document.getElementById('item-enunciado');
+  if (!caja) return [];
+  const frases = caja.querySelectorAll('.enunciado__frase');
   if (frases.length) return [].slice.call(frases);
-  const una = document.querySelector('#item-enunciado .enunciado');
+  const una = caja.querySelector('.enunciado');
   return una ? [una] : [];
 };
 
-CB.ui.resaltarLinea = function (indice) {
-  const lineas = CB.ui.lineasDelEnunciado();
+CB.ui.resaltarLinea = function (indice, contenedor) {
+  const lineas = CB.ui.lineasDelEnunciado(contenedor);
   let i;
   for (i = 0; i < lineas.length; i++) {
     lineas[i].classList.toggle('enunciado__linea--activa', i === indice);
   }
 };
 
-CB.ui.resaltarPalabra = function (indice, texto) {
-  const lineas = CB.ui.lineasDelEnunciado();
+CB.ui.resaltarPalabra = function (indice, texto, contenedor) {
+  const lineas = CB.ui.lineasDelEnunciado(contenedor);
   if (!lineas.length) return;
-  if (indice < 0) { CB.ui.resaltarLinea(-1); return; }
+  if (indice < 0) { CB.ui.resaltarLinea(-1, contenedor); return; }
   /* Se resalta la frase que contiene esa palabra: resaltar palabra a palabra
      exigiría reconstruir el DOM en cada paso, y eso rompe el lector de pantalla. */
   let acumulado = 0, i;
   for (i = 0; i < lineas.length; i++) {
     const n = CB.util.palabras(lineas[i].textContent).length;
-    if (indice < acumulado + n) { CB.ui.resaltarLinea(i); return; }
+    if (indice < acumulado + n) { CB.ui.resaltarLinea(i, contenedor); return; }
     acumulado += n;
   }
 };

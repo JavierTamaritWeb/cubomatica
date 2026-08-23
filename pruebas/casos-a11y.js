@@ -308,6 +308,42 @@ CB.pruebas.suite('A11y: el altavoz de la pregunta (E143)', function () {
   t.ok(leidos.length > 0 && (leidos[0] || '').length > 0,
     'E143 · y al pulsarlo se lee su consigna', leidos.join(' | '));
 
+  /* 9 · Y EL JEFE, con sus CUATRO mecánicas. En 3.4.2 el altavoz se puso en la
+     partida y en la calibración y el jefe se quedó mudo: la regla aplicada en
+     dos sitios de tres, que es el defecto favorito de este proyecto. Se recorre
+     la tabla entera y se mide el DOM que cada mecánica produce; una quinta
+     mecánica que se añada sin pasar por el dueño único se pone roja aquí. */
+  const jefePrevio = CB.jefes.estado;
+  const cajaJefe = document.getElementById('jefe-enunciado');
+  if (!cajaJefe) {
+    t.ok(false, 'E143 · falta #jefe-enunciado en la página de pruebas');
+  } else {
+    const mudas = [], sinTexto = [];
+    ['ramas', 'nenufares', 'reflejo', 'restaurar'].forEach(function (mecanica) {
+      CB.jefes.estado = {
+        mundo: CB.MUNDOS[0], jefe: 'prueba',
+        def: { mecanica: mecanica, icono: '🌳' },
+        bloques: CB.jefes.BLOQUES, turno: 0, sinFallos: true, respondido: false,
+        rng: CB.util.mulberry32(7)
+      };
+      CB.jefes.turno();
+      const alt = cajaJefe.querySelector('.enunciado__altavoz');
+      if (!alt) { mudas.push(mecanica); return; }
+      /* Y que lea SU pregunta, no una cadena vacía: el botón que no dice nada
+         es tan inútil como el que no está. */
+      leidos.length = 0;
+      alt.click();
+      if (!leidos.length || !(leidos[0] || '').trim()) sinTexto.push(mecanica);
+    });
+    t.igual(mudas.length, 0,
+      'E143 · las cuatro mecánicas del jefe ponen su altavoz', mudas.join(', '));
+    t.igual(sinTexto.length, 0,
+      'E143 · y cada una lee su propia pregunta', sinTexto.join(', '));
+    CB.ui.vaciar(cajaJefe);
+    CB.ui.vaciar(document.getElementById('jefe-opciones'));
+  }
+  CB.jefes.estado = jefePrevio;
+
   CB.ui.vaciar(document.getElementById('cal-enunciado'));
   CB.calibracion.indice = indicePrevio;
   CB.calibracion.ITEMS = itemsPrevios;

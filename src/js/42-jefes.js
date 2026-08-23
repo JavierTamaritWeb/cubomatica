@@ -117,6 +117,17 @@ CB.jefes.turno = function () {
   CB.ui.vaciar(enun);
   CB.ui.vaciar(opc);
 
+  CB.jefes.pintarMecanica(e, enun, opc);
+
+  /* El altavoz del jefe, en UN solo sitio para las cuatro mecánicas. Cada una
+     de ellas sale por su propio `return`, así que ponerlo dentro habría sido
+     escribirlo cuatro veces y olvidarlo en la quinta que se añada: aquí lo
+     heredan todas. Lee lo que hay pintado, que es justo lo que el niño ve. */
+  CB.ui.ponerAltavoz(enun, enun ? enun.textContent : '');
+};
+
+/* Cada jefe tiene su mecánica, y cada mecánica pinta su propia pregunta. */
+CB.jefes.pintarMecanica = function (e, enun, opc) {
   const m = e.def.mecanica;
 
   if (m === 'ramas') {

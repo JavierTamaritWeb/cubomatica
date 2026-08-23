@@ -4316,3 +4316,47 @@ Tres cosas que conviene no olvidar:
    regla rota ni siquiera se aplica—, así que sobre el defecto sembrado salió
    VERDE; la que lo cazó fue la de la regla. Escribir solo la conductual habría
    sido otra comprobación que aprueba por no medir.
+
+## D-3.4.4 · Las tablas que no crecieron con el catálogo
+
+**Fecha**: 2026-08-23. **Origen**: el usuario pulsó «Pista» y no recibió
+ninguna pista.
+
+**El dato**: `MENSAJES.PISTAS` y `MENSAJES.PROCEDIMIENTOS` cubrían 13 de las 26
+destrezas — las 13 con las que nació el juego cuando solo existía 2.º. Los 127
+niveles añadidos desde 3.1.0 (división, fracciones, decimales, porcentajes,
+enteros, medida, tiempo, datos, azar, patrones, álgebra, geometría y espacio)
+caían en el comodín: «Léelo otra vez con calma» al pedir pista, y «Has resuelto
+el bloque» al acertar. Ninguna de las dos cosas falla, se ve fea ni sale en un
+registro: simplemente no enseñan. **El daño de una tabla incompleta no es un
+error, es una ausencia, y las ausencias no se notan solas.**
+
+Tres cosas quedan cerradas:
+
+1. **Una tabla indexada por una lista cerrada se comprueba contra ella, en los
+   dos sentidos.** Es lo que hace CU8 con los 47 códigos de error y sus 47
+   recomendaciones, y lo que no se hizo aquí. E146 lo repara: `PISTAS` y
+   `PROCEDIMIENTOS` contra `CB.adaptativo.SLUGS`, sin que falte ni sobre
+   ninguna, y además pulsando la acción real del botón para las 26.
+
+2. **Un contrato escrito a mano miente en cuanto el catálogo crece.** La suite
+   afirmaba `t.igual(slugs.length, 13, …)`. Cuando las destrezas pasaron a 26,
+   esa línea no se puso roja: seguía siendo verdad que había 13 entradas. Ahora
+   la cuenta la manda `CB.adaptativo.SLUGS.length`. Un número literal en una
+   aserción solo es legítimo cuando ES el contrato (los 92 betas de 2.º), no
+   cuando es el reflejo de otra cosa que puede crecer.
+
+3. **El altavoz también estaba en dos sitios de tres.** 3.4.2 lo puso en la
+   partida y en la calibración; el jefe pinta sus preguntas por su cuenta y se
+   quedó mudo. En vez de escribir el botón una cuarta vez, `CB.ui.ponerAltavoz`
+   es ahora el dueño único —decide a la vez si hay algo que leer y qué se
+   pronuncia— y `CB.jefes.turno()` lo llama UNA vez para las cuatro mecánicas,
+   que se extrajeron a `CB.jefes.pintarMecanica`. La quinta mecánica que se
+   añada lo heredará sin enterarse. E143 recorre las cuatro.
+
+**Y una lección sobre las pruebas**: el refactor del jefe puso rojo un guardián
+que hacía `/rangos/.test(String(CB.jefes.turno))` — leer el fuente de una
+función mide dónde están escritas las líneas, no lo que hacen, y este proyecto
+ya lo tenía documentado. Reescrito para medir el efecto: los números del jefe
+de 6.º superan a los del de 1.º, y los de 1.º se quedan dentro de la fila que
+declara su curso.
