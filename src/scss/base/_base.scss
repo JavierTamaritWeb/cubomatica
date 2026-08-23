@@ -69,10 +69,15 @@ button:disabled { cursor: default; }
 
 // En navegadores modernos el ratón no necesita anillo; en los antiguos la
 // regla :focus de arriba conserva uno para TODOS los controles, incluidos inputs.
+// Se retira SOLO el outline, que es lo único que pone :focus. El box-shadow no
+// se toca: aquí el relieve de cada botón ES un box-shadow, y ponerlo a none
+// dejaba plano y hundido para siempre cualquier botón pulsado con el ratón que
+// se quedara en pantalla —el altavoz «Leer» era el caso visible, pero le pasaba
+// a todos—. Retirar un anillo que esta regla nunca puso solo podía romper otra
+// cosa (E145).
 @supports selector(:focus-visible) {
   :focus:not(:focus-visible) {
     outline: none;
-    box-shadow: none;
   }
 }
 

@@ -316,3 +316,68 @@ CB.pruebas.suite('A11y: el altavoz de la pregunta (E143)', function () {
   if (descLeer) Object.defineProperty(CB.voz, 'leer', descLeer);
   if (descDisp) Object.defineProperty(CB.voz, 'disponible', descDisp);
 });
+
+/* E145 · UN BOTÓN PULSADO CON EL RATÓN NO PIERDE SU RELIEVE (3.4.3). La regla
+   que RETIRA el anillo de foco del ratón hacía «box-shadow: none», y en este
+   juego el bisel de cada botón ES un box-shadow: cualquier botón que se
+   quedara en pantalla tras pulsarlo se veía plano y hundido para siempre. Se
+   notó en el altavoz «Leer» porque es el único que no navega ni se repinta,
+   pero la regla es de `*`: le pasaba a todos.
+   Se mide por los dos lados —el efecto en un botón de verdad y la regla que
+   está cargada— porque lo primero depende de si el navegador cree que el foco
+   vino del teclado, y eso no se puede fijar desde una prueba. */
+CB.pruebas.suite('A11y: el foco del ratón no borra el bisel (E145)', function () {
+  const t = CB.pruebas;
+
+  /* 1 · El efecto. Un .btn-bloque enfocado conserva su relieve venga el foco
+     de donde venga: .btn-bloque gana a :focus-visible por orden de origen, así
+     que esta afirmación no depende de la modalidad. */
+  const caja = document.createElement('div');
+  caja.style.cssText = 'position:fixed;left:-3000px;top:0';
+  const b = CB.ui.boton('🔊 Leer', 'btn-bloque--icono enunciado__altavoz', null);
+  caja.appendChild(b);
+  document.body.appendChild(caja);
+  const antes = getComputedStyle(b).boxShadow;
+  const focoPrevio = document.activeElement;
+  b.focus();
+  const despues = getComputedStyle(b).boxShadow;
+  const contorno = getComputedStyle(b).outlineStyle;
+  t.ok(antes !== 'none',
+    'E145 · un botón sin foco tiene su bisel', antes);
+  t.igual(despues, antes,
+    'E145 · y al recibir el foco lo conserva exactamente igual');
+  t.ok(despues !== 'none' || contorno !== 'none',
+    'E145 · un botón enfocado nunca se queda sin ninguna marca visible',
+    'sombra ' + despues + ', contorno ' + contorno);
+  if (focoPrevio && focoPrevio.focus) focoPrevio.focus();
+  document.body.removeChild(caja);
+
+  /* 2 · La regla cargada. Retirar el anillo del ratón es cosa del outline: el
+     :focus de arriba no pone ninguna sombra, así que un «box-shadow: none»
+     aquí no retira nada y solo puede destruir el relieve de quien lo tenga. */
+  let vista = false, conSombra = null;
+  const hojas = document.styleSheets;
+  let i, k, j;
+  for (i = 0; i < hojas.length; i++) {
+    let reglas;
+    try { reglas = hojas[i].cssRules; } catch (e) { continue; }
+    if (!reglas) continue;
+    vista = true;
+    for (k = 0; k < reglas.length; k++) {
+      const dentro = reglas[k].cssRules;
+      if (!dentro) continue;
+      for (j = 0; j < dentro.length; j++) {
+        const sel = dentro[j].selectorText || '';
+        if (sel.indexOf(':focus') !== -1 && sel.indexOf(':not(:focus-visible)') !== -1) {
+          conSombra = /box-shadow/.test(dentro[j].cssText || '');
+        }
+      }
+    }
+  }
+  t.ok(vista,
+    'E145 · las hojas del juego se pueden leer para comprobar la regla',
+    'con file:// el navegador no las entrega: sirve la página por http para esta comprobación');
+  t.ok(vista && conSombra === false,
+    'E145 · la regla que retira el anillo del ratón toca el contorno y NO la sombra',
+    'conSombra=' + conSombra);
+});

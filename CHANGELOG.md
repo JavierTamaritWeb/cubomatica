@@ -12,6 +12,34 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.4.3] — 2026-08-23
+
+**Un botón pulsado con el ratón se quedaba plano y hundido para siempre.** La
+regla que RETIRA el anillo de foco cuando el foco viene del ratón hacía
+`box-shadow: none`, y en este juego el bisel de cada botón ES un `box-shadow`:
+el `:focus` de arriba solo pone `outline`, así que ese `box-shadow: none` no
+retiraba nada y solo podía destruir el relieve de quien lo tuviera.
+
+Se vio en el altavoz «Leer» porque es el único botón que se queda en pantalla
+después de pulsarlo — los demás navegan, se repintan con el ítem siguiente o
+desaparecen —, pero la regla es de `*`: **le pasaba a todos**. Comprobado
+sembrando el defecto: el botón «Pista» también se quedaba sin bisel tras el
+clic, con el de «Sonido» intacto al lado.
+
+### Corregido
+
+- La retirada del anillo del ratón toca solo el `outline`. El anillo del
+  teclado no cambia: en los botones lo dibuja el `outline` dorado de 4 px
+  —`.btn-bloque` gana a `:focus-visible` por orden de origen, así que la sombra
+  de foco nunca llegó a aplicarse ahí— y en los campos de texto sigue igual.
+- Guardián **E145**, con sus dos mitades: el efecto en un botón de verdad y la
+  regla que está cargada. La segunda es la que caza el defecto sembrado; la
+  primera depende de si el navegador cree que el foco vino del teclado, y eso
+  no se puede fijar desde una prueba — escrita sola habría estado verde sobre
+  un juego roto.
+
+---
+
 ## [3.4.2] — 2026-08-23
 
 **Leer la pregunta en voz alta, en TODAS las preguntas.** Hasta aquí el altavoz

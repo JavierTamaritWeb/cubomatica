@@ -4280,3 +4280,39 @@ media query y una media query se evalúa contra el viewport (la lección de
 E102-E103). Afirma las dos mitades — una fila a 1280, y que por debajo del corte
 la columna sigue siendo la de lectura — para que ensanchar `.contenido` para
 todos se ponga rojo.
+
+## D-3.4.3 · Retirar un anillo que nadie puso
+
+**Fecha**: 2026-08-23. **Origen**: el usuario vio que el botón «Leer» no
+recuperaba su aspecto tras pulsarlo.
+
+`@supports selector(:focus-visible) { :focus:not(:focus-visible) { outline:
+none; box-shadow: none; } }` — la retirada del anillo para el ratón, de 1.23.5
+(E110). El `outline: none` es correcto y necesario. El `box-shadow: none` era
+**colateral puro**: la regla `:focus` de la que se retira solo declara
+`outline`, así que no había ninguna sombra de foco que quitar, y en un diseño
+donde el relieve de cada pieza ES un `box-shadow`, poner la sombra a `none`
+deja el botón plano mientras conserve el foco — o sea, hasta que el niño toque
+otra cosa.
+
+Tres cosas que conviene no olvidar:
+
+1. **Se vio en un botón y era de todos.** El altavoz «Leer» es el único control
+   que sobrevive en pantalla a su propia pulsación: los demás navegan, se
+   repintan con el ítem siguiente o desaparecen. Por eso pareció un fallo suyo.
+   Sembrando el defecto, «Pista» se queda igual de plano. **Cuando un síntoma
+   aparece en el único sitio donde se podía ver, sospecha del selector global.**
+
+2. **El anillo del teclado no dependía de esa sombra.** En los botones lo pinta
+   el `outline` dorado: `.btn-bloque` y `:focus-visible` tienen la MISMA
+   especificidad (0,1,0) y `_base.scss` se carga antes que los componentes, así
+   que la sombra de foco de `:focus-visible` nunca llegó a aplicarse sobre un
+   `.btn-bloque` — gana el bisel por orden de origen. Sigue aplicándose donde
+   importa y no hay `.btn-bloque` que la tape: el campo de la puerta parental.
+
+3. **El guardián necesita dos mitades y solo una es determinista.** E145 mide el
+   efecto sobre un botón real Y la regla cargada. La primera mitad no puede
+   fijar la modalidad —si el navegador cree que el foco vino del teclado, la
+   regla rota ni siquiera se aplica—, así que sobre el defecto sembrado salió
+   VERDE; la que lo cazó fue la de la regla. Escribir solo la conductual habría
+   sido otra comprobación que aprueba por no medir.

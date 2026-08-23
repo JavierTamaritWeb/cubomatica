@@ -1398,7 +1398,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.4.2';
+CB.VERSION = '3.4.3';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
