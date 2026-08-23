@@ -315,7 +315,8 @@ button:disabled {
 }
 
 :focus {
-  outline: none;
+  outline: var(--bisel) solid var(--foco-oro);
+  outline-offset: var(--u);
 }
 
 :focus-visible {
@@ -324,15 +325,12 @@ button:disabled {
   box-shadow: 0 0 0 var(--e2) var(--foco-borde);
 }
 
-button:focus, [tabindex]:focus {
-  outline: var(--bisel) solid var(--foco-oro);
-  outline-offset: var(--u);
+@supports selector(:focus-visible) {
+  :focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
 }
-
-button:focus:not(:focus-visible) {
-  box-shadow: none;
-}
-
 * {
   transition-timing-function: steps(3, end);
   animation-timing-function: steps(4, end);

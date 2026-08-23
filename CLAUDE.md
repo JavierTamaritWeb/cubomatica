@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Cubomática 1.23.3** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
+**Cubomática 1.23.5** — a Spanish-language maths game for 2nd grade of Primary school (7–8 years old), built on the official Spanish curriculum (RD 157/2022). Everything — code, comments, identifiers, docs, UI — is in Spanish. Keep writing in Spanish.
 
 ## A build step, but the same target: double-click, no network
 
@@ -49,12 +49,12 @@ Both need `npm run build` first; without it they say so instead of hanging on "P
   CB.pruebas.suites = CB.pruebas.suites.filter(s => /Música/.test(s.nombre));
   CB.pruebas.ejecutar(false);
   ```
-- Results land in `document.getElementById('resumen').textContent`. Current baseline: **854 checks, 0 failures** (deterministic).
+- Results land in `document.getElementById('resumen').textContent`. Current baseline: **873 checks, 0 failures** (deterministic).
 - **The page auto-runs on load.** Filtering `CB.pruebas.suites` while that run is in flight truncates the list *mid-race*: the runner stops early and prints a green summary for a subset — 248/0 instead of 489. Wait for the `· NNNN ms` suffix before touching the array.
 - **Serve the test pages with `Cache-Control: no-store`.** Chrome will happily reuse a cached `dist/js/cubomatica.js` or `casos-*.js` across a reload, so a green summary can be measuring code from three edits ago — and the check count won't necessarily change, which is what makes it invisible. Before trusting a run, assert something about the bundle you just built (`/paso <= 20/.test(String(CB.jefes.opciones))`, a function that should now exist) rather than assuming the reload did it.
 - **Run it in a foreground tab.** Chrome throttles `setTimeout` in a background tab, and the suites are chained with `setTimeout(…, 0)`: backgrounded, a 10 s run stretches past 80 s or stalls outright. A partial `resumen` is easy to mistake for a finished one — the `· NNNN ms` suffix is only appended when the last suite ends, so a summary without it is still running.
 
-**Every bug ever fixed has a guard in `pruebas/casos-regresiones.js`.** Its header lists all one hundred and five found so far (E1-E105) and where each guard lives. The rule it states: a bug fixed without a test comes back. Add to it before closing any defect.
+**Every bug ever fixed has a guard, and `pruebas/casos-regresiones.js` is where most of them live.** One hundred and eleven found so far (E1-E111). The newest ones do not all sit in that file: a defect is guarded wherever it can actually be measured, so E109-E111 live in `pruebas/auditar.mjs`, `pruebas/casos-a11y.js` and `pruebas/casos-musica.js` — `grep -rl E1NN pruebas/` is how you find one. The rule has not changed: a bug fixed without a test comes back. Add the guard before closing any defect.
 
 **Celebration is a table of vehicles, not a table of trajectories** (`CB.ui.festejo.CELEBRACIONES`, 1.8.1). 1.8.0 shipped nine choreographies that were all the same band — same width, same place, same type — and varying the path does not vary what a child recognises. Worse, the E47 guard written alongside it forbade any modifier from repositioning the band, so the monotony was *held in place by a test*. When a check blocks the fix, the check is part of the bug. The rule that orders the table only works once the vehicle differs: spectacle is inversely proportional to frequency, so the 60 %-case is a one-line `+1` beside the gem counter and the band is reserved for three rare moments.
 
@@ -184,6 +184,10 @@ This is school material subject to **EN 301 549 / WCAG 2.2 AA**:
 - Never colour alone: every state that uses colour also changes shape, size, text or motion.
 - `prefers-reduced-motion` and `:root.sin-movimiento` must both be handled, at the end of `src/scss/base/_animaciones.scss`. They come from **one list** through `desactivar-movimiento()` emitted twice, because for months they were two hand-kept lists and the in-game setting silently missed ten animations (E27). Removing motion may not remove information.
 - Contrast pairs are measured against computed CSS variables in `casos-contraste.js`, not asserted by hand.
+
+**The accessible case must be the default, and the optimisation the exception** (1.23.5, E110). `:focus { outline: none }` plus a fallback ring written for `button` and `[tabindex]` is the classic recipe and it had two holes that reading the CSS does not show. The first is coverage: an `<input>` is neither of those, so the parental gate's field — the only text field in the game — had no focus indicator at all. The second is order: the fallback exists for browsers without `:focus-visible`, but written as an ordinary rule it also applied where `:focus-visible` works, so the modern browser got the mouse ring and the old one still got nothing on fields. The fix inverts the question — `:focus` paints the ring for every control, and `@supports selector(:focus-visible)` withdraws it only where the browser can tell keyboard from mouse. **When a fallback and an enhancement disagree, ask which one runs when the feature query fails**; that is the one that has to be correct.
+
+**A control whose visible text is «Sí» or «No» has no accessible name of its own** — the row has it. The child's settings and the adult panel's compose theirs with `aria-labelledby` (label plus value) and publish `aria-pressed`, so a screen reader says «Letra grande, Sí, activado» where it used to say «Sí». Same review: the parental gate wires instruction, field and error together (`aria-describedby`, `aria-errormessage`, `aria-invalid`, `role="alert"`) and returns focus to the field to correct; its `inputmode="numeric"` was false from the start, since the answer was always a word. The half that lives in the markup and the SCSS is checked in `auditar.mjs`; the half JavaScript generates is checked in `pruebas/casos-a11y.js`, which mounts the real controls rather than asserting on source text. **E111 holds the test pages to the same standard** — the summary is a `role="status"` with `aria-busy`, the bar a real `role="progressbar"`.
 
 ## Before changing behaviour, read `docs/decisiones.md`
 

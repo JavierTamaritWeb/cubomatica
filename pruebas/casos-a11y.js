@@ -128,3 +128,83 @@ CB.pruebas.suite('Accesibilidad: navegación, regiones y nombres', function () {
   t.ok(String(CB.partida.pintarFin || '').indexOf('a11y.urgente') === -1,
     'pero el resumen del final NO interrumpe: eso no caduca');
 });
+
+CB.pruebas.suite('E110 · formularios y controles exponen nombre, estado y error', function () {
+  const t = CB.pruebas;
+  const perfilPrevio = CB.perfil;
+  const estadoPrevio = CB.partida.estado;
+  CB.perfil = CB.pruebas.perfilNuevo();
+  CB.partida.estado = null;
+
+  function nombreReferenciado(el) {
+    const ids = (el.getAttribute('aria-labelledby') || '').trim().split(/\s+/).filter(Boolean);
+    return ids.map(function (id) {
+      const n = document.getElementById(id);
+      return n ? n.textContent.trim() : '';
+    }).filter(Boolean).join(' ');
+  }
+
+  CB.ajustesNino({});
+  const controlesNino = [].slice.call(
+    document.querySelectorAll('#lista-ajustes .ajuste button')
+  );
+  const sinNombreNino = controlesNino.filter(function (b) {
+    return !/\S+\s+\S+/.test(nombreReferenciado(b));
+  });
+  t.ok(controlesNino.length >= 5 && sinNombreNino.length === 0,
+    'E110 · cada ajuste infantil se anuncia con etiqueta y valor',
+    sinNombreNino.length + ' controles sin nombre completo');
+
+  const conmutadoresNino = controlesNino.filter(function (b) {
+    return /Sonido|Letra grande|Leer en voz alta/.test(nombreReferenciado(b));
+  });
+  t.ok(conmutadoresNino.length === 3 && conmutadoresNino.every(function (b) {
+    return /^(true|false)$/.test(b.getAttribute('aria-pressed') || '');
+  }), 'E110 · los tres ajustes binarios infantiles exponen su estado');
+
+  const soporte = document.createElement('div');
+  soporte.hidden = true;
+  soporte.appendChild(CB.adulto.cajaAjustes(CB.perfil));
+  document.body.appendChild(soporte);
+  const controlesAdulto = [].slice.call(soporte.querySelectorAll('button'));
+  const sinNombreAdulto = controlesAdulto.filter(function (b) {
+    return !/\S+\s+\S+/.test(nombreReferenciado(b));
+  });
+  t.ok(controlesAdulto.length > 10 && sinNombreAdulto.length === 0,
+    'E110 · cada ajuste adulto se anuncia con etiqueta y valor',
+    sinNombreAdulto.length + ' controles sin nombre completo');
+  t.ok(controlesAdulto.every(function (b) {
+    return /^(true|false)$/.test(b.getAttribute('aria-pressed') || '');
+  }), 'E110 · los ajustes adultos exponen qué opción está activa');
+  soporte.parentNode.removeChild(soporte);
+
+  CB.adulto.desbloqueado = false;
+  CB.adulto.abrir();
+  const campo = document.getElementById('adulto-respuesta');
+  const error = document.getElementById('adulto-error');
+  let focoPedido = false;
+  const enfocarReal = campo.focus;
+  campo.focus = function () { focoPedido = true; };
+  t.ok(campo.getAttribute('aria-describedby') === 'adulto-pregunta' &&
+       campo.getAttribute('aria-errormessage') === 'adulto-error',
+    'E110 · la puerta parental relaciona instrucción, campo y mensaje de error');
+  campo.value = 'respuesta incorrecta';
+  document.getElementById('adulto-entrar').click();
+  t.ok(campo.getAttribute('aria-invalid') === 'true' &&
+       campo.getAttribute('aria-describedby').indexOf('adulto-error') !== -1 && !error.hidden &&
+       error.getAttribute('role') === 'alert',
+    'E110 · un fallo marca el campo y anuncia el mensaje');
+  t.ok(focoPedido,
+    'E110 · tras el fallo se pide devolver el foco al campo que hay que corregir');
+  campo.focus = enfocarReal;
+
+  const grupoAnimo = document.querySelector('#fin-animo .animo');
+  const caras = [].slice.call(document.querySelectorAll('#fin-animo .animo__cara'));
+  t.ok(grupoAnimo && grupoAnimo.getAttribute('role') === 'group' && caras.length === 3,
+    'E110 · el estado de ánimo es un grupo de tres controles');
+  t.ok(caras.every(function (b) { return b.getAttribute('aria-pressed') === 'false'; }),
+    'E110 · las tres opciones nacen con un estado explícito');
+
+  CB.perfil = perfilPrevio;
+  CB.partida.estado = estadoPrevio;
+});

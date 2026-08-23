@@ -3753,3 +3753,42 @@ seguridad altos y hacía más difícil garantizar qué se inyectaba en cada pág
 El servidor de desarrollo usa `node:http`, separa juego y pruebas, aplica
 `Cache-Control: no-store` y recarga solo el juego mediante eventos enviados por
 el servidor. No se añade ninguna dependencia de producción.
+
+---
+
+## D-1.23.5 — El foco se quita con `@supports`, no con un respaldo por selector
+
+`:focus { outline: none }` seguido de un respaldo escrito para `button` y
+`[tabindex]` parece la receta clásica, y tiene dos agujeros que no se ven
+leyendo el CSS. El primero es de cobertura: un `<input>` no es ninguna de las
+dos cosas, así que el campo de la puerta parental —el único campo de texto del
+juego— se quedaba sin ningún indicador de foco. El segundo es de orden: el
+respaldo existe para navegadores sin `:focus-visible`, pero al escribirse como
+una regla más se aplicaba también donde `:focus-visible` sí funciona, de modo
+que el navegador moderno recibía el anillo del ratón y el antiguo seguía sin
+recibir nada en los campos.
+
+La forma correcta invierte la pregunta. `:focus` pinta el anillo para todos los
+controles, sin excepciones, que es lo que necesita quien navega con teclado y lo
+que exige WCAG 2.4.7. Encima, `@supports selector(:focus-visible)` lo retira
+únicamente donde el navegador sabe distinguir teclado de ratón
+(`:focus:not(:focus-visible)`). El caso por defecto pasa a ser el accesible y la
+optimización estética queda condicionada a que el navegador la entienda; antes
+era al revés. E110 comprueba las dos mitades en `_base.scss`, porque ninguna de
+las dos funciona sin la otra.
+
+Del mismo repaso salen tres arreglos de nombre y estado que comparten causa: un
+control cuyo texto visible es «Sí» o «No» no tiene nombre accesible propio, lo
+tiene la fila entera. Los ajustes del niño y los del panel adulto componen ahora
+su nombre con `aria-labelledby` —etiqueta más valor— y publican `aria-pressed`;
+el grupo de ánimo del final declara `role="group"` rotulado por su pregunta; y
+la puerta parental relaciona instrucción, campo y error (`aria-describedby`,
+`aria-errormessage`, `aria-invalid`, `role="alert"`) y devuelve el foco al campo
+que hay que corregir. Su `inputmode="numeric"` era además falso de origen: la
+respuesta siempre fue una palabra de una frase, nunca un número.
+
+La suite se mira a sí misma con el mismo rasero (E111): el resumen es
+`role="status"` con `aria-busy`, la barra es un `role="progressbar"` con
+`aria-valuenow` real en vez de una anchura que solo se ve, y
+`comprobar-doble-clic.html` carga el bundle minificado que necesitaba para poder
+preguntar por `CB.offline`.

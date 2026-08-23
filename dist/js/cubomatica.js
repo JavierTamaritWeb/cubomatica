@@ -1165,7 +1165,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '1.23.4';
+CB.VERSION = '1.23.5';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -10345,17 +10345,26 @@ CB.adulto.abrir = function () {
   const campo = document.getElementById('adulto-respuesta');
   const error = document.getElementById('adulto-error');
   campo.value = '';
+  campo.setAttribute('aria-describedby', 'adulto-pregunta');
+  campo.setAttribute('aria-errormessage', 'adulto-error');
+  campo.setAttribute('aria-invalid', 'false');
+  error.setAttribute('role', 'alert');
   error.hidden = true;
 
   document.getElementById('adulto-entrar').onclick = function () {
     const esperada = CB.util.palabras(reto.frase)[reto.n - 1].toLowerCase();
     if (CB.util.normalizar(campo.value) === CB.util.normalizar(esperada)) {
+      campo.setAttribute('aria-describedby', 'adulto-pregunta');
+      campo.setAttribute('aria-invalid', 'false');
       CB.adulto.desbloqueado = true;
       puerta.hidden = true;
       contenido.hidden = false;
       CB.adulto.pintar();
     } else {
+      campo.setAttribute('aria-describedby', 'adulto-pregunta adulto-error');
+      campo.setAttribute('aria-invalid', 'true');
       error.hidden = false;
+      CB.a11y.enfocar(campo);
     }
   };
 };
@@ -10779,7 +10788,9 @@ CB.adulto.cajaAjustes = function (perfil) {
   CB.adulto.AJUSTES.forEach(function (a) {
     const fila = CB.ui.crear('div', 'metrica');
     const izq = CB.ui.crear('span');
-    izq.appendChild(CB.ui.crear('span', null, a.t));
+    const rotulo = CB.ui.crear('span', null, a.t);
+    rotulo.id = 'adulto-ajuste-' + a.k + '-etiqueta';
+    izq.appendChild(rotulo);
     if (a.nota) izq.appendChild(CB.ui.crear('p', 'texto texto--menor', a.nota));
     fila.appendChild(izq);
 
@@ -10787,16 +10798,25 @@ CB.adulto.cajaAjustes = function (perfil) {
       const b = CB.ui.boton(perfil.ajustes[a.k] ? 'Sí' : 'No', 'btn-adulto', function () {
         perfil.ajustes[a.k] = !perfil.ajustes[a.k];
         b.textContent = perfil.ajustes[a.k] ? 'Sí' : 'No';
+        b.setAttribute('aria-pressed', perfil.ajustes[a.k] ? 'true' : 'false');
         CB.a11y.aplicarAjustes(perfil.ajustes, CB.almacen.ajustesDispositivo());
         CB.almacen.guardarPerfil(perfil);
       });
       b.className = 'btn-adulto';
+      b.id = 'adulto-ajuste-' + a.k + '-control';
+      b.setAttribute('aria-labelledby', rotulo.id + ' ' + b.id);
+      b.setAttribute('aria-pressed', perfil.ajustes[a.k] ? 'true' : 'false');
       fila.appendChild(b);
     } else {
       const sel = CB.ui.crear('span');
-      a.ops.forEach(function (op) {
+      sel.setAttribute('role', 'group');
+      sel.setAttribute('aria-labelledby', rotulo.id);
+      a.ops.forEach(function (op, indice) {
         const b2 = CB.ui.crear('button', 'btn-adulto', op[1]);
         b2.type = 'button';
+        b2.id = 'adulto-ajuste-' + a.k + '-opcion-' + indice;
+        b2.setAttribute('aria-labelledby', rotulo.id + ' ' + b2.id);
+        b2.setAttribute('aria-pressed', perfil.ajustes[a.k] === op[0] ? 'true' : 'false');
         if (perfil.ajustes[a.k] === op[0]) b2.style.fontWeight = 'bold';
         b2.addEventListener('click', function () {
           perfil.ajustes[a.k] = op[0];
@@ -10814,23 +10834,35 @@ CB.adulto.cajaAjustes = function (perfil) {
      hace que el maestro no entienda por qué a 12 alumnos no les aparece (§15.2). */
   const ap = CB.almacen.ajustesDispositivo();
   const f2 = CB.ui.crear('div', 'metrica');
-  f2.appendChild(CB.ui.crear('span', null, 'Modo aula (hasta 30 perfiles)'));
+  const rotuloAula = CB.ui.crear('span', null, 'Modo aula (hasta 30 perfiles)');
+  rotuloAula.id = 'adulto-ajuste-modo-aula-etiqueta';
+  f2.appendChild(rotuloAula);
   const ba = CB.ui.boton(ap.modoAula ? 'Sí' : 'No', 'btn-adulto', function () {
     ap.modoAula = !ap.modoAula;
     CB.almacen.guardarAjustesDispositivo(ap);
     ba.textContent = ap.modoAula ? 'Sí' : 'No';
+    ba.setAttribute('aria-pressed', ap.modoAula ? 'true' : 'false');
   });
+  ba.id = 'adulto-ajuste-modo-aula-control';
+  ba.setAttribute('aria-labelledby', rotuloAula.id + ' ' + ba.id);
+  ba.setAttribute('aria-pressed', ap.modoAula ? 'true' : 'false');
   f2.appendChild(ba);
   caja.appendChild(f2);
 
   const f3 = CB.ui.crear('div', 'metrica');
-  f3.appendChild(CB.ui.crear('span', null, 'Modo proyección (pizarra digital)'));
+  const rotuloProyeccion = CB.ui.crear('span', null, 'Modo proyección (pizarra digital)');
+  rotuloProyeccion.id = 'adulto-ajuste-modo-proyeccion-etiqueta';
+  f3.appendChild(rotuloProyeccion);
   const bp = CB.ui.boton(ap.modoProyeccion ? 'Sí' : 'No', 'btn-adulto', function () {
     ap.modoProyeccion = !ap.modoProyeccion;
     CB.almacen.guardarAjustesDispositivo(ap);
     CB.a11y.aplicarAjustes(perfil.ajustes, ap);
     bp.textContent = ap.modoProyeccion ? 'Sí' : 'No';
+    bp.setAttribute('aria-pressed', ap.modoProyeccion ? 'true' : 'false');
   });
+  bp.id = 'adulto-ajuste-modo-proyeccion-control';
+  bp.setAttribute('aria-labelledby', rotuloProyeccion.id + ' ' + bp.id);
+  bp.setAttribute('aria-pressed', ap.modoProyeccion ? 'true' : 'false');
   f3.appendChild(bp);
   caja.appendChild(f3);
 
@@ -11930,23 +11962,31 @@ CB.ajustesNino = function (props) {
                 !!(CB.partida.estado && CB.partida.estado.pausada);
   const titulo = document.getElementById('ajustes-titulo');
   if (titulo) titulo.textContent = enPausa ? 'En pausa' : 'Ajustes';
+  let numeroAjuste = 0;
 
   function fila(etiqueta, valor, alPulsar) {
     const f = CB.ui.crear('div', 'ajuste');
-    f.appendChild(CB.ui.crear('span', 'ajuste__etiqueta', etiqueta));
+    const numero = ++numeroAjuste;
+    const rotulo = CB.ui.crear('span', 'ajuste__etiqueta', etiqueta);
+    rotulo.id = 'ajuste-nino-etiqueta-' + numero;
+    f.appendChild(rotulo);
     const b = CB.ui.boton(valor, '', function () { alPulsar(b); });
+    b.id = 'ajuste-nino-control-' + numero;
+    b.setAttribute('aria-labelledby', rotulo.id + ' ' + b.id);
     f.appendChild(b);
     cont.appendChild(f);
     return b;
   }
 
   const ap = CB.almacen.ajustesDispositivo();
-  fila('Sonido', CB.audio.silenciado ? 'No' : 'Sí', function (b) {
+  const botonSonido = fila('Sonido', CB.audio.silenciado ? 'No' : 'Sí', function (b) {
     const s = CB.audio.silenciar(!CB.audio.silenciado);
     ap.silencio = s;
     CB.almacen.guardarAjustesDispositivo(ap);
     b.textContent = s ? 'No' : 'Sí';
+    b.setAttribute('aria-pressed', s ? 'false' : 'true');
   });
+  botonSonido.setAttribute('aria-pressed', CB.audio.silenciado ? 'false' : 'true');
 
   /* La música tiene su propio nivel, aparte del de los efectos, y llega hasta el silencio total en un solo toque. */
   fila('Música', CB.musica.NIVELES[CB.musica.nivelActual()].etiqueta, function (b) {
@@ -11968,18 +12008,22 @@ CB.ajustesNino = function (props) {
       if (CB.partida.estado) CB.partida.estado.modoTiempo = perfil.ajustes.modoTiempo;
       CB.almacen.guardarPerfil(perfil);
     });
-    fila('Letra grande', perfil.ajustes.letraGrande ? 'Sí' : 'No', function (b) {
+    const botonLetra = fila('Letra grande', perfil.ajustes.letraGrande ? 'Sí' : 'No', function (b) {
       perfil.ajustes.letraGrande = !perfil.ajustes.letraGrande;
       b.textContent = perfil.ajustes.letraGrande ? 'Sí' : 'No';
+      b.setAttribute('aria-pressed', perfil.ajustes.letraGrande ? 'true' : 'false');
       CB.a11y.aplicarAjustes(perfil.ajustes, ap);
       CB.almacen.guardarPerfil(perfil);
     });
-    fila('Leer en voz alta', perfil.ajustes.voz ? 'Sí' : 'No', function (b) {
+    botonLetra.setAttribute('aria-pressed', perfil.ajustes.letraGrande ? 'true' : 'false');
+    const botonVoz = fila('Leer en voz alta', perfil.ajustes.voz ? 'Sí' : 'No', function (b) {
       perfil.ajustes.voz = !perfil.ajustes.voz;
       CB.voz.activa = perfil.ajustes.voz;
       b.textContent = perfil.ajustes.voz ? 'Sí' : 'No';
+      b.setAttribute('aria-pressed', perfil.ajustes.voz ? 'true' : 'false');
       CB.almacen.guardarPerfil(perfil);
     });
+    botonVoz.setAttribute('aria-pressed', perfil.ajustes.voz ? 'true' : 'false');
   }
 
   /* PRIMERO, no al final de la lista: es lo que ha venido a hacer. */

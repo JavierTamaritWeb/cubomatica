@@ -2,7 +2,7 @@
 
 # Los 24 códigos de error y su actividad de aula
 
-> Cubomática 1.23.3
+> Cubomática 1.23.5
 
 Tabla de referencia. La fuente de verdad es `datos/recomendaciones.js`, y
 `casos-curriculo.js` (CU8) verifica que este conjunto de claves coincide

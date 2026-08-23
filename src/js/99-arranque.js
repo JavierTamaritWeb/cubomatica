@@ -229,23 +229,31 @@ CB.ajustesNino = function (props) {
                 !!(CB.partida.estado && CB.partida.estado.pausada);
   const titulo = document.getElementById('ajustes-titulo');
   if (titulo) titulo.textContent = enPausa ? 'En pausa' : 'Ajustes';
+  let numeroAjuste = 0;
 
   function fila(etiqueta, valor, alPulsar) {
     const f = CB.ui.crear('div', 'ajuste');
-    f.appendChild(CB.ui.crear('span', 'ajuste__etiqueta', etiqueta));
+    const numero = ++numeroAjuste;
+    const rotulo = CB.ui.crear('span', 'ajuste__etiqueta', etiqueta);
+    rotulo.id = 'ajuste-nino-etiqueta-' + numero;
+    f.appendChild(rotulo);
     const b = CB.ui.boton(valor, '', function () { alPulsar(b); });
+    b.id = 'ajuste-nino-control-' + numero;
+    b.setAttribute('aria-labelledby', rotulo.id + ' ' + b.id);
     f.appendChild(b);
     cont.appendChild(f);
     return b;
   }
 
   const ap = CB.almacen.ajustesDispositivo();
-  fila('Sonido', CB.audio.silenciado ? 'No' : 'Sí', function (b) {
+  const botonSonido = fila('Sonido', CB.audio.silenciado ? 'No' : 'Sí', function (b) {
     const s = CB.audio.silenciar(!CB.audio.silenciado);
     ap.silencio = s;
     CB.almacen.guardarAjustesDispositivo(ap);
     b.textContent = s ? 'No' : 'Sí';
+    b.setAttribute('aria-pressed', s ? 'false' : 'true');
   });
+  botonSonido.setAttribute('aria-pressed', CB.audio.silenciado ? 'false' : 'true');
 
   /* La música tiene su propio nivel, aparte del de los efectos, y llega hasta el silencio total en un solo toque. */
   fila('Música', CB.musica.NIVELES[CB.musica.nivelActual()].etiqueta, function (b) {
@@ -267,18 +275,22 @@ CB.ajustesNino = function (props) {
       if (CB.partida.estado) CB.partida.estado.modoTiempo = perfil.ajustes.modoTiempo;
       CB.almacen.guardarPerfil(perfil);
     });
-    fila('Letra grande', perfil.ajustes.letraGrande ? 'Sí' : 'No', function (b) {
+    const botonLetra = fila('Letra grande', perfil.ajustes.letraGrande ? 'Sí' : 'No', function (b) {
       perfil.ajustes.letraGrande = !perfil.ajustes.letraGrande;
       b.textContent = perfil.ajustes.letraGrande ? 'Sí' : 'No';
+      b.setAttribute('aria-pressed', perfil.ajustes.letraGrande ? 'true' : 'false');
       CB.a11y.aplicarAjustes(perfil.ajustes, ap);
       CB.almacen.guardarPerfil(perfil);
     });
-    fila('Leer en voz alta', perfil.ajustes.voz ? 'Sí' : 'No', function (b) {
+    botonLetra.setAttribute('aria-pressed', perfil.ajustes.letraGrande ? 'true' : 'false');
+    const botonVoz = fila('Leer en voz alta', perfil.ajustes.voz ? 'Sí' : 'No', function (b) {
       perfil.ajustes.voz = !perfil.ajustes.voz;
       CB.voz.activa = perfil.ajustes.voz;
       b.textContent = perfil.ajustes.voz ? 'Sí' : 'No';
+      b.setAttribute('aria-pressed', perfil.ajustes.voz ? 'true' : 'false');
       CB.almacen.guardarPerfil(perfil);
     });
+    botonVoz.setAttribute('aria-pressed', perfil.ajustes.voz ? 'true' : 'false');
   }
 
   /* PRIMERO, no al final de la lista: es lo que ha venido a hacer. */

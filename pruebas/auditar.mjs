@@ -349,6 +349,41 @@ juzgar(mundosCat.length === 4 && !sinNombrar.length,
   'E101 · la ayuda nombra los cuatro mundos tal y como los declara el catalogo',
   'la ayuda no nombra: ' + sinNombrar.join(', '));
 
+/* E110-E111 · Los atributos que viven en la maqueta se protegen aquí; la suite
+   del navegador cubre después el nombre y el estado que genera JavaScript. */
+const campoAdulto = (html.match(/<input id="adulto-respuesta"[\s\S]*?>/) || [])[0] || '';
+juzgar(!!campoAdulto && !/inputmode="numeric"/.test(campoAdulto) &&
+       /aria-describedby="adulto-pregunta"/.test(campoAdulto) &&
+       /aria-errormessage="adulto-error"/.test(campoAdulto) &&
+       /aria-invalid="false"/.test(campoAdulto),
+  'E110 · la puerta parental acepta texto y relaciona su ayuda y error',
+  'el campo parental vuelve a pedir teclado numerico o pierde su semantica de error');
+juzgar(/id="adulto-error"[^>]*role="alert"/.test(html),
+  'E110 · el error parental es una alerta',
+  'adulto-error no lleva role="alert"');
+juzgar(/class="animo" role="group"[^>]*aria-labelledby="fin-animo-titulo"/.test(html) &&
+       (html.match(/class="animo__cara"[^>]*aria-pressed="false"/g) || []).length === 3,
+  'E110 · el estado de animo nace como grupo con tres estados explicitos',
+  'el grupo de animo o sus aria-pressed iniciales estan incompletos');
+
+const cssBase = leer(D('src/scss/base/_base.scss'));
+juzgar(!/:focus\s*\{\s*outline:\s*none/.test(cssBase) &&
+       /@supports selector\(:focus-visible\)/.test(cssBase),
+  'E110 · el foco conserva respaldo visible antes de :focus-visible',
+  'se ha vuelto a borrar globalmente el foco o falta el respaldo compatible');
+
+const paginasSuite = ['pruebas/pruebas.html', 'pruebas/pruebas-min.html'].map((f) => leer(D(f)));
+juzgar(paginasSuite.every((p) => /id="resumen" role="status"/.test(p) &&
+       /class="barra-carga" role="progressbar"/.test(p) && /aria-valuenow="0"/.test(p)),
+  'E111 · las dos suites anuncian el resultado y exponen el progreso',
+  'falta role=status o progressbar en una pagina de suite');
+const htmlDobleClic = leer(D('pruebas/comprobar-doble-clic.html'));
+juzgar(/<script src="\.\.\/dist\/js\/cubomatica\.min\.js"><\/script>/.test(htmlDobleClic) &&
+       /id="veredicto" role="status"/.test(htmlDobleClic) &&
+       /id="sc-resultado" role="status"/.test(htmlDobleClic),
+  'E111 · la comprobacion de doble clic carga el bundle y anuncia sus resultados',
+  'comprobar-doble-clic.html no carga CB.offline o no expone sus estados');
+
 const ausentes = enHtml.filter((f) => !existsSync(D('src', f)));
 juzgar(!ausentes.length, 'todos los guiones referenciados existen',
   'faltan ficheros', ausentes.join(', '));

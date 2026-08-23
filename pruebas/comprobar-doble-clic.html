@@ -30,7 +30,7 @@
 <p class="sub">Esta página comprueba lo que solo se puede comprobar abriendo el juego
 como lo abre un niño: con doble clic, sin servidor. Tarda unos segundos.</p>
 
-<div id="veredicto">Comprobando…</div>
+<div id="veredicto" role="status" aria-live="polite" aria-atomic="true">Comprobando…</div>
 <div id="salida"></div>
 
 <h2>Si algo sale en rojo</h2>
@@ -38,6 +38,7 @@ como lo abre un niño: con doble clic, sin servidor. Tarda unos segundos.</p>
 (Windows) y abre el juego desde la dirección que aparece en la ventana. El juego
 funciona igual; lo único que cambia es cómo se abre.</p>
 
+<script src="../dist/js/cubomatica.min.js"></script>
 <script>
 var PISTAS = ['tema-principal', 'mundo-pradera', 'mundo-bosque', 'mundo-rio',
               'mundo-mina', 'jefe', 'calma', 'cantera', 'victoria'];
@@ -170,7 +171,7 @@ veredicto();
 <p>Con doble clic esto SIEMPRE debe decir «no disponible», y la consola debe
 quedar limpia. Un service worker exige contexto seguro y <code>file://</code> no
 lo es; lo que se comprueba aquí es que el juego no lo intente y no se queje.</p>
-<div id="sc-resultado">Comprobando…</div>
+<div id="sc-resultado" role="status" aria-live="polite" aria-atomic="true">Comprobando…</div>
 <script>
 (function () {
   var d = document.getElementById('sc-resultado');

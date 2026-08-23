@@ -114,6 +114,15 @@ CB.pruebas.render = function () {
     (CB.pruebas.saltados ? ', ' + CB.pruebas.saltados + ' saltadas' : '');
 };
 
+CB.pruebas.actualizarProgreso = function (porcentaje) {
+  const valor = Math.max(0, Math.min(100, Math.round(porcentaje)));
+  const relleno = document.getElementById('progreso');
+  if (!relleno) return;
+  relleno.style.width = valor + '%';
+  const barra = relleno.parentNode;
+  if (barra && barra.setAttribute) barra.setAttribute('aria-valuenow', String(valor));
+};
+
 /* Pasa con solo pulsar dos veces «Suite rápida», y en una pestaña de segundo plano (donde Chrome estrangula los setTimeout y una ejecución tarda 80 s en vez de 9) es lo normal, no lo raro. */
 CB.pruebas.ejecutando = false;
 
@@ -125,6 +134,8 @@ CB.pruebas.ejecutar = function (largo) {
   CB.pruebas.total = 0;
   CB.pruebas.fallos = 0;
   CB.pruebas.saltados = 0;
+  CB.pruebas.actualizarProgreso(0);
+  document.getElementById('resumen').setAttribute('aria-busy', 'true');
 
   const salida = document.getElementById('salida');
   while (salida.firstChild) salida.removeChild(salida.firstChild);
@@ -138,7 +149,8 @@ CB.pruebas.ejecutar = function (largo) {
       CB.pruebas.render();
       const r = document.getElementById('resumen');
       r.textContent += '  ·  ' + Math.round(CB.util.ahora() - t0) + ' ms';
-      document.getElementById('progreso').style.width = '100%';
+      r.setAttribute('aria-busy', 'false');
+      CB.pruebas.actualizarProgreso(100);
       return;
     }
     const s = CB.pruebas.suites[i];
@@ -152,8 +164,7 @@ CB.pruebas.ejecutar = function (largo) {
 
     function cerrar() {
       i++;
-      document.getElementById('progreso').style.width =
-        Math.round(i / CB.pruebas.suites.length * 100) + '%';
+      CB.pruebas.actualizarProgreso(i / CB.pruebas.suites.length * 100);
       CB.pruebas.render();
       /* setTimeout 0 entre suites: la pestaña respira y el resultado parcial se ve. */
       setTimeout(siguiente, 0);
@@ -190,6 +201,8 @@ CB.pruebas.conectarBotones = function () {
     while (s.firstChild) s.removeChild(s.firstChild);
     document.getElementById('resumen').textContent = 'Preparado.';
     document.getElementById('resumen').className = '';
+    document.getElementById('resumen').setAttribute('aria-busy', 'false');
+    CB.pruebas.actualizarProgreso(0);
   };
   /* Arranque automático en modo rápido: quien abre la suite quiere el resultado. */
   setTimeout(function () { CB.pruebas.ejecutar(false); }, 60);

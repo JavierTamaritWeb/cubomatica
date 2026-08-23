@@ -3,7 +3,7 @@
   "fuentes": {
     "src/scss/base/_fuentes.scss": "047b2661693b08fb5b222acf18355b74489f926e",
     "src/scss/abstracts/_variables.scss": "a70d5960af2638429528edee37238f6dafb7ea32",
-    "src/scss/base/_base.scss": "58a5ae059d4ccc7b052421e490e79a4c207a3697",
+    "src/scss/base/_base.scss": "78e6ad374354fb14406531fafdafb35e1b9b7545",
     "src/scss/components/_componentes.scss": "17928dbecf8184ce316f2d8043c504b3816a31ea",
     "src/scss/layout/_pantallas.scss": "b196136d8571b192a91fee8469055aa2737e74f0",
     "src/scss/base/_animaciones.scss": "b53ca6524ebced5006177b1ddd2be7b379a1d157",

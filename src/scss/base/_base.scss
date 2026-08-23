@@ -57,19 +57,24 @@ button, input, select, textarea {
 button { cursor: pointer; }
 button:disabled { cursor: default; }
 
-:focus { outline: none; }
+:focus {
+  outline: var(--bisel) solid var(--foco-oro);
+  outline-offset: var(--u);
+}
 :focus-visible {
   outline: var(--bisel) solid var(--foco-oro);
   outline-offset: var(--u);
   box-shadow: 0 0 0 var(--e2) var(--foco-borde);
 }
 
-// Respaldo para navegadores que no implementan :focus-visible.
-button:focus, [tabindex]:focus {
-  outline: var(--bisel) solid var(--foco-oro);
-  outline-offset: var(--u);
+// En navegadores modernos el ratón no necesita anillo; en los antiguos la
+// regla :focus de arriba conserva uno para TODOS los controles, incluidos inputs.
+@supports selector(:focus-visible) {
+  :focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
 }
-button:focus:not(:focus-visible) { box-shadow: none; }
 
 * {
   transition-timing-function: steps(3, end);

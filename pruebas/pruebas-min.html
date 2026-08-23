@@ -50,8 +50,11 @@
   los doce globales desaparecen y esto se pone rojo. Para depurar, usa
   <a href="pruebas.html">pruebas.html</a>: una traza que apunta a
   <code>cubomatica.min.js:1:48231</code> no le sirve a nadie.</p>
-<div id="resumen">Preparando…</div>
-<div class="barra-carga"><i id="progreso" style="width:0%"></i></div>
+<div id="resumen" role="status" aria-live="polite" aria-atomic="true" aria-busy="false">Preparando…</div>
+<div class="barra-carga" role="progressbar" aria-label="Progreso de la suite"
+     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <i id="progreso" style="width:0%" aria-hidden="true"></i>
+</div>
 <p>
   <button id="btn-rapida">Suite rápida</button>
   <button id="btn-larga">Suite larga (exhaustiva)</button>
@@ -119,7 +122,12 @@
     <div id="jefe-enunciado"></div><div id="jefe-opciones"></div><p id="jefe-aviso"></p></section>
   <section id="p-fin" class="pantalla pantalla--fin" hidden><div id="cinta-fin" class="cinta" hidden><span class="cinta__texto"></span></div><div id="fin-hitos" hidden><div id="fin-hitos-lista"></div></div><h1 id="fin-titulo">Fin de la expedición</h1>
     <p id="fin-subtitulo"></p><div id="fin-dominado"></div><span id="fin-gemas" class="cifra-viva"></span>
-    <p id="fin-bono"></p><div id="fin-animo" hidden></div>
+    <p id="fin-bono"></p><div id="fin-animo" hidden><h2 id="fin-animo-titulo">¿Cómo te has sentido hoy?</h2>
+      <div class="animo" role="group" aria-labelledby="fin-animo-titulo">
+        <button class="animo__cara" data-animo="2" aria-label="Contento" aria-pressed="false">☺</button>
+        <button class="animo__cara" data-animo="1" aria-label="Normal" aria-pressed="false">·</button>
+        <button class="animo__cara" data-animo="0" aria-label="Me ha costado" aria-pressed="false">☹</button>
+      </div></div>
     <button id="btn-otra"></button><button id="btn-tranquila-fin" hidden></button></section>
   <section id="p-casa" class="pantalla" hidden><h1>Mi álbum</h1><p id="casa-resumen"></p>
     <div id="rejilla-cromos"></div></section>

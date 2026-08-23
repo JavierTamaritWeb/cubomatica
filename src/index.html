@@ -324,11 +324,11 @@
     </div>
 
     <div id="fin-animo" class="panel-bloque" hidden>
-      <h2>¿Cómo te has sentido hoy?</h2>
-      <div class="animo">
-        <button class="animo__cara" data-animo="2" aria-label="Contento">☺</button>
-        <button class="animo__cara" data-animo="1" aria-label="Normal">·</button>
-        <button class="animo__cara" data-animo="0" aria-label="Me ha costado">☹</button>
+      <h2 id="fin-animo-titulo">¿Cómo te has sentido hoy?</h2>
+      <div class="animo" role="group" aria-labelledby="fin-animo-titulo">
+        <button class="animo__cara" data-animo="2" aria-label="Contento" aria-pressed="false">☺</button>
+        <button class="animo__cara" data-animo="1" aria-label="Normal" aria-pressed="false">·</button>
+        <button class="animo__cara" data-animo="0" aria-label="Me ha costado" aria-pressed="false">☹</button>
       </div>
       <p class="texto texto--menor">Esto lo guarda el juego para elegir tus retos de mañana. Nadie te pone nota.</p>
     </div>
@@ -376,10 +376,12 @@
     <div id="adulto-puerta" class="adulto__puerta">
       <h1>Personas adultas</h1>
       <p id="adulto-pregunta"></p>
-      <input id="adulto-respuesta" class="adulto__campo" type="text" inputmode="numeric" autocomplete="off"
-             aria-label="Respuesta de la puerta parental">
+      <input id="adulto-respuesta" class="adulto__campo" type="text" autocomplete="off"
+             aria-label="Respuesta de la puerta parental"
+             aria-describedby="adulto-pregunta" aria-errormessage="adulto-error"
+             aria-invalid="false">
       <button id="adulto-entrar" class="btn-adulto">Entrar</button>
-      <p id="adulto-error" class="texto texto--menor" hidden>No es correcto. Prueba otra vez.</p>
+      <p id="adulto-error" class="texto texto--menor" role="alert" hidden>No es correcto. Prueba otra vez.</p>
       <button class="btn-bloque" data-salir>◀ Salir</button>
     </div>
     <div id="adulto-contenido" hidden></div>

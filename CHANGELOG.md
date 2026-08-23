@@ -12,6 +12,45 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [1.23.5] — 2026-08-23
+
+**Tercera cifra.** Accesibilidad de formularios, controles y foco visible, sin
+cambiar el formato del perfil guardado ni la API pública `CB.*`.
+
+### Corregido
+
+- El foco vuelve a verse en TODOS los controles, no solo en los botones.
+  `:focus { outline: none }` borraba el anillo de partida y un respaldo escrito
+  solo para `button` y `[tabindex]` dejaba fuera los campos de texto: quien
+  navega con teclado no sabía dónde estaba. Ahora `:focus` pinta el anillo para
+  todo el mundo y `@supports selector(:focus-visible)` lo retira del ratón solo
+  donde el navegador entiende esa distinción, en vez de fiarlo a un respaldo que
+  además del ratón silenciaba al teclado (WCAG 2.4.7, 2.4.11).
+- La puerta parental pedía teclado numérico (`inputmode="numeric"`) para una
+  respuesta que siempre es una PALABRA de una frase. El campo acepta texto,
+  declara su instrucción con `aria-describedby`, apunta a su mensaje con
+  `aria-errormessage`, se marca `aria-invalid` al fallar y recupera el foco; el
+  mensaje es `role="alert"`, así que se anuncia solo (WCAG 1.3.5, 3.3.1, 3.3.3).
+- Los ajustes —los del niño y los del panel adulto— anunciaban «Sí» o «No» sin
+  decir de qué. Cada control toma su nombre de la etiqueta más su propio valor
+  (`aria-labelledby`) y expone `aria-pressed`, de modo que un lector de pantalla
+  dice «Letra grande, Sí, activado» donde antes decía «Sí» (WCAG 4.1.2).
+- El estado de ánimo del final es un `role="group"` rotulado por su pregunta, y
+  sus tres caras nacen con `aria-pressed` explícito.
+
+### Pruebas
+
+- Las dos páginas de la suite anuncian su resultado (`role="status"`,
+  `aria-busy`) y exponen la barra como `role="progressbar"` con `aria-valuenow`
+  real, en vez de una anchura que solo se ve. `comprobar-doble-clic.html` carga
+  el bundle minificado —sin él nunca podía comprobar `CB.offline`— y anuncia sus
+  dos veredictos.
+- **E110** protege el nombre, el estado y el error de los controles: la parte
+  que vive en la maqueta y en el SCSS, en `auditar.mjs`; la que genera
+  JavaScript, en `pruebas/casos-a11y.js`, montando de verdad los ajustes del
+  niño, la caja de ajustes del adulto y un fallo de la puerta parental.
+  **E111** protege lo que las propias páginas de prueba deben anunciar.
+
 ## [1.23.4] — 2026-08-23
 
 **Tercera cifra.** Reauditoría, correcciones defensivas y modernización de
