@@ -12,6 +12,45 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.4.2] — 2026-08-23
+
+**Leer la pregunta en voz alta, en TODAS las preguntas.** Hasta aquí el altavoz
+🔊 solo lo tenían los problemas de enunciado, con el argumento de que en «6 − 3»
+no hay nada que leer; pero entre el problema y la operación pelada están las
+otras trescientas preguntas del juego —«¿Qué letra está en la columna 2?», «¿De
+qué hay MÁS?», «¿Cuántos ejes de simetría tiene?»—, que son texto puro, y un
+niño con dislexia o afasia no podía hacerse leer ninguna. La pantalla de
+calibración, que son las cuatro primeras preguntas de su vida, no tenía botón en
+absoluto: un comentario del código afirmaba desde hacía versiones que sí.
+
+### Añadido
+
+- El altavoz aparece en toda pregunta que tenga algo que leer, en la partida y
+  en la calibración. La regla es «si hay algo que leer, hay botón», no «botón
+  siempre»: un ítem que fuera solo dibujo no lo lleva.
+- `CB.voz.textoDeItem()`, dueño único de qué se pronuncia. Los signos se dicen
+  con palabras — «48 menos 48», «3 por 4», «5 más un hueco igual a 12» — porque
+  la síntesis de voz no pronuncia «−», «×», «·» ni «□» de forma fiable y leer
+  «48 48» le nombraría al niño una operación que no es la suya. La letra «x» NO
+  está en esa tabla: convertiría «¿Cuánto vale x?» en «¿Cuánto vale por?».
+- La lectura guiada (el camino de quien no tiene voz española instalada) resalta
+  también las consignas de una sola línea; antes no resaltaba nada fuera de los
+  problemas y el botón parecía roto justo para quien más lo necesita.
+- Los cuatro mundos caben en UNA fila desde 1024 px: `.contenido` consume
+  `--ancho-contenido` con el ancho de lectura de 720 px como reserva y el mapa
+  declara el suyo. El ancho de lectura no cambia para nadie más.
+- Guardianes **E143** (el altavoz, medido montando los pintores reales) y
+  **E144** (los cuatro mundos, medidos en un iframe de 1280 px porque una media
+  query se evalúa contra el viewport), los dos sembrados con su defecto.
+
+### Cambiado
+
+- E14 afirmaba que la calibración lee **literalmente** su consigna; ahora afirma
+  que la lee diciendo el signo con palabras. Lo que defendía —que la calibración
+  habla aunque no exista estado de partida— no ha cambiado.
+
+---
+
 ## [3.4.1] — 2026-08-23
 
 **Auditoría severa de 3.4.0.** Un arnés adversario (30.000 tiradas por nivel

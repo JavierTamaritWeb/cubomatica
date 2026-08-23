@@ -79,8 +79,11 @@ CB.calibracion.servir = function () {
   if (i >= CB.calibracion.ITEMS.length) { CB.calibracion.terminar(); return; }
 
   const it = CB.calibracion.ITEMS[i];
-  /* Lo lee el botón del altavoz de esta pantalla: aquí no hay estado de partida
-     de donde sacar el enunciado. */
+  /* De aquí lo saca el altavoz de esta pantalla: no hay estado de partida de
+     donde sacar el enunciado. Hasta 3.4.2 este comentario nombraba un botón
+     que NO EXISTÍA —la barra de la calibración solo tiene Sonido y Salir—, así
+     que las cuatro primeras preguntas de la vida del niño eran justo las
+     únicas que no se podían pedir en voz alta. */
   CB.calibracion.consignaActual = it.consigna;
 
   /* Decir dónde está y por qué no hay reloj. Sin esto son cuatro preguntas
@@ -95,10 +98,16 @@ CB.calibracion.servir = function () {
   CB.ui.vaciar(enun);
   enun.appendChild(CB.ui.crear('p',
     'enunciado' + (it.teclado ? ' enunciado--operacion' : ''), it.consigna));
+  /* El altavoz, construido por el mismo sitio que el de la partida. Va DENTRO
+     de #cal-enunciado, que se vacía en cada pregunta: así no hay que
+     desconectar nada ni se acumulan oyentes. */
+  enun.appendChild(CB.ui.altavozEnunciado(function () {
+    if (CB.partida && CB.partida.accionLeer) CB.partida.accionLeer();
+  }));
 
   /* Voz automática: la consigna se lee sola. En la primera partida de su vida,
      el niño no tiene por qué saber que existe el botón del altavoz. */
-  CB.voz.leer(it.consigna);
+  CB.voz.leer(CB.voz.textoDeItem(it));
   CB.a11y.anunciar(it.consigna);
 
   let contestada = false;

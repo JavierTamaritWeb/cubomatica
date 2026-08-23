@@ -101,6 +101,29 @@ CB.voz.lecturaGuiada = function (texto, alResaltar, alTerminar) {
 
 /* El botón de altavoz: intenta voz real y, si no la hay, guía la lectura.
    Nunca no hace nada. */
+/* Qué se LEE de un ítem, que no es siempre lo que se ve. La síntesis de voz no
+   pronuncia «−», «×», «·» ni «□» de forma fiable, y leer «48 48» en lugar de
+   «48 menos 48» es peor que no leer nada: le dice al niño una operación que no
+   es la suya. Un solo dueño para las dos preguntas que dependen de esto —qué se
+   pronuncia y si hay algo que pronunciar (o sea, si se pinta el altavoz)—,
+   porque en cuanto vivan en dos sitios acabarán discrepando.
+   El guion corto «-» NO está en la tabla a propósito: parte palabras. */
+CB.voz.SIGNOS_EN_PALABRAS = [
+  ['+', ' más '], ['−', ' menos '], ['×', ' por '], ['÷', ' entre '],
+  ['·', ' por '], ['=', ' igual a '], ['□', ' un hueco ']
+];
+
+CB.voz.textoDeItem = function (item) {
+  if (!item) return '';
+  let t = item.enunciado || item.consigna || '';
+  let i;
+  for (i = 0; i < CB.voz.SIGNOS_EN_PALABRAS.length; i++) {
+    t = t.split(CB.voz.SIGNOS_EN_PALABRAS[i][0])
+         .join(CB.voz.SIGNOS_EN_PALABRAS[i][1]);
+  }
+  return t.replace(/\s+/g, ' ').trim();
+};
+
 CB.voz.leerOGuiar = function (texto, alResaltar, alTerminar) {
   if (CB.voz.disponible()) {
     return { modo: 'voz', ms: CB.voz.leer(texto, alTerminar) ? 0 : 0 };

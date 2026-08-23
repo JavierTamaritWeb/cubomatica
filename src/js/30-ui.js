@@ -189,12 +189,7 @@ CB.ui.pintarItem = function (item) {
       caja.appendChild(p);
     }
     cont.appendChild(caja);
-    /* Solo en problemas: en «6 − 3» no hay nada que leer. */
-    const altavoz = CB.ui.boton('🔊 Leer', 'btn-bloque--icono enunciado__altavoz', function () {
-      if (CB.partida && CB.partida.accionLeerSuave) CB.partida.accionLeerSuave();
-    });
-    altavoz.setAttribute('aria-label', 'Leer el problema en voz alta');
-    cont.appendChild(altavoz);
+    cont.appendChild(CB.ui.altavozEnunciado());
     return;
   }
 
@@ -249,6 +244,30 @@ CB.ui.pintarItem = function (item) {
   const linea = CB.ui.crear('p',
     'enunciado' + (esOperacion ? ' enunciado--operacion' : ''), texto);
   cont.appendChild(linea);
+
+  /* El altavoz, en TODA pregunta que tenga algo que leer (3.4.2). Hasta aquí
+     lo tenían solo los problemas de enunciado, con la excusa de que en «6 − 3»
+     no hay nada que leer: pero entre el problema y la operación pelada están
+     las otras trescientas preguntas —«¿Qué letra está en la columna 2?», «¿De
+     qué hay MÁS?»— que son texto puro, y un niño con dislexia o afasia no
+     podía hacerse leer ninguna. La regla es «si hay algo que leer, hay botón»,
+     no «botón siempre»: un ítem que fuera solo dibujo no lo lleva. */
+  if (CB.voz.textoDeItem(item)) cont.appendChild(CB.ui.altavozEnunciado());
+};
+
+/* El altavoz del enunciado. Vive DENTRO del enunciado, donde se lee, y nunca en
+   la barra de herramientas: esa retirada es una decisión cerrada. Lo construye
+   un solo sitio para que la pregunta de la partida y la de la calibración no
+   se separen nunca. */
+CB.ui.altavozEnunciado = function (alPulsar) {
+  const b = CB.ui.boton('🔊 Leer', 'btn-bloque--icono enunciado__altavoz',
+    alPulsar || function () {
+      if (CB.partida && CB.partida.accionLeerSuave) CB.partida.accionLeerSuave();
+    });
+  /* «la pregunta» y no «el problema»: ahora lo lleva también la que no es un
+     problema de enunciado. */
+  b.setAttribute('aria-label', 'Leer la pregunta en voz alta');
+  return b;
 };
 
 /* Matriz de filas y columnas para la multiplicación. */
@@ -692,8 +711,20 @@ CB.ui.ocultarPersonaje = function (quien) {
 };
 
 /* Lectura guiada: resalta la palabra que se está leyendo */
+/* Las líneas resaltables del enunciado. Un problema tiene sus frases; una
+   consigna de una línea ES la línea, y sin este segundo caso la lectura guiada
+   —el camino que se usa cuando el aparato no tiene voz española instalada— no
+   resaltaba absolutamente nada fuera de los problemas: el botón parecía roto
+   justo para quien más lo necesita. */
+CB.ui.lineasDelEnunciado = function () {
+  const frases = document.querySelectorAll('#item-enunciado .enunciado__frase');
+  if (frases.length) return [].slice.call(frases);
+  const una = document.querySelector('#item-enunciado .enunciado');
+  return una ? [una] : [];
+};
+
 CB.ui.resaltarLinea = function (indice) {
-  const lineas = document.querySelectorAll('#item-enunciado .enunciado__frase');
+  const lineas = CB.ui.lineasDelEnunciado();
   let i;
   for (i = 0; i < lineas.length; i++) {
     lineas[i].classList.toggle('enunciado__linea--activa', i === indice);
@@ -701,15 +732,14 @@ CB.ui.resaltarLinea = function (indice) {
 };
 
 CB.ui.resaltarPalabra = function (indice, texto) {
-  const caja = document.querySelector('#item-enunciado .enunciado');
-  if (!caja) return;
+  const lineas = CB.ui.lineasDelEnunciado();
+  if (!lineas.length) return;
   if (indice < 0) { CB.ui.resaltarLinea(-1); return; }
   /* Se resalta la frase que contiene esa palabra: resaltar palabra a palabra
      exigiría reconstruir el DOM en cada paso, y eso rompe el lector de pantalla. */
   let acumulado = 0, i;
-  const frases = caja.querySelectorAll('.enunciado__frase');
-  for (i = 0; i < frases.length; i++) {
-    const n = CB.util.palabras(frases[i].textContent).length;
+  for (i = 0; i < lineas.length; i++) {
+    const n = CB.util.palabras(lineas[i].textContent).length;
     if (indice < acumulado + n) { CB.ui.resaltarLinea(i); return; }
     acumulado += n;
   }

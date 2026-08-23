@@ -1398,7 +1398,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.4.1';
+CB.VERSION = '3.4.2';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -2668,6 +2668,29 @@ CB.voz.lecturaGuiada = function (texto, alResaltar, alTerminar) {
 
 /* El botón de altavoz: intenta voz real y, si no la hay, guía la lectura.
    Nunca no hace nada. */
+/* Qué se LEE de un ítem, que no es siempre lo que se ve. La síntesis de voz no
+   pronuncia «−», «×», «·» ni «□» de forma fiable, y leer «48 48» en lugar de
+   «48 menos 48» es peor que no leer nada: le dice al niño una operación que no
+   es la suya. Un solo dueño para las dos preguntas que dependen de esto —qué se
+   pronuncia y si hay algo que pronunciar (o sea, si se pinta el altavoz)—,
+   porque en cuanto vivan en dos sitios acabarán discrepando.
+   El guion corto «-» NO está en la tabla a propósito: parte palabras. */
+CB.voz.SIGNOS_EN_PALABRAS = [
+  ['+', ' más '], ['−', ' menos '], ['×', ' por '], ['÷', ' entre '],
+  ['·', ' por '], ['=', ' igual a '], ['□', ' un hueco ']
+];
+
+CB.voz.textoDeItem = function (item) {
+  if (!item) return '';
+  let t = item.enunciado || item.consigna || '';
+  let i;
+  for (i = 0; i < CB.voz.SIGNOS_EN_PALABRAS.length; i++) {
+    t = t.split(CB.voz.SIGNOS_EN_PALABRAS[i][0])
+         .join(CB.voz.SIGNOS_EN_PALABRAS[i][1]);
+  }
+  return t.replace(/\s+/g, ' ').trim();
+};
+
 CB.voz.leerOGuiar = function (texto, alResaltar, alTerminar) {
   if (CB.voz.disponible()) {
     return { modo: 'voz', ms: CB.voz.leer(texto, alTerminar) ? 0 : 0 };
@@ -11899,12 +11922,7 @@ CB.ui.pintarItem = function (item) {
       caja.appendChild(p);
     }
     cont.appendChild(caja);
-    /* Solo en problemas: en «6 − 3» no hay nada que leer. */
-    const altavoz = CB.ui.boton('🔊 Leer', 'btn-bloque--icono enunciado__altavoz', function () {
-      if (CB.partida && CB.partida.accionLeerSuave) CB.partida.accionLeerSuave();
-    });
-    altavoz.setAttribute('aria-label', 'Leer el problema en voz alta');
-    cont.appendChild(altavoz);
+    cont.appendChild(CB.ui.altavozEnunciado());
     return;
   }
 
@@ -11959,6 +11977,30 @@ CB.ui.pintarItem = function (item) {
   const linea = CB.ui.crear('p',
     'enunciado' + (esOperacion ? ' enunciado--operacion' : ''), texto);
   cont.appendChild(linea);
+
+  /* El altavoz, en TODA pregunta que tenga algo que leer (3.4.2). Hasta aquí
+     lo tenían solo los problemas de enunciado, con la excusa de que en «6 − 3»
+     no hay nada que leer: pero entre el problema y la operación pelada están
+     las otras trescientas preguntas —«¿Qué letra está en la columna 2?», «¿De
+     qué hay MÁS?»— que son texto puro, y un niño con dislexia o afasia no
+     podía hacerse leer ninguna. La regla es «si hay algo que leer, hay botón»,
+     no «botón siempre»: un ítem que fuera solo dibujo no lo lleva. */
+  if (CB.voz.textoDeItem(item)) cont.appendChild(CB.ui.altavozEnunciado());
+};
+
+/* El altavoz del enunciado. Vive DENTRO del enunciado, donde se lee, y nunca en
+   la barra de herramientas: esa retirada es una decisión cerrada. Lo construye
+   un solo sitio para que la pregunta de la partida y la de la calibración no
+   se separen nunca. */
+CB.ui.altavozEnunciado = function (alPulsar) {
+  const b = CB.ui.boton('🔊 Leer', 'btn-bloque--icono enunciado__altavoz',
+    alPulsar || function () {
+      if (CB.partida && CB.partida.accionLeerSuave) CB.partida.accionLeerSuave();
+    });
+  /* «la pregunta» y no «el problema»: ahora lo lleva también la que no es un
+     problema de enunciado. */
+  b.setAttribute('aria-label', 'Leer la pregunta en voz alta');
+  return b;
 };
 
 /* Matriz de filas y columnas para la multiplicación. */
@@ -12402,8 +12444,20 @@ CB.ui.ocultarPersonaje = function (quien) {
 };
 
 /* Lectura guiada: resalta la palabra que se está leyendo */
+/* Las líneas resaltables del enunciado. Un problema tiene sus frases; una
+   consigna de una línea ES la línea, y sin este segundo caso la lectura guiada
+   —el camino que se usa cuando el aparato no tiene voz española instalada— no
+   resaltaba absolutamente nada fuera de los problemas: el botón parecía roto
+   justo para quien más lo necesita. */
+CB.ui.lineasDelEnunciado = function () {
+  const frases = document.querySelectorAll('#item-enunciado .enunciado__frase');
+  if (frases.length) return [].slice.call(frases);
+  const una = document.querySelector('#item-enunciado .enunciado');
+  return una ? [una] : [];
+};
+
 CB.ui.resaltarLinea = function (indice) {
-  const lineas = document.querySelectorAll('#item-enunciado .enunciado__frase');
+  const lineas = CB.ui.lineasDelEnunciado();
   let i;
   for (i = 0; i < lineas.length; i++) {
     lineas[i].classList.toggle('enunciado__linea--activa', i === indice);
@@ -12411,15 +12465,14 @@ CB.ui.resaltarLinea = function (indice) {
 };
 
 CB.ui.resaltarPalabra = function (indice, texto) {
-  const caja = document.querySelector('#item-enunciado .enunciado');
-  if (!caja) return;
+  const lineas = CB.ui.lineasDelEnunciado();
+  if (!lineas.length) return;
   if (indice < 0) { CB.ui.resaltarLinea(-1); return; }
   /* Se resalta la frase que contiene esa palabra: resaltar palabra a palabra
      exigiría reconstruir el DOM en cada paso, y eso rompe el lector de pantalla. */
   let acumulado = 0, i;
-  const frases = caja.querySelectorAll('.enunciado__frase');
-  for (i = 0; i < frases.length; i++) {
-    const n = CB.util.palabras(frases[i].textContent).length;
+  for (i = 0; i < lineas.length; i++) {
+    const n = CB.util.palabras(lineas[i].textContent).length;
     if (indice < acumulado + n) { CB.ui.resaltarLinea(i); return; }
     acumulado += n;
   }
@@ -14220,7 +14273,7 @@ CB.partida.servirItem = function () {
   /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la primera versión sin que ocurriera: aquí solo había una llamada a la región viva, que es texto para un lector de pantalla, no voz. */
   if (item.subtipo && CB.voz.activa && CB.voz.disponible()) {
     CB.partida.pararCronometro();
-    CB.voz.leer(item.enunciado || item.consigna || '', function () {
+    CB.voz.leer(CB.voz.textoDeItem(item), function () {
       CB.partida.iniciarCronometro(true);
     });
   }
@@ -15246,7 +15299,7 @@ CB.partida.nombreDestreza = function (slug) {
 CB.partida.accionLeerSuave = function () {
   const e = CB.partida.estado;
   if (!e || !e.itemActual) return;
-  const texto = e.itemActual.enunciado || e.itemActual.consigna || '';
+  const texto = CB.voz.textoDeItem(e.itemActual);
   CB.partida.pararCronometro();
   CB.voz.leerOGuiar(texto, CB.ui.resaltarPalabra, function () {
     CB.ui.resaltarLinea(-1);
@@ -15261,14 +15314,15 @@ CB.partida.accionLeer = function () {
   if (!e || !e.itemActual) {
     if (CB.pantallas.actual === 'p-calibracion' &&
         CB.calibracion && CB.calibracion.consignaActual) {
-      CB.voz.leerOGuiar(CB.calibracion.consignaActual, CB.ui.resaltarPalabra, function () {
+      CB.voz.leerOGuiar(CB.voz.textoDeItem({ consigna: CB.calibracion.consignaActual }),
+                        CB.ui.resaltarPalabra, function () {
         CB.ui.resaltarLinea(-1);
       });
     }
     return;
   }
 
-  const texto = e.itemActual.enunciado || e.itemActual.consigna || '';
+  const texto = CB.voz.textoDeItem(e.itemActual);
   /* Pulsar el altavoz salta el bloqueo de 800 ms: el niño ya ha invertido
      tiempo en el ítem, no está respondiendo al tuntún (§3.5). */
   CB.partida.bloqueado = false;
@@ -17029,8 +17083,11 @@ CB.calibracion.servir = function () {
   if (i >= CB.calibracion.ITEMS.length) { CB.calibracion.terminar(); return; }
 
   const it = CB.calibracion.ITEMS[i];
-  /* Lo lee el botón del altavoz de esta pantalla: aquí no hay estado de partida
-     de donde sacar el enunciado. */
+  /* De aquí lo saca el altavoz de esta pantalla: no hay estado de partida de
+     donde sacar el enunciado. Hasta 3.4.2 este comentario nombraba un botón
+     que NO EXISTÍA —la barra de la calibración solo tiene Sonido y Salir—, así
+     que las cuatro primeras preguntas de la vida del niño eran justo las
+     únicas que no se podían pedir en voz alta. */
   CB.calibracion.consignaActual = it.consigna;
 
   /* Decir dónde está y por qué no hay reloj. Sin esto son cuatro preguntas
@@ -17045,10 +17102,16 @@ CB.calibracion.servir = function () {
   CB.ui.vaciar(enun);
   enun.appendChild(CB.ui.crear('p',
     'enunciado' + (it.teclado ? ' enunciado--operacion' : ''), it.consigna));
+  /* El altavoz, construido por el mismo sitio que el de la partida. Va DENTRO
+     de #cal-enunciado, que se vacía en cada pregunta: así no hay que
+     desconectar nada ni se acumulan oyentes. */
+  enun.appendChild(CB.ui.altavozEnunciado(function () {
+    if (CB.partida && CB.partida.accionLeer) CB.partida.accionLeer();
+  }));
 
   /* Voz automática: la consigna se lee sola. En la primera partida de su vida,
      el niño no tiene por qué saber que existe el botón del altavoz. */
-  CB.voz.leer(it.consigna);
+  CB.voz.leer(CB.voz.textoDeItem(it));
   CB.a11y.anunciar(it.consigna);
 
   let contestada = false;

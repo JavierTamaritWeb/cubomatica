@@ -208,3 +208,111 @@ CB.pruebas.suite('E110 · formularios y controles exponen nombre, estado y error
   CB.perfil = perfilPrevio;
   CB.partida.estado = estadoPrevio;
 });
+
+/* E143 · LEER LA PREGUNTA EN VOZ ALTA, EN TODAS LAS PREGUNTAS (3.4.2). Hasta
+   aquí el altavoz solo lo tenían los problemas de enunciado y la pantalla de
+   calibración no lo tenía en absoluto, así que un niño con dislexia o afasia
+   podía hacerse leer el problema de las patatas y ninguna de las otras
+   trescientas preguntas —ni las cuatro primeras de su vida—. Se mide montando
+   los pintores REALES y mirando el DOM que producen, no leyendo el código. */
+CB.pruebas.suite('A11y: el altavoz de la pregunta (E143)', function () {
+  const t = CB.pruebas;
+  const cont = document.getElementById('item-enunciado');
+  if (!cont) { t.ok(false, 'E143 · falta #item-enunciado en la página de pruebas'); return; }
+
+  const estadoPrevio = CB.partida.estado;
+  const pantallaPrevia = CB.pantallas.actual;
+  const indicePrevio = CB.calibracion.indice;
+  const itemsPrevios = CB.calibracion.ITEMS;
+
+  /* La voz se dobla con defineProperty y se restaura por descriptor: asignar
+     sobre ella y confiar es el error clásico de esta suite. Además mantiene la
+     suite MUDA, que es un contrato del proyecto. */
+  const descLeer = Object.getOwnPropertyDescriptor(CB.voz, 'leer');
+  const descDisp = Object.getOwnPropertyDescriptor(CB.voz, 'disponible');
+  const leidos = [];
+  Object.defineProperty(CB.voz, 'leer', { configurable: true, writable: true,
+    value: function (texto) { leidos.push(texto || ''); return true; } });
+  Object.defineProperty(CB.voz, 'disponible', { configurable: true, writable: true,
+    value: function () { return true; } });
+
+  /* 1 · Una pregunta que NO es problema de enunciado lleva su altavoz. */
+  const preguntaConVisual = {
+    formato: 'opciones4', consigna: 'Mira el gráfico. ¿De qué hay MÁS?',
+    visual: { tipo: 'barras', filas: [{ nombre: 'perros', valor: 3 },
+                                      { nombre: 'gatos', valor: 1 }] }
+  };
+  CB.ui.pintarItem(preguntaConVisual);
+  const alt = cont.querySelector('.enunciado__altavoz');
+  t.ok(!!alt && alt.tagName === 'BUTTON',
+    'E143 · una pregunta que no es problema de enunciado lleva su botón de leer');
+  t.ok(!!alt && /voz alta/.test(alt.getAttribute('aria-label') || ''),
+    'E143 · y el botón dice para qué sirve',
+    alt ? alt.getAttribute('aria-label') : 'sin botón');
+
+  /* 2 · Y al pulsarlo se lee de verdad, con el texto de ESA pregunta. */
+  CB.partida.estado = { itemActual: preguntaConVisual };
+  leidos.length = 0;
+  if (alt) alt.click();
+  t.ok(leidos.length > 0 && (leidos[0] || '').indexOf('gráfico') !== -1,
+    'E143 · al pulsarlo se lee la pregunta que hay en pantalla', leidos.join(' | '));
+
+  /* 3 · El problema de enunciado no ha perdido el suyo. */
+  CB.ui.pintarItem({ formato: 'teclado', subtipo: 'CAMBIO',
+    frases: ['Wei tiene 9 patatas.', '¿Cuántas le quedan?'],
+    enunciado: 'Wei tiene 9 patatas. ¿Cuántas le quedan?' });
+  t.ok(!!cont.querySelector('.enunciado__altavoz'),
+    'E143 · el problema de enunciado conserva el suyo');
+
+  /* 4 · La regla es «si hay algo que leer, hay botón», no «botón siempre». */
+  CB.ui.pintarItem({ formato: 'teclado', consigna: '' });
+  t.ok(!cont.querySelector('.enunciado__altavoz'),
+    'E143 · un ítem sin nada que leer no pinta el botón');
+
+  /* 5 · Los signos se DICEN. Leer «48 48» sería peor que no leer: le nombra al
+     niño una operación que no es la suya. */
+  t.igual(CB.voz.textoDeItem({ consigna: '48 − 48' }), '48 menos 48',
+    'E143 · la resta se lee «menos», no como un silencio entre dos números');
+  t.igual(CB.voz.textoDeItem({ consigna: '3 · 4' }), '3 por 4',
+    'E143 · el punto de multiplicar se lee «por»');
+  t.igual(CB.voz.textoDeItem({ consigna: '5 + □ = 12' }), '5 más un hueco igual a 12',
+    'E143 · el hueco del álgebra se nombra en vez de saltárselo');
+
+  /* 6 · Y la incógnita x SOBREVIVE: meter la letra «x» en la tabla de signos
+     convertiría «¿Cuánto vale x?» en «¿Cuánto vale por?». */
+  const conIncognita = CB.voz.textoDeItem({
+    consigna: 'La incógnita: x + 40 = 55. ¿Cuánto vale x?' });
+  t.ok(conIncognita.indexOf('x') !== -1 && conIncognita.indexOf('por') === -1 &&
+       conIncognita.indexOf('más') !== -1,
+    'E143 · la incógnita x se lee como x, no como «por»', conIncognita);
+
+  /* 7 · La lectura guiada —el camino de quien no tiene voz instalada— resalta
+     también una consigna de una sola línea. */
+  CB.ui.pintarItem({ formato: 'opciones4', consigna: 'Mira la cuadrícula. ¿Qué letra hay?' });
+  CB.ui.resaltarPalabra(0, 'Mira');
+  t.ok(!!cont.querySelector('.enunciado__linea--activa'),
+    'E143 · la lectura guiada resalta una consigna de una línea');
+  CB.ui.resaltarLinea(-1);
+  t.ok(!cont.querySelector('.enunciado__linea--activa'),
+    'E143 · y le quita el resaltado al terminar');
+
+  /* 8 · La calibración: las cuatro primeras preguntas de su vida. */
+  CB.partida.estado = null;
+  CB.calibracion.ITEMS = CB.calibracion.BANCOS[2];
+  CB.calibracion.indice = 0;
+  CB.calibracion.servir();
+  const altCal = document.querySelector('#cal-enunciado .enunciado__altavoz');
+  t.ok(!!altCal, 'E143 · la calibración también tiene su altavoz');
+  leidos.length = 0;
+  if (altCal) altCal.click();
+  t.ok(leidos.length > 0 && (leidos[0] || '').length > 0,
+    'E143 · y al pulsarlo se lee su consigna', leidos.join(' | '));
+
+  CB.ui.vaciar(document.getElementById('cal-enunciado'));
+  CB.calibracion.indice = indicePrevio;
+  CB.calibracion.ITEMS = itemsPrevios;
+  CB.pantallas.actual = pantallaPrevia;
+  CB.partida.estado = estadoPrevio;
+  if (descLeer) Object.defineProperty(CB.voz, 'leer', descLeer);
+  if (descDisp) Object.defineProperty(CB.voz, 'disponible', descDisp);
+});

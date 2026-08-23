@@ -157,6 +157,15 @@
 
 // Mapa de mundos.
 .rejilla-mundos { @include m.fila-envuelta; }
+
+// Los cuatro mundos caben en UNA fila desde el portátil (E144). Son cuatro y
+// verlos de un vistazo es lo que hace que el mapa sea un mapa: con el ancho de
+// lectura de 720px el cuarto caía a una segunda fila, solo y descolgado, y
+// parecía de otra categoria. No se estrechan las tarjetas —menos ancho útil es
+// texto que deja de caber dentro de cada una—: se ensancha SOLO esta pantalla.
+@include m.desde(portatil) {
+  .pantalla--mapa { --ancho-contenido: 1040px; }
+}
 .tarjeta-mundo {
   flex: 1 1 200px; max-width: 240px; padding: var(--e3);
   background: var(--bg-texto-panel); color: var(--texto-principal);
@@ -290,7 +299,13 @@
 
 .contenido {
   display: flex; flex-direction: column; align-items: center;
-  gap: var(--e3); width: 100%; margin: 0 auto; max-width: 720px;
+  gap: var(--e3); width: 100%; margin: 0 auto;
+
+  // 720px es el ancho de LECTURA y sigue siendo el de todo el mundo. La
+  // pantalla que necesite otro lo DECLARA y este bloque lo consume con el 720
+  // de reserva: contenedor declara, bloque consume, y funciona igual en las
+  // pantallas que no declaran nada.
+  max-width: var(--ancho-contenido, 720px);
 }
 
 .calibracion__cabecera {

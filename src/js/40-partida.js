@@ -420,7 +420,7 @@ CB.partida.servirItem = function () {
   /* Y SE LEE EN VOZ ALTA, que es lo que la documentación daba por hecho desde la primera versión sin que ocurriera: aquí solo había una llamada a la región viva, que es texto para un lector de pantalla, no voz. */
   if (item.subtipo && CB.voz.activa && CB.voz.disponible()) {
     CB.partida.pararCronometro();
-    CB.voz.leer(item.enunciado || item.consigna || '', function () {
+    CB.voz.leer(CB.voz.textoDeItem(item), function () {
       CB.partida.iniciarCronometro(true);
     });
   }
@@ -1446,7 +1446,7 @@ CB.partida.nombreDestreza = function (slug) {
 CB.partida.accionLeerSuave = function () {
   const e = CB.partida.estado;
   if (!e || !e.itemActual) return;
-  const texto = e.itemActual.enunciado || e.itemActual.consigna || '';
+  const texto = CB.voz.textoDeItem(e.itemActual);
   CB.partida.pararCronometro();
   CB.voz.leerOGuiar(texto, CB.ui.resaltarPalabra, function () {
     CB.ui.resaltarLinea(-1);
@@ -1461,14 +1461,15 @@ CB.partida.accionLeer = function () {
   if (!e || !e.itemActual) {
     if (CB.pantallas.actual === 'p-calibracion' &&
         CB.calibracion && CB.calibracion.consignaActual) {
-      CB.voz.leerOGuiar(CB.calibracion.consignaActual, CB.ui.resaltarPalabra, function () {
+      CB.voz.leerOGuiar(CB.voz.textoDeItem({ consigna: CB.calibracion.consignaActual }),
+                        CB.ui.resaltarPalabra, function () {
         CB.ui.resaltarLinea(-1);
       });
     }
     return;
   }
 
-  const texto = e.itemActual.enunciado || e.itemActual.consigna || '';
+  const texto = CB.voz.textoDeItem(e.itemActual);
   /* Pulsar el altavoz salta el bloqueo de 800 ms: el niño ya ha invertido
      tiempo en el ítem, no está respondiendo al tuntún (§3.5). */
   CB.partida.bloqueado = false;

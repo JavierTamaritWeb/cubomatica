@@ -4229,3 +4229,54 @@ cuadrícula, así que dos ítems con respuestas DISTINTAS podían compartir
 identidad y el anti-repetición los confundía; ahora el expr lleva el tablero
 entero, E142 exige que toda letra del tablero esté en él, y la cardinalidad
 medida subió al medir por fin ítems que antes se contaban como repetidos).
+
+## D-3.4.2 · El altavoz en todas las preguntas, y el mapa de una sola fila
+
+**Fecha**: 2026-08-23. **Origen**: petición expresa, con su motivo dicho —
+dislexia y afasia—. Dos cambios sin relación entre sí salvo la versión.
+
+**1. «Si hay algo que leer, hay botón».** El altavoz existía solo en la rama de
+los problemas de enunciado de `CB.ui.pintarItem`, con un comentario que lo
+justificaba así: «Solo en problemas: en “6 − 3” no hay nada que leer». El
+argumento era cierto y la conclusión falsa, porque entre el problema de
+enunciado y la operación pelada está la inmensa mayoría del juego: las
+preguntas de datos, azar, geometría, espacio, medida, vocabulario y dinero son
+texto corrido. Un niño que no descodifica podía hacerse leer el problema de las
+patatas y ninguna de las otras trescientas preguntas. **Cuando un argumento
+justifica una excepción, hay que comprobar qué tamaño tiene el caso general que
+deja fuera.**
+
+**2. La calibración no tenía botón, y el código decía que sí.** El comentario de
+`CB.calibracion.servir()` decía «Lo lee el botón del altavoz de esta pantalla» y
+la barra de `p-calibracion` solo tiene Sonido y Salir. Las cuatro primeras
+preguntas de la vida del niño eran justo las únicas que no se podían pedir en
+voz alta. Un comentario no es una prueba: E143 monta ahora la calibración de
+verdad y pulsa el botón.
+
+**3. Lo que se LEE no es lo que se ve, y es a propósito.** `CB.voz.textoDeItem()`
+es el dueño único, y traduce los signos a palabras: la síntesis de voz no
+pronuncia «−» (U+2212), «×», «·» ni «□» de forma fiable, y leer «48 48» es peor
+que no leer nada — le nombra al niño una operación que no es la suya. Dos
+decisiones dentro de esta:
+
+- **La letra «x» no está en la tabla de signos.** Meterla convertiría «¿Cuánto
+  vale x?» —la incógnita de 5.º y 6.º— en «¿Cuánto vale por?». El guion corto
+  «-» tampoco está: parte palabras. E143 congela las dos ausencias.
+- **La lectura automática no cambia.** Sigue siendo solo de los problemas de
+  enunciado: que hable el juego solo, en cada pregunta, es intrusivo; el botón
+  lo decide el niño. Lo que sí se arregló es el resaltado de la lectura guiada
+  —el camino de quien no tiene voz española instalada—, que solo miraba las
+  frases de los problemas y por tanto no resaltaba nada en las demás.
+
+**4. El mapa: contenedor declara, bloque consume.** Las cuatro tarjetas de mundo
+caían 3 + 1 porque `.contenido` mide 720 px, que es el ancho de LECTURA y es
+correcto para todo lo que sea texto. No se estrechan las tarjetas (menos ancho
+útil es texto que deja de caber dentro de cada una) ni se ensancha la columna
+para todo el mundo: `.contenido` consume `var(--ancho-contenido, 720px)` y
+`.pantalla--mapa` declara 1040 px desde el punto `portatil`. Es el patrón de
+1.23.0, y funciona igual en las pantallas que no declaran nada. **E144 mide
+dentro de un iframe de 1280 px, no en una caja ancha**: la regla vive en una
+media query y una media query se evalúa contra el viewport (la lección de
+E102-E103). Afirma las dos mitades — una fila a 1280, y que por debajo del corte
+la columna sigue siendo la de lectura — para que ensanchar `.contenido` para
+todos se ponga rojo.

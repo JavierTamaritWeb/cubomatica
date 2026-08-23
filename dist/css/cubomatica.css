@@ -1621,6 +1621,11 @@ button:disabled {
   justify-content: center;
 }
 
+@media (min-width: 1024px) {
+  .pantalla--mapa {
+    --ancho-contenido: 1040px;
+  }
+}
 .tarjeta-mundo {
   flex: 1 1 200px;
   max-width: 240px;
@@ -1898,7 +1903,7 @@ button:disabled {
   gap: var(--e3);
   width: 100%;
   margin: 0 auto;
-  max-width: 720px;
+  max-width: var(--ancho-contenido, 720px);
 }
 
 .calibracion__cabecera {

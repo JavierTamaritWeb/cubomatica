@@ -234,8 +234,13 @@ CB.pruebas.suite('Regresiones: fallos que ya pasaron una vez', function () {
   CB.calibracion.consignaActual = '¿Cuánto es 2 + 3?';
   CB.voz.leerOGuiar = function (texto) { leido = texto; };
   CB.partida.accionLeer();
-  t.igual(leido, '¿Cuánto es 2 + 3?',
-    'E14 · la lectura en voz alta funciona en la calibración aunque no haya partida');
+  /* Lo que se LEE ya no es literalmente lo que se ve (3.4.2): los signos se
+     dicen con palabras, porque leer «2 3» le nombraría al niño una operación
+     que no es la suya. Lo que E14 defiende no ha cambiado —que la calibración
+     habla aunque no exista estado de partida— y ahora afirma además que habla
+     de SU consigna y no de otra cosa. */
+  t.igual(leido, '¿Cuánto es 2 más 3?',
+    'E14 · la lectura en voz alta funciona en la calibración aunque no haya partida, y dice el signo con palabras');
 
   /* Y la tecla que ahora es su única puerta sigue conectada. */
   t.ok(CB.a11y.MAPA.leer.indexOf('l') !== -1 && typeof CB.partida.accionLeer === 'function',
@@ -3815,5 +3820,77 @@ CB.pruebas.suite('E103 · a 320×480 se llega a los botones de abajo de la porta
     document.body.appendChild(marco);
     /* Diez segundos, no cuatro: el plazo no mide nada del juego, solo evita que la suite se quede colgada si el marco no carga. */
     setTimeout(function () { terminar('el marco no ha cargado en 10 s'); }, 10000);
+  });
+});
+
+/* E144 · LOS CUATRO MUNDOS, EN UNA FILA DESDE 1024 px (3.4.2). Se mide dentro
+   de un IFRAME y no en una caja de 1280 px: la regla vive en una media query, y
+   una media query se evalúa contra el viewport, así que un <div> ancho probaría
+   exactamente nada. Se afirman las dos mitades: que a 1280 comparten fila, y
+   que por debajo del corte la columna sigue siendo la de lectura —si alguien
+   ensancha .contenido para todo el mundo, esta segunda mitad se pone roja. */
+CB.pruebas.suite('E144 · los cuatro mundos caben en una fila desde 1024 px', function () {
+  const t = CB.pruebas;
+  const enlace = document.querySelector('link[rel="stylesheet"]');
+  const hoja = enlace ? enlace.getAttribute('href') : '';
+  if (!t.ok(!!hoja, 'E144 · la página declara su hoja de estilo')) return;
+
+  const tarjeta = '<div class="tarjeta-mundo"><div class="tarjeta-mundo__cinta"></div>' +
+    '<h2>El Bosque de las Llevadas</h2>' +
+    '<div class="tarjeta-mundo__barra"><span class="tarjeta-mundo__relleno"></span></div>' +
+    '<p class="texto texto--menor">0 de 30 vetas abiertas</p></div>';
+  const cuerpo = '<section class="pantalla pantalla--scroll pantalla--mapa">' +
+    '<div class="contenido"><h1>La Cantera</h1><div class="rejilla-mundos">' +
+    tarjeta + tarjeta + tarjeta + tarjeta + '</div></div></section>';
+
+  function medir(ancho) {
+    return new Promise(function (listo) {
+      const marco = document.createElement('iframe');
+      marco.title = 'medida de ' + ancho + ' px';
+      /* Fija, no en el flujo: body es un contenedor flex y a un iframe suelto
+         le reasigna la altura (la trampa de E102). */
+      marco.style.cssText = 'position:fixed;left:-3000px;top:0;width:' + ancho +
+                            'px;height:820px;border:0;display:block';
+      marco.srcdoc = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">' +
+        '<link rel="stylesheet" href="' + hoja + '"></head><body>' + cuerpo + '</body></html>';
+
+      let acabado = false;
+      function terminar(datos) {
+        if (acabado) return;
+        acabado = true;
+        try { document.body.removeChild(marco); } catch (e) { }
+        listo(datos || { filas: 0, error: 'el marco no ha cargado en 10 s' });
+      }
+      marco.onload = function () {
+        const d = marco.contentDocument, v = marco.contentWindow;
+        const tarjetas = [].slice.call(d.querySelectorAll('.tarjeta-mundo'));
+        if (tarjetas.length !== 4) return terminar({ filas: 0, error: 'no hay cuatro tarjetas' });
+        /* Que la hoja se aplicó: sin ella no hay relleno, todo mide lo mismo y
+           cualquier medida saldría verde sin haber medido nada. */
+        const relleno = parseFloat(v.getComputedStyle(tarjetas[0]).paddingLeft) || 0;
+        const filas = {};
+        tarjetas.forEach(function (c) {
+          filas[Math.round(c.getBoundingClientRect().top)] = 1;
+        });
+        terminar({ ancho: v.innerWidth, relleno: relleno,
+                   filas: Object.keys(filas).length });
+      };
+      document.body.appendChild(marco);
+      setTimeout(function () { terminar(null); }, 10000);
+    });
+  }
+
+  return medir(1280).then(function (a) {
+    if (!t.ok(a.ancho === 1280 && a.relleno > 0,
+      'E144 · el marco mide 1280 px y la hoja del juego se aplica dentro',
+      JSON.stringify(a))) return null;
+    t.igual(a.filas, 1,
+      'E144 · a 1280 px los cuatro mundos comparten una sola fila', JSON.stringify(a));
+    return medir(900);
+  }).then(function (b) {
+    if (!b) return;
+    t.ok(b.filas >= 2,
+      'E144 · y por debajo de 1024 px la columna sigue siendo la de lectura',
+      JSON.stringify(b));
   });
 });
