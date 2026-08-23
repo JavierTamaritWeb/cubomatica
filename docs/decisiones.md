@@ -4223,4 +4223,9 @@ sigue pendiente (los saberes SÍ están transcritos como claves C*.x/D*.x).
 **Cardinalidades medidas** (10.000 tiradas por nivel, fórmula de 3.1.0):
 U1 27 · U2 217 · U3 4560 · U4 154 · U5 42 · U6 891 · X1 128 · X2 3137 ·
 X3 44 · X4 2441 · X5 4201 · X6 2212 · J1 2 · J2 5 · J3 5 · J4 3 · J5 6 ·
-J6 2992 · J7 2 · K1 24 · K2 5963 · K3 2 · K4 6931 · K5 336 · K6 817.
+J6 2992 · J7 2 · K1 24 · K2 7000 · K3 2 · K4 7000 · K5 6709 · K6 817 (K2/K4/K5 re-medidas
+tras la auditoría severa: su `expr` codificaba solo la fila 1 de la
+cuadrícula, así que dos ítems con respuestas DISTINTAS podían compartir
+identidad y el anti-repetición los confundía; ahora el expr lleva el tablero
+entero, E142 exige que toda letra del tablero esté en él, y la cardinalidad
+medida subió al medir por fin ítems que antes se contaban como repetidos).

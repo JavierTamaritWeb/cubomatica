@@ -233,7 +233,11 @@ CB.gen.espacio.K2 = function (rng, D) {
     respuesta: resp,
     respuestaFraccion: true,
     distractoresFijos: fijosDeLetras(rng, celdas, resp, invertida),
-    expr: 'k2_' + cc + '_' + fc + '_' + celdas[0].join(''),
+    /* El expr lleva la cuadrícula ENTERA: dos cuadrículas distintas jamás
+       comparten identidad (la auditoría severa de 3.4.0 cazó que solo la
+       fila 1 no basta: el anti-repetición trataría como iguales dos ítems
+       con respuestas distintas). */
+    expr: 'k2_' + cc + '_' + fc + '_' + celdas.map(function (f) { return f.join(''); }).join(''),
     diagnostico: false
   };
 };
@@ -266,7 +270,7 @@ CB.gen.espacio.K4 = function (rng, D) {
     respuesta: resp,
     respuestaFraccion: true,
     distractoresFijos: fijosDeLetras(rng, celdas, resp, invertida),
-    expr: 'k4_' + cc + '_' + fc + '_' + celdas[0].join(''),
+    expr: 'k4_' + cc + '_' + fc + '_' + celdas.map(function (f) { return f.join(''); }).join(''),
     diagnostico: false
   };
 };
@@ -315,7 +319,7 @@ CB.gen.espacio.K5 = function (rng, D) {
     respuesta: etiquetas[0],
     respuestaFraccion: true,
     distractoresFijos: [etiquetas[1], etiquetas[2], etiquetas[3]],
-    expr: 'k5_' + x + '_' + y + '_' + etiquetas.join(''),
+    expr: 'k5_' + x + '_' + y + '_' + celdas.map(function (f) { return f.map(function (l) { return l || '-'; }).join(''); }).join(''),
     diagnostico: false
   };
 };

@@ -12,6 +12,33 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.4.1] — 2026-08-23
+
+**Auditoría severa de 3.4.0.** Un arnés adversario (30.000 tiradas por nivel
+nuevo, `simular()` de todos los códigos aplicables contra cada ítem, humo de
+la tarjeta de reparación y prueba de identidad del `expr`) encontró un
+defecto real: el `expr` de K2, K4 y K5 codificaba solo la fila 1 de la
+cuadrícula, así que dos ítems con cuadrículas y respuestas DISTINTAS podían
+compartir identidad — el anti-repetición de la partida los trataría como el
+mismo ítem y el recuento de variedad los infracontaba.
+
+### Corregido
+
+- El `expr` de K2, K4 y K5 lleva ahora el tablero entero; sus cardinalidades
+  se re-midieron (7000 · 7000 · 6709) y E142 exige que toda letra del tablero
+  esté en el `expr`, para que el defecto no pueda volver sin ruido.
+
+### Auditado sin cambio
+
+- Los `simular()` antiguos de la familia N pueden devolver la respuesta
+  correcta en niveles de conteo (E-N-POS sobre N17): inofensivo por
+  construcción — el motor de distractores descarta la colisión y el
+  diagnóstico solo compara con respuestas erróneas.
+- Los aria de la fila de vagonetas, la figura y el gráfico siguen la doctrina
+  documentada (el visual canta lo que el ojo ve); no se tocan.
+
+---
+
 ## [3.4.0] — 2026-08-23
 
 **Fase 4 de los cursos: el sentido algebraico (bloque D) y el sentido espacial

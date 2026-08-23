@@ -1398,7 +1398,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.4.0';
+CB.VERSION = '3.4.1';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -8308,7 +8308,11 @@ CB.gen.espacio.K2 = function (rng, D) {
     respuesta: resp,
     respuestaFraccion: true,
     distractoresFijos: fijosDeLetras(rng, celdas, resp, invertida),
-    expr: 'k2_' + cc + '_' + fc + '_' + celdas[0].join(''),
+    /* El expr lleva la cuadrícula ENTERA: dos cuadrículas distintas jamás
+       comparten identidad (la auditoría severa de 3.4.0 cazó que solo la
+       fila 1 no basta: el anti-repetición trataría como iguales dos ítems
+       con respuestas distintas). */
+    expr: 'k2_' + cc + '_' + fc + '_' + celdas.map(function (f) { return f.join(''); }).join(''),
     diagnostico: false
   };
 };
@@ -8341,7 +8345,7 @@ CB.gen.espacio.K4 = function (rng, D) {
     respuesta: resp,
     respuestaFraccion: true,
     distractoresFijos: fijosDeLetras(rng, celdas, resp, invertida),
-    expr: 'k4_' + cc + '_' + fc + '_' + celdas[0].join(''),
+    expr: 'k4_' + cc + '_' + fc + '_' + celdas.map(function (f) { return f.join(''); }).join(''),
     diagnostico: false
   };
 };
@@ -8390,7 +8394,7 @@ CB.gen.espacio.K5 = function (rng, D) {
     respuesta: etiquetas[0],
     respuestaFraccion: true,
     distractoresFijos: [etiquetas[1], etiquetas[2], etiquetas[3]],
-    expr: 'k5_' + x + '_' + y + '_' + etiquetas.join(''),
+    expr: 'k5_' + x + '_' + y + '_' + celdas.map(function (f) { return f.map(function (l) { return l || '-'; }).join(''); }).join(''),
     diagnostico: false
   };
 };
@@ -8643,7 +8647,7 @@ CB.catalogo.TABLAS = {
   ['U2','La serie que baja','patrones',0,99,0,2,'teclado','D1.a',['3.1','5.1'],['U1','N5'],217,false,null],
   ['X2','El hueco de la resta','algebra',0,99,0,2,'teclado','D1.b',['2.1','5.1'],['X1','R5'],3137,false,null],
   ['J2','Lados y vértices','geometria',0,8,0,3,'teclado','C1.a',['5.2','6.1'],['J1'],5,false,null],
-  ['K2','La casilla de la cuadrícula','espacio',0,12,0,3,'opciones4','C1.b',['1.2','5.2'],['K1'],5963,false,null]
+  ['K2','La casilla de la cuadrícula','espacio',0,12,0,3,'opciones4','C1.b',['1.2','5.2'],['K1'],7000,false,null]
   ],
 
   /* ——— 3.º de Primaria (3.1.0): 36 niveles. Techos 999 / 9.999 / 99.999. ——— */
@@ -8749,7 +8753,7 @@ CB.catalogo.TABLAS = {
   ['U4','El robot de la cuadrícula','patrones',0,10,0,1,'teclado','D2.c',['1.1','2.1'],['U3','K2'],154,false,null],
   ['X4','El hueco con dos operaciones','algebra',0,180,0,2,'teclado','D2.b',['2.1','6.2'],['X3'],2441,false,null],
   ['J4','Las figuras por sus lados','geometria',0,8,0,2,'opciones4','C2.a',['5.2','6.1'],['J3'],3,false,null],
-  ['K4','La casilla (columna, fila)','espacio',0,12,0,3,'opciones4','C2.b',['1.2','5.2'],['K2'],6931,false,null]
+  ['K4','La casilla (columna, fila)','espacio',0,12,0,3,'opciones4','C2.b',['1.2','5.2'],['K2'],7000,false,null]
   ],
 
   /* ——— 5.º de Primaria: 29 niveles. Techos 999.999 / 9.999.999 / íd. ——— */
@@ -8797,7 +8801,7 @@ CB.catalogo.TABLAS = {
   ['U5','La serie de multiplicar','patrones',0,999,0,1,'teclado','D3.b',['3.1','5.1'],['U3','M13'],42,false,null],
   ['X5','La incógnita x','algebra',0,900,0,2,'teclado','D3.a',['2.1','6.2'],['X4'],4201,false,null],
   ['J5','Caras, aristas y vértices','geometria',0,12,0,2,'teclado','C3.a',['5.2','6.1'],['J4'],6,false,null],
-  ['K5','El punto del plano','espacio',0,5,0,3,'opciones4','C3.b',['1.2','5.2'],['K4'],336,false,null]
+  ['K5','El punto del plano','espacio',0,5,0,3,'opciones4','C3.b',['1.2','5.2'],['K4'],6709,false,null]
   ],
 
   /* ——— 6.º de Primaria: 31 niveles. Techo 9.999.999 en los tres. ——— */

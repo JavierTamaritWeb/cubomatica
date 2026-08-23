@@ -520,6 +520,10 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
         if (new Set(todas).size !== todas.length) malCua++;
         if (it.distractoresFijos.some(function (l) { return todas.indexOf(l) === -1; })) malCua++;
         if (it.consigna.indexOf('fila 1 es la de abajo') === -1) malCua++;
+        /* El expr lleva la cuadrícula entera: si una letra del tablero no
+           está en él, dos ítems distintos podrían compartir identidad y el
+           anti-repetición los confundiría (auditoría severa de 3.4.0). */
+        if (todas.some(function (l) { return it.expr.indexOf(l) === -1; })) malCua++;
       });
     }
     t.igual(malSerie, 0, 'E142 · toda serie se reconstruye desde sus campos en 50 semillas');
