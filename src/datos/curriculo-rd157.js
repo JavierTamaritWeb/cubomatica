@@ -103,7 +103,26 @@ CB.CURRICULO = {
     'E2.b': 'Incertidumbre (2.º ciclo). Comparación intuitiva de probabilidades: sucesos más y menos probables en experiencias de azar.',
     'E3.a': 'Organización y análisis de datos (3.er ciclo). Medidas de resumen de un conjunto de datos: media aritmética, moda y rango.',
     'E3.b': 'Incertidumbre (3.er ciclo). La probabilidad de un suceso como fracción: casos favorables entre casos posibles en experimentos equiprobables.',
-    'E3.c': 'Incertidumbre (3.er ciclo). Experimentos aleatorios repetidos: frecuencia esperada de un resultado y su comparación con lo observado.'
+    'E3.c': 'Incertidumbre (3.er ciclo). Experimentos aleatorios repetidos: frecuencia esperada de un resultado y su comparación con lo observado.',
+
+    /* SENTIDO ALGEBRAICO (bloque D), 3.4.0. Mismo criterio que A, B y E:
+       saberes resumidos con fidelidad por ciclo; secuenciación por curso
+       propia del proyecto. */
+    'D1.a': 'Patrones (1.er ciclo). Identificación y continuación de series ascendentes y descendentes con un salto constante.',
+    'D1.b': 'Igualdad y desigualdad (1.er ciclo). El signo igual como equilibrio: huecos en sumas y restas sencillas.',
+    'D2.a': 'Patrones (2.º ciclo). Series numéricas con salto constante: continuarlas y descubrir su regla.',
+    'D2.b': 'Igualdad y desigualdad (2.º ciclo). Igualdades con un término desconocido en las cuatro operaciones.',
+    'D2.c': 'Pensamiento computacional (2.º ciclo). Secuencias de instrucciones paso a paso y su resultado sobre una cuadrícula.',
+    'D3.a': 'Relaciones (3.er ciclo). La incógnita con nombre de letra: resolución de igualdades sencillas del tipo x + a = b y a · x = b.',
+    'D3.b': 'Patrones y relaciones (3.er ciclo). Series multiplicativas y regla general de una serie: el término que ocupa un lugar dado.',
+
+    /* SENTIDO ESPACIAL (bloque C), 3.4.0. Mismo criterio. */
+    'C1.a': 'Figuras geométricas (1.er ciclo). Reconocimiento y descripción de figuras planas: lados y vértices.',
+    'C1.b': 'Localización (1.er ciclo). Posición en filas y cuadrículas: descripción y localización de casillas.',
+    'C2.a': 'Figuras geométricas (2.º ciclo). Clasificación de polígonos por sus lados; ángulos rectos, agudos, obtusos y llanos.',
+    'C2.b': 'Localización y movimientos (2.º ciclo). Coordenadas de casillas en cuadrículas; la simetría en figuras conocidas.',
+    'C3.a': 'Figuras geométricas (3.er ciclo). Cuerpos geométricos: caras, aristas y vértices. Ángulos: medida y suma de los ángulos del triángulo. Los giros en grados.',
+    'C3.b': 'Localización y sistemas de representación (3.er ciclo). El plano de coordenadas: localización de puntos y traslaciones.'
   },
 
   /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */
@@ -117,8 +136,8 @@ CB.CURRICULO = {
   bloques: {
     A: { nombre: 'Sentido numérico',      cubierto: true  },
     B: { nombre: 'Sentido de la medida',  cubierto: true  },   /* desde 3.2.0 */
-    C: { nombre: 'Sentido espacial',      cubierto: false },
-    D: { nombre: 'Sentido algebraico',    cubierto: false },
+    C: { nombre: 'Sentido espacial',      cubierto: true  },   /* desde 3.4.0 */
+    D: { nombre: 'Sentido algebraico',    cubierto: true  },   /* desde 3.4.0 */
     E: { nombre: 'Sentido estocástico',   cubierto: true  },   /* desde 3.3.0 */
     F: { nombre: 'Sentido socioafectivo', cubierto: true, modo: 'transversal' }
   },

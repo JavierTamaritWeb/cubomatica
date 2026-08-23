@@ -37,6 +37,10 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'tiempo':
     case 'datos':              return 'rectaNumerica';
     case 'azar':               return 'barrasComparativas';
+    case 'patrones':           return 'rectaNumerica';
+    case 'algebra':            return 'barrasComparativas';
+    case 'geometria':          return 'matrizFilasColumnas';
+    case 'espacio':            return 'matrizFilasColumnas';
     case 'problemas_comparacion':
     case 'problemas_igualacion':
     case 'problemas_cambio':

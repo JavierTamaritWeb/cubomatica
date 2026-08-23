@@ -24,7 +24,13 @@ CB.catalogo.FAMILIAS = {
   H: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] },
   /* Sentido estocástico (3.3.0): G datos y A azar. */
   G: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [380, 980] },
-  A: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [420, 1020] }
+  A: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [420, 1020] },
+  /* Sentido algebraico y espacial (3.4.0): U patrones, X álgebra, J geometría
+     y K espacio. */
+  U: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [380, 980] },
+  X: { puntosBase: 110, tIdeal: 9000,  tLimite: 27000, beta: [420, 1020] },
+  J: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] },
+  K: { puntosBase: 100, tIdeal: 10000, tLimite: 30000, beta: [400, 1000] }
 };
 
 /* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
@@ -71,7 +77,12 @@ CB.catalogo.TABLAS = {
   ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null],
   /* Datos y azar (3.3.0): 2 */
   ['G1','El gráfico de los juguetes','datos',0,9,0,2,'teclado','E1.a',['1.2','5.2'],['N17'],1052,false,null],
-  ['A1','Seguro o imposible','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['N17'],19,false,null]
+  ['A1','Seguro o imposible','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['N17'],19,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U1','Seguir la serie','patrones',0,20,0,2,'teclado','D1.a',['3.1','5.1'],['N18'],27,false,null],
+  ['X1','El hueco de la suma','algebra',0,20,0,2,'teclado','D1.b',['2.1','5.1'],['S17'],128,false,null],
+  ['J1','¿Qué figura es?','geometria',0,0,0,3,'opciones4','C1.a',['5.2','6.1'],['N17'],2,false,null],
+  ['K1','La posición en la fila','espacio',0,9,0,3,'teclado','C1.b',['1.2','5.2'],['N17'],24,false,null]
   ],
 
   /* ——— 2.º de Primaria: los 92 originales. ——— */
@@ -188,7 +199,12 @@ CB.catalogo.TABLAS = {
   /* Datos y azar (3.3.0): 3 */
   ['G2','Leer el gráfico de barras','datos',0,12,0,2,'teclado','E1.a',['1.2','6.1'],['G1'],5939,false,null],
   ['G3','El que más y el que menos','datos',0,12,0,3,'opciones4','E1.a',['1.1','5.1'],['G2'],5184,false,null],
-  ['A2','La bolsa de las bolas','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['A1'],484,false,null]
+  ['A2','La bolsa de las bolas','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['A1'],484,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U2','La serie que baja','patrones',0,99,0,2,'teclado','D1.a',['3.1','5.1'],['U1','N5'],217,false,null],
+  ['X2','El hueco de la resta','algebra',0,99,0,2,'teclado','D1.b',['2.1','5.1'],['X1','R5'],3137,false,null],
+  ['J2','Lados y vértices','geometria',0,8,0,3,'teclado','C1.a',['5.2','6.1'],['J1'],5,false,null],
+  ['K2','La casilla de la cuadrícula','espacio',0,12,0,3,'opciones4','C1.b',['1.2','5.2'],['K1'],5963,false,null]
   ],
 
   /* ——— 3.º de Primaria (3.1.0): 36 niveles. Techos 999 / 9.999 / 99.999. ——— */
@@ -237,7 +253,12 @@ CB.catalogo.TABLAS = {
   /* Datos y azar (3.3.0): 3 */
   ['G4','Los votos de la clase','datos',0,24,0,1,'teclado','E2.a',['1.2','2.1'],['G2','S18'],6361,false,null],
   ['G5','¿Cuántos más?','datos',0,12,0,2,'teclado','E2.a',['1.1','2.1'],['G4','R16'],6409,false,null],
-  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],352,false,null]
+  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],352,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U3','La serie y su salto','patrones',0,999,0,1,'teclado','D2.a',['3.1','5.1'],['U2'],4560,false,null],
+  ['X3','El hueco de multiplicar','algebra',0,100,0,2,'teclado','D2.b',['2.1','3.1'],['X2','M13'],44,false,null],
+  ['J3','Recto, agudo u obtuso','geometria',0,180,0,2,'opciones4','C2.a',['5.2','6.1'],['J2'],5,false,null],
+  ['K3','Los ejes de simetría','espacio',0,4,0,3,'teclado','C2.b',['5.2','6.1'],['J2'],2,false,null]
   ],
 
   /* ——— 4.º de Primaria: 34 niveles. Techos 99.999 / 499.999 / 999.999. ——— */
@@ -284,7 +305,12 @@ CB.catalogo.TABLAS = {
   /* Datos y azar (3.3.0): 3 */
   ['G6','El pictograma','datos',0,80,0,1,'teclado','E2.a',['1.2','5.1'],['G4','M13'],1933,false,null],
   ['G7','La encuesta entera','datos',0,48,0,2,'teclado','E2.a',['1.1','2.1'],['G4'],3604,false,null],
-  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],352,false,null]
+  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],352,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U4','El robot de la cuadrícula','patrones',0,10,0,1,'teclado','D2.c',['1.1','2.1'],['U3','K2'],154,false,null],
+  ['X4','El hueco con dos operaciones','algebra',0,180,0,2,'teclado','D2.b',['2.1','6.2'],['X3'],2441,false,null],
+  ['J4','Las figuras por sus lados','geometria',0,8,0,2,'opciones4','C2.a',['5.2','6.1'],['J3'],3,false,null],
+  ['K4','La casilla (columna, fila)','espacio',0,12,0,3,'opciones4','C2.b',['1.2','5.2'],['K2'],6931,false,null]
   ],
 
   /* ——— 5.º de Primaria: 29 niveles. Techos 999.999 / 9.999.999 / íd. ——— */
@@ -327,7 +353,12 @@ CB.catalogo.TABLAS = {
   ['G8','La moda','datos',0,12,0,1,'teclado','E3.a',['1.1','6.1'],['G7'],4151,false,null],
   ['G9','La media','datos',0,20,0,2,'teclado','E3.a',['2.1','5.1'],['G8','D3'],1695,false,null],
   ['G10','El rango','datos',0,20,0,2,'teclado','E3.a',['2.1','6.1'],['G8'],6302,false,null],
-  ['A5','La probabilidad como fracción','azar',0,10,0,3,'opciones4','E3.b',['1.2','5.1'],['A4','F2'],176,false,null]
+  ['A5','La probabilidad como fracción','azar',0,10,0,3,'opciones4','E3.b',['1.2','5.1'],['A4','F2'],176,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U5','La serie de multiplicar','patrones',0,999,0,1,'teclado','D3.b',['3.1','5.1'],['U3','M13'],42,false,null],
+  ['X5','La incógnita x','algebra',0,900,0,2,'teclado','D3.a',['2.1','6.2'],['X4'],4201,false,null],
+  ['J5','Caras, aristas y vértices','geometria',0,12,0,2,'teclado','C3.a',['5.2','6.1'],['J4'],6,false,null],
+  ['K5','El punto del plano','espacio',0,5,0,3,'opciones4','C3.b',['1.2','5.2'],['K4'],336,false,null]
   ],
 
   /* ——— 6.º de Primaria: 31 niveles. Techo 9.999.999 en los tres. ——— */
@@ -372,7 +403,13 @@ CB.catalogo.TABLAS = {
   ['G11','La media del gráfico','datos',0,20,0,1,'teclado','E3.a',['1.2','2.1'],['G9'],580,false,null],
   ['G12','Media, moda y rango','datos',0,20,0,2,'teclado','E3.a',['2.1','6.1'],['G9','G10'],5623,false,null],
   ['A6','La regla de Laplace','azar',0,10,0,2,'opciones4','E3.b',['1.2','5.1'],['A5'],19,false,null],
-  ['A7','Las veces que saldrá','azar',0,60,0,3,'teclado','E3.c',['2.1','3.1'],['A6','D3'],65,false,null]
+  ['A7','Las veces que saldrá','azar',0,60,0,3,'teclado','E3.c',['2.1','3.1'],['A6','D3'],65,false,null],
+  /* Álgebra y espacio (3.4.0): 5 */
+  ['U6','El término del lugar N','patrones',0,200,0,1,'teclado','D3.b',['2.1','3.1'],['U5'],891,false,null],
+  ['X6','La incógnita en las cuatro','algebra',0,900,0,2,'teclado','D3.a',['2.1','6.2'],['X5'],2212,false,null],
+  ['J6','El tercer ángulo','geometria',0,180,0,2,'teclado','C3.a',['2.1','5.1'],['J3'],2992,false,null],
+  ['J7','Los grados de la vuelta','geometria',0,360,0,2,'teclado','C3.a',['3.1','5.2'],['J3'],2,false,null],
+  ['K6','La traslación del punto','espacio',0,20,0,3,'teclado','C3.b',['1.2','2.1'],['K5'],817,false,null]
   ]
 };
 
@@ -434,7 +471,9 @@ CB.catalogo.LIMITES_CURSO = {
                     D: 'division', F: 'fracciones', C: 'decimales',
                     T: 'porcentajes', Z: 'enteros',
                     B: 'medida', H: 'tiempo',
-                    G: 'datos', A: 'azar' };
+                    G: 'datos', A: 'azar',
+                    U: 'patrones', X: 'algebra',
+                    J: 'geometria', K: 'espacio' };
 
   const cursos = [];
   let c;
@@ -504,7 +543,9 @@ CB.catalogo.LIMITES_CURSO = {
                 D: CB.gen.division, F: CB.gen.fracciones, C: CB.gen.decimales,
                 T: CB.gen.porcentajes, Z: CB.gen.enteros,
                 B: CB.gen.medida, H: CB.gen.tiempo,
-                G: CB.gen.datos, A: CB.gen.azar }[letra];
+                G: CB.gen.datos, A: CB.gen.azar,
+                U: CB.gen.patrones, X: CB.gen.algebra,
+                J: CB.gen.geometria, K: CB.gen.espacio }[letra];
 
     nivel.generar = (function (m, i) {
       return function (rng, D, ctx) {
@@ -665,7 +706,8 @@ CB.MUNDOS = [
               'N34','N35','N36','N37','N38','N39',
               'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4',
               'H1','H2','H3','H4','H5','H6',
-              'G1','G2','G3','A1','A2'] },
+              'G1','G2','G3','A1','A2',
+              'U1','U2','X1','X2','K1'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -680,7 +722,8 @@ CB.MUNDOS = [
               'C6','C7','C8','C9','C10','C11',
               'C12','C13','C14','C15',
               'B2','B3','B5','B8','B12','B14',
-              'G4','G5','G7'] },
+              'G4','G5','G7',
+              'X3','X4','J1','J2','K2'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
@@ -693,7 +736,8 @@ CB.MUNDOS = [
               'F10','F11','F12','F13','F14','F15','P35','P36','P37','P38','P39',
               'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44',
               'B1','B4','B7','B10','B15',
-              'A3','A4','A5','A6','A7'] },
+              'A3','A4','A5','A6','A7',
+              'U3','U4','J3','J4','K3','K4'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
@@ -707,7 +751,8 @@ CB.MUNDOS = [
               'M21','M22','D12','D13','D14','D15',
               'T1','T2','T3','T4','T5','T6','D16','D17',
               'B6','B9','B11','B13',
-              'G6','G8','G9','G10','G11','G12'] }
+              'G6','G8','G9','G10','G11','G12',
+              'U5','U6','X5','X6','J5','J6','J7','K5','K6'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {

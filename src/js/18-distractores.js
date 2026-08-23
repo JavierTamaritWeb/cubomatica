@@ -580,3 +580,60 @@ CB.ERRORES['E-A-OLVIDA-REPARTIR'] = {
     return item.totalTiradas;
   }
 };
+
+/* ——— Sentido algebraico y espacial (3.4.0): patrones (U), álgebra (X),
+   geometría (J) y espacio (K). ——— */
+
+CB.ERRORES['E-U-REPITE-TERMINO'] = {
+  familia: 'U', diagnostico: true,
+  pista: 'La serie no repite: cada término aplica el salto al anterior.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.ultimoTermino !== 'number' ||
+        item.ultimoTermino === item.respuesta) return null;
+    return item.ultimoTermino;
+  }
+};
+
+CB.ERRORES['E-X-SUMA-LOS-DOS'] = {
+  familia: 'X', diagnostico: true,
+  pista: 'El hueco no se rellena sumando los dos números que ves: comprueba ' +
+         'que la igualdad quede verdadera.',
+  reparacion: 'barrasComparativas',
+  simular: function (item) {
+    if (typeof item.sumandoConocido !== 'number' ||
+        typeof item.resultadoIgualdad !== 'number') return null;
+    const suma = item.sumandoConocido + item.resultadoIgualdad;
+    return (suma === item.respuesta) ? null : suma;
+  }
+};
+
+CB.ERRORES['E-J-OLVIDA-UN-ANGULO'] = {
+  familia: 'J', diagnostico: true,
+  pista: 'A 180 hay que quitarle LOS DOS ángulos que ya conoces, no uno.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.anguloA !== 'number') return null;
+    const resto = 180 - item.anguloA;
+    return (resto === item.respuesta) ? null : resto;
+  }
+};
+
+CB.ERRORES['E-K-DIRECCION-CONTRARIA'] = {
+  familia: 'K', diagnostico: true,
+  pista: 'Moverse a la derecha o hacia arriba SUMA casillas; quitar es ir ' +
+         'hacia el otro lado.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.coordenadaInicial !== 'number' ||
+        typeof item.desplazamiento !== 'number') return null;
+    const contraria = item.coordenadaInicial - item.desplazamiento;
+    return (contraria === item.respuesta) ? null : contraria;
+  }
+};
+
+CB.ERRORES['E-K-FILA-POR-COLUMNA'] = {
+  familia: 'K', diagnostico: false,
+  pista: 'Primero la columna, después la fila. La fila 1 es la de abajo.',
+  reparacion: 'rectaNumerica'
+};

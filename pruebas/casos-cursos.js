@@ -1,4 +1,4 @@
-/* casos-cursos.js — Cursos 1.º-6.º (3.0.0): E127-E140 */
+/* casos-cursos.js — Cursos 1.º-6.º (3.0.0): E127-E142 */
 
 CB.pruebas.suite('Cursos: betas congeladas, mezcla 80/20 y promoción', function () {
   const t = CB.pruebas;
@@ -443,5 +443,88 @@ CB.pruebas.suite('Cursos: promoción, panel del adulto y perfil', function () {
     t.igual(malA3, 0, 'E140 · en «más probable» el recuento ganador es estricto en 50 semillas');
     t.igual(malA1, 0, 'E140 · «seguro» está en la bolsa e «imposible» no, en 50 semillas');
     t.igual(malFrac, 0, 'E140 · toda probabilidad-fracción es propia y bien formada');
+  })();
+
+  /* E141 · LOS VISUALES ESPACIALES (3.4.0) se montan y se MIDEN: la figura
+     describe sin nombrar (nombrarla puede ser la pregunta), el ángulo gira
+     sus brazos de forma estática y dice sus grados, y la cuadrícula canta
+     cada letra con su columna y su fila. Se inspecciona el nodo DEVUELTO,
+     nunca el documento: la lección de E138. */
+  (function () {
+    const tri = CB.ui.figuraPlana('triángulo');
+    const ariaTri = tri.getAttribute('aria-label') || '';
+    t.ok(tri.getAttribute('role') === 'img' &&
+         ariaTri.indexOf('tres lados') !== -1 &&
+         ariaTri.indexOf('triángulo') === -1,
+      'E141 · la figura se describe sin nombrarse', ariaTri);
+    const rombo = CB.ui.figuraPlana('rombo');
+    t.ok(/rotate\(45deg\)/.test(rombo.firstChild.style.transform),
+      'E141 · el rombo es un giro ESTÁTICO de 45 grados');
+
+    const ang = CB.ui.anguloVoxel(90);
+    const brazos = Array.from(ang.firstChild.children).filter(function (n) {
+      return /rotate/.test(n.style.transform);
+    });
+    t.igual(brazos.length, 2, 'E141 · el ángulo tiene dos brazos girados estáticamente');
+    t.ok((ang.getAttribute('aria-label') || '').indexOf('90 grados') !== -1,
+      'E141 · el aria del ángulo dice sus grados');
+
+    const cua = CB.ui.cuadriculaLetras([['A', 'B'], ['C', 'D']]);
+    const ariaCua = cua.getAttribute('aria-label') || '';
+    t.ok(cua.getAttribute('role') === 'img' &&
+         ariaCua.indexOf('la fila 1 es la de abajo') !== -1 &&
+         ariaCua.indexOf('Fila 1: A en la columna 1') !== -1 &&
+         ariaCua.indexOf('Fila 2: C en la columna 1') !== -1,
+      'E141 · la cuadrícula canta cada letra con su columna y su fila', ariaCua);
+    const letras = Array.from(cua.querySelectorAll('span')).map(function (n) {
+      return n.textContent;
+    }).filter(function (tx) { return /^[A-Z]$/.test(tx); });
+    t.igual(letras.length, 4, 'E141 · la cuadrícula pinta sus cuatro letras');
+
+    const j1 = CB.gen.geometria.J1(CB.util.mulberry32(29), 2);
+    t.ok(j1.visual.nombre === j1.respuesta,
+      'E141 · J1 pregunta por la figura que su propio visual pinta');
+  })();
+
+  /* E142 · EL ALGEBRAICO Y EL ESPACIAL SON INEQUÍVOCOS (3.4.0). La serie se
+     RECONSTRUYE desde sus campos (último término más salto, o por factor); el
+     error «sumar los dos» nunca coincide con la respuesta; el tercer ángulo
+     cierra 180 exactos; y en las cuadrículas la respuesta y sus distractores
+     están DENTRO, sin letras repetidas y con el convenio declarado en la
+     consigna. Cincuenta semillas por regla. */
+  (function () {
+    let s, malSerie = 0, malHueco = 0, malAng = 0, malCua = 0;
+    for (s = 0; s < 50; s++) {
+      ['U1', 'U2', 'U3', 'U5'].forEach(function (id) {
+        const it = CB.gen.patrones[id](CB.util.mulberry32(s * 37 + 1), 2);
+        if (typeof it.ultimoTermino !== 'number') return;
+        const sig = (typeof it.factorSerie === 'number')
+          ? it.ultimoTermino * it.factorSerie
+          : it.ultimoTermino + it.salto;
+        if (sig !== it.respuesta) malSerie++;
+      });
+      ['X1', 'X2', 'X3', 'X4', 'X5', 'X6'].forEach(function (id) {
+        const it = CB.gen.algebra[id](CB.util.mulberry32(s * 41 + 3), 2);
+        if (typeof it.sumandoConocido === 'number' &&
+            it.sumandoConocido + it.resultadoIgualdad === it.respuesta) malHueco++;
+      });
+      const j6 = CB.gen.geometria.J6(CB.util.mulberry32(s * 43 + 5), 2);
+      if (j6.anguloA + j6.anguloB + j6.respuesta !== 180) malAng++;
+      ['K2', 'K4', 'K5'].forEach(function (id) {
+        const it = CB.gen.espacio[id](CB.util.mulberry32(s * 47 + 7), 2);
+        const todas = [];
+        it.visual.celdas.forEach(function (fila) {
+          fila.forEach(function (l) { if (l) todas.push(l); });
+        });
+        if (todas.indexOf(it.respuesta) === -1) malCua++;
+        if (new Set(todas).size !== todas.length) malCua++;
+        if (it.distractoresFijos.some(function (l) { return todas.indexOf(l) === -1; })) malCua++;
+        if (it.consigna.indexOf('fila 1 es la de abajo') === -1) malCua++;
+      });
+    }
+    t.igual(malSerie, 0, 'E142 · toda serie se reconstruye desde sus campos en 50 semillas');
+    t.igual(malHueco, 0, 'E142 · «sumar los dos números» nunca es la respuesta del hueco');
+    t.igual(malAng, 0, 'E142 · los tres ángulos del triángulo suman 180 exactos');
+    t.igual(malCua, 0, 'E142 · cuadrículas: respuesta y distractores dentro, sin repetir, con el convenio declarado');
   })();
 });

@@ -12,6 +12,48 @@ también, pero esa la inyecta gulp y no puede desviarse.
 
 ---
 
+## [3.4.0] — 2026-08-23
+
+**Fase 4 de los cursos: el sentido algebraico (bloque D) y el sentido espacial
+(bloque C), en los seis cursos.** Con esto el juego declara cubiertos los
+cinco sentidos del área. 25 niveles nuevos (catálogo: 308) en cuatro familias
+— **U** patrones, **X** álgebra, **J** geometría y **K** espacio — con dos
+guiones nuevos (manifiesto 54 → 56): seguir series y descubrir su regla, el
+robot de la cuadrícula, igualdades con hueco en las cuatro operaciones y la
+incógnita con nombre de letra; figuras planas y polígonos, ángulos recto,
+agudo, obtuso y llano, cuerpos geométricos, el tercer ángulo del triángulo,
+los grados de la vuelta, posición y coordenadas en cuadrículas, ejes de
+simetría, el plano de puntos y la traslación.
+
+### Añadido
+
+- `js/19h-gen-algebra.js` (U1-U6, X1-X6) y `js/19i-gen-espacial.js` (J1-J7,
+  K1-K6), con cardinalidades MEDIDAS por un arnés de 10.000 tiradas por nivel.
+- Tres visuales DOM nuevos en `30-ui.js`, sin una sola imagen: la figura plana
+  (el círculo no se dibuja jamás: el vóxel no tiene curvas), el ángulo de dos
+  brazos girados estáticamente (que canta sus grados en el aria) y la
+  cuadrícula de letras (que canta cada letra con su columna y su fila).
+- 5 códigos de error con su recomendación (47 en total: 36 con `simular()`,
+  11 sin diagnóstico): repetir el término de la serie, rellenar el hueco
+  sumando los dos números visibles, olvidar un ángulo del triángulo, mover el
+  punto en la dirección contraria y leer las coordenadas al revés.
+- 13 saberes nuevos en `curriculo-rd157.js` (7 del bloque D, 6 del C), todos
+  con nivel; 4 destrezas nuevas (26 en `CB.adaptativo.SLUGS`).
+- Guardianes E141 (los visuales espaciales se montan y se miden) y E142 (el
+  algebraico y el espacial son inequívocos: series reconstruibles, huecos cuyo
+  error nunca es la respuesta, 180 exactos, cuadrículas sin trampa).
+
+### Cambiado
+
+- `CB.LEGAL.ALCANCE` y `bloques.C/D.cubierto` cambian JUNTOS con su guardián,
+  como manda la doctrina: el juego trabaja ahora los cinco sentidos y sigue
+  sin sustituir al aula.
+- Toda pregunta de coordenadas declara su convenio en la consigna — primero la
+  columna, después la fila, y la fila 1 es la de abajo — para que la respuesta
+  sea inequívoca por construcción (la lección de E140, aplicada al espacio).
+
+---
+
 ## [3.3.0] — 2026-08-23
 
 **Fase 3 de los cursos: el sentido estocástico (bloque E), en los seis

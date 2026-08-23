@@ -103,7 +103,26 @@ CB.CURRICULO = {
     'E2.b': 'Incertidumbre (2.º ciclo). Comparación intuitiva de probabilidades: sucesos más y menos probables en experiencias de azar.',
     'E3.a': 'Organización y análisis de datos (3.er ciclo). Medidas de resumen de un conjunto de datos: media aritmética, moda y rango.',
     'E3.b': 'Incertidumbre (3.er ciclo). La probabilidad de un suceso como fracción: casos favorables entre casos posibles en experimentos equiprobables.',
-    'E3.c': 'Incertidumbre (3.er ciclo). Experimentos aleatorios repetidos: frecuencia esperada de un resultado y su comparación con lo observado.'
+    'E3.c': 'Incertidumbre (3.er ciclo). Experimentos aleatorios repetidos: frecuencia esperada de un resultado y su comparación con lo observado.',
+
+    /* SENTIDO ALGEBRAICO (bloque D), 3.4.0. Mismo criterio que A, B y E:
+       saberes resumidos con fidelidad por ciclo; secuenciación por curso
+       propia del proyecto. */
+    'D1.a': 'Patrones (1.er ciclo). Identificación y continuación de series ascendentes y descendentes con un salto constante.',
+    'D1.b': 'Igualdad y desigualdad (1.er ciclo). El signo igual como equilibrio: huecos en sumas y restas sencillas.',
+    'D2.a': 'Patrones (2.º ciclo). Series numéricas con salto constante: continuarlas y descubrir su regla.',
+    'D2.b': 'Igualdad y desigualdad (2.º ciclo). Igualdades con un término desconocido en las cuatro operaciones.',
+    'D2.c': 'Pensamiento computacional (2.º ciclo). Secuencias de instrucciones paso a paso y su resultado sobre una cuadrícula.',
+    'D3.a': 'Relaciones (3.er ciclo). La incógnita con nombre de letra: resolución de igualdades sencillas del tipo x + a = b y a · x = b.',
+    'D3.b': 'Patrones y relaciones (3.er ciclo). Series multiplicativas y regla general de una serie: el término que ocupa un lugar dado.',
+
+    /* SENTIDO ESPACIAL (bloque C), 3.4.0. Mismo criterio. */
+    'C1.a': 'Figuras geométricas (1.er ciclo). Reconocimiento y descripción de figuras planas: lados y vértices.',
+    'C1.b': 'Localización (1.er ciclo). Posición en filas y cuadrículas: descripción y localización de casillas.',
+    'C2.a': 'Figuras geométricas (2.º ciclo). Clasificación de polígonos por sus lados; ángulos rectos, agudos, obtusos y llanos.',
+    'C2.b': 'Localización y movimientos (2.º ciclo). Coordenadas de casillas en cuadrículas; la simetría en figuras conocidas.',
+    'C3.a': 'Figuras geométricas (3.er ciclo). Cuerpos geométricos: caras, aristas y vértices. Ángulos: medida y suma de los ángulos del triángulo. Los giros en grados.',
+    'C3.b': 'Localización y sistemas de representación (3.er ciclo). El plano de coordenadas: localización de puntos y traslaciones.'
   },
 
   /* Saberes de SEGUNDO ciclo, citados SOLO para justificar exclusiones */
@@ -117,8 +136,8 @@ CB.CURRICULO = {
   bloques: {
     A: { nombre: 'Sentido numérico',      cubierto: true  },
     B: { nombre: 'Sentido de la medida',  cubierto: true  },   /* desde 3.2.0 */
-    C: { nombre: 'Sentido espacial',      cubierto: false },
-    D: { nombre: 'Sentido algebraico',    cubierto: false },
+    C: { nombre: 'Sentido espacial',      cubierto: true  },   /* desde 3.4.0 */
+    D: { nombre: 'Sentido algebraico',    cubierto: true  },   /* desde 3.4.0 */
     E: { nombre: 'Sentido estocástico',   cubierto: true  },   /* desde 3.3.0 */
     F: { nombre: 'Sentido socioafectivo', cubierto: true, modo: 'transversal' }
   },
@@ -1096,6 +1115,43 @@ CB.datos.RECOMENDACIONES['E-A-OLVIDA-REPARTIR'] = {
              'Se ve que las 30 tiradas se reparten entre las seis caras, y que ' +
              'a cada una le toca «más o menos» 30 entre 6, no 30.'
 };
+
+/* Sentido algebraico y espacial (3.4.0). */
+CB.datos.RECOMENDACIONES['E-U-REPITE-TERMINO'] = {
+  frase: 'En las series repite el último número en vez de aplicar el salto.',
+  actividad: 'Series con pasos de verdad: en el pasillo o en la escalera, se ' +
+             'avanza contando en voz alta de 2 en 2 o de 5 en 5. Cada paso ' +
+             'CAMBIA el número; quedarse quieto es repetirlo, y el cuerpo lo ' +
+             'nota antes que el papel.'
+};
+CB.datos.RECOMENDACIONES['E-X-SUMA-LOS-DOS'] = {
+  frase: 'Rellena el hueco sumando los dos números que ve, sin comprobar la igualdad.',
+  actividad: 'La igualdad como balanza casera: a un lado de la mesa, fichas ' +
+             'ya contadas; al otro, las que dice el resultado. El hueco son ' +
+             'las fichas que FALTAN para que los dos lados pesen lo mismo, y ' +
+             'al final siempre se comprueba leyendo la igualdad entera.'
+};
+CB.datos.RECOMENDACIONES['E-J-OLVIDA-UN-ANGULO'] = {
+  frase: 'Al buscar el tercer ángulo del triángulo solo resta uno de los dos conocidos.',
+  actividad: 'Un triángulo de papel: se recortan sus tres esquinas y se ' +
+             'juntan sobre una línea recta — forman 180 grados exactos. ' +
+             'Después se calcula con los tres ángulos delante, tapando el ' +
+             'que se busca: hay que quitar LOS DOS que se ven.'
+};
+CB.datos.RECOMENDACIONES['E-K-DIRECCION-CONTRARIA'] = {
+  frase: 'Al mover un punto por el plano lo desplaza hacia el lado contrario.',
+  actividad: 'El plano en el suelo con cinta de pintor: la persona adulta ' +
+             'canta el movimiento («tres a la derecha») y el niño LO CAMINA ' +
+             'antes de decir la casilla. Derecha y arriba suman; izquierda y ' +
+             'abajo quitan.'
+};
+CB.datos.RECOMENDACIONES['E-K-FILA-POR-COLUMNA'] = {
+  frase: 'Lee las coordenadas al revés: busca la fila donde se dice la columna.',
+  actividad: 'Hundir la flota en papel cuadriculado, diciendo SIEMPRE las ' +
+             'casillas en voz alta con la regla delante: primero la columna, ' +
+             'después la fila. Quien canta la casilla la señala con dos ' +
+             'dedos, uno que baja por la columna y otro que cruza por la fila.'
+};
 CB.datos.RECOMENDACIONES['E-H-MEDIA-CONFUNDIDA'] = {
   frase: 'Confunde las manecillas: lee la corta como minutos o la larga como horas.',
   actividad: 'Un reloj de cartón con las manecillas de dos colores. Primero solo la ' +
@@ -1342,7 +1398,7 @@ CB.bus = new CB.util.EventoSimple();
 
 /* CB.LEGAL */
 /* Versión */
-CB.VERSION = '3.3.0';
+CB.VERSION = '3.4.0';
 
 CB.LEGAL = {
   AVISO: 'Cubomática es una obra original e independiente. No está afiliada, ' +
@@ -1355,12 +1411,12 @@ CB.LEGAL = {
          'y las enseñanzas mínimas de la Educación Primaria (BOE núm. 52, de 2 de marzo ' +
          'de 2022; referencia BOE-A-2022-3296).',
 
-  ALCANCE: 'Cubomática trabaja los bloques A (Sentido numérico), B (Sentido de la ' +
-           'medida) y E (Sentido estocástico) y, de forma transversal, el bloque F ' +
-           '(Sentido socioafectivo) de los saberes básicos de Matemáticas del Real ' +
-           'Decreto 157/2022, en los seis cursos de Primaria. NO trabaja los bloques C ' +
-           '(sentido espacial) ni D (sentido algebraico): esos saberes se trabajan en ' +
-           'el aula y este juego no los sustituye.',
+  ALCANCE: 'Cubomática trabaja los cinco sentidos del área de Matemáticas del Real ' +
+           'Decreto 157/2022 — A (Sentido numérico), B (Sentido de la medida), ' +
+           'C (Sentido espacial), D (Sentido algebraico) y E (Sentido estocástico) — ' +
+           'y, de forma transversal, el bloque F (Sentido socioafectivo), en los seis ' +
+           'cursos de Primaria. La profundidad de cada bloque es la que declara el ' +
+           'catálogo de niveles: el juego acompaña al aula y no la sustituye.',
 
   SECUENCIACION: 'El Real Decreto fija los saberes por CICLO (1.º y 2.º juntos), no por ' +
                  'curso ni por trimestre. La distribución por curso y trimestre de este ' +
@@ -7712,6 +7768,675 @@ CB.gen.azar.A7 = function (rng, D) {
   };
 };
 
+/* 19h-gen-algebra.js — Sentido algebraico (3.4.0): U1…U6 (CB.gen.patrones,
+   series y pensamiento computacional) y X1…X6 (CB.gen.algebra, igualdades con
+   hueco e incógnita). La regla heredada del azar sigue mandando: toda pregunta
+   tiene UNA respuesta inequívoca — el salto de una serie nunca es 0, y los
+   campos ultimoTermino/salto/factorSerie permiten RECONSTRUIR la serie, que es
+   lo que mide el guardián E142. Los campos sumandoConocido/resultadoIgualdad
+   alimentan E-X-SUMA-LOS-DOS y solo se declaran cuando «sumar los dos números
+   visibles» NO coincide con la respuesta. */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.patrones = {};
+CB.gen.algebra = {};
+
+/* Una serie aritmética de `n` términos con salto CON SIGNO (nunca 0). */
+function serieDeSalto(inicio, salto, n) {
+  const t = [];
+  let i;
+  for (i = 0; i < n; i++) t.push(inicio + i * salto);
+  return t;
+}
+CB.gen.patrones._serieDeSalto = serieDeSalto;
+
+function fraseSerie(terminos) {
+  return terminos.join(', ') + ', …';
+}
+
+/* U1 Seguir la serie (1.º): sumar 1, 2 o 3, sin pasar de 20. */
+CB.gen.patrones.U1 = function (rng, D) {
+  const salto = CB.util.ent(rng, 1, (D === 1) ? 2 : 3);
+  const inicio = CB.util.ent(rng, 0, 20 - 4 * salto);
+  const t = serieDeSalto(inicio, salto, 4);
+  return {
+    formato: 'teclado',
+    consigna: 'Sigue la serie: ' + fraseSerie(t) + ' ¿Qué número viene después?',
+    respuesta: t[3] + salto,
+    ultimoTermino: t[3],
+    salto: salto,
+    expr: 'u1_' + inicio + '_' + salto,
+    diagnostico: true
+  };
+};
+
+/* U2 La serie que baja (2.º): el salto viaja con signo. */
+CB.gen.patrones.U2 = function (rng, D) {
+  const paso = CB.util.elegir(rng, (D === 1) ? [1, 2] : [2, 5, 10]);
+  const inicio = CB.util.ent(rng, 4 * paso + paso, 99);
+  const t = serieDeSalto(inicio, -paso, 4);
+  return {
+    formato: 'teclado',
+    consigna: 'La serie baja: ' + fraseSerie(t) + ' ¿Qué número viene después?',
+    respuesta: t[3] - paso,
+    ultimoTermino: t[3],
+    salto: -paso,
+    expr: 'u2_' + inicio + '_' + paso,
+    diagnostico: true
+  };
+};
+
+/* U3 La serie y su salto (3.º): seguirla, o decir de cuánto en cuánto va. */
+CB.gen.patrones.U3 = function (rng, D) {
+  const salto = CB.util.ent(rng, 3, 9);
+  const inicio = CB.util.ent(rng, 1, 900);
+  const t = serieDeSalto(inicio, salto, 4);
+  if (D === 1 || rng() < 0.6) {
+    return {
+      formato: 'teclado',
+      consigna: 'Sigue la serie: ' + fraseSerie(t) + ' ¿Qué número viene después?',
+      respuesta: t[3] + salto,
+      ultimoTermino: t[3],
+      salto: salto,
+      expr: 'u3a_' + inicio + '_' + salto,
+      diagnostico: true
+    };
+  }
+  return {
+    formato: 'teclado',
+    consigna: 'Mira la serie: ' + fraseSerie(t) + ' ¿De cuánto en cuánto va?',
+    respuesta: salto,
+    expr: 'u3b_' + inicio + '_' + salto,
+    diagnostico: true
+  };
+};
+
+/* U4 El robot de la cuadrícula (4.º): pensamiento computacional. El robot
+   ejecuta instrucciones sobre una fila de 10 casillas y nunca se sale. */
+CB.gen.patrones.U4 = function (rng, D) {
+  const inicio = CB.util.ent(rng, 1, 5);
+  const avanza = CB.util.ent(rng, 2, 10 - inicio);
+  const retro = (D === 1) ? 0 : CB.util.ent(rng, 1, inicio + avanza - 1);
+  return {
+    formato: 'teclado',
+    consigna: 'El robot está en la casilla ' + inicio + ' de una fila de 10. ' +
+              'Avanza ' + avanza + (avanza === 1 ? ' casilla' : ' casillas') +
+              (retro ? ' y retrocede ' + retro + (retro === 1 ? ' casilla' : ' casillas') : '') +
+              '. ¿En qué casilla acaba?',
+    visual: { tipo: 'fila', total: 10, marcada: inicio },
+    respuesta: inicio + avanza - retro,
+    expr: 'u4_' + inicio + '_' + avanza + '_' + retro,
+    diagnostico: true
+  };
+};
+
+/* U5 La serie de multiplicar (5.º) */
+CB.gen.patrones.U5 = function (rng, D) {
+  const factor = (D === 1) ? 2 : CB.util.elegir(rng, [2, 3]);
+  const inicio = CB.util.ent(rng, 2, (factor === 2) ? 50 : 12);
+  const t = [inicio, inicio * factor, inicio * factor * factor,
+             inicio * factor * factor * factor];
+  return {
+    formato: 'teclado',
+    consigna: 'La serie multiplica: ' + fraseSerie(t) + ' ¿Qué número viene después?',
+    respuesta: t[3] * factor,
+    ultimoTermino: t[3],
+    factorSerie: factor,
+    expr: 'u5_' + inicio + '_' + factor,
+    diagnostico: true
+  };
+};
+
+/* U6 El término del lugar N (6.º): la regla general de una serie aritmética. */
+CB.gen.patrones.U6 = function (rng, D) {
+  const a = CB.util.ent(rng, 1, 20);
+  const d = CB.util.ent(rng, 2, (D === 1) ? 5 : 9);
+  const lugar = CB.util.ent(rng, 5, (D === 1) ? 8 : 12);
+  const t = serieDeSalto(a, d, 3);
+  return {
+    formato: 'teclado',
+    consigna: 'Una serie empieza así: ' + fraseSerie(t) + ' Suma ' + d +
+              ' cada vez. ¿Qué número ocupa el lugar ' + lugar + '?',
+    respuesta: a + d * (lugar - 1),
+    expr: 'u6_' + a + '_' + d + '_' + lugar,
+    diagnostico: true
+  };
+};
+
+/* ——— Las igualdades con hueco y la incógnita: X1…X6. ——— */
+
+/* X1 El hueco de la suma (1.º) */
+CB.gen.algebra.X1 = function (rng, D) {
+  const c = CB.util.ent(rng, (D === 1) ? 5 : 8, (D === 1) ? 10 : 20);
+  const a = CB.util.ent(rng, 1, c - 1);
+  return {
+    formato: 'teclado',
+    consigna: 'Busca el número del hueco: ' + a + ' + □ = ' + c + '.',
+    respuesta: c - a,
+    sumandoConocido: a,
+    resultadoIgualdad: c,
+    expr: 'x1_' + a + '_' + c,
+    diagnostico: true
+  };
+};
+
+/* X2 El hueco de la resta (2.º): el hueco puede estar en el sustraendo o en
+   el minuendo. Con el hueco en el minuendo la respuesta ES la suma de los dos
+   números visibles, así que ahí NO se declaran los campos del error. */
+CB.gen.algebra.X2 = function (rng, D) {
+  if (D === 1 || rng() < 0.5) {
+    const m = CB.util.ent(rng, (D === 1) ? 6 : 12, (D === 1) ? 20 : 99);
+    const r = CB.util.ent(rng, 1, m - 1);
+    return {
+      formato: 'teclado',
+      consigna: 'Busca el número del hueco: ' + m + ' − □ = ' + r + '.',
+      respuesta: m - r,
+      sumandoConocido: m,
+      resultadoIgualdad: r,
+      expr: 'x2a_' + m + '_' + r,
+      diagnostico: true
+    };
+  }
+  const b = CB.util.ent(rng, 1, 50);
+  const r = CB.util.ent(rng, 1, 99 - b);
+  return {
+    formato: 'teclado',
+    consigna: 'Busca el número del hueco: □ − ' + b + ' = ' + r + '.',
+    respuesta: b + r,
+    expr: 'x2b_' + b + '_' + r,
+    diagnostico: true
+  };
+};
+
+/* X3 El hueco de multiplicar (3.º): las tablas al revés. */
+CB.gen.algebra.X3 = function (rng, D) {
+  const a = CB.util.ent(rng, 2, (D === 1) ? 5 : 9);
+  const h = CB.util.ent(rng, 2, 9);
+  return {
+    formato: 'teclado',
+    consigna: 'Busca el número del hueco: ' + a + ' × □ = ' + (a * h) + '.',
+    respuesta: h,
+    sumandoConocido: a,
+    resultadoIgualdad: a * h,
+    tablasCompletas: true,
+    expr: 'x3_' + a + '_' + h,
+    diagnostico: true
+  };
+};
+
+/* X4 El hueco con dos operaciones (4.º): a un lado el hueco, al otro un
+   producto que hay que calcular primero. */
+CB.gen.algebra.X4 = function (rng, D) {
+  const c = CB.util.ent(rng, 3, (D === 1) ? 6 : 9);
+  const d = CB.util.ent(rng, 3, (D === 1) ? 6 : 9);
+  const p = c * d;
+  if (D === 1 || rng() < 0.6) {
+    const b = CB.util.ent(rng, 1, p - 1);
+    return {
+      formato: 'teclado',
+      consigna: 'Busca el número del hueco: □ + ' + b + ' = ' + c + ' × ' + d + '.',
+      respuesta: p - b,
+      sumandoConocido: b,
+      resultadoIgualdad: p,
+      expr: 'x4a_' + b + '_' + c + '_' + d,
+      diagnostico: true
+    };
+  }
+  const b = CB.util.ent(rng, 1, 99);
+  return {
+    formato: 'teclado',
+    consigna: 'Busca el número del hueco: □ − ' + b + ' = ' + c + ' × ' + d + '.',
+    respuesta: p + b,
+    expr: 'x4b_' + b + '_' + c + '_' + d,
+    diagnostico: true
+  };
+};
+
+/* X5 La incógnita x (5.º): la letra ya tiene nombre. */
+CB.gen.algebra.X5 = function (rng, D) {
+  const modo = (D === 1) ? 1 : CB.util.ent(rng, 1, 3);
+  if (modo === 1) {
+    const a = CB.util.ent(rng, 10, (D === 1) ? 40 : 400);
+    const x = CB.util.ent(rng, 10, (D === 1) ? 50 : 500);
+    return {
+      formato: 'teclado',
+      consigna: 'La incógnita: x + ' + a + ' = ' + (x + a) + '. ¿Cuánto vale x?',
+      respuesta: x,
+      sumandoConocido: a,
+      resultadoIgualdad: x + a,
+      expr: 'x5a_' + a + '_' + x,
+      diagnostico: true
+    };
+  }
+  if (modo === 2) {
+    const a = CB.util.ent(rng, 10, 300);
+    const c = CB.util.ent(rng, 10, 400);
+    return {
+      formato: 'teclado',
+      consigna: 'La incógnita: x − ' + a + ' = ' + c + '. ¿Cuánto vale x?',
+      respuesta: a + c,
+      expr: 'x5b_' + a + '_' + c,
+      diagnostico: true
+    };
+  }
+  const a = CB.util.ent(rng, 3, 12);
+  const x = CB.util.ent(rng, 4, 50);
+  return {
+    formato: 'teclado',
+    consigna: 'La incógnita: ' + a + ' · x = ' + (a * x) + '. ¿Cuánto vale x?',
+    respuesta: x,
+    sumandoConocido: a,
+    resultadoIgualdad: a * x,
+    expr: 'x5c_' + a + '_' + x,
+    diagnostico: true
+  };
+};
+
+/* X6 La incógnita en las cuatro (6.º) */
+CB.gen.algebra.X6 = function (rng, D) {
+  const modo = (D === 1) ? 1 : CB.util.ent(rng, 1, 3);
+  if (modo === 1) {
+    const a = CB.util.ent(rng, 3, 15);
+    const x = CB.util.ent(rng, 6, 60);
+    return {
+      formato: 'teclado',
+      consigna: 'La incógnita: ' + a + ' · x = ' + (a * x) + '. ¿Cuánto vale x?',
+      respuesta: x,
+      sumandoConocido: a,
+      resultadoIgualdad: a * x,
+      expr: 'x6a_' + a + '_' + x,
+      diagnostico: true
+    };
+  }
+  if (modo === 2) {
+    const a = CB.util.ent(rng, 3, 9);
+    const c = CB.util.ent(rng, 4, 30);
+    return {
+      formato: 'teclado',
+      consigna: 'La incógnita: x ÷ ' + a + ' = ' + c + '. ¿Cuánto vale x?',
+      respuesta: a * c,
+      sumandoConocido: a,
+      resultadoIgualdad: c,
+      expr: 'x6b_' + a + '_' + c,
+      diagnostico: true
+    };
+  }
+  const a = CB.util.ent(rng, 25, 400);
+  const c = CB.util.ent(rng, 25, 500);
+  return {
+    formato: 'teclado',
+    consigna: 'La incógnita: x − ' + a + ' = ' + c + '. ¿Cuánto vale x?',
+    respuesta: a + c,
+    expr: 'x6c_' + a + '_' + c,
+    diagnostico: true
+  };
+};
+
+/* 19i-gen-espacial.js — Sentido espacial (3.4.0): J1…J7 (CB.gen.geometria,
+   figuras, ángulos y cuerpos) y K1…K6 (CB.gen.espacio, posición, simetría y
+   coordenadas). Tres reglas de la casa: el color nunca lleva la información
+   (las casillas se distinguen por su LETRA, los ángulos por sus grados); toda
+   figura dibujada tiene lados rectos, porque el vóxel no tiene curvas (el
+   círculo no aparece dibujado jamás); y toda pregunta de coordenadas declara
+   su convenio en la consigna — primero la columna, después la fila, y la fila
+   1 es la de abajo — para que la respuesta sea inequívoca por construcción. */
+
+var CB = CB || {};
+CB.gen = CB.gen || {};
+CB.gen.geometria = {};
+CB.gen.espacio = {};
+
+/* Las cuatro figuras dibujables. Lista CERRADA: son las que CB.ui.figuraPlana
+   sabe pintar. lados === vértices en todo polígono; se pregunta por ambos. */
+const FIGURAS_PLANAS = [
+  { nombre: 'cuadrado',   lados: 4 },
+  { nombre: 'rectángulo', lados: 4 },
+  { nombre: 'triángulo',  lados: 3 },
+  { nombre: 'rombo',      lados: 4 }
+];
+
+/* Polígonos por número de lados (4.º, solo de palabra). */
+const POLIGONOS_LADOS = [
+  ['el triángulo', 3], ['el cuadrilátero', 4], ['el pentágono', 5],
+  ['el hexágono', 6], ['el octógono', 8]
+];
+
+/* Cuerpos geométricos: nombre, caras, aristas y vértices. */
+const CUERPOS_GEO = [
+  ['un cubo', 6, 12, 8],
+  ['una pirámide de base cuadrada', 5, 8, 5],
+  ['un prisma de base triangular', 5, 9, 6]
+];
+
+/* Tipos de ángulo con los grados que los dibujan. «llano» incluido: 180 se ve. */
+const ANGULOS_TIPO = [
+  ['agudo', [30, 45, 60]], ['recto', [90]],
+  ['obtuso', [120, 135, 150]], ['llano', [180]]
+];
+
+/* Giros y sus grados. La vuelta entera se da como ANCLA en la consigna, así
+   que no se pregunta nunca por ella. */
+const VUELTAS_GIRO = [
+  ['un cuarto de vuelta', 90], ['media vuelta', 180], ['tres cuartos de vuelta', 270]
+];
+
+/* Figuras y sus ejes de simetría, descritas sin ambigüedad. */
+const SIMETRIAS_FIGURA = [
+  ['un cuadrado', 4],
+  ['un rectángulo que no es cuadrado', 2],
+  ['un triángulo equilátero, con los tres lados iguales', 3],
+  ['un rombo que no es cuadrado', 2]
+];
+
+/* Letras para las casillas: mayúsculas bien distintas entre sí. */
+const LETRAS_CASILLA = ['A', 'B', 'C', 'D', 'E', 'H', 'J', 'L', 'M', 'P',
+                        'R', 'S', 'T', 'U', 'V', 'Z'];
+
+/* J1 ¿Qué figura es? (1.º) */
+CB.gen.geometria.J1 = function (rng, D) {
+  const fig = FIGURAS_PLANAS[CB.util.ent(rng, 0, (D === 1) ? 2 : 3)];
+  return {
+    formato: 'opciones4',
+    consigna: 'Mira la figura. ¿Cómo se llama?',
+    visual: { tipo: 'figura', nombre: fig.nombre },
+    respuesta: fig.nombre,
+    respuestaFraccion: true,
+    distractoresFijos: FIGURAS_PLANAS.map(function (f) { return f.nombre; })
+      .filter(function (n) { return n !== fig.nombre; }),
+    expr: 'j1_' + fig.nombre,
+    diagnostico: false
+  };
+};
+
+/* J2 Lados y vértices (2.º) */
+CB.gen.geometria.J2 = function (rng, D) {
+  const fig = CB.util.elegir(rng, FIGURAS_PLANAS);
+  const porVertices = (D !== 1) && rng() < 0.5;
+  return {
+    formato: 'teclado',
+    consigna: 'Mira la figura. ¿Cuántos ' +
+              (porVertices ? 'vértices (esquinas)' : 'lados') + ' tiene?',
+    visual: { tipo: 'figura', nombre: fig.nombre },
+    respuesta: fig.lados,
+    expr: 'j2_' + fig.nombre + (porVertices ? 'v' : 'l'),
+    diagnostico: true
+  };
+};
+
+/* J3 Recto, agudo, obtuso o llano (3.º): el ángulo se dibuja y la respuesta
+   es su nombre — nunca dos nombres verdaderos a la vez. */
+CB.gen.geometria.J3 = function (rng, D) {
+  const tipo = ANGULOS_TIPO[CB.util.ent(rng, 0, (D === 1) ? 2 : 3)];
+  const grados = CB.util.elegir(rng, tipo[1]);
+  return {
+    formato: 'opciones4',
+    consigna: 'Mira el ángulo. ¿Cómo es?',
+    visual: { tipo: 'angulo', grados: grados },
+    respuesta: tipo[0],
+    respuestaFraccion: true,
+    distractoresFijos: ANGULOS_TIPO.map(function (t) { return t[0]; })
+      .filter(function (n) { return n !== tipo[0]; }),
+    expr: 'j3_' + grados,
+    diagnostico: false
+  };
+};
+
+/* J4 Las figuras por sus lados (4.º) */
+CB.gen.geometria.J4 = function (rng, D) {
+  const p = CB.util.elegir(rng, POLIGONOS_LADOS);
+  const otros = POLIGONOS_LADOS.map(function (q) { return q[0]; })
+    .filter(function (n) { return n !== p[0]; });
+  return {
+    formato: 'opciones4',
+    consigna: 'Una figura plana tiene ' + p[1] +
+              ' lados rectos. ¿Cómo se llama?',
+    respuesta: p[0],
+    respuestaFraccion: true,
+    distractoresFijos: CB.util.barajar(otros, rng).slice(0, 3),
+    expr: 'j4_' + p[1],
+    diagnostico: false
+  };
+};
+
+/* J5 Caras, aristas y vértices (5.º): los cuerpos, de palabra. */
+CB.gen.geometria.J5 = function (rng, D) {
+  const cuerpo = (D === 1) ? CUERPOS_GEO[0] : CB.util.elegir(rng, CUERPOS_GEO);
+  const preguntas = [['caras', 'Cuántas', 1], ['aristas', 'Cuántas', 2],
+                     ['vértices', 'Cuántos', 3]];
+  const p = CB.util.elegir(rng, preguntas);
+  return {
+    formato: 'teclado',
+    consigna: 'Piensa en ' + cuerpo[0] + '. ¿' + p[1] + ' ' + p[0] + ' tiene?',
+    respuesta: cuerpo[p[2]],
+    expr: 'j5_' + cuerpo[0].replace(/ /g, '') + '_' + p[0],
+    diagnostico: true
+  };
+};
+
+/* J6 El tercer ángulo (6.º) */
+CB.gen.geometria.J6 = function (rng, D) {
+  const a = CB.util.ent(rng, 20, (D === 1) ? 60 : 80);
+  const b = CB.util.ent(rng, 20, 150 - a);
+  return {
+    formato: 'teclado',
+    consigna: 'Los ángulos de un triángulo suman 180 grados. Dos de ellos ' +
+              'miden ' + a + ' y ' + b + ' grados. ¿Cuánto mide el tercero?',
+    respuesta: 180 - a - b,
+    anguloA: a,
+    anguloB: b,
+    expr: 'j6_' + a + '_' + b,
+    diagnostico: true
+  };
+};
+
+/* J7 Los grados de la vuelta (6.º) */
+CB.gen.geometria.J7 = function (rng, D) {
+  const v = VUELTAS_GIRO[CB.util.ent(rng, 0, (D === 1) ? 1 : 2)];
+  return {
+    formato: 'teclado',
+    consigna: 'Una vuelta entera son 360 grados. ¿Cuántos grados ' +
+              (v[1] === 90 ? 'es ' : 'son ') + v[0] + '?',
+    respuesta: v[1],
+    expr: 'j7_' + v[1],
+    diagnostico: true
+  };
+};
+
+/* ——— El espacio: K1…K6. ——— */
+
+/* Una cuadrícula de letras de nc × nf casillas, todas distintas. Las filas
+   van EN ORDEN LÓGICO: celdas[0] es la fila 1, la de abajo. */
+function cuadriculaDeLetras(rng, nc, nf) {
+  const letras = CB.util.barajar(LETRAS_CASILLA.slice(), rng).slice(0, nc * nf);
+  const celdas = [];
+  let f, c;
+  for (f = 0; f < nf; f++) {
+    const fila = [];
+    for (c = 0; c < nc; c++) fila.push(letras[f * nc + c]);
+    celdas.push(fila);
+  }
+  return celdas;
+}
+CB.gen.espacio._cuadriculaDeLetras = cuadriculaDeLetras;
+
+/* Tres distractores de letra, empezando por la casilla de coordenadas
+   INVERTIDAS si existe y es otra: es el error que la pregunta enseña a evitar. */
+function fijosDeLetras(rng, celdas, resp, invertida) {
+  const fijos = [];
+  if (invertida != null && invertida !== resp) fijos.push(invertida);
+  const resto = [];
+  celdas.forEach(function (fila) {
+    fila.forEach(function (l) {
+      if (l && l !== resp && fijos.indexOf(l) === -1) resto.push(l);
+    });
+  });
+  const mezcla = CB.util.barajar(resto, rng);
+  let i;
+  for (i = 0; i < mezcla.length && fijos.length < 3; i++) fijos.push(mezcla[i]);
+  return fijos;
+}
+CB.gen.espacio._fijosDeLetras = fijosDeLetras;
+
+/* K1 La posición en la fila (1.º): reutiliza la fila de vagonetas. */
+CB.gen.espacio.K1 = function (rng, D) {
+  const total = CB.util.ent(rng, 5, (D === 1) ? 6 : 9);
+  const pos = CB.util.ent(rng, 1, total);
+  return {
+    formato: 'teclado',
+    consigna: 'Mira la fila. ¿Qué posición ocupa la vagoneta marcada con la ' +
+              'estrella, contando desde la izquierda?',
+    visual: { tipo: 'fila', total: total, marcada: pos },
+    respuesta: pos,
+    expr: 'k1_' + total + '_' + pos,
+    diagnostico: true
+  };
+};
+
+/* K2 La casilla de la cuadrícula (2.º) */
+CB.gen.espacio.K2 = function (rng, D) {
+  const celdas = cuadriculaDeLetras(rng, 3, 3);
+  const cc = CB.util.ent(rng, 1, 3);
+  const fc = CB.util.ent(rng, 1, 3);
+  const resp = celdas[fc - 1][cc - 1];
+  const invertida = (cc !== fc) ? celdas[cc - 1][fc - 1] : null;
+  return {
+    formato: 'opciones4',
+    consigna: 'Mira la cuadrícula. ¿Qué letra está en la columna ' + cc +
+              ' y en la fila ' + fc + '? La fila 1 es la de abajo.',
+    visual: { tipo: 'cuadricula', celdas: celdas },
+    respuesta: resp,
+    respuestaFraccion: true,
+    distractoresFijos: fijosDeLetras(rng, celdas, resp, invertida),
+    expr: 'k2_' + cc + '_' + fc + '_' + celdas[0].join(''),
+    diagnostico: false
+  };
+};
+
+/* K3 Los ejes de simetría (3.º) */
+CB.gen.espacio.K3 = function (rng, D) {
+  const s = SIMETRIAS_FIGURA[CB.util.ent(rng, 0, (D === 1) ? 1 : 3)];
+  return {
+    formato: 'teclado',
+    consigna: 'Piensa en ' + s[0] + '. ¿Cuántos ejes de simetría tiene?',
+    respuesta: s[1],
+    expr: 'k3_' + s[1] + '_' + s[0].replace(/[ ,]/g, ''),
+    diagnostico: true
+  };
+};
+
+/* K4 La casilla (columna, fila) (4.º): la notación entre paréntesis. */
+CB.gen.espacio.K4 = function (rng, D) {
+  const celdas = cuadriculaDeLetras(rng, 4, 3);
+  const cc = CB.util.ent(rng, 1, 4);
+  const fc = CB.util.ent(rng, 1, 3);
+  const resp = celdas[fc - 1][cc - 1];
+  const invertida = (cc !== fc && fc <= 4 && cc <= 3) ? celdas[cc - 1][fc - 1] : null;
+  return {
+    formato: 'opciones4',
+    consigna: 'En la casilla (' + cc + ', ' + fc + ') se dice primero la ' +
+              'columna y después la fila, y la fila 1 es la de abajo. ' +
+              '¿Qué letra hay en esa casilla?',
+    visual: { tipo: 'cuadricula', celdas: celdas },
+    respuesta: resp,
+    respuestaFraccion: true,
+    distractoresFijos: fijosDeLetras(rng, celdas, resp, invertida),
+    expr: 'k4_' + cc + '_' + fc + '_' + celdas[0].join(''),
+    diagnostico: false
+  };
+};
+
+/* K5 El punto del plano (5.º): cuatro puntos con nombre y uno preguntado por
+   sus coordenadas. El punto de coordenadas invertidas SIEMPRE está en el
+   plano: es el distractor que enseña. */
+CB.gen.espacio.K5 = function (rng, D) {
+  const tam = 5;
+  const x = CB.util.ent(rng, 1, tam);
+  let y = CB.util.ent(rng, 1, tam - 1);
+  if (y >= x) y += 1;                       /* y ≠ x, sin bucles de rechazo */
+  const celdas = [];
+  let f, c;
+  for (f = 0; f < tam; f++) {
+    const fila = [];
+    for (c = 0; c < tam; c++) fila.push('');
+    celdas.push(fila);
+  }
+  const etiquetas = CB.util.barajar(['A', 'B', 'C', 'D'], rng);
+  celdas[y - 1][x - 1] = etiquetas[0];      /* el preguntado, en (x, y) */
+  celdas[x - 1][y - 1] = etiquetas[1];      /* el de coordenadas invertidas */
+  /* Dos puntos más en casillas libres, deterministas desde el rng. */
+  let puestos = 2, intento;
+  for (intento = 0; intento < 40 && puestos < 4; intento++) {
+    const cx = CB.util.ent(rng, 1, tam);
+    const cy = CB.util.ent(rng, 1, tam);
+    if (!celdas[cy - 1][cx - 1]) {
+      celdas[cy - 1][cx - 1] = etiquetas[puestos];
+      puestos++;
+    }
+  }
+  if (puestos < 4) {                        /* cota alcanzada: relleno fijo */
+    for (f = 0; f < tam && puestos < 4; f++) {
+      for (c = 0; c < tam && puestos < 4; c++) {
+        if (!celdas[f][c]) { celdas[f][c] = etiquetas[puestos]; puestos++; }
+      }
+    }
+  }
+  return {
+    formato: 'opciones4',
+    consigna: 'En el plano se dice primero la columna y después la fila, y ' +
+              'la fila 1 es la de abajo. ¿Qué punto está en la casilla (' +
+              x + ', ' + y + ')?',
+    visual: { tipo: 'cuadricula', celdas: celdas },
+    respuesta: etiquetas[0],
+    respuestaFraccion: true,
+    distractoresFijos: [etiquetas[1], etiquetas[2], etiquetas[3]],
+    expr: 'k5_' + x + '_' + y + '_' + etiquetas.join(''),
+    diagnostico: false
+  };
+};
+
+/* K6 La traslación del punto (6.º) */
+CB.gen.espacio.K6 = function (rng, D) {
+  const d = CB.util.ent(rng, 2, 6);
+  const y = CB.util.ent(rng, 1, 9);
+  const modo = (D === 1) ? 1 : CB.util.ent(rng, 1, 3);
+  if (modo === 1) {
+    const x = CB.util.ent(rng, 1, 9);
+    return {
+      formato: 'teclado',
+      consigna: 'El punto (' + x + ', ' + y + ') se mueve ' + d +
+                ' casillas a la derecha. ¿En qué columna (el primer número) queda?',
+      respuesta: x + d,
+      coordenadaInicial: x,
+      desplazamiento: d,
+      expr: 'k6a_' + x + '_' + y + '_' + d,
+      diagnostico: true
+    };
+  }
+  if (modo === 2) {
+    const x = CB.util.ent(rng, 1, 9);
+    return {
+      formato: 'teclado',
+      consigna: 'El punto (' + x + ', ' + y + ') se mueve ' + d +
+                ' casillas hacia arriba. ¿En qué fila (el segundo número) queda?',
+      respuesta: y + d,
+      coordenadaInicial: y,
+      desplazamiento: d,
+      expr: 'k6b_' + x + '_' + y + '_' + d,
+      diagnostico: true
+    };
+  }
+  const x = CB.util.ent(rng, d + 1, 12);
+  return {
+    formato: 'teclado',
+    consigna: 'El punto (' + x + ', ' + y + ') se mueve ' + d +
+              ' casillas a la izquierda. ¿En qué columna (el primer número) queda?',
+    respuesta: x - d,
+    expr: 'k6c_' + x + '_' + y + '_' + d,
+    diagnostico: true
+  };
+};
+
 /* 17-catalogo.js — Los 92 niveles y los 4 mundos. ESTE FICHERO ES UN CONTRATO. */
 
 var CB = CB || {};
@@ -7738,7 +8463,13 @@ CB.catalogo.FAMILIAS = {
   H: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] },
   /* Sentido estocástico (3.3.0): G datos y A azar. */
   G: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [380, 980] },
-  A: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [420, 1020] }
+  A: { puntosBase: 110, tIdeal: 10000, tLimite: 30000, beta: [420, 1020] },
+  /* Sentido algebraico y espacial (3.4.0): U patrones, X álgebra, J geometría
+     y K espacio. */
+  U: { puntosBase: 100, tIdeal: 8000,  tLimite: 24000, beta: [380, 980] },
+  X: { puntosBase: 110, tIdeal: 9000,  tLimite: 27000, beta: [420, 1020] },
+  J: { puntosBase: 100, tIdeal: 9000,  tLimite: 27000, beta: [380, 980] },
+  K: { puntosBase: 100, tIdeal: 10000, tLimite: 30000, beta: [400, 1000] }
 };
 
 /* Las tablas de niveles, POR CURSO. Cada curso es una tabla con el MISMO
@@ -7785,7 +8516,12 @@ CB.catalogo.TABLAS = {
   ['H1','La hora en punto','tiempo',0,12,0,3,'teclado','B1.b',['5.2','6.1'],['N18'],8,false,null],
   /* Datos y azar (3.3.0): 2 */
   ['G1','El gráfico de los juguetes','datos',0,9,0,2,'teclado','E1.a',['1.2','5.2'],['N17'],1052,false,null],
-  ['A1','Seguro o imposible','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['N17'],19,false,null]
+  ['A1','Seguro o imposible','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['N17'],19,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U1','Seguir la serie','patrones',0,20,0,2,'teclado','D1.a',['3.1','5.1'],['N18'],27,false,null],
+  ['X1','El hueco de la suma','algebra',0,20,0,2,'teclado','D1.b',['2.1','5.1'],['S17'],128,false,null],
+  ['J1','¿Qué figura es?','geometria',0,0,0,3,'opciones4','C1.a',['5.2','6.1'],['N17'],2,false,null],
+  ['K1','La posición en la fila','espacio',0,9,0,3,'teclado','C1.b',['1.2','5.2'],['N17'],24,false,null]
   ],
 
   /* ——— 2.º de Primaria: los 92 originales. ——— */
@@ -7902,7 +8638,12 @@ CB.catalogo.TABLAS = {
   /* Datos y azar (3.3.0): 3 */
   ['G2','Leer el gráfico de barras','datos',0,12,0,2,'teclado','E1.a',['1.2','6.1'],['G1'],5939,false,null],
   ['G3','El que más y el que menos','datos',0,12,0,3,'opciones4','E1.a',['1.1','5.1'],['G2'],5184,false,null],
-  ['A2','La bolsa de las bolas','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['A1'],484,false,null]
+  ['A2','La bolsa de las bolas','azar',0,0,0,3,'opciones4','E1.b',['3.1','5.2'],['A1'],484,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U2','La serie que baja','patrones',0,99,0,2,'teclado','D1.a',['3.1','5.1'],['U1','N5'],217,false,null],
+  ['X2','El hueco de la resta','algebra',0,99,0,2,'teclado','D1.b',['2.1','5.1'],['X1','R5'],3137,false,null],
+  ['J2','Lados y vértices','geometria',0,8,0,3,'teclado','C1.a',['5.2','6.1'],['J1'],5,false,null],
+  ['K2','La casilla de la cuadrícula','espacio',0,12,0,3,'opciones4','C1.b',['1.2','5.2'],['K1'],5963,false,null]
   ],
 
   /* ——— 3.º de Primaria (3.1.0): 36 niveles. Techos 999 / 9.999 / 99.999. ——— */
@@ -7951,7 +8692,12 @@ CB.catalogo.TABLAS = {
   /* Datos y azar (3.3.0): 3 */
   ['G4','Los votos de la clase','datos',0,24,0,1,'teclado','E2.a',['1.2','2.1'],['G2','S18'],6361,false,null],
   ['G5','¿Cuántos más?','datos',0,12,0,2,'teclado','E2.a',['1.1','2.1'],['G4','R16'],6409,false,null],
-  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],352,false,null]
+  ['A3','Más probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A2'],352,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U3','La serie y su salto','patrones',0,999,0,1,'teclado','D2.a',['3.1','5.1'],['U2'],4560,false,null],
+  ['X3','El hueco de multiplicar','algebra',0,100,0,2,'teclado','D2.b',['2.1','3.1'],['X2','M13'],44,false,null],
+  ['J3','Recto, agudo u obtuso','geometria',0,180,0,2,'opciones4','C2.a',['5.2','6.1'],['J2'],5,false,null],
+  ['K3','Los ejes de simetría','espacio',0,4,0,3,'teclado','C2.b',['5.2','6.1'],['J2'],2,false,null]
   ],
 
   /* ——— 4.º de Primaria: 34 niveles. Techos 99.999 / 499.999 / 999.999. ——— */
@@ -7998,7 +8744,12 @@ CB.catalogo.TABLAS = {
   /* Datos y azar (3.3.0): 3 */
   ['G6','El pictograma','datos',0,80,0,1,'teclado','E2.a',['1.2','5.1'],['G4','M13'],1933,false,null],
   ['G7','La encuesta entera','datos',0,48,0,2,'teclado','E2.a',['1.1','2.1'],['G4'],3604,false,null],
-  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],352,false,null]
+  ['A4','Menos probable','azar',0,9,0,3,'opciones4','E2.b',['3.1','5.2'],['A3'],352,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U4','El robot de la cuadrícula','patrones',0,10,0,1,'teclado','D2.c',['1.1','2.1'],['U3','K2'],154,false,null],
+  ['X4','El hueco con dos operaciones','algebra',0,180,0,2,'teclado','D2.b',['2.1','6.2'],['X3'],2441,false,null],
+  ['J4','Las figuras por sus lados','geometria',0,8,0,2,'opciones4','C2.a',['5.2','6.1'],['J3'],3,false,null],
+  ['K4','La casilla (columna, fila)','espacio',0,12,0,3,'opciones4','C2.b',['1.2','5.2'],['K2'],6931,false,null]
   ],
 
   /* ——— 5.º de Primaria: 29 niveles. Techos 999.999 / 9.999.999 / íd. ——— */
@@ -8041,7 +8792,12 @@ CB.catalogo.TABLAS = {
   ['G8','La moda','datos',0,12,0,1,'teclado','E3.a',['1.1','6.1'],['G7'],4151,false,null],
   ['G9','La media','datos',0,20,0,2,'teclado','E3.a',['2.1','5.1'],['G8','D3'],1695,false,null],
   ['G10','El rango','datos',0,20,0,2,'teclado','E3.a',['2.1','6.1'],['G8'],6302,false,null],
-  ['A5','La probabilidad como fracción','azar',0,10,0,3,'opciones4','E3.b',['1.2','5.1'],['A4','F2'],176,false,null]
+  ['A5','La probabilidad como fracción','azar',0,10,0,3,'opciones4','E3.b',['1.2','5.1'],['A4','F2'],176,false,null],
+  /* Álgebra y espacio (3.4.0): 4 */
+  ['U5','La serie de multiplicar','patrones',0,999,0,1,'teclado','D3.b',['3.1','5.1'],['U3','M13'],42,false,null],
+  ['X5','La incógnita x','algebra',0,900,0,2,'teclado','D3.a',['2.1','6.2'],['X4'],4201,false,null],
+  ['J5','Caras, aristas y vértices','geometria',0,12,0,2,'teclado','C3.a',['5.2','6.1'],['J4'],6,false,null],
+  ['K5','El punto del plano','espacio',0,5,0,3,'opciones4','C3.b',['1.2','5.2'],['K4'],336,false,null]
   ],
 
   /* ——— 6.º de Primaria: 31 niveles. Techo 9.999.999 en los tres. ——— */
@@ -8086,7 +8842,13 @@ CB.catalogo.TABLAS = {
   ['G11','La media del gráfico','datos',0,20,0,1,'teclado','E3.a',['1.2','2.1'],['G9'],580,false,null],
   ['G12','Media, moda y rango','datos',0,20,0,2,'teclado','E3.a',['2.1','6.1'],['G9','G10'],5623,false,null],
   ['A6','La regla de Laplace','azar',0,10,0,2,'opciones4','E3.b',['1.2','5.1'],['A5'],19,false,null],
-  ['A7','Las veces que saldrá','azar',0,60,0,3,'teclado','E3.c',['2.1','3.1'],['A6','D3'],65,false,null]
+  ['A7','Las veces que saldrá','azar',0,60,0,3,'teclado','E3.c',['2.1','3.1'],['A6','D3'],65,false,null],
+  /* Álgebra y espacio (3.4.0): 5 */
+  ['U6','El término del lugar N','patrones',0,200,0,1,'teclado','D3.b',['2.1','3.1'],['U5'],891,false,null],
+  ['X6','La incógnita en las cuatro','algebra',0,900,0,2,'teclado','D3.a',['2.1','6.2'],['X5'],2212,false,null],
+  ['J6','El tercer ángulo','geometria',0,180,0,2,'teclado','C3.a',['2.1','5.1'],['J3'],2992,false,null],
+  ['J7','Los grados de la vuelta','geometria',0,360,0,2,'teclado','C3.a',['3.1','5.2'],['J3'],2,false,null],
+  ['K6','La traslación del punto','espacio',0,20,0,3,'teclado','C3.b',['1.2','2.1'],['K5'],817,false,null]
   ]
 };
 
@@ -8148,7 +8910,9 @@ CB.catalogo.LIMITES_CURSO = {
                     D: 'division', F: 'fracciones', C: 'decimales',
                     T: 'porcentajes', Z: 'enteros',
                     B: 'medida', H: 'tiempo',
-                    G: 'datos', A: 'azar' };
+                    G: 'datos', A: 'azar',
+                    U: 'patrones', X: 'algebra',
+                    J: 'geometria', K: 'espacio' };
 
   const cursos = [];
   let c;
@@ -8218,7 +8982,9 @@ CB.catalogo.LIMITES_CURSO = {
                 D: CB.gen.division, F: CB.gen.fracciones, C: CB.gen.decimales,
                 T: CB.gen.porcentajes, Z: CB.gen.enteros,
                 B: CB.gen.medida, H: CB.gen.tiempo,
-                G: CB.gen.datos, A: CB.gen.azar }[letra];
+                G: CB.gen.datos, A: CB.gen.azar,
+                U: CB.gen.patrones, X: CB.gen.algebra,
+                J: CB.gen.geometria, K: CB.gen.espacio }[letra];
 
     nivel.generar = (function (m, i) {
       return function (rng, D, ctx) {
@@ -8379,7 +9145,8 @@ CB.MUNDOS = [
               'N34','N35','N36','N37','N38','N39',
               'N40','N41','N42','N43','N44','Z1','Z2','Z3','Z4',
               'H1','H2','H3','H4','H5','H6',
-              'G1','G2','G3','A1','A2'] },
+              'G1','G2','G3','A1','A2',
+              'U1','U2','X1','X2','K1'] },
 
   { id: 'M2', nombre: 'El Bosque de las Llevadas', bioma: 'bosque', jefe: 'Ranacubo',
     jefeIcono: '🐸',
@@ -8394,7 +9161,8 @@ CB.MUNDOS = [
               'C6','C7','C8','C9','C10','C11',
               'C12','C13','C14','C15',
               'B2','B3','B5','B8','B12','B14',
-              'G4','G5','G7'] },
+              'G4','G5','G7',
+              'X3','X4','J1','J2','K2'] },
 
   { id: 'M3', nombre: 'El Río de los Problemas', bioma: 'rio', jefe: 'Cristalina',
     jefeIcono: '💠',
@@ -8407,7 +9175,8 @@ CB.MUNDOS = [
               'F10','F11','F12','F13','F14','F15','P35','P36','P37','P38','P39',
               'F16','F17','F18','F19','F20','P40','P41','P42','P43','P44',
               'B1','B4','B7','B10','B15',
-              'A3','A4','A5','A6','A7'] },
+              'A3','A4','A5','A6','A7',
+              'U3','U4','J3','J4','K3','K4'] },
 
   { id: 'M4', nombre: 'La Mina de las Veces', bioma: 'mina', jefe: 'Brasita',
     jefeIcono: '🔥', distintivo: 'INICIACIÓN',
@@ -8421,7 +9190,8 @@ CB.MUNDOS = [
               'M21','M22','D12','D13','D14','D15',
               'T1','T2','T3','T4','T5','T6','D16','D17',
               'B6','B9','B11','B13',
-              'G6','G8','G9','G10','G11','G12'] }
+              'G6','G8','G9','G10','G11','G12',
+              'U5','U6','X5','X6','J5','J6','J7','K5','K6'] }
 ];
 
 CB.catalogo.mundoDe = function (nivelId) {
@@ -9070,6 +9840,63 @@ CB.ERRORES['E-A-OLVIDA-REPARTIR'] = {
   }
 };
 
+/* ——— Sentido algebraico y espacial (3.4.0): patrones (U), álgebra (X),
+   geometría (J) y espacio (K). ——— */
+
+CB.ERRORES['E-U-REPITE-TERMINO'] = {
+  familia: 'U', diagnostico: true,
+  pista: 'La serie no repite: cada término aplica el salto al anterior.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.ultimoTermino !== 'number' ||
+        item.ultimoTermino === item.respuesta) return null;
+    return item.ultimoTermino;
+  }
+};
+
+CB.ERRORES['E-X-SUMA-LOS-DOS'] = {
+  familia: 'X', diagnostico: true,
+  pista: 'El hueco no se rellena sumando los dos números que ves: comprueba ' +
+         'que la igualdad quede verdadera.',
+  reparacion: 'barrasComparativas',
+  simular: function (item) {
+    if (typeof item.sumandoConocido !== 'number' ||
+        typeof item.resultadoIgualdad !== 'number') return null;
+    const suma = item.sumandoConocido + item.resultadoIgualdad;
+    return (suma === item.respuesta) ? null : suma;
+  }
+};
+
+CB.ERRORES['E-J-OLVIDA-UN-ANGULO'] = {
+  familia: 'J', diagnostico: true,
+  pista: 'A 180 hay que quitarle LOS DOS ángulos que ya conoces, no uno.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.anguloA !== 'number') return null;
+    const resto = 180 - item.anguloA;
+    return (resto === item.respuesta) ? null : resto;
+  }
+};
+
+CB.ERRORES['E-K-DIRECCION-CONTRARIA'] = {
+  familia: 'K', diagnostico: true,
+  pista: 'Moverse a la derecha o hacia arriba SUMA casillas; quitar es ir ' +
+         'hacia el otro lado.',
+  reparacion: 'rectaNumerica',
+  simular: function (item) {
+    if (typeof item.coordenadaInicial !== 'number' ||
+        typeof item.desplazamiento !== 'number') return null;
+    const contraria = item.coordenadaInicial - item.desplazamiento;
+    return (contraria === item.respuesta) ? null : contraria;
+  }
+};
+
+CB.ERRORES['E-K-FILA-POR-COLUMNA'] = {
+  familia: 'K', diagnostico: false,
+  pista: 'Primero la columna, después la fila. La fila 1 es la de abajo.',
+  reparacion: 'rectaNumerica'
+};
+
 /* 20-puntuacion.js — Requisitos 6 y 7 del usuario */
 
 var CB = CB || {};
@@ -9516,9 +10343,10 @@ CB.vidas.PRECEDENCIA_FIN = {
 var CB = CB || {};
 CB.adaptativo = CB.adaptativo || {};
 
-/* Lista CERRADA de los 22 slugs. casos-curriculo.js (CU6) comprueba que todos
+/* Lista CERRADA de los 26 slugs. casos-curriculo.js (CU6) comprueba que todos
    los niveles del catálogo apuntan a uno de estos. Los de 3.º-6.º llegan en
-   3.1.0; medida y tiempo en 3.2.0; datos y azar en 3.3.0. */
+   3.1.0; medida y tiempo en 3.2.0; datos y azar en 3.3.0; patrones, álgebra,
+   geometría y espacio en 3.4.0. */
 CB.adaptativo.SLUGS = [
   'numeracion', 'valor_posicional',
   'suma_sin_llevar', 'suma_llevada',
@@ -9529,7 +10357,8 @@ CB.adaptativo.SLUGS = [
   'dinero', 'vocabulario',
   'division', 'fracciones', 'decimales', 'porcentajes', 'enteros',
   'medida', 'tiempo',
-  'datos', 'azar'
+  'datos', 'azar',
+  'patrones', 'algebra', 'geometria', 'espacio'
 ];
 
 CB.adaptativo.THETA_INICIAL = 1000;
@@ -10116,6 +10945,10 @@ CB.reparacion.explicadorDe = function (destreza) {
     case 'tiempo':
     case 'datos':              return 'rectaNumerica';
     case 'azar':               return 'barrasComparativas';
+    case 'patrones':           return 'rectaNumerica';
+    case 'algebra':            return 'barrasComparativas';
+    case 'geometria':          return 'matrizFilasColumnas';
+    case 'espacio':            return 'matrizFilasColumnas';
     case 'problemas_comparacion':
     case 'problemas_igualacion':
     case 'problemas_cambio':
@@ -11103,6 +11936,15 @@ CB.ui.pintarItem = function (item) {
   if (item.visual && item.visual.tipo === 'barras') {
     cont.appendChild(CB.ui.graficoBarras(item.visual.filas, item.visual.escala));
   }
+  if (item.visual && item.visual.tipo === 'figura') {
+    cont.appendChild(CB.ui.figuraPlana(item.visual.nombre));
+  }
+  if (item.visual && item.visual.tipo === 'angulo') {
+    cont.appendChild(CB.ui.anguloVoxel(item.visual.grados));
+  }
+  if (item.visual && item.visual.tipo === 'cuadricula') {
+    cont.appendChild(CB.ui.cuadriculaLetras(item.visual.celdas));
+  }
 
   if (item.preguntaPrevia) {
     cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
@@ -11267,6 +12109,141 @@ CB.ui.graficoBarras = function (filas, escala) {
       return f.nombre + ', ' + f.valor +
         (escala && escala > 1 ? ' bloques de ' + escala : '');
     }).join('; '));
+  return caja;
+};
+
+/* La figura plana (3.4.0): cuadrado, rectángulo, triángulo o rombo, dibujados
+   con cajas y bordes rectos — el vóxel no tiene curvas, y por eso el círculo
+   no se dibuja jamás. El aria DESCRIBE la figura sin nombrarla, porque
+   nombrarla puede ser exactamente la pregunta. */
+CB.ui.figuraPlana = function (nombre) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const fig = CB.ui.crear('div');
+  const bisel = 'inset 4px 4px 0 0 var(--deco-cristal-cla), ' +
+              'inset -4px -4px 0 0 var(--deco-cristal-osc)';
+  let aria;
+  if (nombre === 'cuadrado') {
+    fig.style.width = '90px'; fig.style.height = '90px';
+    fig.style.background = 'var(--deco-cristal)';
+    fig.style.boxShadow = bisel;
+    aria = 'Una figura de cuatro lados rectos e iguales, apoyada en un lado';
+  } else if (nombre === 'rectángulo') {
+    fig.style.width = '140px'; fig.style.height = '80px';
+    fig.style.background = 'var(--deco-cristal)';
+    fig.style.boxShadow = bisel;
+    aria = 'Una figura de cuatro lados rectos, dos largos y dos cortos';
+  } else if (nombre === 'rombo') {
+    fig.style.width = '76px'; fig.style.height = '76px';
+    fig.style.background = 'var(--deco-cristal)';
+    fig.style.boxShadow = bisel;
+    /* Giro ESTÁTICO, como las manecillas del reloj: nada se mueve. */
+    fig.style.transform = 'rotate(45deg)';
+    fig.style.margin = '18px';
+    aria = 'Una figura de cuatro lados rectos e iguales, apoyada en una punta';
+  } else {
+    /* Triángulo: el truco del borde — tres lados rectos sin una sola curva. */
+    fig.style.width = '0'; fig.style.height = '0';
+    fig.style.borderLeft = '55px solid transparent';
+    fig.style.borderRight = '55px solid transparent';
+    fig.style.borderBottom = '95px solid var(--deco-cristal)';
+    aria = 'Una figura de tres lados rectos';
+  }
+  caja.appendChild(fig);
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label', aria);
+  return caja;
+};
+
+/* El ángulo (3.4.0): dos brazos rectos unidos por un vértice, girados de forma
+   ESTÁTICA como las manecillas del reloj. El aria dice los grados: quien no ve
+   la abertura recibe el dato con el que se clasifica. */
+CB.ui.anguloVoxel = function (grados) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const zona = CB.ui.crear('div');
+  zona.style.position = 'relative';
+  zona.style.width = '160px'; zona.style.height = '110px';
+
+  function brazo(rot) {
+    const b = CB.ui.crear('span');
+    b.style.position = 'absolute';
+    b.style.left = '50%'; b.style.top = '92%';
+    b.style.width = '8px'; b.style.height = '64px';
+    b.style.background = 'var(--texto-principal, #2B2118)';
+    b.style.transformOrigin = '50% 100%';
+    b.style.transform = 'translate(-50%, -100%) rotate(' + rot + 'deg)';
+    return b;
+  }
+  zona.appendChild(brazo(90));            /* brazo fijo, hacia la derecha */
+  zona.appendChild(brazo(90 - grados));   /* el otro abre el ángulo */
+
+  const vertice = CB.ui.crear('span');
+  vertice.style.position = 'absolute';
+  vertice.style.left = '50%'; vertice.style.top = '92%';
+  vertice.style.width = '12px'; vertice.style.height = '12px';
+  vertice.style.transform = 'translate(-50%, -50%)';
+  vertice.style.background = 'var(--texto-principal, #2B2118)';
+  zona.appendChild(vertice);
+
+  caja.appendChild(zona);
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label',
+    'Dos brazos unidos por un vértice que se abren ' + grados + ' grados');
+  return caja;
+};
+
+/* La cuadrícula de letras (3.4.0). Recibe las filas EN ORDEN LÓGICO — la fila
+   1, la de abajo, primero — y las pinta de arriba abajo con los números de
+   fila a la izquierda y los de columna debajo. Una casilla vacía es una
+   casilla sin contenido (el plano de puntos las usa). Las casillas se
+   distinguen por su LETRA, nunca por su color, y quien pone el fondo pone la
+   tinta. El aria canta cada letra con su columna y su fila. */
+CB.ui.cuadriculaLetras = function (celdas) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const nf = celdas.length;
+  const nc = celdas[0] ? celdas[0].length : 0;
+  const malla = CB.ui.crear('div');
+  malla.style.display = 'inline-grid';
+  malla.style.gridTemplateColumns = 'repeat(' + (nc + 1) + ', 34px)';
+  malla.style.gap = '4px';
+
+  function rotulo(txt) {
+    const r = CB.ui.crear('span', null, txt);
+    r.style.width = '34px'; r.style.height = '34px';
+    r.style.lineHeight = '34px'; r.style.textAlign = 'center';
+    r.style.fontSize = '15px';
+    return r;
+  }
+
+  let f, c;
+  for (f = nf - 1; f >= 0; f--) {
+    malla.appendChild(rotulo(String(f + 1)));
+    for (c = 0; c < nc; c++) {
+      const celda = CB.ui.crear('span', null, celdas[f][c] || '');
+      celda.style.width = '34px'; celda.style.height = '34px';
+      celda.style.lineHeight = '34px'; celda.style.textAlign = 'center';
+      celda.style.fontSize = '18px';
+      celda.style.background = 'var(--bg-caja, #FFF8E7)';
+      celda.style.color = 'var(--texto-principal, #2B2118)';
+      celda.style.boxShadow = 'inset 2px 2px 0 0 var(--deco-piedra-cla), ' +
+                              'inset -2px -2px 0 0 var(--deco-piedra-osc)';
+      malla.appendChild(celda);
+    }
+  }
+  malla.appendChild(rotulo(''));
+  for (c = 0; c < nc; c++) malla.appendChild(rotulo(String(c + 1)));
+
+  caja.appendChild(malla);
+  const partes = [];
+  for (f = 0; f < nf; f++) {
+    const enFila = [];
+    for (c = 0; c < nc; c++) {
+      if (celdas[f][c]) enFila.push(celdas[f][c] + ' en la columna ' + (c + 1));
+    }
+    if (enFila.length) partes.push('Fila ' + (f + 1) + ': ' + enFila.join(', '));
+  }
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label', 'Cuadrícula de ' + nc + ' columnas y ' + nf +
+    ' filas; la fila 1 es la de abajo. ' + partes.join('. ') + '.');
   return caja;
 };
 
@@ -12969,7 +13946,7 @@ CB.partida.construirGuion = function (perfil, mundo, rng, modo) {
   /* 3) CUOTA: al menos 1 ítem de cada bloque desbloqueado. Las cinco letras
      nuevas solo existen desde 3.º: en los cursos bajos su lista sale vacía y
      el bucle las salta solo. */
-  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V', 'D', 'F', 'C', 'T', 'Z', 'B', 'H', 'G', 'A'];
+  const letras = ['N', 'S', 'R', 'M', 'P', 'E', 'V', 'D', 'F', 'C', 'T', 'Z', 'B', 'H', 'G', 'A', 'U', 'X', 'J', 'K'];
   for (i = 0; i < letras.length; i++) {
     (function (letra) {
       const deLaLetra = nivelesMundo.filter(function (id) {
@@ -14252,7 +15229,9 @@ CB.partida.NOMBRES_DESTREZA = {
   decimales: 'Los números con coma', porcentajes: 'El tanto por ciento',
   enteros: 'Los números bajo cero',
   medida: 'Las medidas', tiempo: 'El reloj y el tiempo',
-  datos: 'Los datos y los gráficos', azar: 'El azar'
+  datos: 'Los datos y los gráficos', azar: 'El azar',
+  patrones: 'Las series y los patrones', algebra: 'Las igualdades y la incógnita',
+  geometria: 'Las figuras y los ángulos', espacio: 'El espacio y las coordenadas'
 };
 CB.partida.nombreDestreza = function (slug) {
   return CB.partida.NOMBRES_DESTREZA[slug] || slug;
@@ -14522,6 +15501,10 @@ CB.adulto.semaforo = function (perfil) {
     'El tiempo': ['tiempo'],
     'Datos y gráficos': ['datos'],
     'El azar': ['azar'],
+    'Patrones y series': ['patrones'],
+    'Igualdades e incógnita': ['algebra'],
+    'Geometría': ['geometria'],
+    'El espacio': ['espacio'],
     'Problemas': ['problemas_cambio', 'problemas_combinacion',
                   'problemas_comparacion', 'problemas_igualacion'],
     'Dinero': ['dinero'],

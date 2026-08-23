@@ -230,6 +230,15 @@ CB.ui.pintarItem = function (item) {
   if (item.visual && item.visual.tipo === 'barras') {
     cont.appendChild(CB.ui.graficoBarras(item.visual.filas, item.visual.escala));
   }
+  if (item.visual && item.visual.tipo === 'figura') {
+    cont.appendChild(CB.ui.figuraPlana(item.visual.nombre));
+  }
+  if (item.visual && item.visual.tipo === 'angulo') {
+    cont.appendChild(CB.ui.anguloVoxel(item.visual.grados));
+  }
+  if (item.visual && item.visual.tipo === 'cuadricula') {
+    cont.appendChild(CB.ui.cuadriculaLetras(item.visual.celdas));
+  }
 
   if (item.preguntaPrevia) {
     cont.appendChild(CB.ui.crear('p', 'texto texto--menor', item.preguntaPrevia));
@@ -394,6 +403,141 @@ CB.ui.graficoBarras = function (filas, escala) {
       return f.nombre + ', ' + f.valor +
         (escala && escala > 1 ? ' bloques de ' + escala : '');
     }).join('; '));
+  return caja;
+};
+
+/* La figura plana (3.4.0): cuadrado, rectángulo, triángulo o rombo, dibujados
+   con cajas y bordes rectos — el vóxel no tiene curvas, y por eso el círculo
+   no se dibuja jamás. El aria DESCRIBE la figura sin nombrarla, porque
+   nombrarla puede ser exactamente la pregunta. */
+CB.ui.figuraPlana = function (nombre) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const fig = CB.ui.crear('div');
+  const bisel = 'inset 4px 4px 0 0 var(--deco-cristal-cla), ' +
+              'inset -4px -4px 0 0 var(--deco-cristal-osc)';
+  let aria;
+  if (nombre === 'cuadrado') {
+    fig.style.width = '90px'; fig.style.height = '90px';
+    fig.style.background = 'var(--deco-cristal)';
+    fig.style.boxShadow = bisel;
+    aria = 'Una figura de cuatro lados rectos e iguales, apoyada en un lado';
+  } else if (nombre === 'rectángulo') {
+    fig.style.width = '140px'; fig.style.height = '80px';
+    fig.style.background = 'var(--deco-cristal)';
+    fig.style.boxShadow = bisel;
+    aria = 'Una figura de cuatro lados rectos, dos largos y dos cortos';
+  } else if (nombre === 'rombo') {
+    fig.style.width = '76px'; fig.style.height = '76px';
+    fig.style.background = 'var(--deco-cristal)';
+    fig.style.boxShadow = bisel;
+    /* Giro ESTÁTICO, como las manecillas del reloj: nada se mueve. */
+    fig.style.transform = 'rotate(45deg)';
+    fig.style.margin = '18px';
+    aria = 'Una figura de cuatro lados rectos e iguales, apoyada en una punta';
+  } else {
+    /* Triángulo: el truco del borde — tres lados rectos sin una sola curva. */
+    fig.style.width = '0'; fig.style.height = '0';
+    fig.style.borderLeft = '55px solid transparent';
+    fig.style.borderRight = '55px solid transparent';
+    fig.style.borderBottom = '95px solid var(--deco-cristal)';
+    aria = 'Una figura de tres lados rectos';
+  }
+  caja.appendChild(fig);
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label', aria);
+  return caja;
+};
+
+/* El ángulo (3.4.0): dos brazos rectos unidos por un vértice, girados de forma
+   ESTÁTICA como las manecillas del reloj. El aria dice los grados: quien no ve
+   la abertura recibe el dato con el que se clasifica. */
+CB.ui.anguloVoxel = function (grados) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const zona = CB.ui.crear('div');
+  zona.style.position = 'relative';
+  zona.style.width = '160px'; zona.style.height = '110px';
+
+  function brazo(rot) {
+    const b = CB.ui.crear('span');
+    b.style.position = 'absolute';
+    b.style.left = '50%'; b.style.top = '92%';
+    b.style.width = '8px'; b.style.height = '64px';
+    b.style.background = 'var(--texto-principal, #2B2118)';
+    b.style.transformOrigin = '50% 100%';
+    b.style.transform = 'translate(-50%, -100%) rotate(' + rot + 'deg)';
+    return b;
+  }
+  zona.appendChild(brazo(90));            /* brazo fijo, hacia la derecha */
+  zona.appendChild(brazo(90 - grados));   /* el otro abre el ángulo */
+
+  const vertice = CB.ui.crear('span');
+  vertice.style.position = 'absolute';
+  vertice.style.left = '50%'; vertice.style.top = '92%';
+  vertice.style.width = '12px'; vertice.style.height = '12px';
+  vertice.style.transform = 'translate(-50%, -50%)';
+  vertice.style.background = 'var(--texto-principal, #2B2118)';
+  zona.appendChild(vertice);
+
+  caja.appendChild(zona);
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label',
+    'Dos brazos unidos por un vértice que se abren ' + grados + ' grados');
+  return caja;
+};
+
+/* La cuadrícula de letras (3.4.0). Recibe las filas EN ORDEN LÓGICO — la fila
+   1, la de abajo, primero — y las pinta de arriba abajo con los números de
+   fila a la izquierda y los de columna debajo. Una casilla vacía es una
+   casilla sin contenido (el plano de puntos las usa). Las casillas se
+   distinguen por su LETRA, nunca por su color, y quien pone el fondo pone la
+   tinta. El aria canta cada letra con su columna y su fila. */
+CB.ui.cuadriculaLetras = function (celdas) {
+  const caja = CB.ui.crear('div', 'lienzo-explicador');
+  const nf = celdas.length;
+  const nc = celdas[0] ? celdas[0].length : 0;
+  const malla = CB.ui.crear('div');
+  malla.style.display = 'inline-grid';
+  malla.style.gridTemplateColumns = 'repeat(' + (nc + 1) + ', 34px)';
+  malla.style.gap = '4px';
+
+  function rotulo(txt) {
+    const r = CB.ui.crear('span', null, txt);
+    r.style.width = '34px'; r.style.height = '34px';
+    r.style.lineHeight = '34px'; r.style.textAlign = 'center';
+    r.style.fontSize = '15px';
+    return r;
+  }
+
+  let f, c;
+  for (f = nf - 1; f >= 0; f--) {
+    malla.appendChild(rotulo(String(f + 1)));
+    for (c = 0; c < nc; c++) {
+      const celda = CB.ui.crear('span', null, celdas[f][c] || '');
+      celda.style.width = '34px'; celda.style.height = '34px';
+      celda.style.lineHeight = '34px'; celda.style.textAlign = 'center';
+      celda.style.fontSize = '18px';
+      celda.style.background = 'var(--bg-caja, #FFF8E7)';
+      celda.style.color = 'var(--texto-principal, #2B2118)';
+      celda.style.boxShadow = 'inset 2px 2px 0 0 var(--deco-piedra-cla), ' +
+                              'inset -2px -2px 0 0 var(--deco-piedra-osc)';
+      malla.appendChild(celda);
+    }
+  }
+  malla.appendChild(rotulo(''));
+  for (c = 0; c < nc; c++) malla.appendChild(rotulo(String(c + 1)));
+
+  caja.appendChild(malla);
+  const partes = [];
+  for (f = 0; f < nf; f++) {
+    const enFila = [];
+    for (c = 0; c < nc; c++) {
+      if (celdas[f][c]) enFila.push(celdas[f][c] + ' en la columna ' + (c + 1));
+    }
+    if (enFila.length) partes.push('Fila ' + (f + 1) + ': ' + enFila.join(', '));
+  }
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label', 'Cuadrícula de ' + nc + ' columnas y ' + nf +
+    ' filas; la fila 1 es la de abajo. ' + partes.join('. ') + '.');
   return caja;
 };
 

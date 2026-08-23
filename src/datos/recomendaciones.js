@@ -258,6 +258,43 @@ CB.datos.RECOMENDACIONES['E-A-OLVIDA-REPARTIR'] = {
              'Se ve que las 30 tiradas se reparten entre las seis caras, y que ' +
              'a cada una le toca «más o menos» 30 entre 6, no 30.'
 };
+
+/* Sentido algebraico y espacial (3.4.0). */
+CB.datos.RECOMENDACIONES['E-U-REPITE-TERMINO'] = {
+  frase: 'En las series repite el último número en vez de aplicar el salto.',
+  actividad: 'Series con pasos de verdad: en el pasillo o en la escalera, se ' +
+             'avanza contando en voz alta de 2 en 2 o de 5 en 5. Cada paso ' +
+             'CAMBIA el número; quedarse quieto es repetirlo, y el cuerpo lo ' +
+             'nota antes que el papel.'
+};
+CB.datos.RECOMENDACIONES['E-X-SUMA-LOS-DOS'] = {
+  frase: 'Rellena el hueco sumando los dos números que ve, sin comprobar la igualdad.',
+  actividad: 'La igualdad como balanza casera: a un lado de la mesa, fichas ' +
+             'ya contadas; al otro, las que dice el resultado. El hueco son ' +
+             'las fichas que FALTAN para que los dos lados pesen lo mismo, y ' +
+             'al final siempre se comprueba leyendo la igualdad entera.'
+};
+CB.datos.RECOMENDACIONES['E-J-OLVIDA-UN-ANGULO'] = {
+  frase: 'Al buscar el tercer ángulo del triángulo solo resta uno de los dos conocidos.',
+  actividad: 'Un triángulo de papel: se recortan sus tres esquinas y se ' +
+             'juntan sobre una línea recta — forman 180 grados exactos. ' +
+             'Después se calcula con los tres ángulos delante, tapando el ' +
+             'que se busca: hay que quitar LOS DOS que se ven.'
+};
+CB.datos.RECOMENDACIONES['E-K-DIRECCION-CONTRARIA'] = {
+  frase: 'Al mover un punto por el plano lo desplaza hacia el lado contrario.',
+  actividad: 'El plano en el suelo con cinta de pintor: la persona adulta ' +
+             'canta el movimiento («tres a la derecha») y el niño LO CAMINA ' +
+             'antes de decir la casilla. Derecha y arriba suman; izquierda y ' +
+             'abajo quitan.'
+};
+CB.datos.RECOMENDACIONES['E-K-FILA-POR-COLUMNA'] = {
+  frase: 'Lee las coordenadas al revés: busca la fila donde se dice la columna.',
+  actividad: 'Hundir la flota en papel cuadriculado, diciendo SIEMPRE las ' +
+             'casillas en voz alta con la regla delante: primero la columna, ' +
+             'después la fila. Quien canta la casilla la señala con dos ' +
+             'dedos, uno que baja por la columna y otro que cruza por la fila.'
+};
 CB.datos.RECOMENDACIONES['E-H-MEDIA-CONFUNDIDA'] = {
   frase: 'Confunde las manecillas: lee la corta como minutos o la larga como horas.',
   actividad: 'Un reloj de cartón con las manecillas de dos colores. Primero solo la ' +

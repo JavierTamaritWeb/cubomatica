@@ -3,9 +3,10 @@
 var CB = CB || {};
 CB.adaptativo = CB.adaptativo || {};
 
-/* Lista CERRADA de los 22 slugs. casos-curriculo.js (CU6) comprueba que todos
+/* Lista CERRADA de los 26 slugs. casos-curriculo.js (CU6) comprueba que todos
    los niveles del catálogo apuntan a uno de estos. Los de 3.º-6.º llegan en
-   3.1.0; medida y tiempo en 3.2.0; datos y azar en 3.3.0. */
+   3.1.0; medida y tiempo en 3.2.0; datos y azar en 3.3.0; patrones, álgebra,
+   geometría y espacio en 3.4.0. */
 CB.adaptativo.SLUGS = [
   'numeracion', 'valor_posicional',
   'suma_sin_llevar', 'suma_llevada',
@@ -16,7 +17,8 @@ CB.adaptativo.SLUGS = [
   'dinero', 'vocabulario',
   'division', 'fracciones', 'decimales', 'porcentajes', 'enteros',
   'medida', 'tiempo',
-  'datos', 'azar'
+  'datos', 'azar',
+  'patrones', 'algebra', 'geometria', 'espacio'
 ];
 
 CB.adaptativo.THETA_INICIAL = 1000;

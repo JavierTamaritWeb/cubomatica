@@ -4153,3 +4153,74 @@ datos, A azar — repartidos por los seis cursos, con un guion nuevo
   e interpretación: construir pide arrastrar, y el juego no arrastra); la
   frecuencia relativa se trabaja solo como frecuencia esperada (A7), no como
   tabla de resultados observados.
+
+## D-3.4.0 · El sentido algebraico y el sentido espacial (Fase 4 de los cursos)
+
+**Fecha**: 2026-08-23. **Alcance**: 3.4.0 cierra la cobertura declarada de los
+cinco sentidos del área: bloque D (algebraico) como familias U (patrones) y X
+(álgebra), y bloque C (espacial) como familias J (geometría) y K (espacio).
+25 niveles (catálogo 283 → 308), dos guiones nuevos (manifiesto 54 → 56), 26
+destrezas, 47 códigos de error. El esquema de perfil NO cambia (sigue v4): por
+eso es 3.4.0 y no 4.0.0.
+
+**Decisiones que quedan cerradas aquí:**
+
+1. **`CB.LEGAL.ALCANCE` y `bloques.C/D.cubierto` cambiaron JUNTOS con su
+   guardián**, en el mismo movimiento, como en 3.2.0 y 3.3.0. El texto nuevo
+   nombra los cinco sentidos y conserva la frase de humildad («el juego
+   acompaña al aula y no la sustituye»), que el guardián exige literalmente.
+
+2. **El vóxel no tiene curvas, así que el círculo no se dibuja jamás.** Las
+   figuras dibujables son cuatro (cuadrado, rectángulo, triángulo por el truco
+   del borde, rombo por giro estático de 45°) y son lista CERRADA en
+   `FIGURAS_PLANAS`. El círculo puede aparecer en palabras, nunca en el
+   lienzo. El aria de la figura la DESCRIBE sin nombrarla, porque nombrarla
+   puede ser exactamente la pregunta (J1); el del ángulo dice sus grados, que
+   es el dato con el que se clasifica.
+
+3. **Toda pregunta de coordenadas declara su convenio en la consigna**:
+   primero la columna, después la fila, y la fila 1 es la de abajo. Es la
+   doctrina de inequívoco-por-construcción de E140 aplicada al espacio: sin el
+   convenio declarado, (3, 2) tiene dos lecturas verdaderas y el niño que
+   razona bien puede fallar. E142 lo exige en las tres cuadrículas (K2, K4,
+   K5), y el punto de coordenadas invertidas está SIEMPRE en el plano de K5:
+   es el distractor que enseña.
+
+4. **Los campos de error solo se declaran cuando el error ES un error.** En
+   «□ − b = r» la respuesta es exactamente b + r — sumar los dos números
+   visibles —, así que ese modo NO declara `sumandoConocido`: un `simular()`
+   que devuelve la respuesta correcta diagnosticaría como error lo que está
+   bien. Mismo criterio en X4b, X5b, X6c y K6c. Los `simular()` de los cinco
+   códigos nuevos llevan además la guarda `=== respuesta → null`.
+
+5. **La serie viaja con sus campos (`ultimoTermino`, `salto` con signo,
+   `factorSerie`) para poder RECONSTRUIRLA en el guardián** (E142): la
+   aserción no repite la aritmética del generador, la comprueba desde el ítem
+   servido. El salto con signo permite que la serie descendente use el mismo
+   invariante que la ascendente.
+
+6. **Sin imágenes, con la puerta abierta.** El usuario ofreció fotografías;
+   esta fase no las necesita (figuras, ángulos y cuadrículas son DOM vóxel,
+   como el reloj y el gráfico). La única mejora que las pediría es asociar
+   cuerpo geométrico ↔ objeto real (J5: dado, caja, cucurucho, lata), y queda
+   registrada como ampliación posible, con la lista cerrada de binarios y el
+   bloque 4 de la auditoría como coste conocido.
+
+**El presupuesto de arranque sube de 480 a 512 KB.** La descarga de arranque
+queda en 488 KB tras los dos guiones nuevos. La alternativa era el plan B de
+bundles por ciclo, que rompe el contrato de «un solo guion» de `casos-carga` y
+de la auditoría por 8 KB de exceso: desproporcionado. Misma decisión y mismo
+razonamiento que en D-3.1.0 (400 → 480); el coste real son ~15 ms más de parse
+en el Chromebook de referencia.
+
+**Deuda declarada**: no hay construcción de figuras ni dibujo por el niño
+(exigiría arrastrar, y el juego no arrastra — la misma deuda que la
+construcción de gráficos en D-3.3.0); los cuerpos geométricos se preguntan de
+palabra, sin falso 3D dibujado; los giros y traslaciones son de un solo paso;
+la transcripción literal de los criterios de evaluación de los ciclos 2 y 3
+sigue pendiente (los saberes SÍ están transcritos como claves C*.x/D*.x).
+
+**Cardinalidades medidas** (10.000 tiradas por nivel, fórmula de 3.1.0):
+U1 27 · U2 217 · U3 4560 · U4 154 · U5 42 · U6 891 · X1 128 · X2 3137 ·
+X3 44 · X4 2441 · X5 4201 · X6 2212 · J1 2 · J2 5 · J3 5 · J4 3 · J5 6 ·
+J6 2992 · J7 2 · K1 24 · K2 5963 · K3 2 · K4 6931 · K5 336 · K6 817.
