@@ -381,6 +381,7 @@ button:disabled {
   flex-direction: column;
   min-height: 0;
   padding: var(--e4);
+  justify-content: safe center;
 }
 
 .pila-centro {

@@ -94,6 +94,15 @@ button:disabled { cursor: default; }
   flex-direction: column;
   min-height: 0;
   padding: var(--e4);
+
+  // El contenido se centra en vertical en vez de quedarse pegado arriba con
+  // media pantalla vacía debajo. Las pantallas de juego no se enteran: sus
+  // hijos llevan flex y no dejan hueco que repartir.
+  // `safe` es obligatorio, es la lección de E95: centrar y desbordar a la vez
+  // esconde lo que sobresale por arriba y no hay forma de llegar a ello,
+  // porque scrollTop no puede ser negativo. Con `safe` se centra mientras
+  // quepa y se comporta como `start` en cuanto no quepa.
+  justify-content: safe center;
 }
 
 .pila-centro {
